@@ -1,0 +1,1270 @@
+/* ============================================================
+   GEOALERT — PANEL DE ADMINISTRACIÓN
+   Flex puro · Responsivo · Sin frameworks
+   ============================================================ */
+
+/* ── Reset ── */
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ── Variables ── */
+:root {
+    --bg-body: #0b0f1a;
+    --bg-card: #161b27;
+    --bg-input: #1e2433;
+    --bg-hover: #1c2640;
+    --azul: #1f6feb;
+    --azul-hover: #388bfd;
+    --acento: #46d6f7;
+    --texto: #e6edf3;
+    --texto-suave: #8b949e;
+    --borde: rgba(255, 255, 255, 0.07);
+    --borde-acento: rgba(70, 214, 247, 0.35);
+    --rojo: #f85149;
+    --verde: #3fb950;
+    --amarillo: #e3b341;
+    --magenta: #bc8cff;
+    --radio: 10px;
+    --sombra: 0 4px 16px rgba(0, 0, 0, 0.45);
+    --sombra-glow: 0 0 12px rgba(70, 214, 247, 0.25);
+    --header-h: 54px;
+}
+
+/* ── Utilidades flex (mantienes tus clases) ── */
+.contFlex {
+    display: flex;
+}
+
+.contFlexCent {
+    display: flex;
+    align-items: center;
+}
+
+.contFlexCentColumn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.contFlexCol {
+    display: flex;
+    flex-direction: column;
+}
+
+/* ════════════════════════════════
+   BODY
+════════════════════════════════ */
+body {
+    background: var(--bg-body);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+    min-height: 100vh;
+}
+
+/* ════════════════════════════════
+   HEADER
+════════════════════════════════ */
+header {
+    width: 100%;
+    background: var(--bg-card);
+    border: 1px solid var(--borde-acento);
+    border-radius: var(--radio);
+    padding: 0 16px;
+    height: var(--header-h);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--sombra-glow);
+    flex-shrink: 0;
+}
+
+header h1 {
+    font-size: clamp(0.85rem, 2vw, 1.05rem);
+    color: var(--acento);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+header h1 i {
+    color: var(--verde);
+}
+
+nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+nav button {
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--borde-acento);
+    color: var(--texto);
+    font-weight: 700;
+    font-size: 0.78rem;
+    background: var(--bg-input);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+}
+
+nav button:hover,
+.pintarBotonNav {
+    background: var(--acento);
+    color: #000;
+    border-color: var(--acento);
+    box-shadow: var(--sombra-glow);
+}
+
+#textoBienvenida {
+    font-size: 0.78rem;
+    color: var(--texto-suave);
+    white-space: nowrap;
+}
+
+/* ════════════════════════════════
+   MAIN — contenedor deslizante
+════════════════════════════════ */
+main {
+    width: 100%;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.contMain {
+    display: flex;
+    width: 200%;
+    height: 100%;
+    transition: transform 0.45s ease;
+}
+
+/* Cada sección ocupa la mitad del contMain = 100% del viewport */
+.inicio,
+.verificacion {
+    width: 50%;
+    flex-shrink: 0;
+    height: 100%;
+    padding: 10px;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+/* ════════════════════════════════
+   SECCIÓN INICIO
+════════════════════════════════ */
+.inicio {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    position: relative;
+}
+
+/* Mapa principal */
+.mapa {
+    position: relative;
+    flex: 1 1 65%;
+    min-width: 0;
+    border-radius: var(--radio);
+    border: 1px solid var(--borde);
+    overflow: hidden;
+}
+
+.mapa,
+.mapita2 {
+    min-height: 100%;
+}
+
+/* Mapa secundario (incidentes) */
+.mapita2 {
+    position: relative;
+    flex: 1 1 65%;
+    min-width: 0;
+    border-radius: var(--radio);
+    border: 1px solid var(--borde);
+    overflow: hidden;
+}
+
+.esconderMapa {
+    display: none !important;
+}
+
+.mostrarMapa {
+    display: block !important;
+}
+
+/* Toggle oscuro/día */
+.btnClaroNoche {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    padding: 3px;
+    border-radius: 12px;
+    width: 44px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(50, 50, 50, 0.7);
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.btnClaroNoche div {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.2);
+    transition: transform 0.35s ease, background 0.35s ease;
+    flex-shrink: 0;
+}
+
+.colorBolita {
+    background: var(--verde) !important;
+}
+
+/* Botón "Incidentes" flotante */
+#ver {
+    position: absolute;
+    z-index: 10000;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(50, 50, 50, 0.75);
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: var(--texto);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+    backdrop-filter: blur(4px);
+}
+
+#ver:hover {
+    background: var(--acento);
+    color: #000;
+    box-shadow: var(--sombra-glow);
+    border-color: var(--acento);
+}
+
+/* Barra de búsqueda dentro del mapa admin */
+.formBuscar {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background: rgba(13, 17, 23, 0.82);
+    border-radius: 8px;
+    border: 1px solid var(--borde-acento);
+    backdrop-filter: blur(4px);
+}
+
+.formBuscar input {
+    width: 130px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--borde);
+    background: var(--bg-input);
+    color: var(--texto);
+    font-size: 0.75rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.formBuscar input:focus {
+    border-color: var(--azul);
+}
+
+.formBuscar input::placeholder {
+    color: var(--texto-suave);
+}
+
+.formBuscar button {
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--borde-acento);
+    background: var(--bg-input);
+    color: var(--acento);
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.formBuscar button:hover {
+    background: var(--acento);
+    color: #000;
+}
+
+/* Sugerencias de búsqueda */
+#sugerencias {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 90%;
+    margin-top: 2px;
+    background: var(--bg-card);
+    border: 1px solid var(--borde);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    max-height: 180px;
+    overflow-y: auto;
+    z-index: 10001;
+    box-shadow: var(--sombra);
+}
+
+.itemSugerencia {
+    padding: 7px 12px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: var(--texto);
+    transition: background 0.2s;
+}
+
+.itemSugerencia:hover {
+    background: var(--azul);
+    color: #fff;
+}
+
+/* ── Formulario de registro ── */
+.contFormulario {
+    flex: 0 0 30%;
+    max-width: 320px;
+    height: 100%;
+    padding: 14px 16px;
+    border-radius: var(--radio);
+    border: 1px solid var(--borde);
+    background: var(--bg-card);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+/* scrollbar formulario */
+.contFormulario::-webkit-scrollbar {
+    width: 4px;
+}
+
+.contFormulario::-webkit-scrollbar-thumb {
+    background: var(--borde);
+    border-radius: 4px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: var(--texto);
+    font-size: 0.8rem;
+    flex: 1;
+}
+
+form h3 {
+    font-size: 0.9rem;
+    color: var(--acento);
+}
+
+.headForm{
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--borde-acento);
+}
+
+button{
+    cursor: pointer;   
+}
+
+.impDat{
+    background-color: var(--bg-hover);
+    border: none;
+    border-radius: 4px;
+    width: 3em;
+    padding: 2px 6px;
+    transition: all 0.4s ease;
+}
+
+.impDat i:hover{
+    color: #3fb950;
+}
+
+.impDat i{
+    font-size: 2em;
+    color: white;
+    transition: all 0.4s ease;
+}
+
+.impDat:hover{
+    background-color: white;
+}
+
+.ventana{
+    position: absolute;
+    justify-content: center;
+    z-index: 10000;
+    min-width: 100%;
+    min-height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.esconder{
+    display: none;
+}
+
+/* CONTENEDOR PRINCIPAL */
+.ventanaInfo{
+    position: relative;
+    min-width: 50%;
+    min-height: 70vh;
+    background-color: rgba(250, 250, 250, 0.9);
+    border-radius: 10px;
+    padding: 20px;
+
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0px 10px 25px rgba(0,0,0,0.2);
+    font-family: Arial, sans-serif;
+}
+
+/* BOTÓN CERRAR (X) */
+.cerrar-modal {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 24px;
+  cursor: pointer;
+  color: #555;
+  transition: 0.2s;
+}
+
+.cerrar-modal:hover {
+  color: #000;
+  transform: scale(1.1);
+}
+
+/* CONTENIDO CENTRAL */
+.contenido{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* ===== CONTENEDOR PRINCIPAL ===== */
+.ventanaInfo{
+    position: relative;
+    min-width: 50%;
+    min-height: 70vh;
+    padding: 25px;
+
+    background: linear-gradient(135deg, #ffffff, #f4f7fb);
+    border-radius: 14px;
+
+    display: flex;
+    flex-direction: column;
+
+    box-shadow: 0px 15px 40px rgba(0, 0, 0, 0.15);
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+
+/* ===== BOTÓN CERRAR ===== */
+.cerrar-modal {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 24px;
+  cursor: pointer;
+  color: #888;
+  transition: all 0.25s ease;
+}
+
+.cerrar-modal:hover {
+  color: #e74c3c;
+  transform: rotate(90deg) scale(1.1);
+}
+
+/* ===== CONTENIDO CENTRAL ===== */
+.contenido{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* ===== TÍTULO ===== */
+.ventanaInfo h2 {
+  font-size: 24px;
+  margin-bottom: 8px;
+  color: #2c3e50;
+}
+
+/* ===== DESCRIPCIÓN ===== */
+.descripcion {
+  font-size: 14px;
+  color: #7f8c8d;
+  margin-bottom: 30px;
+  line-height: 1.5;
+}
+
+/* ===== INPUT CONTENEDOR ===== */
+.grupo-input {
+  margin-bottom: 20px;
+}
+
+/* LABEL */
+.grupo-input label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #34495e;
+}
+
+/* ===== INPUT TIPO DROPZONE ===== */
+.grupo-input input {
+  width: 100%;
+  padding: 25px;
+  border-radius: 10px;
+  border: 2px dashed #b0bec5;
+  background: #ecf3f9;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* HOVER */
+.grupo-input input:hover {
+  border-color: #3498db;
+  background: #e3f2fd;
+}
+
+/* FOCUS */
+.grupo-input input:focus {
+  outline: none;
+  border-color: #2980b9;
+  background: #eaf4ff;
+}
+
+/* ===== CONTENEDOR BOTONES ===== */
+.acciones {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+}
+
+/* ===== BOTONES BASE ===== */
+.btn {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.25s ease;
+}
+
+/* ===== BOTÓN IMPORTAR ===== */
+.importar {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  box-shadow: 0px 5px 15px rgba(52, 152, 219, 0.4);
+}
+
+.importar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0px 8px 20px rgba(52, 152, 219, 0.5);
+}
+
+/* ===== BOTÓN CANCELAR ===== */
+.cancelar {
+  background: #ecf0f1;
+  color: #2c3e50;
+}
+
+.cancelar:hover {
+  background: #d5dbdb;
+}
+
+/* ===== EFECTO PRESIÓN ===== */
+.btn:active {
+  transform: scale(0.97);
+}
+
+.tipoInc {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tipoInc select {
+    width: 100%;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--borde);
+    background: var(--bg-input);
+    color: var(--texto);
+    font-size: 0.78rem;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.tipoInc select:focus {
+    border-color: var(--azul);
+}
+
+select option {
+    color: #000;
+    background: #fff;
+}
+
+/* Grid de campos */
+.contVarios {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.contVarios section {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    width: calc(50% - 4px);
+}
+
+.contVarios section label {
+    font-size: 0.7rem;
+    color: var(--texto-suave);
+}
+
+.contVarios section input {
+    width: 100%;
+    padding: 5px 7px;
+    border-radius: 6px;
+    border: 1px solid var(--borde);
+    background: var(--bg-input);
+    color: var(--texto);
+    font-size: 0.78rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.contVarios section input:focus {
+    border-color: var(--azul);
+}
+
+.contVarios section input:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* Descripción */
+.secDesc {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    min-width: 100%;
+}
+
+.secDesc label {
+    font-size: 0.7rem;
+    color: var(--texto-suave);
+}
+
+.secDesc textarea {
+    width: 100%;
+    height: 64px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--borde);
+    background: var(--bg-input);
+    color: var(--texto);
+    font-size: 0.78rem;
+    resize: none;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.secDesc textarea:focus {
+    border-color: var(--azul);
+}
+
+/* Botones del formulario */
+.botonesForm {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 6px;
+}
+
+.botonesForm button {
+    flex: 1;
+    padding: 7px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--borde-acento);
+    color: var(--acento);
+    background: transparent;
+    font-weight: 700;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.botonesForm button:hover {
+    background: var(--acento);
+    color: #000;
+    box-shadow: var(--sombra-glow);
+}
+
+/* Toast */
+#contenedorToast {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.toastMensaje {
+    background: var(--rojo);
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    box-shadow: var(--sombra);
+    opacity: 0;
+    transform: translateY(-12px);
+    transition: all 0.35s ease;
+}
+
+.toastMostrar {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ════════════════════════════════
+   SECCIÓN VERIFICACIÓN DE DATOS
+════════════════════════════════ */
+.verificacion {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    padding: 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--borde);
+}
+
+/* scrollbar verificacion */
+.verificacion::-webkit-scrollbar {
+    width: 5px;
+}
+
+.verificacion::-webkit-scrollbar-thumb {
+    background: var(--borde);
+    border-radius: 4px;
+}
+
+.verificacion h2 {
+    font-size: 1rem;
+    color: var(--acento);
+    border-bottom: 1px solid var(--borde-acento);
+    padding-bottom: 8px;
+}
+
+/* Contenedor superior KPI + Filtros + Gráfica */
+.contenedor-superior {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* Cards */
+.card {
+    flex: 1 1 180px;
+    background: linear-gradient(135deg, var(--bg-body), var(--bg-input));
+    border-radius: var(--radio);
+    padding: 12px 16px;
+    color: var(--texto);
+    border: 1px solid var(--borde);
+    box-shadow: var(--sombra);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+}
+
+/* KPI total */
+.resumen {
+    align-items: flex-start;
+    gap: 6px;
+}
+
+.resumen h3 {
+    font-size: 0.8rem;
+    color: var(--texto-suave);
+}
+
+.resumen .numero {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--acento);
+}
+
+.contenido-resumen {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* Filtros */
+.filtros h3 {
+    font-size: 0.8rem;
+    color: var(--texto-suave);
+    margin-bottom: 10px;
+}
+
+.grupo-filtro {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.grupo-filtro label {
+    font-size: 0.72rem;
+    color: var(--texto-suave);
+}
+
+.grupo-filtro select {
+    padding: 8px 32px 8px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--borde);
+    background: var(--bg-input);
+    color: var(--texto);
+    font-size: 0.78rem;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg fill='%238b949e' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 16px;
+    transition: border-color 0.2s;
+}
+
+.grupo-filtro select:focus {
+    border-color: var(--azul);
+}
+
+.grupo-filtro select option {
+    color: #000;
+    background: #fff;
+}
+
+/* Filtro por tiempo */
+
+#filtroAnio {
+    width: 10em;
+}
+
+/* ── Tabla ── */
+.contTablaDatos {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 17em;
+    border-radius: var(--radio);
+    min-height: 0;
+}
+
+/* scrollbar tabla */
+.contTablaDatos::-webkit-scrollbar {
+    width: 5px;
+}
+
+.contTablaDatos::-webkit-scrollbar-thumb {
+    background: var(--borde);
+    border-radius: 4px;
+}
+
+.verificacion table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-body);
+    color: var(--texto);
+    font-size: 0.78rem;
+}
+
+.verificacion thead {
+    background: var(--bg-input);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.verificacion th {
+    padding: 10px 12px;
+    font-size: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--borde-acento);
+    color: var(--texto-suave);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.verificacion td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--borde);
+    vertical-align: middle;
+}
+
+.verificacion tbody tr:hover {
+    background: var(--bg-hover);
+}
+
+/* Colores de tipo */
+.tipo-robo {
+    background: rgba(248, 81, 73, 0.18);
+    color: #ff6b6b;
+    font-weight: 700;
+}
+
+.tipo-agresion {
+    background: rgba(227, 179, 65, 0.18);
+    color: var(--amarillo);
+    font-weight: 700;
+}
+
+.tipo-piques {
+    background: rgba(188, 140, 255, 0.18);
+    color: var(--magenta);
+    font-weight: 700;
+}
+
+.tipo-accidente {
+    background: rgba(63, 185, 80, 0.18);
+    color: var(--verde);
+    font-weight: 700;
+}
+
+.verificacion td:last-child {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+/* Botones tabla */
+.btnEditar,
+.btnEliminar {
+    border: none;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.72rem;
+    font-weight: 700;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+}
+
+.btnEditar {
+    background: var(--azul);
+    color: #fff;
+}
+
+.btnEditar:hover {
+    background: var(--azul-hover);
+}
+
+.btnEliminar {
+    background: var(--rojo);
+    color: #fff;
+}
+
+.btnEliminar:hover {
+    opacity: 0.82;
+}
+
+/* ════════════════════════════════
+   MODAL DE EDICIÓN
+════════════════════════════════ */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+    backdrop-filter: blur(3px);
+}
+
+.modal-contenido {
+    background: var(--bg-card);
+    border: 1px solid var(--borde-acento);
+    padding: 24px;
+    border-radius: 14px;
+    width: min(340px, 92vw);
+    color: var(--texto);
+    box-shadow: var(--sombra-glow), var(--sombra);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.modal-contenido h3 {
+    font-size: 1rem;
+    color: var(--acento);
+    border-bottom: 1px solid var(--borde-acento);
+    padding-bottom: 8px;
+}
+
+.grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.grupo label {
+    font-size: 0.72rem;
+    color: var(--texto-suave);
+}
+
+.modal input,
+.modal textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--borde);
+    background: var(--bg-input);
+    color: var(--texto);
+    font-size: 0.82rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.modal input:focus,
+.modal textarea:focus {
+    border-color: var(--azul);
+}
+
+.acciones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 4px;
+}
+
+.acciones button {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+#btnGuardar {
+    background: var(--azul);
+    color: #fff;
+}
+
+#btnGuardar:hover {
+    background: var(--azul-hover);
+}
+
+#btnCerrar {
+    background: var(--bg-input);
+    color: var(--texto-suave);
+    border: 1px solid var(--borde);
+}
+
+#btnCerrar:hover {
+    color: var(--texto);
+}
+
+/* ════════════════════════════════
+   RESPONSIVO
+════════════════════════════════ */
+
+/* Tablet landscape */
+@media (max-width: 1024px) {
+    .contFormulario {
+        flex: 0 0 35%;
+        max-width: none;
+    }
+
+    .mapa,
+    .mapita2 {
+        flex: 1 1 60%;
+    }
+}
+
+/* Tablet portrait */
+@media (max-width: 820px) {
+    body {
+        padding: 8px;
+        gap: 8px;
+    }
+
+    :root {
+        --header-h: 48px;
+    }
+
+    nav button {
+        padding: 4px 8px;
+        font-size: 0.72rem;
+    }
+
+    #textoBienvenida {
+        display: none;
+    }
+
+    /* Inicio: apila vertical */
+    .inicio {
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    .mapa,
+    .mapita2 {
+        width: 100%;
+        flex: none;
+        height: 45vh;
+    }
+
+    .contFormulario {
+        flex: none;
+        width: 100%;
+        max-width: none;
+        height: auto;
+        max-height: 50vh;
+    }
+
+    
+    #ver {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    
+    .contenedor-superior {
+        flex-direction: column;
+    }
+    
+    .card {
+        flex: none;
+        width: 100%;
+    }
+    
+    .contMain {
+        height: auto;
+        min-height: calc(100vh - var(--header-h) - 32px);
+    }
+    
+    main {
+        height: auto;
+        overflow: visible;
+    }
+}
+
+/* Móvil */
+@media (max-width: 480px) {
+    header {
+        height: auto;
+        padding: 8px 12px;
+    }
+    
+    nav {
+        flex-wrap: wrap;
+        gap: 6px;
+        justify-content: space-between;
+    }
+    
+    nav h1 {
+        font-size: 0.78rem;
+    }
+    
+    nav button {
+        font-size: 0.68rem;
+        padding: 4px 7px;
+    }
+    
+    .formBuscar {
+        flex-wrap: wrap;
+        gap: 4px;
+        left: 6px;
+        right: 6px;
+        top: 6px;
+    }
+    
+    #btnMostrarBuscador {
+        display: block;
+        z-index: 10000;
+        position: absolute;
+        top: 4%;
+        border: 0.2px solid white;
+        color: white;
+        background: rgb(50, 50, 50);
+        font-weight: bold;
+        padding: 2px 4px;
+        border-radius: 10px;
+        left: 13%;
+    }
+
+    .formBuscar input {
+        width: 100px;
+    }
+
+    .btnClaroNoche {
+        right: 6px;
+        top: 6px;
+    }
+
+    .mapa,
+    .mapita2 {
+        height: 38vh;
+    }
+
+    .verificacion th,
+    .verificacion td {
+        padding: 7px 8px;
+        font-size: 0.72rem;
+    }
+
+    .modal-contenido {
+        padding: 18px 14px;
+    }
+
+    .resumen .numero {
+        font-size: 1.6rem;
+    }
+}

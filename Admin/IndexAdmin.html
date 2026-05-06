@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PanelAdmin</title>
+    <link rel="stylesheet" href="/admin-static/stylePanelAdmin.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+
+<body class="contFlexCentColumn">
+    <header class="contFlex">
+        <div class="contFlex">
+            <h1>SIGI</h1>
+        </div>
+        <nav class="contFlex">
+            <button id="btnInicio">Inicio</button>
+            <button id="btnVerif">Verificación de datos</button>
+            <button id="cerrarSesion">Cerrar sesión</button>
+            <h2 id="textoBienvenida">Bienvenido ?????</h2>
+        </nav>
+    </header>
+    <main>
+        <div class="contMain contFlex">
+            <section class="inicio contFlexCent">
+                <button id="ver">Incidentes</button>
+                <div class="mapa" id="map">
+                    <button id="btnMostrarBuscador">Buscar</button>
+                    <form action="" class="formBuscar">
+                        <input type="text" name="" id="buscarBarrio" placeholder="Barrio: Juan">
+                        <input type="text" name="" id="buscarVereda" placeholder="Vereda: San an">
+                        <div id="sugerencias"></div>
+                        <button type="submit" id="buscaPol">Buscar</button>
+                        <button type="submit" id="restab">Restablecer</button>
+                    </form>
+                    <button class="btnClaroNoche">
+                        <div></div>
+                    </button>
+                </div>
+                <div class="mapita2 esconderMapa" id="mapa2"></div>
+                <div class="contFormulario contFlexCol">
+                    <form action="" class="contFlexCol">
+                        <div id="contenedorToast"></div>
+                        <div class="headForm contFlex">
+                            <h3>Detalles del incidente</h3>
+                            <button class="impDat"><i class="bi bi-database-fill-up"></i></button>
+                        </div>
+                        <section class="tipoInc contFlex">
+                            <label for="tipoIncidente">Tipo de incidente *</label>
+                            <select name="" id="tipoIncidente">
+                                <option value="">Seleccione una categoria</option>
+                            </select>
+                        </section>
+                        <div class="contFlex contVarios">
+                            <section>
+                                <label for="fecha">Fecha *</label>
+                                <input type="date" id="fecha">
+                            </section>
+                            <section>
+                                <label for="hora">Hora *</label>
+                                <input type="time" id="hora">
+                            </section>
+                            <section>
+                                <label for="comuna">Comuna</label>
+                                <input type="text" placeholder="Ejemplo: Norte" id="comuna" disabled value="1">
+                            </section>
+                            <section>
+                                <label for="barrio">Barrio/Vereda/Lugar</label>
+                                <input type="text" id="barrio" placeholder="Ejemplo: Juan 23" disabled>
+                            </section>
+                            <section>
+                                <label for="latitud">Latitud *</label>
+                                <input type="text" id="latitud" placeholder="">
+                            </section>
+                            <section>
+                                <label for="longitud">Longitud *</label>
+                                <input type="text" id="longitud" placeholder="">
+                            </section>
+                            <section class="secDesc contFlex">
+                                <label for="descripcion">Descripcion(Opcional)</label>
+                                <textarea name="" id="descripcion" placeholder="Colicion de 2 vehiculos..."></textarea>
+                            </section>
+                        </div>
+                        <section class="botonesForm contFlexCent">
+                            <button class="limpiarF">Limpiar formulario</button>
+                            <button class="registrarD">Registrar incidente</button>
+                        </section>
+                    </form>
+                </div>
+            </section>
+            <section class="verificacion">
+                <h2>Verificacion de datos</h2>
+                <div class="contenedor-superior">
+                    <!-- 1. RESUMEN / KPI -->
+                    <section class="card resumen">
+                        <div class="contenido-resumen">
+                            <h3>Total de Incidentes</h3>
+                            <p class="numero">128</p>
+                        </div>
+                    </section>
+
+
+                    <!-- 2. FILTROS -->
+                    <section class="card filtros">
+                        <h3>Filtrar Incidentes</h3>
+
+                        <div class="grupo-filtro">
+                            <label for="buscar">Buscar:</label>
+                            <select name="" id="tipoIncidenteFiltro">
+                                <option value="">Seleccione una categoria</option>
+                            </select>
+                        </div>
+
+                        <!-- <div class="grupo-filtro">
+                            <label for="fecha">Fecha:</label>
+                            <input type="date" id="fecha">
+                        </div> -->
+                    </section>
+
+
+                    <!-- 3. GRÁFICA -->
+                    <section class="card grafica">
+                        <select name="" id="filtroAnio">
+                            <option value="">Filtro por año</option>
+                        </select>
+                    </section>
+
+                </div>
+                <div class="contTablaDatos">
+                    <table border="1">
+                        <thead>
+                            <th>ID</th>
+                            <th>Tipo</th>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Barrio</th>
+                            <th>Vereda</th>
+                            <th>Coordenadas</th>
+                            <th>Creado</th>
+                            <th>Descripcion</th>
+                            <th>Opciones</th>
+                        </thead>
+                        <tbody id="tablaIncidentes">
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+    <div id="modalEditar" class="modal">
+        <div class="modal-contenido">
+            <h3>Editar Incidente</h3>
+
+            <input type="hidden" id="editId">
+
+            <div class="grupo">
+                <label>Fecha:</label>
+                <input type="date" id="editFecha">
+            </div>
+
+            <div class="grupo">
+                <label>Hora:</label>
+                <input type="time" id="editHora">
+            </div>
+
+            <div class="grupo">
+                <label>Descripción:</label>
+                <textarea id="editDescripcion"></textarea>
+            </div>
+
+            <div class="acciones">
+                <button id="btnGuardar">Guardar</button>
+                <button id="btnCerrar">Cancelar</button>
+            </div>
+        </div>
+    </div>
+    <div class="ventana esconder contFlexCent">
+        <div class="ventanaInfo">
+
+            <i class="bi bi-x cerrar-modal" id="cerrarModal"></i>
+
+            <div class="contenido">
+
+                <h2>Importar datos</h2>
+                <p class="descripcion">
+                    Sube un archivo (.csv o .xlsx) para cargar información masiva al sistema.
+                </p>
+
+                <div class="grupo-input">
+                    <label for="archivo">Seleccionar archivo</label>
+                    <input type="file" id="archivo" accept=".csv, .xlsx">
+                </div>
+
+            </div>
+
+            <div class="acciones">
+                <button class="btn importar">Importar datos</button>
+                <button class="btn cancelar" id="cancelarModal">Cancelar</button>
+            </div>
+
+        </div>
+    </div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="/admin-static/DomAdmin.js"></script>
+</body>
+
+</html>
