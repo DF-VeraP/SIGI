@@ -1,25 +1,12 @@
-const express = require('express');
-const router = express.Router();
+const path = require('path');
 const pool = require('../db');
 
-
-function verificarSesion(req, res, next) {
-  if (req.session.usuario) {
-    next();
-  } else {
-    res.status(401).send("No autorizado 🚫");
-  }
-}
-
-const path = require('path');
-
-router.get("/admin", verificarSesion, (req, res) => {
+const getAdmin = (req, res) => {
   res.set("Cache-Control", "no-store");
-  res.sendFile(path.join(__dirname, "../Admin/IndexAdmin.html"));
-});
+  res.sendFile(path.join(__dirname, "../public/admin/index.html"));
+};
 
-
-router.get("/logout", (req, res) => {
+const logout = (req, res) => {
   req.session.destroy((err) => {
     if (err) {
       return res.status(500).send("Error al cerrar sesión");
@@ -27,19 +14,19 @@ router.get("/logout", (req, res) => {
     // eliminamos cookie
     res.clearCookie("connect.sid");
     // redirigimos al login
-    res.redirect("/Login/Login.html");
+    res.redirect("/login/index.html");
   });
-});
+};
 
-router.get("/usuario", (req, res) => {
+const getUsuario = (req, res) => {
   if (req.session.usuario) {
     res.json({ usuario: req.session.usuario });
   } else {
     res.status(401).json({ mensaje: "No autenticado" });
   }
-});
+};
 
-router.post("/login", async (req, res) => {
+const login = async (req, res) => {
   const { usuario, contrasenia } = req.body;
   try {
     const result = await pool.query(
@@ -56,6 +43,11 @@ router.post("/login", async (req, res) => {
     console.error(error);
     res.status(500).json({ mensaje: "Error en el servidor" });
   }
-});
+};
 
-module.exports = router;
+module.exports = {
+  getAdmin,
+  logout,
+  getUsuario,
+  login
+};

@@ -1,8 +1,6 @@
-const express = require('express');
-const router = express.Router();
 const pool = require('../db');
 
-router.get("/conteoIncidente", async (req, res) => {
+const getConteoIncidente = async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT COUNT(*)
@@ -13,9 +11,9 @@ router.get("/conteoIncidente", async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: "Error en servidor" });
   }
-});
+};
 
-router.get("/conteoPorTipo", async (req, res) => {
+const getConteoPorTipo = async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT tp.idtipoincidente, tp.nametipoincidente AS tipo, COUNT(*) AS cantidad
@@ -31,9 +29,9 @@ router.get("/conteoPorTipo", async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: "Error en servidor" });
   }
-});
+};
 
-router.get("/resumen", async (req, res) => {
+const getResumen = async (req, res) => {
   try {
 
     const result = await pool.query(`
@@ -52,9 +50,9 @@ router.get("/resumen", async (req, res) => {
     console.error(error);
     res.status(500).json({ error: "Error en resumen" });
   }
-});
+};
 
-router.get("/top-zonas", async (req, res) => {
+const getTopZonas = async (req, res) => {
   try {
 
     const barrio = await pool.query(`
@@ -84,9 +82,9 @@ router.get("/top-zonas", async (req, res) => {
     console.error(error);
     res.status(500).json({ error: "Error en top zonas" });
   }
-});
+};
 
-router.get("/top-incidentes", async (req, res) => {
+const getTopIncidentes = async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT 
@@ -119,6 +117,12 @@ router.get("/top-incidentes", async (req, res) => {
     console.error(error);
     res.status(500).json({ error: "Error en top incidentes" });
   }
-});
+};
 
-module.exports = router;
+module.exports = {
+  getConteoIncidente,
+  getConteoPorTipo,
+  getResumen,
+  getTopZonas,
+  getTopIncidentes
+};

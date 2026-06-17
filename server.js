@@ -1,13 +1,15 @@
 const session = require("express-session");
 const express = require("express");
+require('dotenv').config();
 const pool = require("./db");
+const { errorHandler } = require('./middleware/error.middleware');
 
 const app = express();
-app.use(express.static("Frontend"));
+app.use(express.static("public"));
 app.use(express.json());
 
 app.use(session({
-  secret: "mi_secreto_super_seguro",
+  secret: process.env.SESSION_SECRET || "mi_secreto_super_seguro",
   resave: false,
   saveUninitialized: false
 }));
@@ -26,18 +28,19 @@ app.get("/test-db", async (req, res) => {
   }
 });
 
+// app.use("/admin-static", express.static("public/admin")); // Ya está cubierto por public
 
-app.use("/admin-static", express.static("Admin"));
+app.use('/', require('./routes/geografia.routes'));
+app.use('/', require('./routes/incidentes.routes'));
+app.use('/', require('./routes/autocompletado.routes'));
+app.use('/', require('./routes/estadisticas.routes'));
+app.use('/', require('./routes/tablas.routes'));
+app.use('/', require('./routes/auth.routes'));
+app.use('/', require('./routes/filtros.routes'));
 
-app.use('/', require('./Direcciones/Geografia'));
-app.use('/', require('./Direcciones/Incidentes'));
-app.use('/', require('./Direcciones/Autocompletado'));
-app.use('/', require('./Direcciones/Estadisticas'));
-app.use('/', require('./Direcciones/Tablas'));
-app.use('/', require('./Direcciones/Autenticacion'));
+app.use(errorHandler);
 
-
-
-app.listen(3000, () => {
-  console.log("El servido ta corriendo en el puerto 3000 papá");
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`El servidor ta corriendo en el puerto ${PORT} papá`);
 });

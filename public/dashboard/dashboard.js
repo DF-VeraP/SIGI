@@ -6,7 +6,7 @@ const inpBuscarBarrio = document.getElementById("buscarBarrio");
 /* No mas pa que sirva ese boton */
 const inic = document.getElementById("iniciarSesion");
 inic.addEventListener("click", function () {
-    window.location.href = "../Login/Login.html";
+    window.location.href = "/login/index.html";
 });
 /* Para el panel de filtros */
 const boton = document.getElementById("btnFiltros");
@@ -287,10 +287,10 @@ document.getElementById("estad").addEventListener("click", async function () {
         const dataZonas = await resZonas.json();
 
         document.getElementById("topBarrio").textContent =
-            `${dataZonas.barrio.namebarrio} (${dataZonas.barrio.total})`;
+            dataZonas.barrio ? `${dataZonas.barrio.namebarrio} (${dataZonas.barrio.total})` : "Sin datos";
 
         document.getElementById("topVereda").textContent =
-            `${dataZonas.vereda.nombre} (${dataZonas.vereda.total})`;
+            dataZonas.vereda ? `${dataZonas.vereda.nombre} (${dataZonas.vereda.total})` : "Sin datos";
     }
 });
 

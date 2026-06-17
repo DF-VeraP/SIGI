@@ -1,8 +1,6 @@
-const express = require('express');
-const router = express.Router();
 const pool = require('../db');
 
-router.get('/incidentesTabla', async (req, res) => {
+const getIncidentesTabla = async (req, res) => {
   try {
     let query = `
       SELECT 
@@ -36,10 +34,10 @@ router.get('/incidentesTabla', async (req, res) => {
       error: "Error en el servidor"
     });
   }
-});
+};
 
 
-router.get("/incidentesFiltroAdmin", async (req, res) => {
+const getIncidentesFiltroAdmin = async (req, res) => {
   try {
     const { idtipoincidente, fechaincidente } = req.query;
 
@@ -88,6 +86,9 @@ router.get("/incidentesFiltroAdmin", async (req, res) => {
     console.error(error);
     res.status(500).json({ error: "Error en servidor" });
   }
-});
+};
 
-module.exports = router;
+module.exports = {
+  getIncidentesTabla,
+  getIncidentesFiltroAdmin
+};

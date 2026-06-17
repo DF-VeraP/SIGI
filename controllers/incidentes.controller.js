@@ -1,8 +1,6 @@
-const express = require('express');
-const router = express.Router();
 const pool = require('../db');
 
-router.post("/registrarIncidente", async (req, res) => {
+const registrarIncidente = async (req, res) => {
   const {
     tipo,
     fecha,
@@ -28,18 +26,18 @@ router.post("/registrarIncidente", async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: "Error en servidor" });
   }
-});
+};
 
-router.delete("/incidente/:id", async (req, res) => {
+const eliminarIncidente = async (req, res) => {
   try {
     await pool.query("DELETE FROM incidente WHERE idincidente = $1", [req.params.id]);
     res.sendStatus(200);
   } catch (error) {
     res.status(500).json({ error: "Error eliminando" });
   }
-});
+};
 
-router.get("/incidente/:id", async (req, res) => {
+const obtenerIncidente = async (req, res) => {
   try {
     const result = await pool.query(
       "SELECT * FROM incidente WHERE idincidente = $1",
@@ -49,9 +47,9 @@ router.get("/incidente/:id", async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: "Error" });
   }
-});
+};
 
-router.put("/incidente/:id", async (req, res) => {
+const actualizarIncidente = async (req, res) => {
   try {
     const { fechaincidente, horaincidente, descripcionincidente } = req.body;
 
@@ -70,6 +68,11 @@ router.put("/incidente/:id", async (req, res) => {
     console.error(error);
     res.status(500).json({ error: "Error actualizando" });
   }
-});
+};
 
-module.exports = router;
+module.exports = {
+  registrarIncidente,
+  eliminarIncidente,
+  obtenerIncidente,
+  actualizarIncidente
+};

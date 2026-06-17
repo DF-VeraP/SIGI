@@ -1,8 +1,6 @@
-const express = require('express');
-const router = express.Router();
 const pool = require('../db');
 
-router.get('/incidentes', async (req, res) => {
+const getIncidentes = async (req, res) => {
   const nombre = req.query.barrio;
   const tipos = req.query.tipos;
   try {
@@ -44,9 +42,9 @@ router.get('/incidentes', async (req, res) => {
       error: "Error en el servidor"
     });
   }
-});
+};
 
-router.get("/poligonoBarrio", async (req, res) => {
+const getPoligonoBarrio = async (req, res) => {
   const nombre = req.query.nombre;
   try {
     let query = `
@@ -69,9 +67,9 @@ router.get("/poligonoBarrio", async (req, res) => {
       error: "Error en el servidor"
     });
   }
-});
+};
 
-router.get("/buscarBarrioPorCoordenada", async (req, res) => {
+const buscarBarrioPorCoordenada = async (req, res) => {
   const { lat, lng } = req.query;
 
   try {
@@ -105,9 +103,9 @@ router.get("/buscarBarrioPorCoordenada", async (req, res) => {
     console.log(error);
     res.status(500).json({ error: "Error en servidor" });
   }
-});
+};
 
-router.get("/poligonoVereda", async (req, res) => {
+const getPoligonoVereda = async (req, res) => {
   const nombre = req.query.nombre;
   try {
     let query = `
@@ -133,6 +131,11 @@ router.get("/poligonoVereda", async (req, res) => {
       error: "Error en el servidor"
     });
   }
-});
+};
 
-module.exports = router;
+module.exports = {
+  getIncidentes,
+  getPoligonoBarrio,
+  buscarBarrioPorCoordenada,
+  getPoligonoVereda
+};
