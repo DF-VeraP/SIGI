@@ -15,7 +15,7 @@ services:
       - sigi_net
 
   db:
-    image: postgres:15-alpine
+    image: postgis/postgis:15-3.4-alpine
     container_name: sigi_db
     restart: unless-stopped
     env_file:
