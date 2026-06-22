@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: sigi_app
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000" # Expone al localhost en el puerto 3000
+    env_file:
+      - .env
+    depends_on:
+      - db
+    networks:
+      - sigi_net
+
+  db:
+    image: postgres:15-alpine
+    container_name: sigi_db
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - sigi_pgdata:/var/lib/postgresql/data
+      - ./sql:/docker-entrypoint-initdb.d # Esto ejecutará schema.sql automáticamente al iniciar
+    networks:
+      - sigi_net
+
+volumes:
+  sigi_pgdata:
+
+networks:
+  sigi_net:
