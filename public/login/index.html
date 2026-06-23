@@ -1,45 +1,55 @@
 <!DOCTYPE html>
-<!-- Villareal-117 Facebook -->
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0e1629">
+    <title>SIGI — Iniciar sesión</title>
     <link rel="stylesheet" href="login.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 </head>
 
 <body>
+    <header class="login-header">
+        <a href="/dashboard/index.html" class="btn-volver">
+            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+            <span>Volver al mapa</span>
+        </a>
+        <div class="login-marca">
+            <img src="../assets/img/image.png" alt="Logo SIGI" class="login-logo">
+            <span>SIGI</span>
+        </div>
+    </header>
+
     <div class="fondo contFlexCent">
-        <main class="contLogin contFlexCent">
-            <section class="slider">
+        <main class="contLogin">
+            <section class="slider" aria-hidden="true">
                 <div class="divSlider">
-                    <img src="https://encrypted-tbn0.gstatic.com/licensed-image?q=tbn:ANd9GcTC5Y6YzrlKWMVSSl71jJ564HUNUYgfS4wzrFsBTqBR7muDtCeNhgNmEDSwO6Rjm0HM4wDR-BwclQ-BTCYt7aMnESFq&s=19" alt="">
-                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_aGy7uiGF5Szf3JZk695hH2_UE4Y-8ndPHw&s" alt="">
-                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROt4gXhFcNMzUgv5FUczseZzqA-NQQo_sC6w&s" alt="">
-                    <!-- imagen duplicada para evitar salto -->
-                    <img src="https://cristalinacaqueta.com/media/multimedia/caque.jpg" alt="">
+                    <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjdfTDwQVh8mAW2iWgRR-WJ64FIKVxRx8OVOhHjqDmQKRmdgnamFZLewiUFi4cvfn_XBM9o7u6u3H5rBXd49xsgmfEnpT_sXOuM6UZpSEB3O0wOFtfbrErHGKElPNso9AnHX79fOwJByNTz/w1200-h630-p-k-no-nu/Florencia+Caquet%25C3%25A1.jpg" alt="Palacio de Bellas Artes de Florencia, Caquetá">
+                    <img src="https://images.trvl-media.com/place/6262382/5fab3fa4-0db4-496f-a1d6-60b352525075.jpg" alt="Gobernación del Caquetá, Florencia">
+                    <img src="https://imagescdn.citix.com.co/citix/production/media/media/eff4f1ca69ec225874f6944b78ebe525.jpg" alt="Plaza Pizarro, Florencia Caquetá">
+                    <img src="https://soyviajerocolombia.com/wp-content/uploads/2022/12/PHOTO-2022-12-23-18-25-18-4.jpg" alt="Río Caquetá, Colombia">
                 </div>
             </section>
             <section class="formLogin contFlexCentColumn">
-                <h1>Analisis de incidentes</h1>
+                <h1>Análisis de incidentes</h1>
                 <p>Acceso para administradores</p>
                 <form id="loginForm" class="contFlexCentColumn">
                     <section>
-                        <label for="">Usuario</label>
-                        <i class="bi bi-person"></i>
-                        <input type="text" placeholder="Nombre usuario" id="nameuser">
+                        <label for="nameuser">Usuario</label>
+                        <i class="bi bi-person" aria-hidden="true"></i>
+                        <input type="text" placeholder="Nombre usuario" id="nameuser" autocomplete="username">
                     </section>
                     <section>
-                        <label for="">Contraseña</label>
-                        <i class="bi bi-person-lock"></i>
-                        <input type="password" placeholder="• • • • • • • •" id="pssuser">
+                        <label for="pssuser">Contraseña</label>
+                        <i class="bi bi-lock" aria-hidden="true"></i>
+                        <input type="password" placeholder="• • • • • • • •" id="pssuser" autocomplete="current-password">
                     </section>
-                    <p id="resp"></p>
+                    <p id="resp" role="alert"></p>
                     <button type="submit">
-                        Iniciar sesion
-                        <i class="bi bi-box-arrow-in-right"></i>
+                        Iniciar sesión
+                        <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
                     </button>
                 </form>
             </section>

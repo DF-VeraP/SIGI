@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapeo de riesgos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#161b22">
+    <title>SIGI — Mapeo de incidentes</title>
     <link rel="stylesheet" href="dashboard.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
@@ -13,68 +14,80 @@
 <body>
     <header class="contFlexCent">
         <nav class="contFlex">
-            <!-- Titulo del dashboard -->
             <h1>
-                <i class="bi bi-shield-fill-exclamation"></i>
-                SIGI (Mapeo de incidentes)
+                <img src="../assets/img/image.png" alt="Logo SIGI" class="nav-logo">
+                <span class="titulo-corto">SIGI</span>
+                <span class="titulo-completo">SIGI (Mapeo de incidentes)</span>
             </h1>
-            <!-- Navegacion de los botones -->
-            <div class="botonesNav contFlexCent">
-                <button id="ini">Inicio</button>
-                <button id="estad">Estadisticas</button>
-                <button id="iniciarSesion">Iniciar Sesion <i class="bi bi-box-arrow-in-right"></i></button>
+            <div class="botonesNav contFlexCent desktop-only">
+                <button id="ini" type="button">Inicio</button>
+                <button id="estad" type="button">Estadisticas</button>
+                <button id="iniciarSesion" type="button">
+                    Iniciar Sesion <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+                </button>
             </div>
         </nav>
     </header>
-    <main>
-        <!-- Boton de filtros con los iconos de boostrap -->
-        <button id="btnFiltros">
-            <i class="bi bi-sliders"></i>
+
+    <main id="vistaMapa">
+        <button id="btnFiltros" type="button" class="fab fab-filtros" aria-label="Abrir filtros">
+            <i class="bi bi-funnel icono-mobile" aria-hidden="true"></i>
+            <i class="bi bi-sliders icono-desktop" aria-hidden="true"></i>
+            <span class="fab-badge" id="badgeFiltros">0</span>
         </button>
-        <button class="restablecer">Restablecer</button>
-        <!-- El panel ese de los filtros -->
-        <div id="panelFiltros">
-            <!-- Boton de cerrar el panel de filtro -->
-            <button id="cerrarFiltros">
-                <i class="bi bi-x"></i>
+        <button class="restablecer fab fab-reset" type="button" aria-label="Restablecer filtros">
+            <i class="bi bi-arrow-counterclockwise icono-mobile" aria-hidden="true"></i>
+            <span class="texto-desktop">Restablecer</span>
+        </button>
+
+        <div id="filtrosOverlay" class="filtros-overlay" aria-hidden="true"></div>
+
+        <div id="panelFiltros" role="dialog" aria-label="Filtros de mapa" aria-hidden="true">
+            <button id="cerrarFiltros" type="button" aria-label="Cerrar filtros">
+                <i class="bi bi-x" aria-hidden="true"></i>
             </button>
-            <!-- Aqui esta el panel de filtros -->
             <div class="contenedorFiltros">
                 <h2>
-                    <i class="bi bi-funnel"></i>
+                    <i class="bi bi-funnel" aria-hidden="true"></i>
                     Filtros de Mapa
                 </h2>
-                <label>Buscar barrio</label>
-                <input type="text" id="buscarBarrio" placeholder="Barrio: Centro, Juan XXIII...">
-                <input type="text" id="buscarVereda" placeholder="Vereda: San antonio">
-                <!-- div de sugerencias -->
+                <label for="buscarBarrio">Buscar barrio</label>
+                <input type="text" id="buscarBarrio" placeholder="Barrio: Centro, Juan XXIII..." autocomplete="off">
+                <label for="buscarVereda">Buscar vereda</label>
+                <input type="text" id="buscarVereda" placeholder="Vereda: San antonio" autocomplete="off">
                 <div id="sugerencias"></div>
                 <label>Tipo de Incidente</label>
-                <!-- Botones por filtro de incidente -->
                 <div class="tiposIncidente">
-                    <button class="incidente robo" data-id="1">
-                        <span></span> Robo
+                    <button class="incidente robo" data-id="1" type="button">
+                        <span></span>
+                        <i class="bi bi-shield-exclamation chip-icon" aria-hidden="true"></i>
+                        Robo
                     </button>
-                    <button class="incidente agresion" data-id="2">
-                        <span></span> Agresiones
+                    <button class="incidente agresion" data-id="2" type="button">
+                        <span></span>
+                        <i class="bi bi-exclamation-triangle chip-icon" aria-hidden="true"></i>
+                        Agresiones
                     </button>
-                    <button class="incidente piques" data-id="3">
-                        <span></span> Piques
+                    <button class="incidente piques" data-id="3" type="button">
+                        <span></span>
+                        <i class="bi bi-lightning chip-icon" aria-hidden="true"></i>
+                        Piques
                     </button>
-                    <button class="incidente accidente" data-id="4">
-                        <span></span> Accidentes
+                    <button class="incidente accidente" data-id="4" type="button">
+                        <span></span>
+                        <i class="bi bi-car-front chip-icon" aria-hidden="true"></i>
+                        Accidentes
                     </button>
                 </div>
-                <!-- Aqui boton para actualizar -->
-                <button class="btnActualizar">
+                <button class="btnActualizar" type="button">
                     Actualizar Resultados
                 </button>
             </div>
         </div>
-        <!-- Aqui mostramos el mapa -->
+
         <div id="map"></div>
-        <!-- Este contenedor es para ver los colores de los tipo de incidentes -->
-        <div class="leyenda contFlexCent">
+
+        <div class="leyenda contFlexCent" aria-label="Leyenda del mapa">
             <div class="itemLeyenda">
                 <span class="rojo"></span> Robo
             </div>
@@ -89,36 +102,26 @@
             </div>
         </div>
     </main>
+
     <div id="estadisticas" class="esconder">
         <div class="resumen">
-            <div class="tpincidentes">
-                <p class="robo">Robos</p>
-                <p class="accidente">Accidentes</p>
-                <p class="pique">Piques</p>
-                <p class="agresion">Agresiones</p>
-            </div>
             <div class="contResumen">
-
                 <div class="cardResumen totalResumen">
                     <span>Total</span>
                     <h2 id="total"></h2>
                 </div>
-
                 <div class="cardResumen roboResumen">
                     <span>Robos</span>
                     <h2 id="robos"></h2>
                 </div>
-
                 <div class="cardResumen accidenteResumen">
                     <span>Accidentes</span>
                     <h2 id="accidentes"></h2>
                 </div>
-
                 <div class="cardResumen piqueResumen">
                     <span>Piques</span>
                     <h2 id="piques"></h2>
                 </div>
-
                 <div class="cardResumen agresionResumen">
                     <span>Agresiones</span>
                     <h2 id="agresiones"></h2>
@@ -127,25 +130,41 @@
                     <span>Barrio con más incidentes</span>
                     <h2 id="topBarrio">...</h2>
                 </div>
-
                 <div class="cardResumen topVereda">
                     <span>Vereda con más incidentes</span>
                     <h2 id="topVereda">...</h2>
                 </div>
             </div>
         </div>
-        <div id="panelIncidentes"></div>
+        <!-- Gráfico de barras verticales -->
+        <div class="grafico-scroll">
+            <div id="panelIncidentes">
+                <canvas id="graficoBarras"></canvas>
+            </div>
+        </div>
     </div>
 
-
-    <footer>
-
-    </footer>
+    <nav class="bottom-nav mobile-only" aria-label="Navegación principal">
+        <button type="button" class="bottom-nav-item active" data-view="mapa" aria-current="page">
+            <i class="bi bi-map" aria-hidden="true"></i>
+            <span>Mapa</span>
+        </button>
+        <button type="button" class="bottom-nav-item" data-view="filtros">
+            <i class="bi bi-sliders" aria-hidden="true"></i>
+            <span>Filtros</span>
+        </button>
+        <button type="button" class="bottom-nav-item" data-view="estadisticas">
+            <i class="bi bi-bar-chart" aria-hidden="true"></i>
+            <span>Estadísticas</span>
+        </button>
+        <button type="button" class="bottom-nav-item" data-view="perfil" id="navPerfil">
+            <i class="bi bi-person" aria-hidden="true"></i>
+            <span>Perfil</span>
+        </button>
+    </nav>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="dashboard.js"></script>
-
-
 </body>
 
 </html>
