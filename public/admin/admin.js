@@ -124,50 +124,59 @@ function obtenerColor(tipo) {
     if (tipo === 3) return "magenta";
     if (tipo === 4) return "limegreen";
 }
-function cargarIncidentes() {
+// Renderiza marcadores en el mapa de verificación con los datos recibidos
+function renderMapa(data) {
     capaIncidentes.clearLayers();
+    data.forEach(incidente => {
+        // Algunos endpoints devuelven lat/lng como string
+        const lat = parseFloat(incidente.lat);
+        const lng = parseFloat(incidente.lng);
+        if (isNaN(lat) || isNaN(lng)) return;
+
+        const marker = L.circleMarker([lat, lng], {
+            radius: 5,
+            color: obtenerColor(incidente.idtipoincidente),
+            fillColor: obtenerColor(incidente.idtipoincidente),
+            fillOpacity: 0.7
+        }).addTo(capaIncidentes);
+
+        // HOVER → mostrar código
+        marker.on("mouseover", function () {
+            if (incidente.codigoincidente) {
+                marker.bindTooltip(incidente.codigoincidente, {
+                    permanent: false,
+                    direction: "top",
+                    offset: [0, -10]
+                }).openTooltip();
+            }
+        });
+
+        // Salir del punto
+        marker.on("mouseout", function () {
+            marker.closeTooltip();
+        });
+
+        marker.on("click", function () {
+            const contenido = `
+                <b>Código:</b> ${incidente.codigoincidente}<br>
+                <b>Tipo:</b> ${incidente.nametipoincidente}<br>
+                <b>Fecha:</b> ${new Date(incidente.fechaincidente).toLocaleDateString("es-CO", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "2-digit"
+                })}<br>
+                <b>Hora:</b> ${incidente.horaincidente.slice(0, 5)}<br>
+                <b>Descripción:</b> ${incidente.descripcionincidente || 'Sin descripción'}
+            `;
+            marker.bindPopup(contenido).openPopup();
+        });
+    });
+}
+
+function cargarIncidentes() {
     fetch("/incidentes")
         .then(res => res.json())
-        .then(data => {
-            data.forEach(incidente => {
-                const marker = L.circleMarker([incidente.lat, incidente.lng], {
-                    radius: 5,
-                    color: obtenerColor(incidente.idtipoincidente),
-                    fillColor: obtenerColor(incidente.idtipoincidente),
-                    fillOpacity: 0.7
-                }).addTo(capaIncidentes);
-                // 🖱️ HOVER → mostrar código
-                marker.on("mouseover", function () {
-                    if (incidente.codigoincidente) {
-                        marker.bindTooltip(incidente.codigoincidente, {
-                            permanent: false,
-                            direction: "top",
-                            offset: [0, -10]
-                        }).openTooltip();
-                    }
-                });
-
-                // 🖱️ salir del punto
-                marker.on("mouseout", function () {
-                    marker.closeTooltip();
-                });
-
-                marker.on("click", function () {
-                    const contenido = `
-                                        <b>Código:</b> ${incidente.codigoincidente}<br>
-                                        <b>Tipo:</b> ${incidente.nametipoincidente}<br>
-                                        <b>Fecha:</b> ${new Date(incidente.fechaincidente).toLocaleDateString("es-CO",{
-                                            day: "2-digit",
-                                            month: "2-digit",
-                                            year: "2-digit"
-                                        })}<br>
-                                        <b>Hora:</b> ${incidente.horaincidente.slice(0,  5)}<br>
-                                        <b>Descripción:</b> ${incidente.descripcionincidente || 'Sin descripción'}
-                                    `;
-                    marker.bindPopup(contenido).openPopup();
-                });
-            });
-        })
+        .then(data => renderMapa(data))
         .catch(error => console.error("Error:", error));
 }
 cargarIncidentes();
@@ -655,45 +664,8 @@ async function cargarTabla() {
         const res = await fetch("/incidentesTabla");
         const data = await res.json();
 
-        const tbody = document.getElementById("tablaIncidentes");
-        tbody.innerHTML = "";
-
-
-        data.forEach(incidente => {
-            const fila = document.createElement("tr");
-            let claseTipo = "";
-            switch (incidente.idtipoincidente) {
-                case 1:
-                    claseTipo = "tipo-robo";
-                    break;
-                case 2:
-                    claseTipo = "tipo-agresion";
-                    break;
-                case 3:
-                    claseTipo = "tipo-piques";
-                    break;
-                case 4:
-                    claseTipo = "tipo-accidente";
-                    break;
-            }
-
-            fila.innerHTML = `
-                <td>${incidente.idincidente}</td>
-                <td class="${claseTipo}">${incidente.nametipoincidente}</td>
-                <td>${new Date(incidente.fechaincidente).toLocaleDateString("es-CO")}</td>
-                <td>${incidente.horaincidente}</td>
-                <td>${incidente.namebarrio || "Sin barrio"}</td>
-                <td>${incidente.nombre || "Sin vereda"}</td>
-                <td>${incidente.lat}, ${incidente.lng}</td>
-                <td>${incidente.nombreusuario}</td>
-                <td>${incidente.descripcionincidente || "No hay descripcion"}</td>
-                <td>
-                    <button class="btnEditar" data-id="${incidente.idincidente}">Editar</button>
-                    <button class="btnEliminar" data-id="${incidente.idincidente}">Eliminar</button>
-                </td>
-            `;
-            tbody.appendChild(fila);
-        });
+        renderTabla(data);
+        renderMapa(data);
     } catch (error) {
         console.error("Error:", error);
     }
@@ -735,6 +707,7 @@ async function filtrar() {
         const data = await res.json();
 
         renderTabla(data);
+        renderMapa(data);
 
     } catch (error) {
         console.error("Error filtrando:", error);
