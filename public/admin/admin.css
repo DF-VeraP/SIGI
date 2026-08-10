@@ -890,10 +890,325 @@ select option {
     background: #fff;
 }
 
-/* Filtro por tiempo */
+/* Filtro por tiempo y resumen compacto */
 
-#filtroAnio {
-    width: 10em;
+.resumen-compacto {
+    flex: 1 1 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 24px;
+    background: linear-gradient(135deg, var(--bg-body), var(--bg-input));
+    border-radius: var(--radio);
+    color: var(--texto);
+    border: 1px solid var(--borde);
+    box-shadow: var(--sombra);
+}
+
+.kpi-detalles h3 {
+    font-size: 0.78rem;
+    color: var(--texto-suave);
+    margin-bottom: 4px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.kpi-detalles .numero {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--acento);
+    line-height: 1.1;
+}
+
+.btn-abrir-filtro {
+    background: var(--bg-hover);
+    border: 1px solid var(--borde-acento);
+    color: var(--acento);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    outline: none;
+}
+
+.btn-abrir-filtro:hover {
+    background: var(--acento);
+    color: #000;
+    border-color: var(--acento);
+    box-shadow: var(--sombra-glow);
+}
+
+.categoria-compacta {
+    flex: 1 1 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 24px;
+    background: linear-gradient(135deg, var(--bg-body), var(--bg-input));
+    border-radius: var(--radio);
+    color: var(--texto);
+    border: 1px solid var(--borde);
+    box-shadow: var(--sombra);
+}
+
+.categoria-compacta h3 {
+    font-size: 0.78rem;
+    color: var(--texto-suave);
+    margin: 0;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.categoria-compacta .grupo-filtro {
+    width: 100%;
+}
+
+/* MODAL FILTRO DE TIEMPO */
+
+.modal-tiempo {
+    width: min(420px, 92vw) !important;
+    background: var(--bg-card);
+    border: 1px solid var(--borde-acento);
+    border-radius: 14px;
+    box-shadow: var(--sombra-glow), var(--sombra);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.modal-cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--borde);
+    padding-bottom: 10px;
+}
+
+.modal-cabecera h3 {
+    font-size: 1rem;
+    color: var(--acento);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+.cerrar-modal-tiempo {
+    font-size: 1.5rem;
+    color: var(--texto-suave);
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.cerrar-modal-tiempo:hover {
+    color: var(--rojo);
+}
+
+.modal-cuerpo {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.seccion-filtro-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.titulo-seccion-modal {
+    font-size: 0.72rem;
+    color: var(--texto-suave);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Quick buttons grid */
+.botones-rapidos-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.btn-rapido-modal {
+    background: var(--bg-input);
+    border: 1px solid var(--borde);
+    color: var(--texto);
+    padding: 8px 6px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.btn-rapido-modal:hover {
+    background: var(--bg-hover);
+    border-color: var(--acento);
+    color: var(--acento);
+}
+
+/* Active state for selected quick filter */
+.btn-rapido-modal.activo {
+    background: var(--acento);
+    color: #000;
+    border-color: var(--acento);
+    box-shadow: var(--sombra-glow);
+}
+
+/* Custom range styles */
+.rango-personalizado-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.inputs-rango-modal {
+    display: flex;
+    gap: 10px;
+}
+
+.campo-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.campo-modal label {
+    font-size: 0.68rem;
+    color: var(--texto-suave);
+}
+
+.input-modal-fecha,
+.input-modal-month {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--borde);
+    background: var(--bg-input);
+    color: var(--texto);
+    font-size: 0.78rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.input-modal-fecha:focus,
+.input-modal-month:focus {
+    border-color: var(--azul);
+}
+
+.input-modal-fecha::-webkit-calendar-picker-indicator,
+.input-modal-month::-webkit-calendar-picker-indicator {
+    filter: invert(0.8);
+    cursor: pointer;
+}
+
+.botones-rango-modal {
+    display: flex;
+    gap: 8px;
+}
+
+/* Color buttons (green and red) */
+.btn-verde {
+    background: var(--verde);
+    border: 1px solid rgba(63, 185, 80, 0.4);
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 1;
+    text-align: center;
+}
+
+.btn-verde:hover {
+    background: #4cd15c;
+    box-shadow: 0 0 10px rgba(63, 185, 80, 0.3);
+}
+
+.btn-rojo {
+    background: var(--rojo);
+    border: 1px solid rgba(248, 81, 73, 0.4);
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 1;
+    text-align: center;
+}
+
+.btn-rojo:hover {
+    background: #f8665f;
+    box-shadow: 0 0 10px rgba(248, 81, 73, 0.3);
+}
+
+/* Month picker specific button layout */
+.mes-especifico-modal {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.mes-especifico-modal .campo-modal {
+    flex: 1;
+}
+
+.mes-especifico-modal .btn-verde {
+    flex: 0 0 auto;
+    height: 35px; /* Alignment with input */
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Footer for general filter reset */
+.modal-pie {
+    border-top: 1px solid var(--borde);
+    padding-top: 12px;
+    display: flex;
+    justify-content: center;
+}
+
+.btn-limpiar-general {
+    background: transparent;
+    border: 1px solid var(--rojo);
+    color: #ff6b6b;
+    padding: 8px 24px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-limpiar-general:hover {
+    background: var(--rojo);
+    color: #fff;
+    box-shadow: 0 0 10px rgba(248, 81, 73, 0.25);
 }
 
 /* ── Tabla ── */
@@ -1020,11 +1335,17 @@ select option {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.65);
+    background: rgba(0, 0, 0, 0.7);
     justify-content: center;
     align-items: center;
     z-index: 99999;
-    backdrop-filter: blur(3px);
+    backdrop-filter: blur(5px);
+    animation: fadeInModal 0.25s ease;
+}
+
+@keyframes fadeInModal {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .modal-contenido {

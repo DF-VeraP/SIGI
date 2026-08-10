@@ -93,39 +93,30 @@
             <section class="verificacion">
                 <h2>Verificacion de datos</h2>
                 <div class="contenedor-superior">
-                    <!-- 1. RESUMEN / KPI -->
-                    <section class="card resumen">
-                        <div class="contenido-resumen">
-                            <h3>Total de Incidentes</h3>
+                    
+                    <!-- 1. RESUMEN / KPI CON ACCESO A FILTRO DE TIEMPO -->
+                    <section class="card resumen-compacto">
+                        <div class="kpi-detalles">
+                            <h3>Total Incidentes</h3>
                             <p class="numero">128</p>
                         </div>
+                        <button type="button" id="btnAbrirFiltroTiempo" class="btn-abrir-filtro">
+                            <i class="bi bi-calendar3"></i> Filtrar por tiempo
+                        </button>
                     </section>
 
-
-                    <!-- 2. FILTROS -->
-                    <section class="card filtros">
-                        <h3>Filtrar Incidentes</h3>
-
+                    <!-- 2. FILTRAR POR CATEGORÍA -->
+                    <section class="card categoria-compacta">
+                        <h3>Filtrar por Categoría</h3>
                         <div class="grupo-filtro">
-                            <label for="buscar">Buscar:</label>
                             <select name="" id="tipoIncidenteFiltro">
-                                <option value="">Seleccione una categoria</option>
+                                <option value="">Todas las categorías</option>
                             </select>
                         </div>
-
-                        <!-- <div class="grupo-filtro">
-                            <label for="fecha">Fecha:</label>
-                            <input type="date" id="fecha">
-                        </div> -->
                     </section>
 
-
-                    <!-- 3. GRÁFICA -->
-                    <section class="card grafica">
-                        <select name="" id="filtroAnio">
-                            <option value="">Filtro por año</option>
-                        </select>
-                    </section>
+                    <!-- Keep this hidden select so the existing JS doesn't crash when trying to populate it -->
+                    <select id="filtroAnio" style="display: none;"></select>
 
                 </div>
                 <div class="contTablaDatos">
@@ -173,6 +164,71 @@
             <div class="acciones">
                 <button id="btnGuardar">Guardar</button>
                 <button id="btnCerrar">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL FILTRO DE TIEMPO -->
+    <div id="modalFiltroTiempo" class="modal">
+        <div class="modal-contenido modal-tiempo">
+            <div class="modal-cabecera">
+                <h3><i class="bi bi-calendar-range"></i> Filtrar por tiempo</h3>
+                <span class="cerrar-modal-tiempo" id="btnCerrarFiltroTiempo">&times;</span>
+            </div>
+            
+            <div class="modal-cuerpo">
+                <!-- BOTONES RÁPIDOS -->
+                <div class="seccion-filtro-modal">
+                    <span class="titulo-seccion-modal">⚡ Botones rápidos</span>
+                    <div class="botones-rapidos-grid">
+                        <button type="button" class="btn-rapido-modal" data-rango="hoy">Hoy</button>
+                        <button type="button" class="btn-rapido-modal" data-rango="semana">Última semana</button>
+                        <button type="button" class="btn-rapido-modal" data-rango="15dias">15 días</button>
+                        <button type="button" class="btn-rapido-modal" data-rango="mes">Último mes</button>
+                        <button type="button" class="btn-rapido-modal" data-rango="3meses">3 meses</button>
+                        <button type="button" class="btn-rapido-modal" data-rango="1anio">1 año</button>
+                    </div>
+                </div>
+
+                <!-- RANGO PERSONALIZADO -->
+                <div class="seccion-filtro-modal">
+                    <span class="titulo-seccion-modal">Rango personalizado</span>
+                    <div class="rango-personalizado-modal">
+                        <div class="inputs-rango-modal">
+                            <div class="campo-modal">
+                                <label for="fechaDesdeModal">Desde</label>
+                                <input type="date" id="fechaDesdeModal" class="input-modal-fecha">
+                            </div>
+                            <div class="campo-modal">
+                                <label for="fechaHastaModal">Hasta</label>
+                                <input type="date" id="fechaHastaModal" class="input-modal-fecha">
+                            </div>
+                        </div>
+                        <div class="botones-rango-modal">
+                            <button type="button" id="btnAplicarRangoModal" class="btn-verde">Aplicar</button>
+                            <button type="button" id="btnLimpiarRangoModal" class="btn-rojo">Limpiar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MES ESPECÍFICO -->
+                <div class="seccion-filtro-modal">
+                    <span class="titulo-seccion-modal">Mes específico</span>
+                    <div class="mes-especifico-modal">
+                        <div class="campo-modal">
+                            <label for="mesFiltroModal">Mes y año</label>
+                            <input type="month" id="mesFiltroModal" class="input-modal-month">
+                        </div>
+                        <button type="button" id="btnFiltrarMesModal" class="btn-verde">Filtrar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FOOTER CON LIMPIEZA GENERAL -->
+            <div class="modal-pie">
+                <button type="button" id="btnLimpiarTodoModal" class="btn-limpiar-general">
+                    <i class="bi bi-trash-fill"></i> Limpiar Filtros
+                </button>
             </div>
         </div>
     </div>

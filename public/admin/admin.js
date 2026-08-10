@@ -705,18 +705,29 @@ const select = document.getElementById("tipoIncidenteFiltro");
 
 select.addEventListener("change", filtrar);
 
+let filtroFechaDesde = "";
+let filtroFechaHasta = "";
+
 async function filtrar() {
     const tipo = select.value;
 
     try {
-        // ✅ si no hay filtro → cargar todo
-        if (!tipo) {
+        // Si no hay ningún filtro (ni categoría ni fechas), cargamos todo
+        if (!tipo && !filtroFechaDesde && !filtroFechaHasta) {
             cargarTabla();
             return;
         }
 
         let params = new URLSearchParams();
-        params.append("idtipoincidente", tipo);
+        if (tipo) {
+            params.append("idtipoincidente", tipo);
+        }
+        if (filtroFechaDesde) {
+            params.append("fechaDesde", filtroFechaDesde);
+        }
+        if (filtroFechaHasta) {
+            params.append("fechaHasta", filtroFechaHasta);
+        }
 
         const url = `/incidentesFiltroAdmin?${params.toString()}`;
 
@@ -874,3 +885,179 @@ for (let i = anioActual; i >= anioInicio; i--) {
     option.textContent = i;
     selectAnio.appendChild(option);
 }
+
+/* ════════════════════════════════
+   MODAL FILTRO DE TIEMPO
+   ════════════════════════════════ */
+
+const modalFiltroTiempo = document.getElementById("modalFiltroTiempo");
+const btnAbrirFiltroTiempo = document.getElementById("btnAbrirFiltroTiempo");
+const btnCerrarFiltroTiempo = document.getElementById("btnCerrarFiltroTiempo");
+
+// Abrir modal
+btnAbrirFiltroTiempo.addEventListener("click", () => {
+    modalFiltroTiempo.style.display = "flex";
+});
+
+// Cerrar modal
+function cerrarModalFiltroTiempo() {
+    modalFiltroTiempo.style.display = "none";
+}
+btnCerrarFiltroTiempo.addEventListener("click", cerrarModalFiltroTiempo);
+
+// Cerrar al hacer clic fuera del modal
+window.addEventListener("click", (e) => {
+    if (e.target === modalFiltroTiempo) {
+        cerrarModalFiltroTiempo();
+    }
+});
+
+// Helper para dar formato YYYY-MM-DD
+function formatearFecha(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+// Botones rápidos
+const btnRapidos = document.querySelectorAll(".btn-rapido-modal");
+btnRapidos.forEach(btn => {
+    btn.addEventListener("click", () => {
+        // Remover clase activo de todos
+        btnRapidos.forEach(b => b.classList.remove("activo"));
+        // Agregar clase activo al seleccionado
+        btn.classList.add("activo");
+
+        const rango = btn.dataset.rango;
+        const hoyObj = new Date();
+        filtroFechaHasta = formatearFecha(hoyObj);
+
+        switch (rango) {
+            case "hoy":
+                filtroFechaDesde = formatearFecha(hoyObj);
+                break;
+            case "semana":
+                const haceUnaSemana = new Date();
+                haceUnaSemana.setDate(hoyObj.getDate() - 7);
+                filtroFechaDesde = formatearFecha(haceUnaSemana);
+                break;
+            case "15dias":
+                const hace15Dias = new Date();
+                hace15Dias.setDate(hoyObj.getDate() - 15);
+                filtroFechaDesde = formatearFecha(hace15Dias);
+                break;
+            case "mes":
+                const haceUnMes = new Date();
+                haceUnMes.setMonth(hoyObj.getMonth() - 1);
+                filtroFechaDesde = formatearFecha(haceUnMes);
+                break;
+            case "3meses":
+                const hace3Meses = new Date();
+                hace3Meses.setMonth(hoyObj.getMonth() - 3);
+                filtroFechaDesde = formatearFecha(hace3Meses);
+                break;
+            case "1anio":
+                const hace1Anio = new Date();
+                hace1Anio.setFullYear(hoyObj.getFullYear() - 1);
+                filtroFechaDesde = formatearFecha(hace1Anio);
+                break;
+        }
+
+        // Limpiar inputs del modal para evitar conflicto visual
+        document.getElementById("fechaDesdeModal").value = "";
+        document.getElementById("fechaHastaModal").value = "";
+        document.getElementById("mesFiltroModal").value = "";
+
+        // Filtrar y cerrar
+        filtrar();
+        cerrarModalFiltroTiempo();
+    });
+});
+
+// Rango personalizado - Aplicar
+document.getElementById("btnAplicarRangoModal").addEventListener("click", () => {
+    const desde = document.getElementById("fechaDesdeModal").value;
+    const hasta = document.getElementById("fechaHastaModal").value;
+
+    if (!desde || !hasta) {
+        alert("Ambos campos de fecha son obligatorios.");
+        return;
+    }
+
+    if (new Date(desde) > new Date(hasta)) {
+        alert("La fecha 'Desde' no puede ser mayor que la fecha 'Hasta'.");
+        return;
+    }
+
+    // Quitar activo de botones rápidos
+    btnRapidos.forEach(b => b.classList.remove("activo"));
+    // Limpiar input de mes
+    document.getElementById("mesFiltroModal").value = "";
+
+    filtroFechaDesde = desde;
+    filtroFechaHasta = hasta;
+
+    filtrar();
+    cerrarModalFiltroTiempo();
+});
+
+// Rango personalizado - Limpiar (limpia las fechas del rango)
+document.getElementById("btnLimpiarRangoModal").addEventListener("click", () => {
+    document.getElementById("fechaDesdeModal").value = "";
+    document.getElementById("fechaHastaModal").value = "";
+    
+    filtroFechaDesde = "";
+    filtroFechaHasta = "";
+
+    filtrar();
+    cerrarModalFiltroTiempo();
+});
+
+// Mes específico - Filtrar
+document.getElementById("btnFiltrarMesModal").addEventListener("click", () => {
+    const mesAnio = document.getElementById("mesFiltroModal").value; // Formato YYYY-MM
+
+    if (!mesAnio) {
+        alert("Debe seleccionar un mes.");
+        return;
+    }
+
+    // Quitar activo de botones rápidos y rango
+    btnRapidos.forEach(b => b.classList.remove("activo"));
+    document.getElementById("fechaDesdeModal").value = "";
+    document.getElementById("fechaHastaModal").value = "";
+
+    const [anioStr, mesStr] = mesAnio.split("-");
+    const anio = parseInt(anioStr);
+    const mes = parseInt(mesStr) - 1; // Mes 0-indexed
+
+    // Primer día del mes
+    const primerDia = new Date(anio, mes, 1);
+    // Último día del mes
+    const ultimoDia = new Date(anio, mes + 1, 0);
+
+    filtroFechaDesde = formatearFecha(primerDia);
+    filtroFechaHasta = formatearFecha(ultimoDia);
+
+    filtrar();
+    cerrarModalFiltroTiempo();
+});
+
+// Limpiar todo (pie del modal)
+document.getElementById("btnLimpiarTodoModal").addEventListener("click", () => {
+    // Resetear campos
+    document.getElementById("fechaDesdeModal").value = "";
+    document.getElementById("fechaHastaModal").value = "";
+    document.getElementById("mesFiltroModal").value = "";
+
+    // Resetear botones rápidos
+    btnRapidos.forEach(b => b.classList.remove("activo"));
+
+    // Resetear filtros
+    filtroFechaDesde = "";
+    filtroFechaHasta = "";
+
+    filtrar();
+    cerrarModalFiltroTiempo();
+});

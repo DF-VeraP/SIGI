@@ -39,7 +39,7 @@ const getIncidentesTabla = async (req, res) => {
 
 const getIncidentesFiltroAdmin = async (req, res) => {
   try {
-    const { idtipoincidente, fechaincidente } = req.query;
+    const { idtipoincidente, fechaincidente, fechaDesde, fechaHasta } = req.query;
 
     let query = `
       SELECT 
@@ -76,6 +76,16 @@ const getIncidentesFiltroAdmin = async (req, res) => {
     if (fechaincidente) {
       values.push(fechaincidente);
       query += ` AND DATE(i.fechaincidente) = $${values.length}`;
+    }
+
+    if (fechaDesde) {
+      values.push(fechaDesde);
+      query += ` AND DATE(i.fechaincidente) >= $${values.length}`;
+    }
+
+    if (fechaHasta) {
+      values.push(fechaHasta);
+      query += ` AND DATE(i.fechaincidente) <= $${values.length}`;
     }
 
     const result = await pool.query(query, values);
