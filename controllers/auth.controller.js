@@ -47,6 +47,7 @@ const login = async (req, res) => {
     }
 
     req.session.usuario = user.nombreusuario;
+    req.session.idusuario = user.idusuario;
     res.json({ mensaje: "Login correcto ✅" });
 
   } catch (error) {

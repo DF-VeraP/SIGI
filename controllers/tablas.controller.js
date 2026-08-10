@@ -2,6 +2,11 @@ const pool = require('../db');
 
 const getIncidentesTabla = async (req, res) => {
   try {
+    const usuarioLogueado = req.session.usuario;
+    if (!usuarioLogueado) {
+      return res.status(401).json({ error: "No autorizado" });
+    }
+
     let query = `
       SELECT 
         i.idincidente,
@@ -24,9 +29,9 @@ const getIncidentesTabla = async (req, res) => {
         ON i.idusuario = u.idusuario
       LEFT JOIN vereda v
         ON i.idvereda = v.id
-      WHERE 1=1
+      WHERE u.nombreusuario = $1
       `;
-    const result = await pool.query(query);
+    const result = await pool.query(query, [usuarioLogueado]);
     res.json(result.rows);
   } catch (error) {
     console.log("Error: " + error);
@@ -39,6 +44,11 @@ const getIncidentesTabla = async (req, res) => {
 
 const getIncidentesFiltroAdmin = async (req, res) => {
   try {
+    const usuarioLogueado = req.session.usuario;
+    if (!usuarioLogueado) {
+      return res.status(401).json({ error: "No autorizado" });
+    }
+
     const { idtipoincidente, fechaincidente, fechaDesde, fechaHasta } = req.query;
 
     let query = `
@@ -63,10 +73,10 @@ const getIncidentesFiltroAdmin = async (req, res) => {
         ON i.idusuario = u.idusuario
       LEFT JOIN vereda v 
         ON i.idvereda = v.id
-      WHERE 1=1
+      WHERE u.nombreusuario = $1
     `;
 
-    let values = [];
+    let values = [usuarioLogueado];
 
     if (idtipoincidente) {
       values.push(idtipoincidente);
