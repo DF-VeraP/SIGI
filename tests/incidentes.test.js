@@ -10,6 +10,15 @@ jest.mock('bcrypt', () => ({
   compare: jest.fn()
 }));
 
+
+// Mock de autenticacion para tests
+jest.mock('../middleware/auth.middleware', () => ({
+  verificarAutenticacion: (req, res, next) => {
+    req.usuario = { id: 1, nombre: 'Admin', rol: 'admin' };
+    next();
+  }
+}));
+
 const pool = require('../db');
 const app = require('../server');
 
