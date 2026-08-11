@@ -352,3 +352,60 @@ form section i {
         font-size: 0.88rem;
     }
 }
+
+/* ════════════════════════════════
+   FOOTER
+════════════════════════════════ */
+.sigi-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 900;
+    background: linear-gradient(180deg, transparent 0%, rgba(11, 15, 26, 0.95) 30%);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    padding: 18px 16px 12px;
+    text-align: center;
+}
+
+.footer-contenido {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.footer-marca {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: rgba(70, 214, 247, 0.7);
+    letter-spacing: 0.04em;
+}
+
+.footer-autor {
+    font-size: 0.65rem;
+    color: rgba(139, 148, 158, 0.8);
+    font-weight: 500;
+}
+
+.footer-copy {
+    font-size: 0.6rem;
+    color: rgba(139, 148, 158, 0.55);
+    font-weight: 400;
+    margin-top: 2px;
+}
+
+@media (max-width: 480px) {
+    .sigi-footer {
+        padding: 14px 12px 10px;
+    }
+
+    .footer-marca {
+        font-size: 0.65rem;
+    }
+
+    .footer-autor,
+    .footer-copy {
+        font-size: 0.58rem;
+    }
+}
