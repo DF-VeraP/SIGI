@@ -13,7 +13,7 @@ jest.mock('bcrypt', () => ({
 
 // Mock de autenticacion para tests
 jest.mock('../middleware/auth.middleware', () => ({
-  verificarAutenticacion: (req, res, next) => {
+  verificarSesion: (req, res, next) => {
     req.usuario = { id: 1, nombre: 'Admin', rol: 'admin' };
     next();
   }
