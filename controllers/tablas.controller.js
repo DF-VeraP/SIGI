@@ -11,6 +11,7 @@ const getIncidentesTabla = async (req, res) => {
       SELECT 
         i.idincidente,
         i.idtipoincidente,
+        i.codigoincidente,
         ST_Y(i.geom) AS lat,
         ST_X(i.geom) AS lng,
         i.descripcionincidente,
@@ -55,6 +56,7 @@ const getIncidentesFiltroAdmin = async (req, res) => {
       SELECT 
         i.idincidente,
         i.idtipoincidente,
+        i.codigoincidente,
         ST_Y(i.geom) AS lat,
         ST_X(i.geom) AS lng,
         i.descripcionincidente,
