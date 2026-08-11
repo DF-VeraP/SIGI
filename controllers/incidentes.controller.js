@@ -1,5 +1,6 @@
 const pool = require('../db');
-
+const csv = require('csv-parser');
+const stream = require('stream');
 const registrarIncidente = async (req, res) => {
   const idusuarioLogueado = req.session.idusuario;
   if (!idusuarioLogueado) {
@@ -118,9 +119,82 @@ const actualizarIncidente = async (req, res) => {
   }
 };
 
+const importarIncidentesMasivo = async (req, res) => {
+  const idusuarioLogueado = req.session.idusuario;
+  if (!idusuarioLogueado) {
+    return res.status(401).json({ error: "No autorizado" });
+  }
+
+  if (!req.file) {
+    return res.status(400).json({ error: "No se subió ningún archivo" });
+  }
+
+  const results = [];
+  const bufferStream = new stream.PassThrough();
+  bufferStream.end(req.file.buffer);
+
+  bufferStream
+    .pipe(csv({ separator: ';' })) // Soportar punto y coma por defecto en Excel español
+    .on('data', (data) => results.push(data))
+    .on('end', async () => {
+      let exitos = 0;
+      let fallidos = 0;
+
+      // Si no usó punto y coma, intentamos con coma normal
+      let finalResults = results;
+      if (results.length > 0 && Object.keys(results[0]).length === 1 && Object.keys(results[0])[0].includes(',')) {
+        // Reiniciar stream con coma
+        const bufferStream2 = new stream.PassThrough();
+        bufferStream2.end(req.file.buffer);
+        finalResults = [];
+        await new Promise((resolve) => {
+          bufferStream2.pipe(csv()).on('data', (data) => finalResults.push(data)).on('end', resolve);
+        });
+      }
+
+      for (const row of finalResults) {
+        // Mapear columnas asumiendo formato mayúsculas o minúsculas
+        const tipo = row.TIPO || row.tipo;
+        const fecha = row.FECHA || row.fecha;
+        const hora = row.HORA || row.hora;
+        const lat = parseFloat(row.LATITUD || row.latitud || row.lat);
+        const lng = parseFloat(row.LONGITUD || row.longitud || row.lng);
+        const desc = row.DESCRIPCION || row.descripcion || '';
+
+        if (!tipo || !fecha || !hora || isNaN(lat) || isNaN(lng)) {
+          fallidos++;
+          continue;
+        }
+
+        try {
+          await pool.query(`
+            INSERT INTO incidente
+            (descripcionincidente, idtipoincidente, fechaincidente, horaincidente, geom, idusuario)
+            VALUES (
+              $1, $2, $3, $4,
+              ST_SetSRID(ST_MakePoint($5, $6), 4326),
+              $7
+            )
+          `, [desc, tipo, fecha, hora, lng, lat, idusuarioLogueado]);
+          exitos++;
+        } catch (err) {
+          console.error("Error insertando fila CSV:", err);
+          fallidos++;
+        }
+      }
+
+      res.json({ 
+        mensaje: "Proceso completado", 
+        exitos, 
+        fallidos 
+      });
+    });
+};
+
 module.exports = {
   registrarIncidente,
   eliminarIncidente,
   obtenerIncidente,
-  actualizarIncidente
+  actualizarIncidente,
+  importarIncidentesMasivo
 };

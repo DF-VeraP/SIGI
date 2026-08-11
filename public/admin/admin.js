@@ -1043,4 +1043,63 @@ document.getElementById("btnLimpiarTodoModal").addEventListener("click", () => {
 
     filtrar();
     cerrarModalFiltroTiempo();
-});
+});//  Modals y Botones de Importación
+const modalImportar = document.querySelector(".ventana");
+const btnAbrirImportar = document.querySelector(".impDat");
+const btnCerrarImportar = document.getElementById("cerrarModal");
+const btnCancelarImportar = document.getElementById("cancelarModal");
+const btnImportarDatos = document.querySelector(".btn.importar");
+const inputArchivo = document.getElementById("archivo");
+
+if (btnAbrirImportar) {
+    btnAbrirImportar.addEventListener("click", (e) => {
+        e.preventDefault();
+        modalImportar.classList.remove("esconder");
+    });
+}
+
+function cerrarModalImportar() {
+    modalImportar.classList.add("esconder");
+    inputArchivo.value = "";
+}
+
+if (btnCerrarImportar) btnCerrarImportar.addEventListener("click", cerrarModalImportar);
+if (btnCancelarImportar) btnCancelarImportar.addEventListener("click", cerrarModalImportar);
+
+if (btnImportarDatos) {
+    btnImportarDatos.addEventListener("click", async () => {
+        const file = inputArchivo.files[0];
+        if (!file) {
+            alert("Por favor selecciona un archivo (.csv)");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("archivo", file);
+
+        btnImportarDatos.textContent = "Cargando...";
+        btnImportarDatos.disabled = true;
+
+        try {
+            const res = await fetch("/importar-incidentes", {
+                method: "POST",
+                body: formData
+            });
+            const result = await res.json();
+            
+            if (!res.ok) {
+                alert(result.error || "Error al importar");
+            } else {
+                alert(`${result.mensaje}\nExitosos: ${result.exitos}\nFallidos: ${result.fallidos}`);
+                cerrarModalImportar();
+                cargarIncidentes(); // Recargar mapa
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Error de conexión al importar");
+        } finally {
+            btnImportarDatos.textContent = "Importar datos";
+            btnImportarDatos.disabled = false;
+        }
+    });
+}
