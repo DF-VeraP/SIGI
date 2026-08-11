@@ -24,6 +24,13 @@ let capaVereda1 = L.layerGroup().addTo(map);
 
 const map2 = L.map('mapa2').setView([1.6144, -75.6062], 13); // Florencia aprox
 
+// Crear paneles personalizados en map2 para asegurar que los incidentes queden sobre los polígonos
+map2.createPane('poligonosPane');
+map2.getPane('poligonosPane').style.zIndex = 400;
+
+map2.createPane('incidentesPane');
+map2.getPane('incidentesPane').style.zIndex = 450;
+
 //  Definir capas (NO recrearlas cada vez)
 const capaOscura = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -63,6 +70,7 @@ function cargarBarrio() {
         .then(res => res.json())
         .then(data => {
             let capaGeoJSON = L.geoJSON(null, {
+                pane: 'poligonosPane',
                 style: {
                     color: "white",
                     fillColor: "black",
@@ -89,6 +97,7 @@ function cargarVeredas() {
         .then(res => res.json())
         .then(data => {
             let capaGeoJSON = L.geoJSON(null, {
+                pane: 'poligonosPane',
                 style: {
                     color: "blue",
                     fillColor: "black",
@@ -134,6 +143,7 @@ function renderMapa(data) {
         if (isNaN(lat) || isNaN(lng)) return;
 
         const marker = L.circleMarker([lat, lng], {
+            pane: 'incidentesPane',
             radius: 5,
             color: obtenerColor(incidente.idtipoincidente),
             fillColor: obtenerColor(incidente.idtipoincidente),

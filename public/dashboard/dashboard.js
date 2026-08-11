@@ -145,6 +145,14 @@ cerrarFiltros.addEventListener("click", () => cerrarPanelFiltros());
 filtrosOverlay.addEventListener("click", () => cerrarPanelFiltros());
 
 const map = L.map("map").setView([1.615, -75.606], 14);
+
+// Crear paneles personalizados para controlar el z-index (quién se dibuja sobre quién)
+map.createPane('poligonosPane');
+map.getPane('poligonosPane').style.zIndex = 400; // Nivel base para polígonos
+
+map.createPane('incidentesPane');
+map.getPane('incidentesPane').style.zIndex = 450; // Siempre encima de polígonos
+
 L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
     attribution: "Tiles © Esri"
 }).addTo(map);
@@ -205,6 +213,7 @@ function cargarIncidentes() {
         .then(data => {
             data.forEach(incidente => {
                 L.circleMarker([incidente.lat, incidente.lng], {
+                    pane: 'incidentesPane',
                     radius: esMobile() ? 6 : 5,
                     color: obtenerColor(incidente.idtipoincidente),
                     fillColor: obtenerColor(incidente.idtipoincidente),
@@ -226,6 +235,7 @@ function cargarBarrio() {
         .then(res => res.json())
         .then(data => {
             const capaGeoJSON = L.geoJSON(null, {
+                pane: 'poligonosPane',
                 style: {
                     color: "white",
                     fillColor: "black",
@@ -258,6 +268,7 @@ function cargarVeredas() {
         .then(res => res.json())
         .then(data => {
             const capaGeoJSON = L.geoJSON(null, {
+                pane: 'poligonosPane',
                 style: {
                     color: "blue",
                     fillColor: "gray",
