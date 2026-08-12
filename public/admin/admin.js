@@ -315,6 +315,7 @@ async function cargarUsuario() {
         const data = await response.json();
 
         if (response.ok) {
+            document.body.style.visibility = "visible";
             document.getElementById("textoBienvenida").innerText =
                 "Bienvenido " + data.usuario;
         } else {
