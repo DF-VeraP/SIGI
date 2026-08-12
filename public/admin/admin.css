@@ -1646,3 +1646,51 @@ select option {
         font-size: 0.58rem;
     }
 }
+
+/* --------------------------
+   SISTEMA DE TOASTS
+---------------------------*/
+#contenedorToast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    min-width: 250px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    color: #333;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+    transform: translateX(120%);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.toast.mostrar {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.toast i {
+    font-size: 1.2rem;
+}
+
+.toast.exito { border-left: 5px solid #28a745; }
+.toast.exito i { color: #28a745; }
+
+.toast.error { border-left: 5px solid #dc3545; }
+.toast.error i { color: #dc3545; }
+
+.toast.info { border-left: 5px solid #17a2b8; }
+.toast.info i { color: #17a2b8; }

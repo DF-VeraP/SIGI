@@ -16,6 +16,41 @@ document.getElementById("btnVerif").addEventListener("click", () => {
     main.style.transform = "translateX(-50%)";
 });
 
+// --- SISTEMA DE TOASTS ---
+function mostrarToast(mensaje, tipo = "info") {
+    let contenedor = document.getElementById("contenedorToast");
+    if (!contenedor) {
+        contenedor = document.createElement("div");
+        contenedor.id = "contenedorToast";
+        document.body.appendChild(contenedor);
+    }
+
+    const toast = document.createElement("div");
+    toast.className = `toast ${tipo}`;
+    
+    // Iconos según el tipo
+    let icono = "bi-info-circle-fill";
+    if (tipo === "exito") icono = "bi-check-circle-fill";
+    if (tipo === "error") icono = "bi-x-circle-fill";
+
+    toast.innerHTML = `<i class="bi ${icono}"></i><span>${mensaje}</span>`;
+    
+    contenedor.appendChild(toast);
+
+    // Animación de entrada
+    setTimeout(() => {
+        toast.classList.add("mostrar");
+    }, 10);
+
+    // Auto eliminar
+    setTimeout(() => {
+        toast.classList.remove("mostrar");
+        setTimeout(() => {
+            toast.remove();
+        }, 400); // Tiempo de la transición CSS
+    }, 4000);
+}
+
 // Crear el mapa
 const map = L.map('map').setView([1.6144, -75.6062], 13); // Florencia aprox
 let capaBarrio1 = L.layerGroup().addTo(map);
@@ -595,13 +630,13 @@ document.querySelector(".registrarD").addEventListener("click", async (e) => {
             });
             const result = await res.json();
             if (!res.ok) {
-                alert(result.error || "Error en el servidor");
+                mostrarToast(result.error || "Error en el servidor", "error");
                 return;
             }
-            alert(result.mensaje);
+            mostrarToast(result.mensaje, "exito");
         } catch (err) {
             console.error("El error es: " + err)
-            alert("Error de conexion en el servidor");
+            mostrarToast("Error de conexion en el servidor", "error");
         }
 /*         limpiarFormulario() */;
         cargarTabla();
@@ -788,11 +823,11 @@ async function eliminarIncidente(id) {
             method: "DELETE"
         });
         if (res.ok) {
-            alert("Incidente eliminado ✅");
+            mostrarToast("Incidente eliminado correctamente", "exito");
             filtrar(); // recarga con filtro activo
             contar();
         } else {
-            alert("Error al eliminar ❌");
+            mostrarToast("Error al eliminar el incidente", "error");
         }
     } catch (error) {
         console.error("Error eliminando:", error);
@@ -838,11 +873,11 @@ document.getElementById("btnGuardar").addEventListener("click", async () => {
         });
 
         if (res.ok) {
-            alert("Actualizado correctamente ✅");
+            mostrarToast("Actualizado correctamente", "exito");
             cerrarModal();
             filtrar(); // refresca tabla
         } else {
-            alert("Error al actualizar ❌");
+            mostrarToast("Error al actualizar", "error");
         }
 
     } catch (error) {
@@ -965,12 +1000,12 @@ document.getElementById("btnAplicarRangoModal").addEventListener("click", () => 
     const hasta = document.getElementById("fechaHastaModal").value;
 
     if (!desde || !hasta) {
-        alert("Ambos campos de fecha son obligatorios.");
+        mostrarToast("Ambos campos de fecha son obligatorios.", "error");
         return;
     }
 
     if (new Date(desde) > new Date(hasta)) {
-        alert("La fecha 'Desde' no puede ser mayor que la fecha 'Hasta'.");
+        mostrarToast("La fecha 'Desde' no puede ser mayor que 'Hasta'.", "error");
         return;
     }
 
@@ -1003,7 +1038,7 @@ document.getElementById("btnFiltrarMesModal").addEventListener("click", () => {
     const mesAnio = document.getElementById("mesFiltroModal").value; // Formato YYYY-MM
 
     if (!mesAnio) {
-        alert("Debe seleccionar un mes.");
+        mostrarToast("Debe seleccionar un mes.", "error");
         return;
     }
 
@@ -1071,7 +1106,7 @@ if (btnImportarDatos) {
     btnImportarDatos.addEventListener("click", async () => {
         const file = inputArchivo.files[0];
         if (!file) {
-            alert("Por favor selecciona un archivo (.csv)");
+            mostrarToast("Por favor selecciona un archivo (.csv)", "error");
             return;
         }
 
@@ -1089,15 +1124,15 @@ if (btnImportarDatos) {
             const result = await res.json();
             
             if (!res.ok) {
-                alert(result.error || "Error al importar");
+                mostrarToast(result.error || "Error al importar", "error");
             } else {
-                alert(`${result.mensaje}\nExitosos: ${result.exitos}\nFallidos: ${result.fallidos}`);
+                mostrarToast(`${result.mensaje}: ${result.exitos} exitosos, ${result.fallidos} fallidos`, "exito");
                 cerrarModalImportar();
                 cargarIncidentes(); // Recargar mapa
             }
         } catch (error) {
             console.error(error);
-            alert("Error de conexión al importar");
+            mostrarToast("Error de conexión al importar", "error");
         } finally {
             btnImportarDatos.textContent = "Importar datos";
             btnImportarDatos.disabled = false;
