@@ -15,7 +15,7 @@ app.use(session({
 }));
 
 app.get("/", (req, res) => {
-  res.send("Servidor funcionando 🚀");
+  res.redirect("/dashboard/index.html");
 });
 
 app.get("/test-db", async (req, res) => {

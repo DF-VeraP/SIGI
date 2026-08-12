@@ -318,7 +318,7 @@ async function cargarUsuario() {
             document.getElementById("textoBienvenida").innerText =
                 "Bienvenido " + data.usuario;
         } else {
-            window.location.href = "/Login/Login.html";
+            window.location.href = "/login/index.html";
         }
 
     } catch (error) {
