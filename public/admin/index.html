@@ -258,6 +258,24 @@
 
         </div>
     </div>
+    
+    <!-- MODAL CONFIRMAR ELIMINACIÓN -->
+    <div class="ventana esconder contFlexCent" id="modalConfirmarEliminar">
+        <div class="ventanaInfo" style="max-width: 400px; text-align: center;">
+            <i class="bi bi-x cerrar-modal" id="cerrarModalEliminar"></i>
+            <div class="contenido" style="margin-top: 20px;">
+                <i class="bi bi-exclamation-triangle" style="font-size: 3rem; color: #dc3545; display: block; margin-bottom: 15px;"></i>
+                <h2 style="font-size: 1.5rem; margin-bottom: 10px;">¿Eliminar Incidente?</h2>
+                <p class="descripcion" style="color: #666;">
+                    Esta acción es irreversible y eliminará el registro permanentemente de la base de datos.
+                </p>
+            </div>
+            <div class="acciones" style="justify-content: center; margin-top: 25px;">
+                <button class="btn btn-rojo" id="btnConfirmarEliminar" style="background-color: #dc3545; color: white;">Sí, eliminar</button>
+                <button class="btn cancelar" id="btnCancelarEliminar">Cancelar</button>
+            </div>
+        </div>
+    </div>
     <footer class="sigi-footer">
         <div class="footer-contenido">
             <p class="footer-marca">SIGI — Sistema de Información Geográfica de Incidentes</p>

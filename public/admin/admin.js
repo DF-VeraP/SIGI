@@ -815,23 +815,43 @@ tabla.addEventListener("click", function (e) {
 });
 
 
-async function eliminarIncidente(id) {
-    const confirmar = confirm("¿Seguro que quieres eliminar este incidente?");
-    if (!confirmar) return;
+let idIncidenteAEliminar = null;
+const modalConfirmarEliminar = document.getElementById("modalConfirmarEliminar");
+const btnConfirmarEliminar = document.getElementById("btnConfirmarEliminar");
+const btnCancelarEliminar = document.getElementById("btnCancelarEliminar");
+const btnCerrarModalEliminar = document.getElementById("cerrarModalEliminar");
+
+function cerrarModalEliminar() {
+    modalConfirmarEliminar.classList.add("esconder");
+    idIncidenteAEliminar = null;
+}
+
+if (btnCancelarEliminar) btnCancelarEliminar.addEventListener("click", cerrarModalEliminar);
+if (btnCerrarModalEliminar) btnCerrarModalEliminar.addEventListener("click", cerrarModalEliminar);
+
+btnConfirmarEliminar.addEventListener("click", async () => {
+    if (!idIncidenteAEliminar) return;
     try {
-        const res = await fetch(`/incidente/${id}`, {
+        const res = await fetch(`/incidente/${idIncidenteAEliminar}`, {
             method: "DELETE"
         });
         if (res.ok) {
             mostrarToast("Incidente eliminado correctamente", "exito");
-            filtrar(); // recarga con filtro activo
+            filtrar();
             contar();
         } else {
             mostrarToast("Error al eliminar el incidente", "error");
         }
     } catch (error) {
         console.error("Error eliminando:", error);
+    } finally {
+        cerrarModalEliminar();
     }
+});
+
+function eliminarIncidente(id) {
+    idIncidenteAEliminar = id;
+    modalConfirmarEliminar.classList.remove("esconder");
 }
 
 async function editarIncidente(id) {
