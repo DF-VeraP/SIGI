@@ -56,22 +56,31 @@ button:active,
     opacity: 0.88;
 }
 
+body {
+    background: var(--bg-dark);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
 /* ════════════════════════════════
    HEADER (compacto en móvil)
 ════════════════════════════════ */
 header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
+    width: calc(100% - 24px);
+    margin: 12px 12px 0 12px;
+    border-radius: var(--radio);
     z-index: 2000;
-    width: 100%;
     height: var(--header-h);
     background: var(--bg-card);
     border-bottom: 1px solid var(--borde);
     padding: 0 1rem;
     display: flex;
     align-items: center;
+    flex-shrink: 0;
 }
 
 nav {
@@ -158,13 +167,12 @@ nav h1 i {
    MAIN / MAPA
 ════════════════════════════════ */
 main {
-    position: fixed;
-    top: var(--header-h);
-    left: 0;
-    right: 0;
-    bottom: calc(var(--bottom-nav-h) + var(--safe-bottom));
-    width: 100%;
+    width: calc(100% - 24px);
+    margin: 12px;
+    flex: 1;
     overflow: hidden;
+    position: relative;
+    border-radius: var(--radio);
 }
 
 #map {
@@ -479,13 +487,13 @@ main.filtros-abiertos .fab-reset {
 ════════════════════════════════ */
 .leyenda {
     position: absolute;
-    bottom: 16px;
+    bottom: 30px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
     align-items: center;
     gap: 16px;
-    background: var(--bg-panel);
+    background: rgba(13, 17, 23, 0.75); /* Más transparente (Glassmorphism) */
     padding: 8px 20px;
     border-radius: 30px;
     border: 1px solid var(--borde);
@@ -525,7 +533,7 @@ main.filtros-abiertos .fab-reset {
     .leyenda {
         gap: 10px;
         padding: 6px 14px;
-        bottom: 12px;
+        bottom: 24px;
     }
 
     .itemLeyenda {
@@ -537,10 +545,11 @@ main.filtros-abiertos .fab-reset {
     .leyenda {
         gap: 8px;
         padding: 6px 12px;
-        bottom: 10px;
-        width: calc(100% - 24px);
-        left: 12px;
-        transform: none;
+        bottom: 20px;
+        width: max-content;
+        max-width: calc(100% - 24px);
+        left: 50%;
+        transform: translateX(-50%);
     }
 }
 
@@ -997,7 +1006,7 @@ main.filtros-abiertos .fab-reset {
     }
 
     .leyenda {
-        bottom: 85px; /* Ajustado para no chocar con el footer */
+        bottom: 30px; /* Hereda la misma elevación base sin chocar */
     }
 
     .tpincidentes p:hover {
@@ -1042,16 +1051,14 @@ main.filtros-abiertos .fab-reset {
    FOOTER
 ════════════════════════════════ */
 .sigi-footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    position: relative;
     z-index: 900;
-    background: linear-gradient(180deg, transparent 0%, rgba(11, 15, 26, 0.95) 30%);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    width: 100%;
+    background: var(--bg-card);
+    border-top: 1px solid var(--borde);
     padding: 18px 16px 12px;
     text-align: center;
+    flex-shrink: 0;
 }
 
 .footer-contenido {

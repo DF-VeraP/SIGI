@@ -65,16 +65,18 @@ body {
     background: var(--bg-body);
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    padding: 12px;
-    min-height: 100vh;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
 }
 
 /* ════════════════════════════════
    HEADER
 ════════════════════════════════ */
 header {
-    width: 100%;
+    width: calc(100% - 24px);
+    margin: 12px 12px 0 12px;
     background: var(--bg-card);
     border: 1px solid var(--borde-acento);
     border-radius: var(--radio);
@@ -139,7 +141,8 @@ nav button:hover,
    MAIN — contenedor deslizante
 ════════════════════════════════ */
 main {
-    width: 100%;
+    width: calc(100% - 24px);
+    margin: 12px;
     flex: 1;
     overflow: hidden;
     min-height: 0;
@@ -1594,16 +1597,14 @@ select option {
    FOOTER
 ════════════════════════════════ */
 .sigi-footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    position: relative;
     z-index: 900;
-    background: linear-gradient(180deg, transparent 0%, rgba(11, 15, 26, 0.95) 30%);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    background: var(--bg-card);
+    border-top: 1px solid var(--borde-acento);
     padding: 18px 16px 12px;
     text-align: center;
+    flex-shrink: 0;
+    width: 100%;
 }
 
 .footer-contenido {
