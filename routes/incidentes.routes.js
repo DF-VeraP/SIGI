@@ -10,6 +10,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 router.post("/registrarIncidente", verificarSesion, incidentesController.registrarIncidente);
 router.post("/importar-incidentes", verificarSesion, upload.single('archivo'), incidentesController.importarIncidentesMasivo);
+router.delete("/importados/ultimo", verificarSesion, incidentesController.deshacerUltimaImportacion);
 router.delete("/incidente/:id", verificarSesion, incidentesController.eliminarIncidente);
 router.get("/incidente/:id", verificarSesion, incidentesController.obtenerIncidente);
 router.put("/incidente/:id", verificarSesion, incidentesController.actualizarIncidente);

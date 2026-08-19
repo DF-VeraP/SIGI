@@ -3,6 +3,8 @@ const pool = require('../db');
 const getIncidentes = async (req, res) => {
   const nombre = req.query.barrio;
   const tipos = req.query.tipos;
+  const fechaDesde = req.query.fechaDesde;
+  const fechaHasta = req.query.fechaHasta;
   try {
     let query = `
       SELECT
@@ -33,6 +35,11 @@ const getIncidentes = async (req, res) => {
       query += ` AND i.idtipoincidente = ANY(string_to_array($${contador}, ',')::int[])`;
       valores.push(tipos);
       contador++;
+    }
+    if (fechaDesde && fechaHasta) {
+      query += ` AND i.fechaincidente >= $${contador} AND i.fechaincidente <= $${contador + 1}`;
+      valores.push(fechaDesde, fechaHasta);
+      contador += 2;
     }
     const result = await pool.query(query, valores);
     res.json(result.rows);

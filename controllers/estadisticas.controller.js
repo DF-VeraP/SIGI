@@ -32,17 +32,26 @@ const getConteoPorTipo = async (req, res) => {
 };
 
 const getResumen = async (req, res) => {
+  const fechaDesde = req.query.fechaDesde;
+  const fechaHasta = req.query.fechaHasta;
   try {
 
-    const result = await pool.query(`
+    let query = `
       SELECT 
         COUNT(*) AS total,
         SUM(CASE WHEN idtipoincidente = 1 THEN 1 ELSE 0 END) AS robos,
         SUM(CASE WHEN idtipoincidente = 2 THEN 1 ELSE 0 END) AS agresiones,
         SUM(CASE WHEN idtipoincidente = 3 THEN 1 ELSE 0 END) AS piques,
         SUM(CASE WHEN idtipoincidente = 4 THEN 1 ELSE 0 END) AS accidentes
-      FROM incidente;
-    `);
+      FROM incidente
+    `;
+    let valores = [];
+    if (fechaDesde && fechaHasta) {
+      query += ` WHERE fechaincidente >= $1 AND fechaincidente <= $2`;
+      valores.push(fechaDesde, fechaHasta);
+    }
+
+    const result = await pool.query(query, valores);
 
     res.json(result.rows[0]);
 
@@ -53,25 +62,35 @@ const getResumen = async (req, res) => {
 };
 
 const getTopZonas = async (req, res) => {
+  const fechaDesde = req.query.fechaDesde;
+  const fechaHasta = req.query.fechaHasta;
   try {
+    let condition = "";
+    let valores = [];
+    if (fechaDesde && fechaHasta) {
+      condition = " WHERE i.fechaincidente >= $1 AND i.fechaincidente <= $2 ";
+      valores.push(fechaDesde, fechaHasta);
+    }
 
     const barrio = await pool.query(`
       SELECT b.namebarrio, COUNT(*) AS total
       FROM incidente i
       JOIN barrio b ON i.idbarrio = b.gid
+      ${condition}
       GROUP BY b.namebarrio
       ORDER BY total DESC
       LIMIT 1;
-    `);
+    `, valores);
 
     const vereda = await pool.query(`
       SELECT v.nombre, COUNT(*) AS total
       FROM incidente i
       JOIN vereda v ON i.idvereda = v.id
+      ${condition}
       GROUP BY v.nombre
       ORDER BY total DESC
       LIMIT 1;
-    `);
+    `, valores);
 
     res.json({
       barrio: barrio.rows[0],
@@ -85,17 +104,27 @@ const getTopZonas = async (req, res) => {
 };
 
 const getTopIncidentes = async (req, res) => {
+  const fechaDesde = req.query.fechaDesde;
+  const fechaHasta = req.query.fechaHasta;
   try {
+    let condition = "";
+    let valores = [];
+    if (fechaDesde && fechaHasta) {
+      condition = " WHERE i.fechaincidente >= $1 AND i.fechaincidente <= $2 ";
+      valores.push(fechaDesde, fechaHasta);
+    }
+
     const result = await pool.query(`
       SELECT 
         tp.nametipoincidente AS tipo,
         COUNT(*) AS cantidad
       FROM incidente i
       JOIN tipo_incidente tp ON i.idtipoincidente = tp.idtipoincidente
+      ${condition}
       GROUP BY tp.nametipoincidente
       ORDER BY cantidad DESC
       LIMIT 4;
-    `);
+    `, valores);
 
     // asignamos colores fijos por tipo (frontend-friendly)
     const colores = {

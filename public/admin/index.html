@@ -222,6 +222,20 @@
                         <button type="button" id="btnFiltrarMesModal" class="btn-verde">Filtrar</button>
                     </div>
                 </div>
+
+                <!-- AÑO ESPECÍFICO -->
+                <div class="seccion-filtro-modal" style="border-bottom: none; padding-bottom: 0;">
+                    <span class="titulo-seccion-modal">Año específico</span>
+                    <div class="mes-especifico-modal">
+                        <div class="campo-modal">
+                            <label for="anioFiltroModal">Seleccionar año</label>
+                            <select id="anioFiltroModal" class="input-modal-fecha">
+                                <option value="">---</option>
+                            </select>
+                        </div>
+                        <button type="button" id="btnFiltrarAnioModal" class="btn-verde">Filtrar</button>
+                    </div>
+                </div>
             </div>
 
             <!-- FOOTER CON LIMPIEZA GENERAL -->
@@ -251,9 +265,12 @@
 
             </div>
 
-            <div class="acciones">
+            <div class="acciones" style="flex-wrap: wrap; gap: 10px;">
                 <button class="btn importar">Importar datos</button>
                 <button class="btn cancelar" id="cancelarModal">Cancelar</button>
+                <button class="btn btn-rojo" id="btnDeshacerImportacion" style="width: 100%; margin-top: 10px; background-color: #dc3545; color: white;">
+                    <i class="bi bi-arrow-counterclockwise"></i> Deshacer última importación masiva
+                </button>
             </div>
 
         </div>
@@ -273,6 +290,24 @@
             <div class="acciones" style="justify-content: center; margin-top: 25px;">
                 <button class="btn btn-rojo" id="btnConfirmarEliminar" style="background-color: #dc3545; color: white;">Sí, eliminar</button>
                 <button class="btn cancelar" id="btnCancelarEliminar">Cancelar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL CONFIRMAR DESHACER IMPORTACIÓN -->
+    <div class="ventana esconder contFlexCent" id="modalConfirmarDeshacer">
+        <div class="ventanaInfo" style="max-width: 450px; text-align: center;">
+            <i class="bi bi-x cerrar-modal" id="cerrarModalDeshacer"></i>
+            <div class="contenido" style="margin-top: 20px;">
+                <i class="bi bi-arrow-counterclockwise" style="font-size: 3rem; color: #dc3545; display: block; margin-bottom: 15px;"></i>
+                <h2 style="font-size: 1.5rem; margin-bottom: 10px;">¿Deshacer Importación?</h2>
+                <p class="descripcion" style="color: #666;">
+                    ¿Estás seguro de deshacer la última importación masiva? Se eliminarán todos los incidentes insertados en esa operación.
+                </p>
+            </div>
+            <div class="acciones" style="justify-content: center; margin-top: 25px;">
+                <button class="btn btn-rojo" id="btnConfirmarDeshacer" style="background-color: #dc3545; color: white;">Sí, deshacer</button>
+                <button class="btn cancelar" id="btnCancelarDeshacer">Cancelar</button>
             </div>
         </div>
     </div>

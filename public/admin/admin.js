@@ -933,6 +933,17 @@ const modalFiltroTiempo = document.getElementById("modalFiltroTiempo");
 const btnAbrirFiltroTiempo = document.getElementById("btnAbrirFiltroTiempo");
 const btnCerrarFiltroTiempo = document.getElementById("btnCerrarFiltroTiempo");
 
+const anioFiltroModal = document.getElementById("anioFiltroModal");
+if (anioFiltroModal) {
+    const currentYear = new Date().getFullYear();
+    for (let y = currentYear; y >= 2020; y--) {
+        const option = document.createElement("option");
+        option.value = y;
+        option.textContent = y;
+        anioFiltroModal.appendChild(option);
+    }
+}
+
 // Abrir modal
 btnAbrirFiltroTiempo.addEventListener("click", () => {
     modalFiltroTiempo.style.display = "flex";
@@ -1007,6 +1018,7 @@ btnRapidos.forEach(btn => {
         document.getElementById("fechaDesdeModal").value = "";
         document.getElementById("fechaHastaModal").value = "";
         document.getElementById("mesFiltroModal").value = "";
+        if (document.getElementById("anioFiltroModal")) document.getElementById("anioFiltroModal").value = "";
 
         // Filtrar y cerrar
         filtrar();
@@ -1031,8 +1043,9 @@ document.getElementById("btnAplicarRangoModal").addEventListener("click", () => 
 
     // Quitar activo de botones rápidos
     btnRapidos.forEach(b => b.classList.remove("activo"));
-    // Limpiar input de mes
+    // Limpiar input de mes y año
     document.getElementById("mesFiltroModal").value = "";
+    if (document.getElementById("anioFiltroModal")) document.getElementById("anioFiltroModal").value = "";
 
     filtroFechaDesde = desde;
     filtroFechaHasta = hasta;
@@ -1083,12 +1096,40 @@ document.getElementById("btnFiltrarMesModal").addEventListener("click", () => {
     cerrarModalFiltroTiempo();
 });
 
+// Año específico - Filtrar
+const btnFiltrarAnio = document.getElementById("btnFiltrarAnioModal");
+if (btnFiltrarAnio) {
+    btnFiltrarAnio.addEventListener("click", () => {
+        const anio = document.getElementById("anioFiltroModal").value; 
+        if (!anio) {
+            mostrarToast("Debe seleccionar un año.", "error");
+            return;
+        }
+
+        btnRapidos.forEach(b => b.classList.remove("activo"));
+        document.getElementById("fechaDesdeModal").value = "";
+        document.getElementById("fechaHastaModal").value = "";
+        document.getElementById("mesFiltroModal").value = "";
+
+        const y = parseInt(anio);
+        const primerDia = new Date(y, 0, 1);
+        const ultimoDia = new Date(y, 11, 31);
+
+        filtroFechaDesde = formatearFecha(primerDia);
+        filtroFechaHasta = formatearFecha(ultimoDia);
+
+        filtrar();
+        cerrarModalFiltroTiempo();
+    });
+}
+
 // Limpiar todo (pie del modal)
 document.getElementById("btnLimpiarTodoModal").addEventListener("click", () => {
     // Resetear campos
     document.getElementById("fechaDesdeModal").value = "";
     document.getElementById("fechaHastaModal").value = "";
     document.getElementById("mesFiltroModal").value = "";
+    if (document.getElementById("anioFiltroModal")) document.getElementById("anioFiltroModal").value = "";
 
     // Resetear botones rápidos
     btnRapidos.forEach(b => b.classList.remove("activo"));
@@ -1148,7 +1189,8 @@ if (btnImportarDatos) {
             } else {
                 mostrarToast(`${result.mensaje}: ${result.exitos} exitosos, ${result.fallidos} fallidos`, "exito");
                 cerrarModalImportar();
-                cargarIncidentes(); // Recargar mapa
+                filtrar(); // Recargar tabla y mapa
+                contar();  // Recargar total de incidentes
             }
         } catch (error) {
             console.error(error);
@@ -1156,6 +1198,56 @@ if (btnImportarDatos) {
         } finally {
             btnImportarDatos.textContent = "Importar datos";
             btnImportarDatos.disabled = false;
+        }
+    });
+}
+
+const btnDeshacerImportacion = document.getElementById("btnDeshacerImportacion");
+const modalConfirmarDeshacer = document.getElementById("modalConfirmarDeshacer");
+const btnConfirmarDeshacer = document.getElementById("btnConfirmarDeshacer");
+const btnCancelarDeshacer = document.getElementById("btnCancelarDeshacer");
+const cerrarModalDeshacer = document.getElementById("cerrarModalDeshacer");
+
+if (btnDeshacerImportacion) {
+    btnDeshacerImportacion.addEventListener("click", (e) => {
+        e.preventDefault();
+        modalConfirmarDeshacer.classList.remove("esconder");
+    });
+}
+
+const ocultarModalDeshacer = () => {
+    modalConfirmarDeshacer.classList.add("esconder");
+};
+
+if (btnCancelarDeshacer) btnCancelarDeshacer.addEventListener("click", ocultarModalDeshacer);
+if (cerrarModalDeshacer) cerrarModalDeshacer.addEventListener("click", ocultarModalDeshacer);
+
+if (btnConfirmarDeshacer) {
+    btnConfirmarDeshacer.addEventListener("click", async () => {
+        ocultarModalDeshacer();
+        btnDeshacerImportacion.disabled = true;
+        btnDeshacerImportacion.textContent = "Deshaciendo...";
+
+        try {
+            const res = await fetch("/importados/ultimo", {
+                method: "DELETE"
+            });
+            const result = await res.json();
+            
+            if (!res.ok) {
+                mostrarToast(result.error || "Error al deshacer", "error");
+            } else {
+                mostrarToast(`${result.mensaje} (${result.eliminados} incidentes)`, "exito");
+                cerrarModalImportar();
+                filtrar(); // Recargar mapa y tabla
+                contar();  // Actualizar el total de incidentes
+            }
+        } catch (error) {
+            console.error(error);
+            mostrarToast("Error de conexión", "error");
+        } finally {
+            btnDeshacerImportacion.innerHTML = '<i class="bi bi-arrow-counterclockwise"></i> Deshacer última importación masiva';
+            btnDeshacerImportacion.disabled = false;
         }
     });
 }

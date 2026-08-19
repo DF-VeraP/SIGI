@@ -1,5 +1,23 @@
 let tiposId = [];
 
+// Variables globales para el filtro de tiempo
+let filtroFechaDesde = "";
+let filtroFechaHasta = "";
+
+function formatearFecha(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+// Inicializar a 3 meses por defecto
+const hoyInicial = new Date();
+const hace3MesesInicial = new Date();
+hace3MesesInicial.setMonth(hoyInicial.getMonth() - 3);
+filtroFechaDesde = formatearFecha(hace3MesesInicial);
+filtroFechaHasta = formatearFecha(hoyInicial);
+
 const inpBuscarBarrio = document.getElementById("buscarBarrio");
 const inpBuscarVereda = document.getElementById("buscarVereda");
 const contenedor = document.getElementById("sugerencias");
@@ -45,7 +63,8 @@ async function mostrarEstadisticas() {
 }
 
 async function cargarResumen() {
-    const res = await fetch("/resumen");
+    const q = `?fechaDesde=${filtroFechaDesde}&fechaHasta=${filtroFechaHasta}`;
+    const res = await fetch(`/resumen${q}`);
     const data = await res.json();
     const total = Number(data.total) || 0;
 
@@ -58,7 +77,7 @@ async function cargarResumen() {
     document.getElementById("piques").textContent = pct(data.piques);
     document.getElementById("agresiones").textContent = pct(data.agresiones);
 
-    const resZonas = await fetch("/top-zonas");
+    const resZonas = await fetch(`/top-zonas${q}`);
     const dataZonas = await resZonas.json();
 
     document.getElementById("topBarrio").textContent =
@@ -202,6 +221,12 @@ function obtenerURL() {
     if (tiposId.length > 0) {
         url += `tipos=${tiposId.join(",")}&`;
     }
+    if (filtroFechaDesde) {
+        url += `fechaDesde=${filtroFechaDesde}&`;
+    }
+    if (filtroFechaHasta) {
+        url += `fechaHasta=${filtroFechaHasta}&`;
+    }
     return url;
 }
 
@@ -212,13 +237,46 @@ function cargarIncidentes() {
         .then(res => res.json())
         .then(data => {
             data.forEach(incidente => {
-                L.circleMarker([incidente.lat, incidente.lng], {
+                const marker = L.circleMarker([incidente.lat, incidente.lng], {
                     pane: 'incidentesPane',
                     radius: esMobile() ? 6 : 5,
                     color: obtenerColor(incidente.idtipoincidente),
                     fillColor: obtenerColor(incidente.idtipoincidente),
                     fillOpacity: 0.7
                 }).addTo(capaIncidentes);
+
+                // HOVER → mostrar código
+                marker.on("mouseover", function () {
+                    if (incidente.codigoincidente) {
+                        marker.bindTooltip(incidente.codigoincidente, {
+                            permanent: false,
+                            direction: "top",
+                            offset: [0, -10]
+                        }).openTooltip();
+                    }
+                });
+
+                // Salir del punto
+                marker.on("mouseout", function () {
+                    marker.closeTooltip();
+                });
+
+                // CLICK → mostrar detalles
+                marker.on("click", function () {
+                    const hora = incidente.horaincidente ? incidente.horaincidente.slice(0, 5) : "N/A";
+                    const contenido = `
+                        <b>Código:</b> ${incidente.codigoincidente || 'N/A'}<br>
+                        <b>Tipo:</b> ${incidente.nametipoincidente || 'N/A'}<br>
+                        <b>Fecha:</b> ${new Date(incidente.fechaincidente).toLocaleDateString("es-CO", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "2-digit"
+                        })}<br>
+                        <b>Hora:</b> ${hora}<br>
+                        <b>Descripción:</b> ${incidente.descripcionincidente || 'Sin descripción'}
+                    `;
+                    marker.bindPopup(contenido).openPopup();
+                });
             });
         })
         .catch(error => console.error("Error:", error));
@@ -318,10 +376,32 @@ document.querySelector(".restablecer").addEventListener("click", function () {
     capaBarrio.clearLayers();
     capaVereda.clearLayers();
     desmarcarTiposInput();
+    inpBuscarBarrio.value = "";
+    inpBuscarVereda.value = "";
+    
+    // Resetear tiempo a 3 meses
+    const hoy = new Date();
+    const hace3 = new Date();
+    hace3.setMonth(hoy.getMonth() - 3);
+    filtroFechaDesde = formatearFecha(hace3);
+    filtroFechaHasta = formatearFecha(hoy);
+
+    // Limpiar UI del modal
+    document.getElementById("fechaDesdeModal").value = "";
+    document.getElementById("fechaHastaModal").value = "";
+    document.getElementById("mesFiltroModal").value = "";
+    if (document.getElementById("anioFiltroModal")) document.getElementById("anioFiltroModal").value = "";
+    document.querySelectorAll(".btn-rapido-modal").forEach(b => b.classList.remove("activo"));
+    const btn3Meses = Array.from(document.querySelectorAll(".btn-rapido-modal")).find(b => b.dataset.rango === "3meses");
+    if (btn3Meses) btn3Meses.classList.add("activo");
+
     cargarBarrio();
-    cargarIncidentes();
     cargarVeredas();
+    cargarIncidentes();
+    cargarResumen();
+    cargarIncidentesBarra();
     resetMapa();
+    actualizarBadgeFiltros();
 });
 
 inpBuscarBarrio.addEventListener("input", function () {
@@ -380,7 +460,8 @@ inpBuscarVereda.addEventListener("input", function () {
 let graficoAnimFrame = null;
 
 async function cargarIncidentesBarra() {
-    const res = await fetch("/top-incidentes");
+    const q = `?fechaDesde=${filtroFechaDesde}&fechaHasta=${filtroFechaHasta}`;
+    const res = await fetch(`/top-incidentes${q}`);
     const data = await res.json();
     if (!data.length) return;
 
@@ -550,8 +631,281 @@ window.addEventListener("resize", () => {
     }
 });
 
+/* ══════════════════════════════════════
+   CLICK EN EL MAPA — Obtener Coordenadas
+══════════════════════════════════════ */
+let popupUbicacion = L.popup();
+
+map.on("click", function (e) {
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
+
+    popupUbicacion
+        .setLatLng(e.latlng)
+        .setContent("<div style='text-align:center;'>Cargando ubicación...</div>")
+        .openOn(map);
+
+    fetch(`/buscarBarrioPorCoordenada?lat=${lat}&lng=${lng}`)
+        .then(res => res.json())
+        .then(data => {
+            let texto = "";
+            if (data.barrio && data.vereda) {
+                texto = `<b>Barrio:</b> ${data.barrio}<br><b>Vereda:</b> ${data.vereda}`;
+            } else if (data.barrio) {
+                texto = `<b>Barrio:</b> ${data.barrio}`;
+            } else if (data.vereda) {
+                texto = `<b>Vereda:</b> ${data.vereda}`;
+            } else {
+                texto = "Sin información de zona";
+            }
+
+            const contenido = `
+                <div style="text-align: center; font-family: sans-serif; min-width: 150px;">
+                    <div style="font-size: 13px; color: #555; margin-bottom: 5px;">📍 Coordenada seleccionada</div>
+                    <b>Lat:</b> ${lat.toFixed(5)}<br>
+                    <b>Lng:</b> ${lng.toFixed(5)}
+                    <hr style="margin: 8px 0; border: 0; border-top: 1px solid #ddd;">
+                    ${texto}
+                </div>
+            `;
+            popupUbicacion.setContent(contenido);
+        })
+        .catch(err => {
+            console.error("Error obteniendo ubicación:", err);
+            popupUbicacion.setContent("<div style='text-align:center; color:red;'>Error al obtener ubicación</div>");
+        });
+});
+
 cargarIncidentesBarra();
 cargarVeredas();
 cargarBarrio();
 cargarIncidentes();
 actualizarBadgeFiltros();
+
+function mostrarInfoTemporal(mensaje) {
+    const toast = document.createElement("div");
+    toast.textContent = mensaje;
+    toast.style.position = "fixed";
+    toast.style.top = "20px";
+    toast.style.left = "50%";
+    toast.style.transform = "translateX(-50%)";
+    toast.style.backgroundColor = "rgba(0, 0, 0, 0.85)";
+    toast.style.color = "#fff";
+    toast.style.padding = "12px 24px";
+    toast.style.borderRadius = "8px";
+    toast.style.zIndex = "99999";
+    toast.style.fontSize = "0.9rem";
+    toast.style.boxShadow = "0 4px 12px rgba(0,0,0,0.3)";
+    toast.style.border = "1px solid var(--azul)";
+    toast.style.opacity = "0";
+    toast.style.transition = "opacity 0.4s ease, transform 0.4s ease";
+    toast.style.textAlign = "center";
+    toast.style.maxWidth = "90vw";
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.opacity = "1";
+        toast.style.transform = "translateX(-50%) translateY(10px)";
+    }, 100);
+    
+    setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateX(-50%) translateY(-10px)";
+        setTimeout(() => toast.remove(), 400);
+    }, 5000);
+}
+
+setTimeout(() => {
+    mostrarInfoTemporal("Mostrando incidentes de los últimos 3 meses por defecto.");
+}, 800);
+
+
+/* ════════════════════════════════
+   MODAL FILTRO DE TIEMPO (Dashboard)
+   ════════════════════════════════ */
+
+const modalFiltroTiempo = document.getElementById("modalFiltroTiempo");
+const btnAbrirFiltroTiempo = document.getElementById("btnAbrirFiltroTiempo");
+const btnCerrarFiltroTiempo = document.getElementById("btnCerrarFiltroTiempo");
+
+const anioFiltroModal = document.getElementById("anioFiltroModal");
+if (anioFiltroModal) {
+    const currentYear = new Date().getFullYear();
+    for (let y = currentYear; y >= 2020; y--) {
+        const option = document.createElement("option");
+        option.value = y;
+        option.textContent = y;
+        anioFiltroModal.appendChild(option);
+    }
+}
+
+if (btnAbrirFiltroTiempo) {
+    btnAbrirFiltroTiempo.addEventListener("click", () => {
+        modalFiltroTiempo.style.display = "flex";
+    });
+}
+
+function cerrarModalFiltroTiempo() {
+    modalFiltroTiempo.style.display = "none";
+}
+if (btnCerrarFiltroTiempo) btnCerrarFiltroTiempo.addEventListener("click", cerrarModalFiltroTiempo);
+
+window.addEventListener("click", (e) => {
+    if (e.target === modalFiltroTiempo) {
+        cerrarModalFiltroTiempo();
+    }
+});
+
+function aplicarFiltroGlobal() {
+    // Cuando cambia el filtro de tiempo, recargamos mapa y estadísticas
+    cargarIncidentes();
+    cargarResumen();
+    cargarIncidentesBarra();
+    cerrarModalFiltroTiempo();
+}
+
+const btnRapidos = document.querySelectorAll(".btn-rapido-modal");
+btnRapidos.forEach(btn => {
+    btn.addEventListener("click", () => {
+        btnRapidos.forEach(b => b.classList.remove("activo"));
+        btn.classList.add("activo");
+
+        const rango = btn.dataset.rango;
+        const hoyObj = new Date();
+        filtroFechaHasta = formatearFecha(hoyObj);
+
+        switch (rango) {
+            case "hoy": filtroFechaDesde = formatearFecha(hoyObj); break;
+            case "semana": 
+                const haceUnaSemana = new Date(); haceUnaSemana.setDate(hoyObj.getDate() - 7);
+                filtroFechaDesde = formatearFecha(haceUnaSemana); break;
+            case "15dias":
+                const hace15Dias = new Date(); hace15Dias.setDate(hoyObj.getDate() - 15);
+                filtroFechaDesde = formatearFecha(hace15Dias); break;
+            case "mes":
+                const haceUnMes = new Date(); haceUnMes.setMonth(hoyObj.getMonth() - 1);
+                filtroFechaDesde = formatearFecha(haceUnMes); break;
+            case "3meses":
+                const hace3Meses = new Date(); hace3Meses.setMonth(hoyObj.getMonth() - 3);
+                filtroFechaDesde = formatearFecha(hace3Meses); break;
+            case "1anio":
+                const hace1Anio = new Date(); hace1Anio.setFullYear(hoyObj.getFullYear() - 1);
+                filtroFechaDesde = formatearFecha(hace1Anio); break;
+        }
+
+        document.getElementById("fechaDesdeModal").value = "";
+        document.getElementById("fechaHastaModal").value = "";
+        document.getElementById("mesFiltroModal").value = "";
+        if (document.getElementById("anioFiltroModal")) document.getElementById("anioFiltroModal").value = "";
+
+        aplicarFiltroGlobal();
+    });
+});
+
+const btnAplicarRango = document.getElementById("btnAplicarRangoModal");
+if (btnAplicarRango) {
+    btnAplicarRango.addEventListener("click", () => {
+        const desde = document.getElementById("fechaDesdeModal").value;
+        const hasta = document.getElementById("fechaHastaModal").value;
+
+        if (!desde || !hasta) {
+            alert("Ambos campos de fecha son obligatorios."); return;
+        }
+        if (new Date(desde) > new Date(hasta)) {
+            alert("La fecha 'Desde' no puede ser mayor que 'Hasta'."); return;
+        }
+
+        btnRapidos.forEach(b => b.classList.remove("activo"));
+        document.getElementById("mesFiltroModal").value = "";
+        if (document.getElementById("anioFiltroModal")) document.getElementById("anioFiltroModal").value = "";
+
+        filtroFechaDesde = desde;
+        filtroFechaHasta = hasta;
+
+        aplicarFiltroGlobal();
+    });
+}
+
+const btnLimpiarRango = document.getElementById("btnLimpiarRangoModal");
+if (btnLimpiarRango) {
+    btnLimpiarRango.addEventListener("click", () => {
+        document.getElementById("fechaDesdeModal").value = "";
+        document.getElementById("fechaHastaModal").value = "";
+        const hoy = new Date();
+        const hace3 = new Date();
+        hace3.setMonth(hoy.getMonth() - 3);
+        filtroFechaDesde = formatearFecha(hace3);
+        filtroFechaHasta = formatearFecha(hoy);
+        aplicarFiltroGlobal();
+    });
+}
+
+const btnFiltrarMes = document.getElementById("btnFiltrarMesModal");
+if (btnFiltrarMes) {
+    btnFiltrarMes.addEventListener("click", () => {
+        const mesAnio = document.getElementById("mesFiltroModal").value; 
+        if (!mesAnio) { alert("Debe seleccionar un mes."); return; }
+
+        btnRapidos.forEach(b => b.classList.remove("activo"));
+        document.getElementById("fechaDesdeModal").value = "";
+        document.getElementById("fechaHastaModal").value = "";
+        if (document.getElementById("anioFiltroModal")) document.getElementById("anioFiltroModal").value = "";
+
+        const [anioStr, mesStr] = mesAnio.split("-");
+        const anio = parseInt(anioStr);
+        const mes = parseInt(mesStr) - 1;
+        const primerDia = new Date(anio, mes, 1);
+        const ultimoDia = new Date(anio, mes + 1, 0);
+
+        filtroFechaDesde = formatearFecha(primerDia);
+        filtroFechaHasta = formatearFecha(ultimoDia);
+
+        aplicarFiltroGlobal();
+    });
+}
+
+const btnFiltrarAnio = document.getElementById("btnFiltrarAnioModal");
+if (btnFiltrarAnio) {
+    btnFiltrarAnio.addEventListener("click", () => {
+        const anio = document.getElementById("anioFiltroModal").value; 
+        if (!anio) { alert("Debe seleccionar un año."); return; }
+
+        btnRapidos.forEach(b => b.classList.remove("activo"));
+        document.getElementById("fechaDesdeModal").value = "";
+        document.getElementById("fechaHastaModal").value = "";
+        document.getElementById("mesFiltroModal").value = "";
+
+        const y = parseInt(anio);
+        const primerDia = new Date(y, 0, 1);
+        const ultimoDia = new Date(y, 11, 31);
+
+        filtroFechaDesde = formatearFecha(primerDia);
+        filtroFechaHasta = formatearFecha(ultimoDia);
+
+        aplicarFiltroGlobal();
+    });
+}
+
+const btnLimpiarTodo = document.getElementById("btnLimpiarTodoModal");
+if (btnLimpiarTodo) {
+    btnLimpiarTodo.addEventListener("click", () => {
+        document.getElementById("fechaDesdeModal").value = "";
+        document.getElementById("fechaHastaModal").value = "";
+        document.getElementById("mesFiltroModal").value = "";
+        if (document.getElementById("anioFiltroModal")) document.getElementById("anioFiltroModal").value = "";
+        btnRapidos.forEach(b => b.classList.remove("activo"));
+        
+        const hoy = new Date();
+        const hace3 = new Date();
+        hace3.setMonth(hoy.getMonth() - 3);
+        filtroFechaDesde = formatearFecha(hace3);
+        filtroFechaHasta = formatearFecha(hoy);
+
+        // Volver a marcar como activo el botón de 3 meses si existe
+        const btn3Meses = Array.from(btnRapidos).find(b => b.dataset.rango === "3meses");
+        if (btn3Meses) btn3Meses.classList.add("activo");
+
+        aplicarFiltroGlobal();
+    });
+}

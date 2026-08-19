@@ -39,6 +39,11 @@
             <i class="bi bi-arrow-counterclockwise icono-mobile" aria-hidden="true"></i>
             <span class="texto-desktop">Restablecer</span>
         </button>
+        <button id="btnAbrirFiltroTiempo" type="button" class="fab fab-tiempo" aria-label="Filtrar por tiempo">
+            <i class="bi bi-calendar3 icono-mobile" aria-hidden="true"></i>
+            <i class="bi bi-calendar3 icono-desktop" aria-hidden="true"></i>
+            <span class="texto-desktop" style="margin-left: 5px;">Tiempo</span>
+        </button>
 
         <div id="filtrosOverlay" class="filtros-overlay" aria-hidden="true"></div>
 
@@ -172,6 +177,86 @@
     </footer>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <!-- MODAL FILTRO DE TIEMPO -->
+    <div id="modalFiltroTiempo" class="modal">
+        <div class="modal-contenido modal-tiempo">
+            <div class="modal-cabecera">
+                <h3>Filtrar por tiempo</h3>
+                <span class="cerrar-modal-tiempo" id="btnCerrarFiltroTiempo">&times;</span>
+            </div>
+            
+            <div class="modal-cuerpo">
+                <!-- BOTONES RÁPIDOS -->
+                <div class="seccion-filtro-modal">
+                    <span class="titulo-seccion-modal">Botones rápidos</span>
+                    <div class="botones-rapidos-grid">
+                        <button type="button" class="btn-rapido-modal" data-rango="hoy">Hoy</button>
+                        <button type="button" class="btn-rapido-modal" data-rango="semana">Última semana</button>
+                        <button type="button" class="btn-rapido-modal" data-rango="15dias">15 días</button>
+                        <button type="button" class="btn-rapido-modal" data-rango="mes">Último mes</button>
+                        <button type="button" class="btn-rapido-modal" data-rango="3meses">3 meses</button>
+                        <button type="button" class="btn-rapido-modal" data-rango="1anio">1 año</button>
+                    </div>
+                </div>
+
+                <!-- RANGO PERSONALIZADO -->
+                <div class="seccion-filtro-modal">
+                    <span class="titulo-seccion-modal">Rango personalizado</span>
+                    <div class="rango-personalizado-modal">
+                        <div class="inputs-rango-modal">
+                            <div class="campo-modal">
+                                <label for="fechaDesdeModal">Desde</label>
+                                <input type="date" id="fechaDesdeModal" class="input-modal-fecha">
+                            </div>
+                            <div class="campo-modal">
+                                <label for="fechaHastaModal">Hasta</label>
+                                <input type="date" id="fechaHastaModal" class="input-modal-fecha">
+                            </div>
+                        </div>
+                        <div class="botones-rango-modal">
+                            <button type="button" id="btnAplicarRangoModal" class="btn-verde">Aplicar</button>
+                            <button type="button" id="btnLimpiarRangoModal" class="btn-rojo">Limpiar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MES ESPECÍFICO -->
+                <div class="seccion-filtro-modal">
+                    <span class="titulo-seccion-modal">Mes específico</span>
+                    <div class="mes-especifico-modal">
+                        <div class="campo-modal">
+                            <label for="mesFiltroModal">Mes y año</label>
+                            <input type="month" id="mesFiltroModal" class="input-modal-month">
+                        </div>
+                        <button type="button" id="btnFiltrarMesModal" class="btn-verde">Filtrar</button>
+                    </div>
+                </div>
+
+                <!-- AÑO ESPECÍFICO -->
+                <div class="seccion-filtro-modal" style="border-bottom: none; padding-bottom: 0;">
+                    <span class="titulo-seccion-modal">Año específico</span>
+                    <div class="mes-especifico-modal">
+                        <div class="campo-modal">
+                            <label for="anioFiltroModal">Seleccionar año</label>
+                            <select id="anioFiltroModal" class="input-modal-fecha">
+                                <option value="">---</option>
+                            </select>
+                        </div>
+                        <button type="button" id="btnFiltrarAnioModal" class="btn-verde">Filtrar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FOOTER CON LIMPIEZA GENERAL -->
+            <div class="modal-pie">
+                <button type="button" id="btnLimpiarTodoModal" class="btn-limpiar-general">
+                    Limpiar Filtros
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="dashboard.js"></script>
 </body>
 

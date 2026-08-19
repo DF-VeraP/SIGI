@@ -256,12 +256,34 @@ main {
     display: none;
 }
 
+.fab-tiempo {
+    bottom: calc(136px + var(--safe-bottom));
+    left: 16px;
+    width: var(--fab-size);
+    height: var(--fab-size);
+    border-radius: 50%;
+    background: var(--bg-card);
+    color: var(--acento);
+    font-size: 1.25rem;
+    border-color: var(--borde-acento);
+}
+
+.fab-tiempo:active {
+    background: var(--acento);
+    color: #000;
+}
+
+.fab-tiempo .texto-desktop {
+    display: none;
+}
+
 /* Ocultar FAB cuando el panel de filtros está abierto */
 main.filtros-abiertos .fab-filtros,
-main.filtros-abiertos .fab-reset {
+main.filtros-abiertos .fab-reset,
+main.filtros-abiertos .fab-tiempo {
     opacity: 0;
     pointer-events: none;
-    transform: scale(0.8);
+    transform: translateY(20px) scale(0.9);
 }
 
 /* ════════════════════════════════
@@ -889,10 +911,35 @@ main.filtros-abiertos .fab-reset {
     }
 
     main.filtros-abiertos .fab-filtros,
-    main.filtros-abiertos .fab-reset {
+    main.filtros-abiertos .fab-reset,
+    main.filtros-abiertos .fab-tiempo {
         opacity: 1;
         pointer-events: auto;
         transform: none;
+    }
+
+    #btnAbrirFiltroTiempo.fab-tiempo {
+        position: absolute;
+        top: 12px;
+        left: 20%;
+        right: auto;
+        bottom: auto;
+        width: auto;
+        height: auto;
+        border-radius: var(--radio);
+        padding: 7px 14px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--texto-suave);
+        background: var(--bg-card);
+        border: 1px solid var(--borde);
+        box-shadow: var(--sombra);
+    }
+
+    #btnAbrirFiltroTiempo.fab-tiempo:hover {
+        background: var(--azul);
+        color: #fff;
+        border-color: var(--azul);
     }
 
     #panelFiltros {
@@ -1092,4 +1139,222 @@ main.filtros-abiertos .fab-reset {
     .sigi-footer {
         display: none;
     }
+}
+
+/* ════════════════════════════════
+   MODAL FILTRO TIEMPO (Dashboard)
+════════════════════════════════ */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+    backdrop-filter: blur(5px);
+    animation: fadeInModal 0.25s ease;
+}
+
+@keyframes fadeInModal {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-contenido {
+    background: var(--bg-card);
+    border: 1px solid var(--borde);
+    padding: 24px;
+    border-radius: 14px;
+    width: min(380px, 92vw);
+    color: var(--texto);
+    box-shadow: var(--sombra);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--borde);
+    padding-bottom: 12px;
+}
+
+.modal-cabecera h3 {
+    font-size: 1.1rem;
+    color: var(--acento);
+}
+
+.cerrar-modal-tiempo {
+    font-size: 1.6rem;
+    cursor: pointer;
+    color: var(--texto-suave);
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.cerrar-modal-tiempo:hover {
+    color: var(--rojo);
+}
+
+.seccion-filtro-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 16px;
+    border-bottom: 1px dashed var(--borde);
+}
+
+.titulo-seccion-modal {
+    font-size: 0.8rem;
+    color: var(--texto-suave);
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.botones-rapidos-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.btn-rapido-modal {
+    background: var(--bg-input, rgba(255, 255, 255, 0.05));
+    border: 1px solid var(--borde);
+    color: var(--texto);
+    padding: 8px 4px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.btn-rapido-modal:hover,
+.btn-rapido-modal.activo {
+    background: var(--azul);
+    border-color: var(--azul);
+    color: #fff;
+}
+
+.inputs-rango-modal {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.campo-modal {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.campo-modal label {
+    font-size: 0.75rem;
+    color: var(--texto-suave);
+}
+
+.input-modal-fecha,
+.input-modal-month {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--borde);
+    background: var(--bg-card);
+    color: var(--texto);
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.input-modal-fecha:focus,
+.input-modal-month:focus {
+    border-color: var(--azul);
+}
+
+.input-modal-fecha::-webkit-calendar-picker-indicator,
+.input-modal-month::-webkit-calendar-picker-indicator {
+    filter: invert(0.8);
+    cursor: pointer;
+}
+
+.botones-rango-modal {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-verde {
+    background: var(--verde);
+    border: 1px solid rgba(63, 185, 80, 0.4);
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 1;
+}
+
+.btn-verde:hover {
+    background: #4cd15c;
+}
+
+.btn-rojo {
+    background: var(--rojo);
+    border: 1px solid rgba(248, 81, 73, 0.4);
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 1;
+}
+
+.btn-rojo:hover {
+    background: #f8665f;
+}
+
+.mes-especifico-modal {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.mes-especifico-modal .btn-verde {
+    flex: 0 0 auto;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-pie {
+    display: flex;
+    justify-content: center;
+    padding-top: 8px;
+}
+
+.btn-limpiar-general {
+    background: transparent;
+    border: 1px solid var(--rojo);
+    color: #ff6b6b;
+    padding: 8px 24px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.btn-limpiar-general:hover {
+    background: var(--rojo);
+    color: #fff;
 }

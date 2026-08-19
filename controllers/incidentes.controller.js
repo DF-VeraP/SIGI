@@ -139,6 +139,7 @@ const importarIncidentesMasivo = async (req, res) => {
     .on('end', async () => {
       let exitos = 0;
       let fallidos = 0;
+      const idLote = Date.now().toString();
 
       // Si no usó punto y coma, intentamos con coma normal
       let finalResults = results;
@@ -169,13 +170,13 @@ const importarIncidentesMasivo = async (req, res) => {
         try {
           await pool.query(`
             INSERT INTO incidente
-            (descripcionincidente, idtipoincidente, fechaincidente, horaincidente, geom, idusuario)
+            (descripcionincidente, idtipoincidente, fechaincidente, horaincidente, geom, idusuario, origen, id_lote)
             VALUES (
               $1, $2, $3, $4,
               ST_SetSRID(ST_MakePoint($5, $6), 4326),
-              $7
+              $7, $8, $9
             )
-          `, [desc, tipo, fecha, hora, lng, lat, idusuarioLogueado]);
+          `, [desc, tipo, fecha, hora, lng, lat, idusuarioLogueado, 'masivo', idLote]);
           exitos++;
         } catch (err) {
           console.error("Error insertando fila CSV:", err);
@@ -191,10 +192,46 @@ const importarIncidentesMasivo = async (req, res) => {
     });
 };
 
+const deshacerUltimaImportacion = async (req, res) => {
+  const idusuarioLogueado = req.session.idusuario;
+  if (!idusuarioLogueado) {
+    return res.status(401).json({ error: "No autorizado" });
+  }
+
+  try {
+    const resultLote = await pool.query(
+      `SELECT id_lote FROM incidente 
+       WHERE idusuario = $1 AND origen = 'masivo' AND id_lote IS NOT NULL
+       ORDER BY fecharegistro DESC LIMIT 1`, 
+      [idusuarioLogueado]
+    );
+
+    if (resultLote.rows.length === 0) {
+      return res.status(404).json({ error: "No se encontraron importaciones masivas para deshacer." });
+    }
+
+    const ultimoLote = resultLote.rows[0].id_lote;
+
+    const resultDelete = await pool.query(
+      "DELETE FROM incidente WHERE id_lote = $1 AND idusuario = $2",
+      [ultimoLote, idusuarioLogueado]
+    );
+
+    res.json({ 
+      mensaje: "Última importación deshecha correctamente", 
+      eliminados: resultDelete.rowCount 
+    });
+  } catch (error) {
+    console.error("Error deshaciendo importación:", error);
+    res.status(500).json({ error: "Error en servidor al deshacer importación" });
+  }
+};
+
 module.exports = {
   registrarIncidente,
   eliminarIncidente,
   obtenerIncidente,
   actualizarIncidente,
-  importarIncidentesMasivo
+  importarIncidentesMasivo,
+  deshacerUltimaImportacion
 };
