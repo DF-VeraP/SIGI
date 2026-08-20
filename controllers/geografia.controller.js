@@ -16,10 +16,14 @@ const getIncidentes = async (req, res) => {
         codigoincidente,
         i.fechaincidente,
         i.horaincidente,
-        tp.nametipoincidente
+        tp.nametipoincidente,
+        b.namebarrio,
+        v.nombre AS nombrevereda
       FROM incidente i
       LEFT JOIN barrio b
       ON ST_Within(i.geom, b.geom)
+      LEFT JOIN vereda v
+      ON ST_Within(i.geom, v.geom)
       JOIN tipo_incidente tp
       ON i.idtipoincidente = tp.idtipoincidente
       WHERE 1=1

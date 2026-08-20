@@ -9,25 +9,161 @@
     <link rel="stylesheet" href="dashboard.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+    <style>
+        .map-wrapper {
+            flex: 1;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #vistaMapa { position: relative; }
+        
+        #map {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+        }
+
+        .leyenda {
+            left: 0 !important;
+            right: 0 !important;
+            margin: 0 auto !important;
+            transform: none !important;
+            width: max-content !important;
+        }
+
+        /* ════════════════════════════════
+           KPI RIBBON (Fase 1 - Obj 3)
+        ════════════════════════════════ */
+        .kpi-ribbon {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            z-index: 999;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            padding: 0 20px;
+            pointer-events: none; /* Dejar que los clics pasen al mapa si no es sobre las tarjetas */
+            flex-wrap: wrap;
+        }
+
+        .kpi-card {
+            background: rgba(13, 17, 23, 0.75);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid var(--borde);
+            border-radius: 12px;
+            padding: 10px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            pointer-events: auto; /* Las tarjetas sí bloquean clics */
+            box-shadow: var(--sombra);
+            min-width: 130px;
+        }
+
+        .kpi-label {
+            font-size: 0.7rem;
+            color: var(--texto-suave);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .kpi-valor {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--texto);
+        }
+
+        .kpi-variacion-positiva { color: var(--verde) !important; }
+        .kpi-variacion-negativa { color: var(--rojo) !important; }
+
+        @media (max-width: 768px) {
+            .kpi-ribbon {
+                top: 10px;
+                padding: 0 10px;
+                flex-wrap: nowrap;
+                justify-content: flex-start;
+                overflow-x: auto;
+                pointer-events: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .kpi-card {
+                flex: 0 0 auto;
+                min-width: 140px;
+            }
+            /* Ocultar barra de scroll en móviles para limpieza visual */
+            .kpi-ribbon::-webkit-scrollbar { display: none; }
+            .kpi-ribbon { -ms-overflow-style: none; scrollbar-width: none; }
+        }
+
+        #vistaMapa, #vistaMapaCompleto, #vistaTabla {
+            flex: 1;
+            height: auto !important;
+        }
+
+        @media (min-width: 900px) {
+            .leyenda {
+                bottom: 30px !important; /* Vuelve a su posición normal */
+            }
+            .sigi-footer {
+                position: static !important; /* Quitar absolute para no superponer */
+                padding-right: 360px !important;
+                justify-content: center !important;
+                flex-shrink: 0;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <header class="contFlexCent">
-        <nav class="contFlex">
-            <h1>
-                <img src="../assets/img/image.png" alt="Logo SIGI" class="nav-logo">
-                <span class="titulo-corto">SIGI</span>
-                <span class="titulo-completo">SIGI (Mapeo de incidentes)</span>
-            </h1>
-            <div class="botonesNav contFlexCent desktop-only">
-                <button id="ini" type="button">Inicio</button>
-                <button id="estad" type="button">Estadisticas</button>
-                <button id="iniciarSesion" type="button">
-                    Iniciar Sesion <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+    <div class="layout-wrapper">
+        <aside class="sidebar desktop-only">
+            <div class="sidebar-logo">
+                <img src="../assets/img/image.png" alt="Logo SIGI">
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-view="mapa" title="Dashboard">
+                    <i class="bi bi-house"></i> <span class="nav-text">Dashboard</span>
+                </button>
+                <button class="nav-btn" data-view="mapa-completo" title="Mapa Completo">
+                    <i class="bi bi-map"></i> <span class="nav-text">Explorar</span>
+                </button>
+                <button class="nav-btn" data-view="tabla" title="Tabla de Incidentes">
+                    <i class="bi bi-table"></i> <span class="nav-text">Datos</span>
+                </button>
+                <button class="nav-btn" data-view="estadisticas" title="Estadísticas">
+                    <i class="bi bi-bar-chart"></i> <span class="nav-text">Analítica</span>
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="nav-btn" id="iniciarSesion" title="Iniciar Sesión">
+                    <i class="bi bi-box-arrow-in-right"></i> <span class="nav-text">Login</span>
                 </button>
             </div>
-        </nav>
-    </header>
+        </aside>
+
+        <!-- Cabecera móvil -->
+        <header class="mobile-header mobile-only">
+            <div class="contFlexCent">
+                <img src="../assets/img/image.png" alt="Logo SIGI" class="nav-logo">
+                <span class="titulo-corto">SIGI</span>
+            </div>
+            <button id="iniciarSesionMobile" class="btn-login-mobile">
+                <i class="bi bi-box-arrow-in-right"></i>
+            </button>
+        </header>
+
+        <div class="content-wrapper">
 
     <main id="vistaMapa">
         <button id="btnFiltros" type="button" class="fab fab-filtros" aria-label="Abrir filtros">
@@ -44,6 +180,11 @@
             <i class="bi bi-calendar3 icono-desktop" aria-hidden="true"></i>
             <span class="texto-desktop" style="margin-left: 5px;">Tiempo</span>
         </button>
+        <button id="btnToggleHeatmap" type="button" class="fab fab-heatmap" aria-label="Alternar mapa de calor">
+            <i class="bi bi-fire icono-mobile" aria-hidden="true"></i>
+            <i class="bi bi-fire icono-desktop" aria-hidden="true"></i>
+            <span class="texto-desktop" style="margin-left: 5px;">Calor</span>
+        </button>
 
         <div id="filtrosOverlay" class="filtros-overlay" aria-hidden="true"></div>
 
@@ -52,6 +193,30 @@
                 <i class="bi bi-x" aria-hidden="true"></i>
             </button>
             <div class="contenedorFiltros">
+                <div class="analisis-rapido">
+                    <h3>Análisis rápido</h3>
+                    <div class="ar-grid">
+                        <div class="ar-item">
+                            <span class="ar-label">Visibles:</span>
+                            <span class="ar-valor" id="ar-visibles">0</span>
+                        </div>
+                        <div class="ar-item">
+                            <span class="ar-label">Barrio afectado:</span>
+                            <span class="ar-valor" id="ar-barrio">...</span>
+                        </div>
+                        <div class="ar-item">
+                            <span class="ar-label">Tipo frecuente:</span>
+                            <span class="ar-valor" id="ar-tipo">...</span>
+                        </div>
+                        <div class="ar-item">
+                            <span class="ar-label">Hora crítica:</span>
+                            <span class="ar-valor" id="ar-hora">...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <hr style="border:0; border-top:1px solid var(--borde); margin: 8px 0 16px 0;">
+
                 <h2>
                     <i class="bi bi-funnel" aria-hidden="true"></i>
                     Filtros de Mapa
@@ -90,24 +255,65 @@
             </div>
         </div>
 
-        <div id="map"></div>
-
-        <div class="leyenda contFlexCent" aria-label="Leyenda del mapa">
-            <div class="itemLeyenda">
-                <span class="rojo"></span> Robo
+        <div class="map-wrapper">
+            <div class="kpi-ribbon">
+                <div class="kpi-card">
+                    <span class="kpi-label">Total incidentes</span>
+                    <span class="kpi-valor" id="kpi-total">0</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">Variación mensual</span>
+                    <span class="kpi-valor" id="kpi-variacion">0%</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">Zona más afectada</span>
+                    <span class="kpi-valor" id="kpi-zona">...</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">Tipo predominante</span>
+                    <span class="kpi-valor" id="kpi-tipo">...</span>
+                </div>
             </div>
-            <div class="itemLeyenda">
-                <span class="morado"></span> Piques
-            </div>
-            <div class="itemLeyenda">
-                <span class="amarillo"></span> Agresiones/Amenazas
-            </div>
-            <div class="itemLeyenda">
-                <span class="verde"></span> Accidente de tránsito
+            
+            <div id="map"></div>
+            <div class="leyenda contFlexCent" aria-label="Leyenda del mapa">
+                <div class="itemLeyenda"><span class="rojo"></span> Robo</div>
+                <div class="itemLeyenda"><span class="morado"></span> Piques</div>
+                <div class="itemLeyenda"><span class="amarillo"></span> Agresiones/Amenazas</div>
+                <div class="itemLeyenda"><span class="verde"></span> Accidente de tránsito</div>
             </div>
         </div>
     </main>
 
+
+
+    <!-- TABLA DE DATOS -->
+    <section id="vistaTabla" class="esconder">
+        <div class="tabla-container">
+            <div class="tabla-header">
+                <h2><i class="bi bi-table"></i> Incidentes Registrados</h2>
+                <button id="btnExportarCsv" class="btn-export">Exportar CSV</button>
+            </div>
+            <div class="table-responsive">
+                <table class="tabla-moderna" id="tablaIncidentesPublica">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Tipo</th>
+                            <th>Barrio</th>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyIncidentesPublica">
+                        <!-- Llenado dinámico -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- ESTADÍSTICAS -->
     <div id="estadisticas" class="esconder">
         <div class="resumen">
             <div class="contResumen">
@@ -141,13 +347,49 @@
                 </div>
             </div>
         </div>
+        <!-- Gráfico de Tendencia Temporal -->
+        <div class="grafico-scroll">
+            <h3 class="seccion-titulo" style="margin-bottom: 12px; margin-top: 10px;"><i class="bi bi-graph-up"></i> Evolución de incidentes (Tendencia Temporal)</h3>
+            <div id="panelTendencia" class="panel-grafico">
+                <canvas id="graficoTendencia"></canvas>
+            </div>
+        </div>
+
+        <!-- Gráfico por Hora -->
+        <div class="grafico-scroll">
+            <h3 class="seccion-titulo" style="margin-bottom: 12px; margin-top: 10px;"><i class="bi bi-clock-history"></i> Análisis por Hora (00:00 - 23:59)</h3>
+            <div id="panelHoras" class="panel-grafico">
+                <canvas id="graficoHoras"></canvas>
+            </div>
+        </div>
+
+        <!-- Matriz de Concentración -->
+        <div class="grafico-scroll">
+            <h3 class="seccion-titulo" style="margin-bottom: 12px; margin-top: 10px;"><i class="bi bi-grid-3x3-gap-fill"></i> Matriz de Concentración (Día × Hora)</h3>
+            <div id="panelMatriz" class="panel-grafico" style="padding: 16px; overflow-x: auto;">
+                <div id="matrizDiaHora" class="heatmap-grid"></div>
+            </div>
+        </div>
+
         <!-- Gráfico de barras verticales -->
         <div class="grafico-scroll">
-            <div id="panelIncidentes">
+            <h3 class="seccion-titulo" style="margin-bottom: 12px; margin-top: 10px;"><i class="bi bi-bar-chart-fill"></i> Tipos de incidentes frecuentes</h3>
+            <div id="panelIncidentes" class="panel-grafico">
                 <canvas id="graficoBarras"></canvas>
             </div>
         </div>
-    </div>
+    </div> <!-- Cierra estadisticas -->
+
+    <footer class="sigi-footer">
+        <div class="footer-contenido">
+            <p class="footer-marca">SIGI — Sistema de Información Geográfica de Incidentes</p>
+            <p class="footer-autor">Daniel Felipe Vera Perdomo · Proyecto académico del SENA</p>
+            <p class="footer-copy">© 2025 SENA. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    </div> <!-- Cierra content-wrapper -->
+    </div> <!-- Cierra layout-wrapper -->
 
     <nav class="bottom-nav mobile-only" aria-label="Navegación principal">
         <button type="button" class="bottom-nav-item active" data-view="mapa" aria-current="page">
@@ -167,16 +409,9 @@
             <span>Perfil</span>
         </button>
     </nav>
-
-    <footer class="sigi-footer">
-        <div class="footer-contenido">
-            <p class="footer-marca">SIGI — Sistema de Información Geográfica de Incidentes</p>
-            <p class="footer-autor">Daniel Felipe Vera Perdomo · Proyecto académico del SENA</p>
-            <p class="footer-copy">© 2025 SENA. Todos los derechos reservados.</p>
-        </div>
-    </footer>
-
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 
     <!-- MODAL FILTRO DE TIEMPO -->
     <div id="modalFiltroTiempo" class="modal">
@@ -257,6 +492,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="dashboard.js"></script>
 </body>
 

@@ -610,21 +610,39 @@ main.filtros-abiertos .fab-tiempo {
 }
 
 .contResumen {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
+    overflow-x: auto;
     gap: 12px;
+    padding-bottom: 8px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    /* Ocultar scrollbar estándar en navegadores webkit para que quede más limpio */
+}
+
+.contResumen::-webkit-scrollbar {
+    height: 4px;
+}
+.contResumen::-webkit-scrollbar-track {
+    background: transparent;
+}
+.contResumen::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
 }
 
 /* ── Cards sin borde, con glow y gradiente ── */
 .cardResumen {
-    border-radius: 18px;
-    padding: 18px 16px 14px;
+    border-radius: 16px;
+    padding: 14px 14px 12px;
     color: var(--texto);
     position: relative;
     overflow: hidden;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     border: none;
     background: var(--bg-card);
+    flex: 0 0 auto; /* Permite que el ancho se adapte al contenido */
+    min-width: 165px; /* Ancho mínimo para que se vean bien en móvil */
+    scroll-snap-align: start;
 }
 
 /* Quitamos la línea de color anterior */
@@ -942,34 +960,51 @@ main.filtros-abiertos .fab-tiempo {
         border-color: var(--azul);
     }
 
+    #vistaMapa {
+        display: flex;
+        flex-direction: row-reverse; /* Filtros a la derecha, mapa a la izquierda */
+        width: 100%;
+        height: 100%;
+    }
+
+    .map-wrapper {
+        flex: 0 0 70%;
+        max-width: 70%;
+        position: relative;
+        height: 100%;
+        transition: all 0.3s ease; /* Transición suave al expandirse */
+    }
+
+    /* Cuando se activa Explorar, el mapa toma el 100% */
+    #vistaMapa.modo-explorar .map-wrapper {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
     #panelFiltros {
-        position: absolute;
-        top: 12px;
-        left: 12px;
-        bottom: auto;
-        width: 280px;
-        max-height: calc(100vh - var(--header-h) - 24px);
-        border-radius: 14px;
-        transform: none;
-        visibility: hidden;
-        display: none;
-        transition: opacity 0.25s ease;
+        flex: 0 0 30%;
+        max-width: 30%;
+        position: relative;
+        top: 0;
+        left: 0;
+        width: 100%;
+        max-height: 100%;
+        border-radius: 0;
+        border: none;
+        border-left: 1px solid var(--borde);
+        transform: none !important;
+        visibility: visible !important;
+        display: flex !important;
+        flex-direction: column;
+        transition: none;
     }
 
     #panelFiltros.abierto {
-        display: block;
-        visibility: visible;
-        transform: none;
+        /* No se usa abierto en desktop porque siempre está visible */
     }
 
-    #cerrarFiltros {
-        width: auto;
-        height: auto;
-        background: transparent;
-        font-size: 1.2rem;
-        border-radius: 0;
-        top: 10px;
-        right: 10px;
+    #cerrarFiltros, #btnFiltros {
+        display: none !important;
     }
 
     #cerrarFiltros:hover { color: var(--texto); }
@@ -1035,12 +1070,7 @@ main.filtros-abiertos .fab-tiempo {
         border-radius: 8px;
     }
 
-    #sugerencias {
-        position: absolute;
-        top: 150px;
-        width: calc(100% - 32px);
-        max-height: 100px;
-    }
+
 
     .itemSugerencia {
         padding: 8px 12px;
@@ -1357,4 +1387,571 @@ main.filtros-abiertos .fab-tiempo {
 .btn-limpiar-general:hover {
     background: var(--rojo);
     color: #fff;
+}
+
+/* ====================================================
+   ESTILOS RECUPERADOS: Popups e Interfaz (Fase 1 y 2)
+   ==================================================== */
+
+.popup-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 8px;
+    background: rgba(0,0,0,0.15);
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.03);
+}
+
+.pg-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.pg-label {
+    font-size: 0.65rem;
+    color: var(--texto-suave);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.pg-valor {
+    font-size: 0.8rem;
+    color: var(--texto);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.pg-valor i {
+    color: var(--acento);
+}
+
+.badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-align: center;
+    width: max-content;
+}
+
+.sev-alta { background: rgba(231, 76, 60, 0.2); color: #ff7675; border: 1px solid rgba(231, 76, 60, 0.4); }
+.sev-media { background: rgba(155, 89, 182, 0.2); color: #d6a2e8; border: 1px solid rgba(155, 89, 182, 0.4); }
+.sev-baja { background: rgba(241, 196, 15, 0.2); color: #ffeaa7; border: 1px solid rgba(241, 196, 15, 0.4); }
+.sev-critica { background: rgba(46, 204, 113, 0.2); color: #55efc4; border: 1px solid rgba(46, 204, 113, 0.4); }
+
+.est-nuevo { background: rgba(231, 76, 60, 0.2); color: #ff7675; border: 1px solid rgba(231, 76, 60, 0.4); }
+.est-investigacion { background: rgba(243, 156, 18, 0.2); color: #f39c12; border: 1px solid rgba(243, 156, 18, 0.4); }
+.est-cerrado { background: rgba(46, 204, 113, 0.2); color: #55efc4; border: 1px solid rgba(46, 204, 113, 0.4); }
+
+.zona-row {
+    padding-left: 4px;
+}
+
+.popup-desc {
+    margin-top: 6px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.8rem;
+    color: var(--texto-suave);
+}
+
+@media (min-width: 769px) {
+    .restablecer.fab-reset {
+        position: absolute;
+        top: 95px;
+        left: 10%;
+        right: auto;
+        bottom: auto;
+        width: auto;
+        height: auto;
+        border-radius: var(--radio);
+        padding: 7px 14px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--texto-suave);
+        background: var(--bg-card);
+        border: 1px solid var(--borde);
+        box-shadow: var(--sombra);
+    }
+    .restablecer.fab-reset:hover {
+        background: var(--rojo);
+        color: #fff;
+        border-color: var(--rojo);
+    }
+    #btnAbrirFiltroTiempo.fab-tiempo {
+        position: absolute;
+        top: 95px;
+        left: 20%;
+        right: auto;
+        bottom: auto;
+        width: auto;
+        height: auto;
+        border-radius: var(--radio);
+        padding: 7px 14px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--texto-suave);
+        background: var(--bg-card);
+        border: 1px solid var(--borde);
+        box-shadow: var(--sombra);
+    }
+    #btnAbrirFiltroTiempo.fab-tiempo:hover {
+        background: var(--azul);
+        color: #fff;
+        border-color: var(--azul);
+    }
+    #btnToggleHeatmap.fab-heatmap {
+        position: absolute;
+        top: 95px;
+        left: 30%;
+        right: auto;
+        bottom: auto;
+        width: auto;
+        height: auto;
+        border-radius: var(--radio);
+        padding: 7px 14px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--naranja, #f39c12);
+        background: var(--bg-card);
+        border: 1px solid rgba(243, 156, 18, 0.4);
+        box-shadow: var(--sombra);
+    }
+    #btnToggleHeatmap.fab-heatmap:hover, #btnToggleHeatmap.fab-heatmap.activo {
+        background: var(--naranja, #f39c12);
+        color: #000;
+        border-color: var(--naranja, #f39c12);
+    }
+}
+
+/* ====================================================
+   RECUPERACIÓN DE LAYOUT (Fase 2 - Flexbox)
+   ==================================================== */
+
+.layout-wrapper {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+.content-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+
+.main-content {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar {
+    width: 80px;
+    background: var(--bg-card);
+    border-right: 1px solid var(--borde);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 20px;
+    transition: width 0.3s ease;
+    z-index: 1000;
+}
+
+.sidebar:hover {
+    width: 200px;
+}
+
+.sidebar-logo {
+    margin-bottom: 30px;
+}
+
+.sidebar-logo img {
+    width: 45px;
+    height: auto;
+    transition: all 0.3s ease;
+}
+
+.sidebar:hover .sidebar-logo img {
+    width: 60px;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+.nav-btn {
+    background: transparent;
+    border: none;
+    color: var(--texto-suave);
+    padding: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.nav-btn:hover, .nav-btn.active {
+    color: var(--acento);
+    background: rgba(70, 214, 247, 0.08);
+    border-right: 3px solid var(--acento);
+}
+
+.nav-btn i {
+    font-size: 1.2rem;
+}
+
+.nav-text {
+    display: none;
+    white-space: nowrap;
+    font-weight: 600;
+}
+
+.sidebar:hover .nav-text {
+    display: inline-block;
+}
+
+.sidebar:hover .nav-btn {
+    justify-content: flex-start;
+    padding-left: 20px;
+}
+
+#estadisticas {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+#estadisticas.vista-activa {
+    display: flex;
+}
+
+#vistaMapa.vista-activa {
+    display: flex;
+}
+
+#vistaTabla.vista-activa {
+    display: flex;
+}
+
+/* ====================================================
+   Análisis Rápido
+   ==================================================== */
+.analisis-rapido {
+    background: linear-gradient(145deg, rgba(31, 111, 235, 0.08), rgba(31, 111, 235, 0.02));
+    border: 1px solid rgba(31, 111, 235, 0.2);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.analisis-rapido h3 {
+    font-size: 0.95rem;
+    color: var(--azul);
+    margin-top: 0;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+}
+
+.ar-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.ar-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.ar-label {
+    font-size: 0.65rem;
+    color: var(--texto-suave);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+
+.ar-valor {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--texto);
+}
+
+#ar-visibles {
+    color: var(--acento);
+}
+/* ====================================================
+   Matriz de Concentración (Heatmap)
+   ==================================================== */
+.heatmap-grid {
+    display: grid;
+    grid-template-columns: 40px repeat(24, 1fr);
+    gap: 2px;
+    min-width: 700px; /* Para permitir scroll en móviles */
+    padding: 10px 0;
+}
+
+.hm-cell {
+    aspect-ratio: 1;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.03);
+    position: relative;
+    cursor: crosshair;
+    transition: transform 0.1s ease, z-index 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    color: transparent;
+}
+
+.hm-cell:hover {
+    transform: scale(1.6);
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-weight: bold;
+}
+
+.hm-label-y {
+    font-size: 0.75rem;
+    color: var(--texto-suave);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+    font-weight: 600;
+}
+
+.hm-label-x {
+    font-size: 0.65rem;
+    color: var(--texto-suave);
+    text-align: center;
+    margin-bottom: 4px;
+}
+
+/* ====================================================
+   VISTA TABLA DE DATOS (Modern Redesign)
+   ==================================================== */
+
+#vistaTabla {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    overflow-y: auto;
+    padding: 24px;
+    background: var(--bg-dark);
+}
+
+#vistaTabla.vista-activa {
+    display: flex;
+}
+
+.tabla-container {
+    background: linear-gradient(145deg, rgba(22, 27, 34, 0.6), rgba(13, 17, 23, 0.8));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.tabla-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.tabla-header h2 {
+    font-size: 1.4rem;
+    color: var(--texto);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 800;
+}
+
+.tabla-header h2 i {
+    color: var(--acento);
+}
+
+.btn-export {
+    background: rgba(31, 111, 235, 0.12);
+    border: 1px solid rgba(31, 111, 235, 0.4);
+    color: var(--azul-hover);
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-export::before {
+    content: "\F32E";
+    font-family: "bootstrap-icons";
+}
+
+.btn-export:hover {
+    background: var(--azul);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(31, 111, 235, 0.4);
+    border-color: var(--azul);
+    transform: translateY(-2px);
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.table-responsive::-webkit-scrollbar {
+    height: 6px;
+}
+.table-responsive::-webkit-scrollbar-track {
+    background: transparent;
+}
+.table-responsive::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+}
+
+.tabla-moderna {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 700px;
+    text-align: left;
+}
+
+.tabla-moderna th {
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--texto-suave);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 16px 20px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.06);
+    font-weight: 700;
+}
+
+.tabla-moderna td {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    font-size: 0.92rem;
+    color: var(--texto);
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.tabla-moderna tbody tr {
+    transition: background 0.25s ease;
+}
+
+.tabla-moderna tbody tr:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.tabla-moderna tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Badges de la tabla */
+.badge-tipo {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
+
+.badge-default { background: rgba(139, 148, 158, 0.15); color: #8b949e; border: 1px solid rgba(139, 148, 158, 0.3); }
+.badge-robo { background: rgba(248, 81, 73, 0.15); color: #ff7b72; border: 1px solid rgba(248, 81, 73, 0.3); }
+.badge-agresion { background: rgba(227, 179, 65, 0.15); color: #f0cc6e; border: 1px solid rgba(227, 179, 65, 0.3); }
+.badge-pique { background: rgba(188, 140, 255, 0.15); color: #d4aaff; border: 1px solid rgba(188, 140, 255, 0.3); }
+.badge-accidente { background: rgba(63, 185, 80, 0.15); color: #7de890; border: 1px solid rgba(63, 185, 80, 0.3); }
+
+/* Estilos oscuros para el control de capas de Leaflet */
+.leaflet-control-layers {
+    background: rgba(13, 17, 23, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    color: var(--texto) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+}
+.leaflet-control-layers-list {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+.leaflet-control-layers-expanded {
+    padding: 10px 14px !important;
+}
+.leaflet-control-layers label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+    cursor: pointer;
+}
+.leaflet-control-layers-separator {
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    margin: 6px -14px 6px -14px !important;
+}
+
+/* Ocultar panel de filtros fuertemente cuando se est� en modo Explorar */
+#vistaMapa.modo-explorar #panelFiltros {
+    display: none !important;
 }

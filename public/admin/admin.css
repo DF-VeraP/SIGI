@@ -179,7 +179,7 @@ main {
 /* Mapa principal */
 .mapa {
     position: relative;
-    flex: 1 1 65%;
+    flex: 1 1 70%;
     min-width: 0;
     border-radius: var(--radio);
     border: 1px solid var(--borde);
@@ -354,7 +354,7 @@ main {
 /* ── Formulario de registro ── */
 .contFormulario {
     flex: 0 0 30%;
-    max-width: 320px;
+    max-width: 400px;
     height: 100%;
     padding: 14px 16px;
     border-radius: var(--radio);
