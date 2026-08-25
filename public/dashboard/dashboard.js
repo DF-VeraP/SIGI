@@ -256,7 +256,42 @@ function cargarResumen() {
         elTopV.textContent = maxV;
     }
 
-    // Ordenar las llaves cronológicamente
+    // --- RENDERING TOP 10 ZONAS CRÍTICAS ---
+    const sortedBarrios = Object.entries(conteoBarrio)
+        .sort((a, b) => b[1] - a[1]) // Mayor a menor
+        .slice(0, 10); // Top 10
+        
+    const topZonasList = document.getElementById("topZonasList");
+    if (topZonasList) {
+        topZonasList.innerHTML = "";
+        if (sortedBarrios.length > 0) {
+            const maxVal = sortedBarrios[0][1]; // El valor más alto será el 100% de la barra
+            
+            sortedBarrios.forEach((item, index) => {
+                const barrio = item[0] || 'Desconocido';
+                const count = item[1];
+                const pct = Math.round((count / maxVal) * 100);
+                
+                const li = document.createElement("li");
+                li.className = "top-zona-item";
+                li.innerHTML = `
+                    <div class="zona-info">
+                        <span class="zona-rank">#${index + 1}</span>
+                        <span class="zona-name">${barrio}</span>
+                        <span class="zona-count">${count} incidentes</span>
+                    </div>
+                    <div class="zona-bar-bg">
+                        <div class="zona-bar-fill" style="width: ${pct}%"></div>
+                    </div>
+                `;
+                topZonasList.appendChild(li);
+            });
+        } else {
+            topZonasList.innerHTML = "<li style='color: var(--texto-suave); font-size: 0.85rem;'>No hay datos para mostrar.</li>";
+        }
+    }
+
+    // Ordenar las llaves cronológicamente para Tendencia Temporal
     const labels = Object.keys(conteoPorMes).sort();
     const data = labels.map(key => conteoPorMes[key]);
 
@@ -1500,3 +1535,20 @@ if (btnLimpiarTodo) {
         aplicarFiltroGlobal();
     });
 }
+
+// Asegurar que el mapa se inicializa correctamente
+document.addEventListener('DOMContentLoaded', function() {
+    // Esperar un poco para que el DOM se renderice
+    setTimeout(function() {
+        if (typeof map !== 'undefined') {
+            map.invalidateSize();
+        }
+    }, 100);
+});
+
+// También al cambiar de pestaña en móviles
+window.addEventListener('resize', function() {
+    if (typeof map !== 'undefined') {
+        map.invalidateSize();
+    }
+});

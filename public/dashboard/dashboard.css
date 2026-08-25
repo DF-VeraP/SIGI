@@ -1951,7 +1951,81 @@ main.filtros-abiertos .fab-tiempo {
     margin: 6px -14px 6px -14px !important;
 }
 
-/* Ocultar panel de filtros fuertemente cuando se está en modo Explorar */
+/* Ocultar panel de filtros fuertemente cuando se estï¿½ en modo Explorar */
 #vistaMapa.modo-explorar #panelFiltros {
     display: none !important;
+}
+
+/* =======================================
+   NUEVAS REGLAS (Fase 1 y Modales)
+======================================= */
+.sigi-footer {
+    padding: 6px 16px !important;
+}
+.footer-marca, .footer-autor {
+    display: none !important;
+}
+
+@media (min-width: 769px) {
+    /* Mapa al 100% y sin flex-reverse */
+    #vistaMapa {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    .map-wrapper {
+        flex: 1 !important;
+        max-width: 100% !important;
+    }
+
+    /* Modal Filtros */
+    #panelFiltros {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        bottom: auto !important;
+        right: auto !important;
+        width: min(380px, 92vw) !important;
+        max-height: 90vh !important;
+        border-radius: 14px !important;
+        border: 1px solid var(--borde) !important;
+        transform: translate(-50%, -50%) scale(0.95) !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        transition: transform 0.25s ease, opacity 0.25s ease, visibility 0.25s ease !important;
+        box-shadow: var(--sombra) !important;
+    }
+
+    #panelFiltros.abierto {
+        transform: translate(-50%, -50%) scale(1) !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .filtros-overlay {
+        display: block !important;
+    }
+
+    /* Botones Agrupados bajo KPI */
+    .map-actions-group {
+        position: absolute;
+        top: 90px;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        z-index: 1000;
+        pointer-events: none;
+    }
+    .map-actions-group .fab {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        pointer-events: auto !important;
+    }
 }
