@@ -144,6 +144,15 @@
                     <i class="bi bi-bar-chart"></i> <span class="nav-text">Analítica</span>
                 </button>
             </nav>
+            
+            <div class="leyenda-sidebar desktop-only" style="padding: 0 20px; width: 100%; box-sizing: border-box; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; margin-bottom: 10px;">
+                <h4 style="font-size: 0.75rem; color: var(--texto-suave); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Simbología</h4>
+                <div class="itemLeyenda" style="margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 0.8rem;"><span class="rojo" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--rojo);"></span> Robo</div>
+                <div class="itemLeyenda" style="margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 0.8rem;"><span class="morado" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--magenta);"></span> Piques</div>
+                <div class="itemLeyenda" style="margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 0.8rem;"><span class="amarillo" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--amarillo);"></span> Agresiones</div>
+                <div class="itemLeyenda" style="margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 0.8rem;"><span class="verde" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--verde);"></span> Accidente</div>
+            </div>
+
             <div class="sidebar-footer">
                 <button class="nav-btn" id="iniciarSesion" title="Iniciar Sesión">
                     <i class="bi bi-box-arrow-in-right"></i> <span class="nav-text">Login</span>
@@ -201,11 +210,12 @@
                     <i class="bi bi-funnel" aria-hidden="true"></i>
                     Filtros de Mapa
                 </h2>
-                <label for="buscarBarrio">Buscar barrio</label>
-                <input type="text" id="buscarBarrio" placeholder="Barrio: Centro, Juan XXIII..." autocomplete="off">
-                <label for="buscarVereda">Buscar vereda</label>
-                <input type="text" id="buscarVereda" placeholder="Vereda: San antonio" autocomplete="off">
+                
+                
+                <label for="buscarLugar">Buscar lugar</label>
+                <input type="text" id="buscarLugar" placeholder="Ej: Las Malvinas, San Antonio..." autocomplete="off">
                 <div id="sugerencias"></div>
+                
                 <label>Tipo de Incidente</label>
                 <div class="tiposIncidente">
                     <button class="incidente robo" data-id="1" type="button">
@@ -258,29 +268,31 @@
             <!-- Grupo de botones de acción de mapa -->
             <div class="map-actions-group">
                 <button id="btnFiltros" type="button" class="fab fab-filtros" aria-label="Abrir filtros">
-                    <i class="bi bi-funnel icono-mobile" aria-hidden="true"></i>
-                    <i class="bi bi-sliders icono-desktop" aria-hidden="true"></i>
-                    <span class="texto-desktop" style="margin-left: 5px;">Filtros</span>
+                    <span style="margin-left: 5px;">Filtros</span>
                     <span class="fab-badge" id="badgeFiltros">0</span>
                 </button>
+
                 <button class="restablecer fab fab-reset" type="button" aria-label="Restablecer filtros">
                     <i class="bi bi-arrow-counterclockwise icono-mobile" aria-hidden="true"></i>
                     <span class="texto-desktop">Restablecer</span>
                 </button>
                 <button id="btnAbrirFiltroTiempo" type="button" class="fab fab-tiempo" aria-label="Filtrar por tiempo">
-                    <i class="bi bi-calendar3 icono-mobile" aria-hidden="true"></i>
-                    <i class="bi bi-calendar3 icono-desktop" aria-hidden="true"></i>
-                    <span class="texto-desktop" style="margin-left: 5px;">Tiempo</span>
+                    <span style="margin-left: 5px;">Tiempo</span>
                 </button>
+                </div>
+
+            <!-- Grupo de herramientas GIS (derecha) -->
+            <div class="gis-tools-group">
                 <button id="btnToggleHeatmap" type="button" class="fab fab-heatmap" aria-label="Alternar mapa de calor">
                     <i class="bi bi-fire icono-mobile" aria-hidden="true"></i>
                     <i class="bi bi-fire icono-desktop" aria-hidden="true"></i>
-                    <span class="texto-desktop" style="margin-left: 5px;">Calor</span>
+                    <span class="texto-desktop" style="margin-left: 5px;">Mapa de calor</span>
                 </button>
             </div>
             
             <div id="map"></div>
-            <div class="leyenda contFlexCent" aria-label="Leyenda del mapa">
+            
+            <div class="leyenda contFlexCent mobile-only" aria-label="Leyenda del mapa">
                 <div class="itemLeyenda"><span class="rojo"></span> Robo</div>
                 <div class="itemLeyenda"><span class="morado"></span> Piques</div>
                 <div class="itemLeyenda"><span class="amarillo"></span> Agresiones/Amenazas</div>
@@ -505,6 +517,10 @@
             </div>
         </div>
     </div>
+
+    
+    
+
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="dashboard.js"></script>

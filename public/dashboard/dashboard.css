@@ -887,10 +887,11 @@ main.filtros-abiertos .fab-tiempo {
         width: auto;
         height: auto;
         border-radius: var(--radio);
-        padding: 8px 12px;
-        font-size: 1.1rem;
+        padding: 7px 14px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--texto-suave);
         background: var(--bg-card);
-        color: var(--texto);
         border: 1px solid var(--borde);
         box-shadow: var(--sombra);
     }
@@ -1004,7 +1005,7 @@ main.filtros-abiertos .fab-tiempo {
     }
 
     #cerrarFiltros, #btnFiltros {
-        display: none !important;
+        display: flex !important;
     }
 
     #cerrarFiltros:hover { color: var(--texto); }
@@ -1561,33 +1562,38 @@ main.filtros-abiertos .fab-tiempo {
 }
 
 .sidebar {
-    width: 80px;
+    width: 220px;
     background: var(--bg-card);
     border-right: 1px solid var(--borde);
     display: flex;
     flex-direction: column;
     align-items: center;
     padding-top: 20px;
-    transition: width 0.3s ease;
     z-index: 1000;
+    flex-shrink: 0;
+    overflow-y: auto;
 }
 
-.sidebar:hover {
-    width: 200px;
+/* Scrollbar personalizado para la sidebar */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+.sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.sidebar::-webkit-scrollbar-thumb {
+    background: var(--borde);
+    border-radius: 10px;
+}
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: var(--texto-suave);
 }
 
-.sidebar-logo {
-    margin-bottom: 30px;
-}
+.sidebar-logo { margin-bottom: 15px; }
 
 .sidebar-logo img {
-    width: 45px;
+    width: 90px;
     height: auto;
-    transition: all 0.3s ease;
-}
-
-.sidebar:hover .sidebar-logo img {
-    width: 60px;
 }
 
 .sidebar-nav {
@@ -1601,11 +1607,11 @@ main.filtros-abiertos .fab-tiempo {
     background: transparent;
     border: none;
     color: var(--texto-suave);
-    padding: 15px;
+    padding: 15px 15px 15px 25px;
     cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 15px;
     transition: all 0.3s ease;
     width: 100%;
@@ -1622,18 +1628,10 @@ main.filtros-abiertos .fab-tiempo {
 }
 
 .nav-text {
-    display: none;
+    display: inline-block;
     white-space: nowrap;
     font-weight: 600;
-}
-
-.sidebar:hover .nav-text {
-    display: inline-block;
-}
-
-.sidebar:hover .nav-btn {
-    justify-content: flex-start;
-    padding-left: 20px;
+    font-size: 0.95rem;
 }
 
 #estadisticas {
@@ -1967,14 +1965,31 @@ main.filtros-abiertos .fab-tiempo {
 }
 
 @media (min-width: 769px) {
+    body {
+        overflow: hidden !important;
+    }
     /* Mapa al 100% y sin flex-reverse */
     #vistaMapa {
+        flex: 1;
         display: flex !important;
         flex-direction: column !important;
+        height: 100%;
+        min-height: 0; /* Importante para flex */
     }
     .map-wrapper {
         flex: 1 !important;
+        min-height: 0 !important;
+        height: 100% !important;
         max-width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        position: relative !important;
+    }
+    #map {
+        flex: 1 !important;
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 400px !important; /* Altura mínima para que se vea */
     }
 
     /* Modal Filtros */
@@ -2010,7 +2025,7 @@ main.filtros-abiertos .fab-tiempo {
     /* Botones Agrupados bajo KPI */
     .map-actions-group {
         position: absolute;
-        top: 90px;
+        top: 110px;
         left: 0;
         right: 0;
         display: flex;
@@ -2028,4 +2043,99 @@ main.filtros-abiertos .fab-tiempo {
         bottom: auto !important;
         pointer-events: auto !important;
     }
+    
+    /* Grupo de Herramientas GIS (Separado a la derecha) */
+    .gis-tools-group {
+        position: absolute;
+        top: 110px;
+        right: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        z-index: 1000;
+        pointer-events: none;
+    }
+    .gis-tools-group .fab {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        pointer-events: auto !important;
+    }
+    
+    /* Ocultar la leyenda del mapa en escritorio porque ahora vive en el sidebar */
+    .leyenda.mobile-only {
+        display: none !important;
+    }
+    
+    .leyenda-sidebar {
+        display: flex !important;
+    }
+    /* KPI Ribbon Separado Desktop */
+    .kpi-ribbon {
+        flex-shrink: 0 !important;
+        display: flex !important;
+        position: relative !important;
+        top: 0 !important;
+        background: var(--bg-card) !important;
+        border: 1px solid var(--borde) !important;
+        padding: 12px 20px !important;
+        border-radius: 14px !important;
+        margin: 16px 16px 20px 16px !important;
+        justify-content: space-around !important;
+    }
+    .kpi-card {
+        box-shadow: none !important;
+        border: none !important;
+        background: transparent !important;
+        backdrop-filter: none !important;
+        padding: 0 20px !important;
+        border-right: 1px solid var(--borde) !important;
+        border-radius: 0 !important;
+        flex: 1 !important;
+        align-items: center !important;
+    }
+    .kpi-card:last-child {
+        border-right: none !important;
+    }
+    .kpi-label {
+        font-size: 0.75rem !important;
+    }
+    .kpi-valor {
+        font-size: 1.3rem !important;
+    }
+    /* Sidebar Overrides Desktop */
+    .sidebar {
+        width: 220px !important;
+        padding-top: 30px !important;
+        flex-shrink: 0 !important;
+    }
+    .sidebar:hover {
+        width: 220px !important;
+    }
+    .sidebar-logo img {
+        width: 90px !important;
+    }
+    .nav-btn {
+        justify-content: flex-start !important;
+        padding-left: 25px !important;
+    }
+    .nav-text {
+        display: inline-block !important;
+        white-space: nowrap !important;
+        font-weight: 600 !important;
+        font-size: 0.95rem !important;
+    }
 }
+
+    .fab-lugares {
+        background-color: var(--bg-card);
+        color: var(--texto);
+    }
+    .fab-lugares:hover {
+        background-color: var(--azul);
+        color: #fff;
+    }
+    
+.sidebar-footer { width: 100%; margin-top: auto; padding-bottom: 20px; }

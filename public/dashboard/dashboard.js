@@ -18,8 +18,8 @@ hace3MesesInicial.setMonth(hoyInicial.getMonth() - 3);
 filtroFechaDesde = formatearFecha(hace3MesesInicial);
 filtroFechaHasta = formatearFecha(hoyInicial);
 
-const inpBuscarBarrio = document.getElementById("buscarBarrio");
-const inpBuscarVereda = document.getElementById("buscarVereda");
+const inpBuscarLugar = document.getElementById("buscarLugar");
+
 const contenedor = document.getElementById("sugerencias");
 const panelEst = document.getElementById("estadisticas");
 const panelMap = document.getElementById("vistaMapa");
@@ -485,8 +485,7 @@ function cargarResumen() {
 
 function contarFiltrosActivos() {
     let count = tiposId.length;
-    if (inpBuscarBarrio.value.trim()) count++;
-    if (inpBuscarVereda.value.trim()) count++;
+    if (typeof inpBuscarLugar !== 'undefined' && inpBuscarLugar && inpBuscarLugar.value.trim()) count++;
     return count;
 }
 
@@ -602,8 +601,8 @@ document.querySelectorAll(".incidente").forEach(btn => {
 });
 
 function desmarcarTiposInput() {
-    inpBuscarBarrio.value = "";
-    inpBuscarVereda.value = "";
+    if (typeof inpBuscarLugar !== "undefined" && inpBuscarLugar) inpBuscarLugar.value = "";
+    lugarSeleccionado = { nombre: "", tipo: "" };
     contenedor.innerHTML = "";
     tiposId.length = 0;
     document.querySelectorAll(".incidente").forEach(btn => {
@@ -619,11 +618,16 @@ function obtenerColor(tipo) {
     if (tipo === 4) return "limegreen";
 }
 
+let lugarSeleccionado = { nombre: '', tipo: '' };
+
 function obtenerURL() {
     let url = "/incidentes?";
-    const barrio = inpBuscarBarrio.value;
-    if (barrio) {
-        url += `barrio=${encodeURIComponent(barrio)}&`;
+    const lugar = inpBuscarLugar.value;
+    if (lugar && lugarSeleccionado.nombre === lugar) {
+        url += `lugar=${encodeURIComponent(lugar)}&tipoLugar=${lugarSeleccionado.tipo}&`;
+    } else if (lugar) {
+        // Fallback si escribió pero no seleccionó
+        url += `lugar=${encodeURIComponent(lugar)}&tipoLugar=Barrio&`;
     }
     if (tiposId.length > 0) {
         url += `tipos=${tiposId.join(",")}&`;
@@ -902,11 +906,12 @@ function actualizarAnalisisRapido(data) {
 
 function cargarBarrio() {
     capaBarrio.clearLayers();
-    const nombre = inpBuscarBarrio.value;
+    const nombre = (typeof lugarSeleccionado !== 'undefined' && lugarSeleccionado.tipo === 'Barrio') ? lugarSeleccionado.nombre : (inpBuscarLugar.value || '');
     let url = "/poligonoBarrio";
     if (nombre) {
         url += `?nombre=${encodeURIComponent(nombre)}`;
     }
+    if (typeof lugarSeleccionado !== 'undefined' && lugarSeleccionado.tipo === 'Vereda') return;
     fetch(url)
         .then(res => res.json())
         .then(data => {
@@ -938,9 +943,14 @@ function cargarBarrio() {
 }
 
 function cargarVeredas() {
-    const nombre = inpBuscarVereda.value;
     capaVereda.clearLayers();
-    fetch(`/poligonoVereda?nombre=${encodeURIComponent(nombre)}`)
+    const nombre = (typeof lugarSeleccionado !== 'undefined' && lugarSeleccionado.tipo === 'Vereda') ? lugarSeleccionado.nombre : (inpBuscarLugar.value || '');
+    let url = "/poligonoVereda";
+    if (nombre) {
+        url += `?nombre=${encodeURIComponent(nombre)}`;
+    }
+    if (typeof lugarSeleccionado !== 'undefined' && lugarSeleccionado.tipo === 'Barrio') return;
+    fetch(url)
         .then(res => res.json())
         .then(data => {
             const capaGeoJSON = L.geoJSON(null, {
@@ -995,8 +1005,8 @@ document.querySelector(".restablecer").addEventListener("click", function () {
     capaBarrio.clearLayers();
     capaVereda.clearLayers();
     desmarcarTiposInput();
-    inpBuscarBarrio.value = "";
-    inpBuscarVereda.value = "";
+    if (typeof inpBuscarLugar !== "undefined" && inpBuscarLugar) inpBuscarLugar.value = "";
+    lugarSeleccionado = { nombre: "", tipo: "" };
     
     // Apagar heatmap si estaba encendido
     modoCalor = false;
@@ -1027,61 +1037,54 @@ document.querySelector(".restablecer").addEventListener("click", function () {
     actualizarBadgeFiltros();
 });
 
-inpBuscarBarrio.addEventListener("input", function () {
-    this.after(contenedor);
-    actualizarBadgeFiltros();
-    const texto = this.value;
-    if (texto.length < 2) {
-        contenedor.innerHTML = "";
-        return;
-    }
-    fetch(`/buscarBarrios?q=${encodeURIComponent(texto)}`)
-        .then(res => res.json())
-        .then(data => {
+
+if (inpBuscarLugar) {
+    inpBuscarLugar.addEventListener("input", async function () {
+        this.after(contenedor);
+        actualizarBadgeFiltros();
+        const texto = this.value;
+        if (texto.length < 2) {
             contenedor.innerHTML = "";
-            data.forEach(barrio => {
+            lugarSeleccionado = { nombre: '', tipo: '' };
+            return;
+        }
+
+        try {
+            const [resBarrios, resVeredas] = await Promise.all([
+                fetch(`/buscarBarrios?q=${encodeURIComponent(texto)}`),
+                fetch(`/buscarVeredas?q=${encodeURIComponent(texto)}`)
+            ]);
+            
+            const [barrios, veredas] = await Promise.all([
+                resBarrios.json(),
+                resVeredas.json()
+            ]);
+
+            const sugerencias = [
+                ...barrios.map(b => ({ nombre: b.namebarrio, tipo: 'Barrio' })),
+                ...veredas.map(v => ({ nombre: v.nombre, tipo: 'Vereda' }))
+            ].slice(0, 15); // Limitar a 15 sugerencias totales
+
+            contenedor.innerHTML = "";
+            sugerencias.forEach(item => {
                 const div = document.createElement("div");
-                div.textContent = barrio.namebarrio;
+                div.innerHTML = `${item.nombre} <small style="color:var(--secundario); font-size:10px;">(${item.tipo})</small>`;
                 div.classList.add("itemSugerencia");
                 div.addEventListener("click", function () {
-                    inpBuscarBarrio.value = barrio.namebarrio;
+                    inpBuscarLugar.value = item.nombre;
+                    lugarSeleccionado = item;
                     contenedor.innerHTML = "";
                     actualizarBadgeFiltros();
                 });
                 contenedor.appendChild(div);
             });
-        });
-});
+        } catch(e) {
+            console.error(e);
+        }
+    });
+}
 
-inpBuscarVereda.addEventListener("input", function () {
-    this.after(contenedor);
-    actualizarBadgeFiltros();
-    const texto = this.value;
-    if (texto.length < 2) {
-        contenedor.innerHTML = "";
-        return;
-    }
-    fetch(`/buscarVeredas?q=${encodeURIComponent(texto)}`)
-        .then(res => res.json())
-        .then(data => {
-            contenedor.innerHTML = "";
-            data.forEach(vereda => {
-                const div = document.createElement("div");
-                div.textContent = vereda.nombre;
-                div.classList.add("itemSugerencia");
-                div.addEventListener("click", function () {
-                    inpBuscarVereda.value = vereda.nombre;
-                    contenedor.innerHTML = "";
-                    actualizarBadgeFiltros();
-                });
-                contenedor.appendChild(div);
-            });
-        });
-});
 
-/* ══════════════════════════════════════
-   GRÁFICO DE BARRAS VERTICALES — Canvas
-══════════════════════════════════════ */
 let graficoAnimFrame = null;
 
 async function cargarIncidentesBarra() {
@@ -1550,5 +1553,53 @@ document.addEventListener('DOMContentLoaded', function() {
 window.addEventListener('resize', function() {
     if (typeof map !== 'undefined') {
         map.invalidateSize();
+    }
+});
+
+
+// --- SIGI MAP RESIZE FIX ---
+// Forzar actualización del tamaño del mapa después de que la página cargue
+window.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        if (typeof map !== 'undefined' && map.invalidateSize) {
+            map.invalidateSize();
+            console.log('✅ Mapa refrescado (DOMContentLoaded)');
+        }
+    }, 500);
+});
+
+// También al cambiar de vista o redimensionar
+window.addEventListener('resize', function() {
+    if (typeof map !== 'undefined' && map.invalidateSize) {
+        map.invalidateSize();
+    }
+});
+
+
+const modalLugares = document.getElementById("modalLugares");
+const btnAbrirLugares = document.getElementById("btnAbrirLugares");
+const btnCerrarLugares = document.getElementById("btnCerrarLugares");
+const btnAplicarLugares = document.getElementById("btnAplicarLugares");
+
+if (btnAbrirLugares && modalLugares) {
+    btnAbrirLugares.addEventListener("click", () => {
+        modalLugares.classList.add("mostrar");
+    });
+}
+if (btnCerrarLugares && modalLugares) {
+    btnCerrarLugares.addEventListener("click", () => {
+        modalLugares.classList.remove("mostrar");
+    });
+}
+if (btnAplicarLugares && modalLugares) {
+    btnAplicarLugares.addEventListener("click", () => {
+        modalLugares.classList.remove("mostrar");
+        renderizarIncidentes();
+    });
+}
+// Cerrar al hacer clic fuera
+window.addEventListener("click", (e) => {
+    if (e.target === modalLugares) {
+        modalLugares.classList.remove("mostrar");
     }
 });

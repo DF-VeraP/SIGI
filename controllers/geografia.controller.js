@@ -1,7 +1,8 @@
 const pool = require('../db');
 
 const getIncidentes = async (req, res) => {
-  const nombre = req.query.barrio;
+  const nombre = req.query.lugar || req.query.barrio;
+  const tipoLugar = req.query.tipoLugar; // 'Barrio' or 'Vereda'
   const tipos = req.query.tipos;
   const fechaDesde = req.query.fechaDesde;
   const fechaHasta = req.query.fechaHasta;
@@ -31,7 +32,11 @@ const getIncidentes = async (req, res) => {
     let valores = [];
     let contador = 1;
     if (nombre) {
-      query += ` AND LOWER(b.namebarrio) LIKE LOWER ($${contador})`;
+      if (tipoLugar === 'Vereda') {
+        query += ` AND LOWER(v.nombre) LIKE LOWER ($${contador})`;
+      } else {
+        query += ` AND LOWER(b.namebarrio) LIKE LOWER ($${contador})`;
+      }
       valores.push(`%${nombre}%`);
       contador++;
     }
