@@ -43,45 +43,81 @@
         ════════════════════════════════ */
         .kpi-ribbon {
             position: absolute;
-            top: 20px;
+            top: 16px;
             left: 0;
             right: 0;
-            z-index: 999;
+            z-index: 1000;
             display: flex;
             justify-content: center;
-            gap: 12px;
+            gap: 6px;
             padding: 0 20px;
-            pointer-events: none; /* Dejar que los clics pasen al mapa si no es sobre las tarjetas */
-            flex-wrap: wrap;
+            pointer-events: none;
+            flex-wrap: nowrap;
         }
 
         .kpi-card {
-            background: rgba(13, 17, 23, 0.75);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid var(--borde);
+            background: rgba(13, 17, 23, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 12px;
-            padding: 10px 16px;
+            padding: 8px 12px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+            pointer-events: auto;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            min-width: 0;
+            flex: 1 1 0;
+            max-width: 250px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .kpi-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--secundario);
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .kpi-content {
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
-            pointer-events: auto; /* Las tarjetas sí bloquean clics */
-            box-shadow: var(--sombra);
-            min-width: 130px;
+            overflow: hidden;
+            width: 100%;
         }
 
         .kpi-label {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: var(--texto-suave);
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 4px;
+            letter-spacing: 0.02em;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .kpi-valor {
             font-size: 1.1rem;
             font-weight: 700;
             color: var(--texto);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .kpi-variacion-positiva { color: var(--verde) !important; }
@@ -99,9 +135,9 @@
             }
             .kpi-card {
                 flex: 0 0 auto;
-                min-width: 140px;
+                min-width: 150px;
+                max-width: none;
             }
-            /* Ocultar barra de scroll en móviles para limpieza visual */
             .kpi-ribbon::-webkit-scrollbar { display: none; }
             .kpi-ribbon { -ms-overflow-style: none; scrollbar-width: none; }
         }
@@ -248,20 +284,32 @@
         <div class="map-wrapper">
             <div class="kpi-ribbon">
                 <div class="kpi-card">
-                    <span class="kpi-label">Total incidentes</span>
-                    <span class="kpi-valor" id="kpi-total">0</span>
+                    <div class="kpi-icon"><i class="bi bi-graph-up-arrow"></i></div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Total incidentes</span>
+                        <span class="kpi-valor" id="kpi-total">0</span>
+                    </div>
                 </div>
                 <div class="kpi-card">
-                    <span class="kpi-label">Variación mensual</span>
-                    <span class="kpi-valor" id="kpi-variacion">0%</span>
+                    <div class="kpi-icon"><i class="bi bi-activity"></i></div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Variación mensual</span>
+                        <span class="kpi-valor" id="kpi-variacion">0%</span>
+                    </div>
                 </div>
                 <div class="kpi-card">
-                    <span class="kpi-label">Zona más afectada</span>
-                    <span class="kpi-valor" id="kpi-zona">...</span>
+                    <div class="kpi-icon"><i class="bi bi-geo-alt"></i></div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Zona más afectada</span>
+                        <span class="kpi-valor" id="kpi-zona">---</span>
+                    </div>
                 </div>
                 <div class="kpi-card">
-                    <span class="kpi-label">Tipo predominante</span>
-                    <span class="kpi-valor" id="kpi-tipo">...</span>
+                    <div class="kpi-icon"><i class="bi bi-pie-chart"></i></div>
+                    <div class="kpi-content">
+                        <span class="kpi-label">Tipo predominante</span>
+                        <span class="kpi-valor" id="kpi-tipo">---</span>
+                    </div>
                 </div>
             </div>
 

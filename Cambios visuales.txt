@@ -1,0 +1,406 @@
+🔴 Errores visibles / elementos mal ubicados
+1. ❌ El footer ocupa demasiado espacio
+
+Este es probablemente el error visual más evidente.
+
+Tienes aproximadamente 120 px de pantalla dedicados al footer:
+
+SIGI — Sistema de Información Geográfica de Incidentes
+Daniel Felipe Vera Perdomo...
+
+Para un dashboard GIS, ese espacio debería aprovecharse para el mapa.
+
+Problema: el usuario entra al dashboard para analizar información, no para leer el copyright.
+
+✅ Recomiendo
+
+Reducirlo a algo muy pequeño:
+
+© 2026 SIGI · SENA
+
+O incluso dejarlo fuera del dashboard principal.
+
+2. ❌ Los KPI están encima del mapa sin suficiente separación visual
+
+Actualmente:
+
+[Total] [Variación] [Zona] [Tipo]
+
+están flotando directamente sobre el mapa.
+
+No está mal conceptualmente, pero compiten con la información geográfica.
+
+Especialmente porque el mapa ya tiene:
+
+puntos
+clusters
+límites
+botones
+leyenda
+controles
+filtros
+✅ Mejor
+
+Crear una pequeña barra superior independiente:
+
+┌───────────────────────────────────────────────────────────────┐
+│ 101       -20%       Las Malvinas       Robo                  │
+└───────────────────────────────────────────────────────────────┘
+
+y debajo empieza el mapa.
+
+Así tienes una separación clara:
+
+Información estadística → mapa → información geográfica
+
+3. ❌ La barra de filtros está demasiado "flotando"
+
+Tienes:
+
+[⚙ Filtros] [Restablecer] [▣ Tiempo] [🔥 Calor]
+
+en medio de la parte superior del mapa.
+
+Visualmente parece que fueran controles independientes del mapa, cuando realmente son herramientas de análisis.
+
+✅ Recomiendo
+
+Convertirlo en una barra:
+
+FILTROS
+[Fecha ▼] [Tipo ▼] [Barrio ▼] [Vereda ▼] [Estado ▼]
+
+[Aplicar] [Restablecer]
+
+Y dejar las herramientas GIS en otro lugar:
+
+[Capas] [Mapa] [🔥 Calor] [Clusters]
+
+Esto separa:
+
+Filtros de datos
+
+de
+
+Herramientas del mapa
+
+4. ❌ "Calor" no es el mejor nombre
+
+Este botón:
+
+🔥 Calor
+
+es visualmente bonito, pero técnicamente es ambiguo.
+
+¿Calor de qué?
+
+Un usuario puede preguntarse:
+
+¿Temperatura? ¿Incidentes? ¿Riesgo?
+
+✅ Mejor:
+
+🔥 Mapa de calor
+
+o simplemente:
+
+Heatmap
+
+Yo usaría:
+
+🔥 Mapa de calor
+
+5. ❌ Los clusters verdes pueden confundirse con incidentes
+
+Este es un problema importante.
+
+Tienes:
+
+🟢 círculos grandes
+con:
+
+2
+
+Mientras que los incidentes individuales también tienen colores:
+
+🔴 🟣 🟡 🟢
+
+Visualmente un usuario nuevo puede pensar:
+
+"¿El círculo verde también es un accidente?"
+
+Pero en realidad parece ser un cluster.
+
+✅ Solución
+
+Usar una representación claramente diferente:
+
+       2
+    ╭─────╮
+    │  2  │
+    ╰─────╯
+
+y que los clusters tengan un estilo neutro.
+
+Por ejemplo:
+
+Cluster = gris/azul
+
+Incidente = color según categoría
+
+Así:
+
+🟢 = accidente
+🔴 = robo
+🟣 = piques
+🟡 = agresión
+
+y
+
+🔵 2 = 2 incidentes agrupados
+
+Mucho más intuitivo.
+
+6. ❌ La leyenda está demasiado abajo
+
+Actualmente está aproximadamente:
+
+                    [ 🔴 Robo  🟣 Piques  🟡 Agresiones  🟢 Accidentes ]
+
+y está encima del mapa.
+
+Además puede tapar información.
+
+✅ Mejor ubicación
+
+La pondría arriba a la derecha o dentro de un panel lateral:
+
+LEYENDA
+
+🔴 Robo
+🟣 Piques
+🟡 Agresiones / Amenazas
+🟢 Accidentes
+
+Así no interfiere con el mapa.
+
+7. ❌ La leyenda y los controles están compitiendo por el mapa
+
+Actualmente tienes simultáneamente:
+
+zoom
+capas
+KPI
+filtros
+tiempo
+calor
+leyenda
+marcadores
+
+Todo está encima del mapa.
+
+El mapa termina pareciendo una mesa llena de controles.
+
+Regla que aplicaría:
+
+El mapa debe tener:
+
+Mapa + herramientas esenciales
+
+y no convertirse en el lugar donde viven todos los componentes de la aplicación.
+
+8. ❌ La barra lateral necesita etiquetas
+
+La barra izquierda tiene:
+
+🏠
+🗺️
+▦
+📊
+🚪
+
+Visualmente es limpia, pero hay un problema de UX:
+
+¿Qué significa cada icono?
+
+Especialmente:
+
+▦
+📊
+🚪
+✅ Solución
+
+Cuando el usuario pase el mouse:
+
+🏠 Inicio
+🗺️ Mapa
+🚨 Incidentes
+📊 Estadísticas
+📑 Reportes
+
+O hacer el sidebar ligeramente más ancho y poner:
+
+🏠 Inicio
+🗺️ Mapa
+🚨 Incidentes
+📊 Estadísticas
+📑 Reportes
+
+Para SIGI, yo prefiero icono + texto.
+
+9. ❌ El logo está demasiado pequeño
+
+El logo de SIGI en la esquina superior izquierda está bastante reducido.
+
+Además queda mucho espacio vacío alrededor.
+
+✅ Mejor
+
+Usaría:
+
+┌─────────────┐
+│     SIGI    │
+│             │
+│ 🏠 Inicio   │
+│ 🗺️ Mapa     │
+│ 🚨 Incid.   │
+│ 📊 Análisis │
+│ 📑 Reportes │
+└─────────────┘
+
+El logo debe funcionar como identidad del sistema, no simplemente como un pequeño icono.
+
+10. ⚠️ "Variación mensual -20%" necesita contexto
+
+Esto:
+
+VARIACIÓN MENSUAL -20%
+
+es bueno, pero falta responder:
+
+¿-20% respecto a qué?
+
+¿Mes anterior?
+
+¿Promedio de los últimos 6 meses?
+
+¿Mismo mes del año anterior?
+
+Mejor:
+
+Variación mensual
+↓ 20%
+vs. julio 2026
+
+Eso es mucho más profesional.
+
+11. ⚠️ "Zona más afectada" debería mostrar cantidad
+
+Actualmente:
+
+ZONA MÁS AFECTADA
+Las Malvinas
+
+Pero falta la información más importante:
+
+¿Por cuánto?
+
+Mejor:
+
+ZONA MÁS AFECTADA
+Las Malvinas
+23 incidentes
+
+Incluso:
+
+↑ 12% vs. mes anterior
+
+12. ⚠️ "Tipo predominante" también debería mostrar cantidad/porcentaje
+
+Actualmente:
+
+TIPO PREDOMINANTE
+Robo
+
+Podrías hacer:
+
+TIPO PREDOMINANTE
+🔴 Robo
+42 incidentes · 41,6%
+
+Eso convierte una simple etiqueta en información analítica.
+
+13. ❌ Falta una jerarquía clara entre "ver" y "analizar"
+
+Ahora mismo todo está en una misma pantalla.
+
+Yo dividiría conceptualmente:
+
+🗺️ VER
+
+Mapa de incidentes.
+
+📊 ANALIZAR
+
+Estadísticas.
+
+🚨 ACTUAR
+
+Alertas / zonas críticas.
+
+📑 REPORTAR
+
+Informes.
+
+Eso le daría muchísimo más sentido a la arquitectura del sistema.
+
+14. ⚠️ Falta un indicador de estado/actualización
+
+En un sistema de incidentes es muy útil mostrar:
+
+🟢 Datos actualizados
+Última actualización: 15:12
+
+O:
+
+101 incidentes registrados
+Actualizado hace 2 minutos.
+
+Esto genera confianza en los datos.
+
+15. ❌ Hay demasiado espacio vacío en algunos lugares y demasiada concentración en otros
+
+Esto es un problema de balance visual.
+
+La parte izquierda tiene:
+
+SIDEBAR
+[ ]
+[ ]
+[ ]
+[ ]
+[ ]
+
+mientras que el centro superior tiene:
+
+KPI KPI KPI KPI
+     FILTROS
+
+y abajo:
+
+        LEYENDA
+
+Todo el contenido importante está concentrado en el centro.
+
+Yo redistribuiría:
+┌─────────┬─────────────────────────────────────────────┐
+│         │ KPIs                                        │
+│  SIGI   ├─────────────────────────────────────────────┤
+│         │                                             │
+│ Inicio  │                                             │
+│ Mapa    │                  MAPA                       │
+│ Incid.  │                                             │
+│ Análisis│                                             │
+│ Reportes│                                             │
+│         │                                             │
+└─────────┴─────────────────────────────────────────────┘

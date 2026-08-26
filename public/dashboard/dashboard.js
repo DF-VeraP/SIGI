@@ -813,7 +813,7 @@ function actualizarAnalisisRapido(data) {
     if (elVisibles) elVisibles.textContent = data.length;
 
     if (data.length === 0) {
-        if(elVariacion) { elVariacion.textContent = "0%"; elVariacion.className = "kpi-valor"; }
+        if(elVariacion) { elVariacion.innerHTML = `0% <span style="font-size: 0.55em; font-weight: normal; color: var(--secundario, #94a3b8); margin-left: 5px;">vs. mes anterior</span>`; elVariacion.className = "kpi-valor"; }
         if(elZona) elZona.textContent = "N/A";
         if(elTipo) elTipo.textContent = "N/A";
         if(elBarrio) elBarrio.textContent = "N/A";
@@ -868,8 +868,13 @@ function actualizarAnalisisRapido(data) {
         }
     }
 
-    if(elZona) elZona.textContent = maxZona !== "N/A" ? maxZona : "Sin zona";
-    if(elTipo) elTipo.textContent = maxTipo !== "N/A" ? maxTipo : "...";
+    if(elZona) elZona.innerHTML = maxZona !== "N/A" ? `${maxZona} <span style="font-size: 0.7em; font-weight: normal; color: var(--secundario, #94a3b8); margin-left: 4px;">- ${maxZonaCount} incidente${maxZonaCount === 1 ? '' : 's'}</span>` : "Sin zona";
+    let tipoColor = "gray";
+    if (maxTipo.toLowerCase().includes("robo")) tipoColor = "red";
+    else if (maxTipo.toLowerCase().includes("agresion") || maxTipo.toLowerCase().includes("amenaza")) tipoColor = "yellow";
+    else if (maxTipo.toLowerCase().includes("pique")) tipoColor = "magenta";
+    else if (maxTipo.toLowerCase().includes("accidente")) tipoColor = "limegreen";
+    if(elTipo) elTipo.innerHTML = maxTipo !== "N/A" ? `<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background-color:${tipoColor}; margin-right:4px;"></span>${maxTipo}` : "---";
     if(elBarrio) elBarrio.textContent = maxZona !== "N/A" ? maxZona : "Sin zona";
     if(elOldTipo) elOldTipo.textContent = maxTipo !== "N/A" ? maxTipo : "...";
     if(elHora) elHora.textContent = maxHora !== "N/A" ? maxHora : "...";
@@ -892,11 +897,12 @@ function actualizarAnalisisRapido(data) {
         });
 
         if (countPrevious === 0) {
-            elVariacion.textContent = countRecent > 0 ? "+100%" : "0%";
+            elVariacion.innerHTML = `${countRecent > 0 ? "↑" : ""} ${countRecent > 0 ? "100%" : "0%"} <span style="font-size: 0.55em; font-weight: normal; color: var(--secundario, #94a3b8); margin-left: 5px;">vs. mes anterior</span>`;
             elVariacion.className = "kpi-valor " + (countRecent > 0 ? "kpi-variacion-negativa" : ""); // Aumento de crimen = negativo (rojo)
         } else {
             const pct = Math.round(((countRecent - countPrevious) / countPrevious) * 100);
-            elVariacion.textContent = (pct > 0 ? "+" : "") + pct + "%";
+            const symbol = pct > 0 ? "↑" : (pct < 0 ? "↓" : "");
+            elVariacion.innerHTML = `${symbol} ${Math.abs(pct)}% <span style="font-size: 0.55em; font-weight: normal; color: var(--secundario, #94a3b8); margin-left: 5px;">vs. mes anterior</span>`;
             elVariacion.className = "kpi-valor";
             if (pct > 0) elVariacion.classList.add("kpi-variacion-negativa"); // Rojo
             if (pct < 0) elVariacion.classList.add("kpi-variacion-positiva"); // Verde
