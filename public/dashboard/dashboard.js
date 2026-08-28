@@ -53,6 +53,22 @@ function cambiarVista(vistaId) {
     panelEst.classList.remove("vista-activa");
 
 
+    // Reubicación dinámica de la barra de filtros
+    const actionsGroup = document.querySelector(".map-actions-group");
+    const contenedorTabla = document.getElementById("contenedorAccionesTabla");
+    const btnExportarCsv = document.getElementById("btnExportarCsv");
+
+    if (actionsGroup) {
+        if (vistaId === "tabla" && contenedorTabla && btnExportarCsv) {
+            contenedorTabla.insertBefore(actionsGroup, btnExportarCsv);
+        } else {
+            const gisTools = document.querySelector(".gis-tools-group");
+            if (gisTools && gisTools.parentElement) {
+                gisTools.parentElement.insertBefore(actionsGroup, gisTools);
+            }
+        }
+    }
+
     // Lógica por vista
     if (vistaId === "mapa") {
         panelMap.classList.remove("esconder");
@@ -85,16 +101,51 @@ function cambiarVista(vistaId) {
     });
 }
 
-function llenarTablaIncidentes() {
+let paginaActualTabla = 1;
+const REGISTROS_POR_PAGINA = 12;
+
+function llenarTablaIncidentes(resetPagina = false) {
+    if (resetPagina) {
+        paginaActualTabla = 1;
+    }
+
     const tbody = document.getElementById("tbodyIncidentesPublica");
+    const infoPaginacion = document.getElementById("infoPaginacionTabla");
+    const botonesPaginacion = document.getElementById("botonesPaginacionTabla");
+
     tbody.innerHTML = "";
 
     if (!incidentesData || incidentesData.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">No hay incidentes para mostrar.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center;">No hay incidentes para mostrar.</td></tr>`;
+        if (infoPaginacion) infoPaginacion.textContent = "Mostrando 0 - 0 de 0 incidentes";
+        if (botonesPaginacion) botonesPaginacion.innerHTML = "";
         return;
     }
 
-    incidentesData.forEach(inc => {
+    // Ordenar de más reciente a más antiguo por fecha y hora
+    const incidentesOrdenados = [...incidentesData].sort((a, b) => {
+        const fechaStrA = a.fechaincidente ? a.fechaincidente.slice(0, 10) : "";
+        const fechaStrB = b.fechaincidente ? b.fechaincidente.slice(0, 10) : "";
+        const timeA = new Date(`${fechaStrA}T${a.horaincidente || "00:00:00"}`).getTime() || 0;
+        const timeB = new Date(`${fechaStrB}T${b.horaincidente || "00:00:00"}`).getTime() || 0;
+        return timeB - timeA;
+    });
+
+    const totalRegistros = incidentesOrdenados.length;
+    const totalPaginas = Math.ceil(totalRegistros / REGISTROS_POR_PAGINA) || 1;
+
+    if (paginaActualTabla > totalPaginas) {
+        paginaActualTabla = totalPaginas;
+    }
+    if (paginaActualTabla < 1) {
+        paginaActualTabla = 1;
+    }
+
+    const inicio = (paginaActualTabla - 1) * REGISTROS_POR_PAGINA;
+    const fin = Math.min(inicio + REGISTROS_POR_PAGINA, totalRegistros);
+    const incidentesPagina = incidentesOrdenados.slice(inicio, fin);
+
+    incidentesPagina.forEach((inc, index) => {
         const tr = document.createElement("tr");
         
         const fecha = new Date(inc.fechaincidente).toLocaleDateString("es-CO");
@@ -106,14 +157,118 @@ function llenarTablaIncidentes() {
         if (inc.idtipoincidente === 3) badgeClass = "badge-pique";
         if (inc.idtipoincidente === 4) badgeClass = "badge-accidente";
 
+        const zona = inc.namebarrio || inc.nombrevereda || 'Sin zona';
+        const consecutivo = inicio + index + 1;
+
         tr.innerHTML = `
+            <td style="color: var(--texto-suave); font-weight: bold;">${consecutivo}</td>
             <td><strong>${inc.codigoincidente || 'N/A'}</strong></td>
             <td><span class="badge-tipo ${badgeClass}">${inc.nametipoincidente || 'N/A'}</span></td>
-            <td>${inc.namebarrio || 'N/A'}</td>
+            <td>${zona}</td>
             <td>${fecha}</td>
             <td>${hora}</td>
         `;
+        tr.addEventListener("click", () => mostrarDetalleIncidente(inc));
         tbody.appendChild(tr);
+    });
+
+    // Actualizar info de paginación
+    if (infoPaginacion) {
+        infoPaginacion.textContent = `Mostrando ${totalRegistros > 0 ? inicio + 1 : 0} - ${fin} de ${totalRegistros} incidentes`;
+    }
+
+    // Renderizar botones de paginación
+    if (botonesPaginacion) {
+        let htmlBotones = '';
+
+        // Botón Anterior
+        htmlBotones += `<button class="btn-pag" ${paginaActualTabla === 1 ? 'disabled' : ''} onclick="cambiarPaginaTabla(${paginaActualTabla - 1})"><i class="bi bi-chevron-left"></i> Anterior</button>`;
+
+        // Botones numéricos
+        for (let i = 1; i <= totalPaginas; i++) {
+            if (i === 1 || i === totalPaginas || (i >= paginaActualTabla - 1 && i <= paginaActualTabla + 1)) {
+                htmlBotones += `<button class="btn-pag ${i === paginaActualTabla ? 'activa' : ''}" onclick="cambiarPaginaTabla(${i})">${i}</button>`;
+            } else if (i === paginaActualTabla - 2 || i === paginaActualTabla + 2) {
+                htmlBotones += `<span class="pag-dots">...</span>`;
+            }
+        }
+
+        // Botón Siguiente
+        htmlBotones += `<button class="btn-pag" ${paginaActualTabla === totalPaginas ? 'disabled' : ''} onclick="cambiarPaginaTabla(${paginaActualTabla + 1})">Siguiente <i class="bi bi-chevron-right"></i></button>`;
+
+        botonesPaginacion.innerHTML = htmlBotones;
+    }
+}
+
+function cambiarPaginaTabla(nuevaPagina) {
+    paginaActualTabla = nuevaPagina;
+    llenarTablaIncidentes(false);
+}
+
+function mostrarDetalleIncidente(inc) {
+    const modal = document.getElementById("modalDetalleIncidente");
+    const cuerpo = document.getElementById("cuerpoDetalleIncidente");
+    if (!modal || !cuerpo) return;
+
+    const fecha = inc.fechaincidente ? new Date(inc.fechaincidente).toLocaleDateString("es-CO", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+    }) : "N/A";
+    const hora = inc.horaincidente ? inc.horaincidente.slice(0, 5) : "N/A";
+    const zona = inc.namebarrio || inc.nombrevereda || 'Sin zona';
+
+    let badgeClass = "badge-default";
+    if (inc.idtipoincidente === 1) badgeClass = "badge-robo";
+    if (inc.idtipoincidente === 2) badgeClass = "badge-agresion";
+    if (inc.idtipoincidente === 3) badgeClass = "badge-pique";
+    if (inc.idtipoincidente === 4) badgeClass = "badge-accidente";
+
+    cuerpo.innerHTML = `
+        <div class="detalle-grid">
+            <div class="detalle-item">
+                <span class="detalle-label"><i class="bi bi-hash"></i> Código</span>
+                <span class="detalle-valor"><strong>${inc.codigoincidente || 'N/A'}</strong></span>
+            </div>
+            <div class="detalle-item">
+                <span class="detalle-label"><i class="bi bi-tag"></i> Tipo</span>
+                <span class="detalle-valor"><span class="badge-tipo ${badgeClass}">${inc.nametipoincidente || 'N/A'}</span></span>
+            </div>
+            <div class="detalle-item">
+                <span class="detalle-label"><i class="bi bi-geo-alt"></i> Zona / Ubicación</span>
+                <span class="detalle-valor">${zona}</span>
+            </div>
+            <div class="detalle-item">
+                <span class="detalle-label"><i class="bi bi-calendar3"></i> Fecha</span>
+                <span class="detalle-valor">${fecha}</span>
+            </div>
+            <div class="detalle-item">
+                <span class="detalle-label"><i class="bi bi-clock"></i> Hora del Incidente</span>
+                <span class="detalle-valor">${hora}</span>
+            </div>
+            <div class="detalle-item full-width">
+                <span class="detalle-label"><i class="bi bi-card-text"></i> Descripción</span>
+                <p class="detalle-descripcion">${inc.descripcionincidente || 'Sin descripción detallada.'}</p>
+            </div>
+        </div>
+    `;
+
+    modal.style.display = "flex";
+}
+
+const modalDetalleIncidente = document.getElementById("modalDetalleIncidente");
+const btnCerrarDetalleIncidente = document.getElementById("btnCerrarDetalleIncidente");
+
+if (btnCerrarDetalleIncidente && modalDetalleIncidente) {
+    btnCerrarDetalleIncidente.addEventListener("click", () => {
+        modalDetalleIncidente.style.display = "none";
+    });
+}
+if (modalDetalleIncidente) {
+    modalDetalleIncidente.addEventListener("click", (e) => {
+        if (e.target === modalDetalleIncidente) {
+            modalDetalleIncidente.style.display = "none";
+        }
     });
 }
 
@@ -146,12 +301,12 @@ document.querySelectorAll(".bottom-nav-item[data-view]").forEach(btn => {
 // Listener Exportar CSV
 document.getElementById("btnExportarCsv")?.addEventListener("click", () => {
     if(!incidentesData || incidentesData.length === 0) return alert("No hay datos para exportar.");
-    let csv = "Código,Tipo,Barrio,Fecha,Hora,Descripción\n";
+    let csv = "Código,Tipo,Zona,Fecha,Hora\n";
     incidentesData.forEach(inc => {
         const fecha = new Date(inc.fechaincidente).toLocaleDateString("es-CO");
         const hora = inc.horaincidente ? inc.horaincidente.slice(0, 5) : "N/A";
-        const desc = (inc.descripcionincidente || "").replace(/,/g, " ");
-        csv += `${inc.codigoincidente},${inc.nametipoincidente},${inc.namebarrio},${fecha},${hora},${desc}\n`;
+        const zona = inc.namebarrio || inc.nombrevereda || "Sin zona";
+        csv += `${inc.codigoincidente || 'N/A'},${inc.nametipoincidente || 'N/A'},${zona},${fecha},${hora}\n`;
     });
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -496,33 +651,43 @@ function actualizarBadgeFiltros() {
 }
 
 function abrirPanelFiltros(desdeNav = false) {
-    panelFiltros.classList.add("abierto");
-    panelFiltros.setAttribute("aria-hidden", "false");
-    panelMap.classList.add("filtros-abiertos");
-
-    if (esMobile()) {
+    if (panelFiltros) {
+        panelFiltros.classList.add("abierto");
+        panelFiltros.setAttribute("aria-hidden", "false");
+    }
+    if (panelMap) {
+        panelMap.classList.add("filtros-abiertos");
+    }
+    if (filtrosOverlay) {
         filtrosOverlay.classList.add("visible");
         filtrosOverlay.setAttribute("aria-hidden", "false");
-        if (desdeNav) {
-            setBottomNavActive("filtros");
-        }
-    } else {
-        btnFiltros.style.display = "none";
+    }
+
+    if (esMobile() && desdeNav) {
+        setBottomNavActive("filtros");
     }
 }
 
 function cerrarPanelFiltros(actualizarNav = true) {
     /* El foco debe salir del panel antes de marcarlo como aria-hidden */
-    if (panelFiltros.contains(document.activeElement)) {
+    if (panelFiltros && panelFiltros.contains(document.activeElement) && btnFiltros) {
         btnFiltros.focus();
     }
 
-    panelFiltros.classList.remove("abierto");
-    panelFiltros.setAttribute("aria-hidden", "true");
-    panelMap.classList.remove("filtros-abiertos");
-    filtrosOverlay.classList.remove("visible");
-    filtrosOverlay.setAttribute("aria-hidden", "true");
-    btnFiltros.style.display = "";
+    if (panelFiltros) {
+        panelFiltros.classList.remove("abierto");
+        panelFiltros.setAttribute("aria-hidden", "true");
+    }
+    if (panelMap) {
+        panelMap.classList.remove("filtros-abiertos");
+    }
+    if (filtrosOverlay) {
+        filtrosOverlay.classList.remove("visible");
+        filtrosOverlay.setAttribute("aria-hidden", "true");
+    }
+    if (btnFiltros) {
+        btnFiltros.style.display = "";
+    }
 
     if (actualizarNav && esMobile() && vistaActual === "mapa") {
         setBottomNavActive("mapa");
@@ -646,6 +811,7 @@ function renderizarIncidentes() {
     heatLayer.setLatLngs([]); // Limpiar heatmap
 
     actualizarAnalisisRapido(incidentesData);
+    llenarTablaIncidentes(true);
 
     if (modoCalor) {
         map.removeLayer(capaIncidentes);
@@ -753,10 +919,6 @@ function renderizarIncidentes() {
                             <div class="popup-row zona-row">
                                 <i class="bi bi-geo-alt"></i> <b>Zona:</b> ${incidente.namebarrio || incidente.nombrevereda || 'Sin zona asignada'}
                             </div>
-                            <div class="popup-desc">
-                                <b>Descripción del reporte:</b><br>
-                                ${incidente.descripcionincidente || 'No hay detalles adicionales.'}
-                            </div>
                         </div>
                         <div class="popup-footer">
                             <small>Ref: ${incidente.codigoincidente || 'N/A'}</small>
@@ -779,6 +941,25 @@ function cargarIncidentes() {
         .then(data => {
             incidentesData = data;
             renderizarIncidentes();
+            
+            // Consultar la última hora de registro real en la base de datos
+            fetch('/ultima-actualizacion')
+                .then(r => r.json())
+                .then(u => {
+                    const elHora = document.getElementById("hora-actualizacion");
+                    if (elHora && u.ultima_actualizacion) {
+                        const date = new Date(u.ultima_actualizacion);
+                        elHora.textContent = date.toLocaleString("es-CO", { 
+                            day: '2-digit', 
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit', 
+                            minute: '2-digit',
+                            hour12: true
+                        });
+                    }
+                })
+                .catch(err => console.error("Error obteniendo última actualización:", err));
         })
         .catch(error => console.error("Error:", error));
 }
@@ -1000,9 +1181,7 @@ document.querySelector(".btnActualizar").addEventListener("click", function () {
     cargarBarrio();
     cargarIncidentes();
     cargarVeredas();
-    if (esMobile()) {
-        cerrarPanelFiltros();
-    }
+    cerrarPanelFiltros();
 });
 
 document.querySelector(".restablecer").addEventListener("click", function () {

@@ -1568,7 +1568,7 @@ main.filtros-abiertos .fab-tiempo {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 20px;
+    padding-top: 10px;
     z-index: 1000;
     flex-shrink: 0;
     overflow-y: auto;
@@ -1589,7 +1589,7 @@ main.filtros-abiertos .fab-tiempo {
     background: var(--texto-suave);
 }
 
-.sidebar-logo { margin-bottom: 15px; }
+.sidebar-logo { margin-bottom: 5px; }
 
 .sidebar-logo img {
     width: 90px;
@@ -1599,7 +1599,7 @@ main.filtros-abiertos .fab-tiempo {
 .sidebar-nav {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 5px;
     width: 100%;
 }
 
@@ -1607,12 +1607,12 @@ main.filtros-abiertos .fab-tiempo {
     background: transparent;
     border: none;
     color: var(--texto-suave);
-    padding: 15px 15px 15px 25px;
+    padding: 8px 15px 8px 20px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    gap: 15px;
+    gap: 10px;
     transition: all 0.3s ease;
     width: 100%;
 }
@@ -1624,14 +1624,14 @@ main.filtros-abiertos .fab-tiempo {
 }
 
 .nav-btn i {
-    font-size: 1.2rem;
+    font-size: 1.0rem;
 }
 
 .nav-text {
     display: inline-block;
     white-space: nowrap;
-    font-weight: 600;
-    font-size: 0.95rem;
+    font-weight: 400;
+    font-size: 0.8rem;
 }
 
 #estadisticas {
@@ -1765,10 +1765,11 @@ main.filtros-abiertos .fab-tiempo {
 #vistaTabla {
     display: none;
     flex-direction: column;
-    height: 100%;
+    flex: 1;
     width: 100%;
-    overflow-y: auto;
+    overflow: hidden;
     padding: 24px;
+    box-sizing: border-box;
     background: var(--bg-dark);
 }
 
@@ -1790,6 +1791,7 @@ main.filtros-abiertos .fab-tiempo {
     max-width: 1100px;
     margin: 0 auto;
     width: 100%;
+    overflow: hidden;
 }
 
 .tabla-header {
@@ -1845,6 +1847,8 @@ main.filtros-abiertos .fab-tiempo {
 
 .table-responsive {
     width: 100%;
+    flex: 1;
+    overflow-y: auto;
     overflow-x: auto;
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -1852,14 +1856,19 @@ main.filtros-abiertos .fab-tiempo {
 }
 
 .table-responsive::-webkit-scrollbar {
-    height: 6px;
+    width: 8px;
+    height: 8px;
 }
 .table-responsive::-webkit-scrollbar-track {
-    background: transparent;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
 }
 .table-responsive::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
-    border-radius: 6px;
+    border-radius: 8px;
+}
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.35);
 }
 
 .tabla-moderna {
@@ -1971,10 +1980,13 @@ main.filtros-abiertos .fab-tiempo {
     /* Mapa al 100% y sin flex-reverse */
     #vistaMapa {
         flex: 1;
-        display: flex !important;
+        display: none !important;
         flex-direction: column !important;
         height: 100%;
         min-height: 0; /* Importante para flex */
+    }
+    #vistaMapa.vista-activa {
+        display: flex !important;
     }
     .map-wrapper {
         flex: 1 !important;
@@ -2042,6 +2054,19 @@ main.filtros-abiertos .fab-tiempo {
         right: auto !important;
         bottom: auto !important;
         pointer-events: auto !important;
+    }
+
+    /* Adaptación cuando la barra de filtros se ubica en la Tabla */
+    .tabla-acciones .map-actions-group {
+        position: static !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        z-index: auto !important;
+        pointer-events: auto !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
     }
     
     /* Grupo de Herramientas GIS (Separado a la derecha) */
@@ -2139,3 +2164,131 @@ main.filtros-abiertos .fab-tiempo {
     }
     
 .sidebar-footer { width: 100%; margin-top: auto; padding-bottom: 20px; }
+
+/* Modal Detalle Incidente */
+.modal-detalle {
+    width: min(500px, 94vw) !important;
+}
+
+.detalle-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding-top: 6px;
+}
+
+@media (max-width: 580px) {
+    .detalle-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.detalle-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--bg-hover, rgba(255, 255, 255, 0.03));
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--borde);
+}
+
+.detalle-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.detalle-label {
+    font-size: 0.78rem;
+    color: var(--texto-suave);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.detalle-valor {
+    font-size: 0.95rem;
+    color: var(--texto);
+}
+
+.detalle-descripcion {
+    font-size: 0.9rem;
+    color: var(--texto);
+    margin: 4px 0 0 0;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+#tbodyIncidentesPublica tr {
+    transition: background-color 0.18s ease;
+}
+
+#tbodyIncidentesPublica tr:hover {
+    background-color: var(--bg-hover, rgba(255, 255, 255, 0.08)) !important;
+    cursor: pointer;
+}
+
+/* Paginación de la Tabla */
+.tabla-paginacion {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    border-top: 1px solid var(--borde);
+    background: var(--bg-card);
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.paginacion-info {
+    font-size: 0.88rem;
+    color: var(--texto-suave);
+    font-weight: 500;
+}
+
+.paginacion-botones {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.btn-pag {
+    background: var(--bg-hover, rgba(255, 255, 255, 0.05));
+    border: 1px solid var(--borde);
+    color: var(--texto);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-pag:hover:not(:disabled) {
+    background: var(--acento, #00d2ff);
+    color: #000;
+    border-color: var(--acento, #00d2ff);
+    font-weight: 600;
+}
+
+.btn-pag.activa {
+    background: var(--acento, #00d2ff);
+    color: #000;
+    font-weight: 700;
+    border-color: var(--acento, #00d2ff);
+}
+
+.btn-pag:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.pag-dots {
+    color: var(--texto-suave);
+    padding: 0 4px;
+}

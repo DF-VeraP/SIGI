@@ -156,6 +156,20 @@
                 justify-content: center !important;
                 flex-shrink: 0;
             }
+        #vistaMapa, #vistaMapaCompleto, #vistaTabla {
+            flex: 1;
+        }
+
+        @media (min-width: 900px) {
+            .leyenda {
+                bottom: 30px !important; /* Vuelve a su posición normal */
+            }
+            .sigi-footer {
+                position: static !important; /* Quitar absolute para no superponer */
+                padding-right: 360px !important;
+                justify-content: center !important;
+                flex-shrink: 0;
+            }
         }
     </style>
 </head>
@@ -163,8 +177,10 @@
 <body>
     <div class="layout-wrapper">
         <aside class="sidebar desktop-only">
-            <div class="sidebar-logo">
-                <img src="../assets/img/image.png" alt="Logo SIGI">
+            <div class="sidebar-logo" style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 10px; padding: 0 10px;">
+                <img src="../assets/img/image.png" alt="Logo SIGI" style="max-width: 65px; margin-bottom: 2px;">
+                <span style="font-size: 0.75rem; font-weight: bold; color: #e6edf3; letter-spacing: 0.03em;">Sistema de Información Geográfica de Incidentes</span>
+                <span style="font-size: 0.65rem; color: var(--acento); background: rgba(56, 139, 253, 0.15); padding: 3px 10px; border-radius: 12px; margin-top: 4px; display: inline-block;">Consulta pública</span>
             </div>
             <nav class="sidebar-nav">
                 <button class="nav-btn active" data-view="mapa" title="Dashboard">
@@ -174,24 +190,24 @@
                     <i class="bi bi-map"></i> <span class="nav-text">Explorar</span>
                 </button>
                 <button class="nav-btn" data-view="tabla" title="Tabla de Incidentes">
-                    <i class="bi bi-table"></i> <span class="nav-text">Datos</span>
+                    <i class="bi bi-table"></i> <span class="nav-text">Incidentes</span>
                 </button>
                 <button class="nav-btn" data-view="estadisticas" title="Estadísticas">
                     <i class="bi bi-bar-chart"></i> <span class="nav-text">Analítica</span>
                 </button>
             </nav>
             
-            <div class="leyenda-sidebar desktop-only" style="padding: 0 20px; width: 100%; box-sizing: border-box; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; margin-bottom: 10px;">
-                <h4 style="font-size: 0.75rem; color: var(--texto-suave); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Simbología</h4>
-                <div class="itemLeyenda" style="margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 0.8rem;"><span class="rojo" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--rojo);"></span> Robo</div>
-                <div class="itemLeyenda" style="margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 0.8rem;"><span class="morado" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--magenta);"></span> Piques</div>
-                <div class="itemLeyenda" style="margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 0.8rem;"><span class="amarillo" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--amarillo);"></span> Agresiones</div>
-                <div class="itemLeyenda" style="margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 0.8rem;"><span class="verde" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--verde);"></span> Accidente</div>
+            <div class="leyenda-sidebar desktop-only" style="padding: 0 15px; width: 100%; box-sizing: border-box; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; margin-bottom: 5px;">
+                <hr style="border: 0; border-top: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 10px; width: 100%;">
+                <h4 style="font-size: 0.75rem; color: var(--texto-suave); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">Simbología</h4>
+                <div class="itemLeyenda" style="margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 0.75rem;"><span class="rojo" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--rojo);"></span> Robo</div>
+                <div class="itemLeyenda" style="margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 0.75rem;"><span class="morado" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--magenta);"></span> Piques</div>
+                <div class="itemLeyenda" style="margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 0.75rem;"><span class="amarillo" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--amarillo);"></span> Agresiones</div>
+                <div class="itemLeyenda" style="margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 0.75rem;"><span class="verde" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--verde);"></span> Accidente</div>
             </div>
-
-            <div class="sidebar-footer">
-                <button class="nav-btn" id="iniciarSesion" title="Iniciar Sesión">
-                    <i class="bi bi-box-arrow-in-right"></i> <span class="nav-text">Login</span>
+            <div class="sidebar-footer" style="padding: 10px 0; border-top: 1px solid rgba(255, 255, 255, 0.05); width: 100%;">
+                <button id="iniciarSesion" style="background: none; border: none; color: var(--texto-suave); font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 15px; width: 100%; padding: 8px 15px 8px 15px; transition: color 0.2s;" title="Acceso Administrativo">
+                    <i class="bi bi-lock-fill" style="color: var(--texto-suave); font-size: 1.1rem;"></i> <span class="nav-text" style="color: var(--texto-suave); font-size: 0.8rem; font-weight: normal;">Acceso administrativo</span>
                 </button>
             </div>
         </aside>
@@ -208,8 +224,6 @@
         </header>
 
         <div class="content-wrapper">
-
-    <main id="vistaMapa">
 
         <div id="filtrosOverlay" class="filtros-overlay" aria-hidden="true"></div>
 
@@ -281,36 +295,36 @@
             </div>
         </div>
 
-        <div class="map-wrapper">
+        <main id="vistaMapa" class="vista-activa">
+            <div class="map-wrapper">
             <div class="kpi-ribbon">
                 <div class="kpi-card">
-                    <div class="kpi-icon"><i class="bi bi-graph-up-arrow"></i></div>
                     <div class="kpi-content">
                         <span class="kpi-label">Total incidentes</span>
                         <span class="kpi-valor" id="kpi-total">0</span>
                     </div>
                 </div>
                 <div class="kpi-card">
-                    <div class="kpi-icon"><i class="bi bi-activity"></i></div>
                     <div class="kpi-content">
                         <span class="kpi-label">Variación mensual</span>
                         <span class="kpi-valor" id="kpi-variacion">0%</span>
                     </div>
                 </div>
                 <div class="kpi-card">
-                    <div class="kpi-icon"><i class="bi bi-geo-alt"></i></div>
                     <div class="kpi-content">
                         <span class="kpi-label">Zona más afectada</span>
                         <span class="kpi-valor" id="kpi-zona">---</span>
                     </div>
                 </div>
                 <div class="kpi-card">
-                    <div class="kpi-icon"><i class="bi bi-pie-chart"></i></div>
                     <div class="kpi-content">
                         <span class="kpi-label">Tipo predominante</span>
                         <span class="kpi-valor" id="kpi-tipo">---</span>
                     </div>
                 </div>
+            </div>
+            <div id="indicador-actualizacion" style="position: absolute; bottom: 25px; right: 15px; z-index: 999; background: rgba(13, 17, 23, 0.75); backdrop-filter: blur(8px); padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); font-size: 0.7rem; color: #c9d1d9; pointer-events: none; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                <i class="bi bi-clock-history" style="color: #388bfd;"></i> Última actualización: <span id="hora-actualizacion" style="font-weight: bold; color: #fff;">--:--:--</span>
             </div>
 
             <!-- Grupo de botones de acción de mapa -->
@@ -351,17 +365,21 @@
 
 
 
+
     <!-- TABLA DE DATOS -->
     <section id="vistaTabla" class="esconder">
         <div class="tabla-container">
             <div class="tabla-header">
                 <h2><i class="bi bi-table"></i> Incidentes Registrados</h2>
-                <button id="btnExportarCsv" class="btn-export">Exportar CSV</button>
+                <div class="tabla-acciones" id="contenedorAccionesTabla" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                    <button id="btnExportarCsv" class="btn-export">Exportar CSV</button>
+                </div>
             </div>
             <div class="table-responsive">
                 <table class="tabla-moderna" id="tablaIncidentesPublica">
                     <thead>
                         <tr>
+                            <th>Num</th>
                             <th>Código</th>
                             <th>Tipo</th>
                             <th>Barrio</th>
@@ -373,6 +391,11 @@
                         <!-- Llenado dinámico -->
                     </tbody>
                 </table>
+            </div>
+
+            <div class="tabla-paginacion" id="paginacionTabla">
+                <span class="paginacion-info" id="infoPaginacionTabla">Mostrando 0 - 0 de 0 incidentes</span>
+                <div class="paginacion-botones" id="botonesPaginacionTabla"></div>
             </div>
         </div>
     </section>
@@ -569,6 +592,19 @@
     
     
 
+
+    <!-- Modal Detalle de Incidente -->
+    <div id="modalDetalleIncidente" class="modal" aria-hidden="true" style="display: none;">
+        <div class="modal-contenido modal-detalle">
+            <div class="modal-cabecera">
+                <h3 id="modalDetalleTitulo"><i class="bi bi-info-circle"></i> Detalle del Incidente</h3>
+                <span class="cerrar-modal-tiempo" id="btnCerrarDetalleIncidente">&times;</span>
+            </div>
+            <div class="modal-cuerpo" id="cuerpoDetalleIncidente">
+                <!-- Se llena dinámicamente -->
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="dashboard.js"></script>

@@ -148,10 +148,24 @@ const getTopIncidentes = async (req, res) => {
   }
 };
 
+const getUltimaActualizacion = async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT MAX(fecharegistro) AS ultima_actualizacion
+      FROM incidente
+    `);
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error en última actualización" });
+  }
+};
+
 module.exports = {
   getConteoIncidente,
   getConteoPorTipo,
   getResumen,
   getTopZonas,
-  getTopIncidentes
+  getTopIncidentes,
+  getUltimaActualizacion
 };

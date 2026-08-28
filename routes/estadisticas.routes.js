@@ -7,5 +7,6 @@ router.get("/conteoPorTipo", estadisticasController.getConteoPorTipo);
 router.get("/resumen", estadisticasController.getResumen);
 router.get("/top-zonas", estadisticasController.getTopZonas);
 router.get("/top-incidentes", estadisticasController.getTopIncidentes);
+router.get("/ultima-actualizacion", estadisticasController.getUltimaActualizacion);
 
 module.exports = router;
