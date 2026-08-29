@@ -35,13 +35,19 @@ function esMobile() {
     return window.innerWidth <= MOBILE_BREAKPOINT;
 }
 
-let vistaActual = "mapa";
+let vistaActual = "inicio";
 
 function cambiarVista(vistaId) {
     vistaActual = vistaId;
     cerrarPanelFiltros(false);
 
     // Ocultar todo
+    const panelInicio = document.getElementById("vistaInicio");
+    if (panelInicio) {
+        panelInicio.classList.add("esconder");
+        panelInicio.classList.remove("vista-activa");
+    }
+
     panelMap.classList.add("esconder");
     panelMap.classList.remove("vista-activa");
     
@@ -51,7 +57,6 @@ function cambiarVista(vistaId) {
     
     panelEst.classList.add("esconder");
     panelEst.classList.remove("vista-activa");
-
 
     // Reubicación dinámica de la barra de filtros
     const actionsGroup = document.querySelector(".map-actions-group");
@@ -70,17 +75,28 @@ function cambiarVista(vistaId) {
     }
 
     // Lógica por vista
-    if (vistaId === "mapa") {
+    if (vistaId === "inicio") {
+        if (panelInicio) {
+            panelInicio.classList.remove("esconder");
+            panelInicio.classList.add("vista-activa");
+        }
+    } else if (vistaId === "mapa") {
         panelMap.classList.remove("esconder");
         panelMap.classList.add("vista-activa");
         panelMap.classList.remove("modo-explorar");
         panelFiltros.classList.remove("esconder-desktop"); // Mostrar panel derecho
+        document.querySelector(".main-content")?.scrollTo(0, 0);
+        document.getElementById("vistaMapa")?.scrollTo(0, 0);
+        document.querySelector(".map-wrapper")?.scrollTo(0, 0);
         setTimeout(() => map.invalidateSize(), 350); // Ajuste: 350ms para esperar que termine la transición CSS
     } else if (vistaId === "mapa-completo") {
         panelMap.classList.remove("esconder");
         panelMap.classList.add("vista-activa");
         panelMap.classList.add("modo-explorar");
         panelFiltros.classList.add("esconder-desktop"); // Ocultar panel derecho
+        document.querySelector(".main-content")?.scrollTo(0, 0);
+        document.getElementById("vistaMapa")?.scrollTo(0, 0);
+        document.querySelector(".map-wrapper")?.scrollTo(0, 0);
         setTimeout(() => map.invalidateSize(), 350); // Ajuste: 350ms para esperar que termine la transición CSS
     } else if (vistaId === "tabla") {
         vistaTabla.classList.remove("esconder");
@@ -276,6 +292,57 @@ function irLogin() {
     window.location.href = "/login/index.html";
 }
 
+// Toggle Mini Sidebar (Colapsar / Expandir)
+const btnToggleSidebar = document.getElementById("btnToggleSidebar");
+const sidebar = document.querySelector(".sidebar.desktop-only");
+
+if (btnToggleSidebar && sidebar) {
+    if (localStorage.getItem("sigi_sidebar_colapsada") === "true") {
+        sidebar.classList.add("colapsada");
+        btnToggleSidebar.querySelector("i")?.classList.replace("bi-chevron-left", "bi-chevron-right");
+    }
+
+    const reajustarMapaSeguro = () => {
+        if (typeof map !== 'undefined' && map && typeof map.invalidateSize === 'function') {
+            map.invalidateSize();
+        }
+    };
+
+    sidebar.addEventListener("mouseleave", () => {
+        sidebar.classList.remove("hover-disabled");
+        setTimeout(reajustarMapaSeguro, 350);
+    });
+
+    sidebar.addEventListener("mouseenter", () => {
+        setTimeout(reajustarMapaSeguro, 350);
+    });
+
+    sidebar.addEventListener("transitionend", (e) => {
+        if (e.target === sidebar) {
+            reajustarMapaSeguro();
+        }
+    });
+
+    btnToggleSidebar.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const estaColapsada = sidebar.classList.toggle("colapsada");
+        localStorage.setItem("sigi_sidebar_colapsada", estaColapsada);
+        
+        const icono = btnToggleSidebar.querySelector("i");
+        if (icono) {
+            if (estaColapsada) {
+                icono.classList.replace("bi-chevron-left", "bi-chevron-right");
+                sidebar.classList.add("hover-disabled");
+            } else {
+                icono.classList.replace("bi-chevron-right", "bi-chevron-left");
+                sidebar.classList.remove("hover-disabled");
+            }
+        }
+
+        setTimeout(reajustarMapaSeguro, 350);
+    });
+}
+
 // Listeners Desktop
 document.querySelectorAll(".nav-btn[data-view]").forEach(btn => {
     btn.addEventListener("click", () => cambiarVista(btn.dataset.view));
@@ -316,6 +383,98 @@ document.getElementById("btnExportarCsv")?.addEventListener("click", () => {
     a.click();
 });
 
+// Variables globales para la ubicación del usuario
+let marcadorUsuario = null;
+let circuloPrecisionUsuario = null;
+
+function obtenerUbicacionUsuario() {
+    if (!navigator.geolocation) {
+        alert("Tu navegador o dispositivo no soporta geolocalización.");
+        return;
+    }
+
+    const btn = document.getElementById("btnMiUbicacion");
+    if (btn) {
+        btn.style.opacity = "0.6";
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        (posicion) => {
+            const lat = posicion.coords.latitude;
+            const lng = posicion.coords.longitude;
+            const precision = posicion.coords.accuracy;
+
+            if (btn) {
+                btn.style.opacity = "1";
+            }
+
+            if (typeof map === "undefined" || !map) return;
+
+            // Limpiar marcador anterior si existe
+            if (marcadorUsuario) map.removeLayer(marcadorUsuario);
+            if (circuloPrecisionUsuario) map.removeLayer(circuloPrecisionUsuario);
+
+            // Icono pulsante personalizado para el usuario
+            const userIcon = L.divIcon({
+                className: 'user-location-marker-container',
+                html: '<div class="pulse-user-dot"></div>',
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
+            });
+
+            // Círculo de precisión en el mapa
+            circuloPrecisionUsuario = L.circle([lat, lng], {
+                radius: precision,
+                color: '#00d2ff',
+                fillColor: '#00d2ff',
+                fillOpacity: 0.15,
+                weight: 1.5,
+                dashArray: '4, 6'
+            }).addTo(map);
+
+            // Marcador del usuario
+            marcadorUsuario = L.marker([lat, lng], { icon: userIcon })
+                .addTo(map)
+                .bindPopup(`
+                    <div style="font-family: system-ui; padding: 4px;">
+                        <strong style="color: #00d2ff;">📍 Tu ubicación actual</strong><br>
+                        <span style="font-size: 0.78rem; color: #a0aec0;">Precisión estimada: ±${Math.round(precision)} metros</span>
+                    </div>
+                `)
+                .openPopup();
+
+            // Desplazamiento suave de cámara (flyTo)
+            map.flyTo([lat, lng], 16, {
+                animate: true,
+                duration: 1.5
+            });
+        },
+        (error) => {
+            if (btn) {
+                btn.style.opacity = "1";
+            }
+
+            let mensaje = "No se pudo obtener tu ubicación.";
+            if (error.code === error.PERMISSION_DENIED) {
+                mensaje = "Permiso de ubicación denegado en el navegador.";
+            } else if (error.code === error.POSITION_UNAVAILABLE) {
+                mensaje = "La información de ubicación no está disponible en tu dispositivo.";
+            } else if (error.code === error.TIMEOUT) {
+                mensaje = "Se agotó el tiempo de espera para obtener tu posición.";
+            }
+            alert(mensaje);
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        }
+    );
+}
+
+// Listener para el botón Mi Ubicación
+document.getElementById("btnMiUbicacion")?.addEventListener("click", obtenerUbicacionUsuario);
+
 function setBottomNavActive(viewId) {
     document.querySelectorAll(".bottom-nav-item[data-view]").forEach(btn => {
         btn.classList.toggle("active", btn.dataset.view === viewId);
@@ -324,6 +483,8 @@ function setBottomNavActive(viewId) {
 
 let chartTendencia = null;
 let chartHoras = null;
+let chartDona = null;
+let chartBarras = null;
 
 function cargarResumen() {
     if (!incidentesData || incidentesData.length === 0) return;
@@ -427,13 +588,16 @@ function cargarResumen() {
                 const count = item[1];
                 const pct = Math.round((count / maxVal) * 100);
                 
+                const rankClass = index < 3 ? `rank-${index + 1}` : '';
                 const li = document.createElement("li");
-                li.className = "top-zona-item";
+                li.className = `top-zona-item ${rankClass}`;
                 li.innerHTML = `
-                    <div class="zona-info">
-                        <span class="zona-rank">#${index + 1}</span>
-                        <span class="zona-name">${barrio}</span>
-                        <span class="zona-count">${count} incidentes</span>
+                    <div class="zona-header">
+                        <div class="zona-left">
+                            <span class="zona-rank">#${index + 1}</span>
+                            <span class="zona-name">${barrio}</span>
+                        </div>
+                        <span class="zona-count"><i class="bi bi-exclamation-circle-fill"></i> ${count} incidentes</span>
                     </div>
                     <div class="zona-bar-bg">
                         <div class="zona-bar-fill" style="width: ${pct}%"></div>
@@ -441,9 +605,67 @@ function cargarResumen() {
                 `;
                 topZonasList.appendChild(li);
             });
-        } else {
-            topZonasList.innerHTML = "<li style='color: var(--texto-suave); font-size: 0.85rem;'>No hay datos para mostrar.</li>";
         }
+    }
+
+    // --- RENDERING GRÁFICO DE DONA (PROPORCIÓN POR TIPO) ---
+    const ctxDona = document.getElementById('graficoDona');
+    if (ctxDona) {
+        if (chartDona) {
+            chartDona.destroy();
+        }
+
+        chartDona = new Chart(ctxDona, {
+            type: 'doughnut',
+            data: {
+                labels: ['Robos', 'Accidentes', 'Piques', 'Agresiones'],
+                datasets: [{
+                    data: [r, a, p, ag],
+                    backgroundColor: [
+                        '#ef4444',
+                        '#f59e0b',
+                        '#a855f7',
+                        '#ec4899'
+                    ],
+                    borderColor: '#0d1117',
+                    borderWidth: 3,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#c9d1d9',
+                            font: { size: 12, family: "'Outfit', sans-serif" },
+                            padding: 14,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(13, 17, 23, 0.95)',
+                        titleColor: '#00d2ff',
+                        bodyColor: '#ffffff',
+                        borderColor: '#30363d',
+                        borderWidth: 1,
+                        padding: 10,
+                        callbacks: {
+                            label: function(context) {
+                                const totalSum = r + a + p + ag;
+                                const val = context.raw || 0;
+                                const pct = totalSum > 0 ? ((val / totalSum) * 100).toFixed(1) : 0;
+                                return ` ${context.label}: ${val} (${pct}%)`;
+                            }
+                        }
+                    }
+                },
+                cutout: '65%'
+            }
+        });
     }
 
     // Ordenar las llaves cronológicamente para Tendencia Temporal
@@ -625,9 +847,19 @@ function cargarResumen() {
                 const val = matrizDiaHora[d][h];
                 
                 if (val > 0) {
-                    // Calcular opacidad relativa al máximo, con un mínimo visible
-                    const opacity = Math.max(0.15, val / maxHeatmap);
-                    cell.style.backgroundColor = `rgba(248, 81, 73, ${opacity})`; // Rojo heatmap
+                    const ratio = maxHeatmap > 0 ? (val / maxHeatmap) : 0;
+                    if (ratio <= 0.33) {
+                        cell.style.backgroundColor = 'rgba(0, 210, 255, 0.75)';
+                        cell.style.boxShadow = '0 0 6px rgba(0, 210, 255, 0.3)';
+                    } else if (ratio <= 0.66) {
+                        cell.style.backgroundColor = 'rgba(245, 158, 11, 0.85)';
+                        cell.style.boxShadow = '0 0 8px rgba(245, 158, 11, 0.4)';
+                    } else {
+                        cell.style.backgroundColor = 'rgba(239, 68, 68, 0.95)';
+                        cell.style.boxShadow = '0 0 10px rgba(239, 68, 68, 0.6)';
+                    }
+                    cell.style.color = '#000000';
+                    cell.style.fontWeight = '700';
                     cell.title = `${diasSemana[d]} ${String(h).padStart(2, '0')}:00\nIncidentes: ${val}`;
                     cell.textContent = val;
                 }
@@ -892,42 +1124,45 @@ function renderizarIncidentes() {
                 }
 
                 const contenido = `
-                    <div class="popup-incidente">
-                        <div class="popup-header ${tipoClase}">
-                            <i class="bi ${iconClass}"></i>
-                            <span>${incidente.nametipoincidente || 'Incidente'}</span>
+                    <div class="popup-card">
+                        <div class="popup-card-header">
+                            <span class="popup-badge ${tipoClase}">${incidente.nametipoincidente || 'Incidente'}</span>
+                            <span class="popup-code">${incidente.codigoincidente || 'N/A'}</span>
                         </div>
-                        <div class="popup-body">
-                            <div class="popup-grid">
-                                <div class="pg-item">
-                                    <span class="pg-label">Fecha</span>
-                                    <span class="pg-valor"><i class="bi bi-calendar3"></i> ${fecha}</span>
-                                </div>
-                                <div class="pg-item">
-                                    <span class="pg-label">Hora</span>
-                                    <span class="pg-valor"><i class="bi bi-clock"></i> ${hora}</span>
-                                </div>
-                                <div class="pg-item">
-                                    <span class="pg-label">Estado</span>
-                                    <span class="badge ${estadoClase}">${estado}</span>
-                                </div>
-                                <div class="pg-item">
-                                    <span class="pg-label">Severidad</span>
-                                    <span class="badge ${severidadClase}">${severidad}</span>
-                                </div>
-                            </div>
-                            <div class="popup-row zona-row">
-                                <i class="bi bi-geo-alt"></i> <b>Zona:</b> ${incidente.namebarrio || incidente.nombrevereda || 'Sin zona asignada'}
+                        
+                        <div class="popup-location-box">
+                            <i class="bi bi-geo-alt-fill popup-loc-icon"></i>
+                            <div class="popup-loc-text">
+                                <span class="popup-loc-label">Zona / Barrio</span>
+                                <strong class="popup-loc-name">${incidente.namebarrio || incidente.nombrevereda || 'Sin zona asignada'}</strong>
                             </div>
                         </div>
-                        <div class="popup-footer">
-                            <small>Ref: ${incidente.codigoincidente || 'N/A'}</small>
+
+                        <div class="popup-grid-2x2">
+                            <div class="popup-grid-item">
+                                <span class="pg-label"><i class="bi bi-calendar3"></i> Fecha</span>
+                                <span class="pg-val">${fecha}</span>
+                            </div>
+                            <div class="popup-grid-item">
+                                <span class="pg-label"><i class="bi bi-clock"></i> Hora</span>
+                                <span class="pg-val">${hora}</span>
+                            </div>
+                            <div class="popup-grid-item">
+                                <span class="pg-label">Estado</span>
+                                <span class="popup-status-tag ${estadoClase}">${estado}</span>
+                            </div>
+                            <div class="popup-grid-item">
+                                <span class="pg-label">Severidad</span>
+                                <span class="popup-sev-tag ${severidadClase}">${severidad}</span>
+                            </div>
                         </div>
                     </div>
                 `;
                 marker.bindPopup(contenido, {
                     className: 'custom-popup-container',
-                    minWidth: 280
+                    minWidth: 260,
+                    autoPanPaddingTopLeft: L.point(20, 90),
+                    autoPanPaddingBottomRight: L.point(20, 20)
                 }).openPopup();
             });
         });
@@ -1282,159 +1517,104 @@ async function cargarIncidentesBarra() {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
 
-    // Tamaño responsivo
-    const parent = canvas.parentElement;
-    const W = parent.clientWidth || 340;
-    const H = esMobile() ? 220 : 280;
-    canvas.width  = W;
-    canvas.height = H;
-    canvas.style.width  = W + "px";
-    canvas.style.height = H + "px";
-
-    const PAD_LEFT   = 48;
-    const PAD_RIGHT  = 16;
-    const PAD_TOP    = 24;
-    const PAD_BOTTOM = 56;
-
-    const chartW = W - PAD_LEFT - PAD_RIGHT;
-    const chartH = H - PAD_TOP  - PAD_BOTTOM;
-
-    const max       = Math.max(...data.map(d => d.cantidad));
-    const barCount  = data.length;
-    const barGap    = chartW * 0.08;
-    const barW      = (chartW - barGap * (barCount + 1)) / barCount;
-
-    // ── Animación ──
-    if (graficoAnimFrame) cancelAnimationFrame(graficoAnimFrame);
-    const duration  = 700; // ms
-    const startTime = performance.now();
-
-    // Estado de hover
-    let hoveredIdx = -1;
-    canvas.onmousemove = (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const mx = e.clientX - rect.left;
-        hoveredIdx = -1;
-        data.forEach((_, i) => {
-            const x = PAD_LEFT + barGap * (i + 1) + barW * i;
-            if (mx >= x && mx <= x + barW) hoveredIdx = i;
-        });
-    };
-    canvas.onmouseleave = () => { hoveredIdx = -1; };
-
-    function draw(progress) {
-        ctx.clearRect(0, 0, W, H);
-
-        // Fondo
-        ctx.fillStyle = "transparent";
-        ctx.fillRect(0, 0, W, H);
-
-        // Líneas de cuadrícula horizontales
-        const gridLines = 4;
-        for (let g = 0; g <= gridLines; g++) {
-            const y = PAD_TOP + chartH - (g / gridLines) * chartH;
-            ctx.beginPath();
-            ctx.moveTo(PAD_LEFT, y);
-            ctx.lineTo(PAD_LEFT + chartW, y);
-            ctx.strokeStyle = g === 0 ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.05)";
-            ctx.lineWidth = g === 0 ? 1.5 : 1;
-            ctx.stroke();
-
-            // Etiqueta eje Y
-            const val = Math.round((g / gridLines) * max);
-            ctx.fillStyle = "rgba(255,255,255,0.35)";
-            ctx.font = `${esMobile() ? 9 : 10}px Arial`;
-            ctx.textAlign = "right";
-            ctx.fillText(val, PAD_LEFT - 6, y + 3.5);
-        }
-
-        // Barras
-        data.forEach((d, i) => {
-            const x         = PAD_LEFT + barGap * (i + 1) + barW * i;
-            const fullH     = (d.cantidad / max) * chartH;
-            const animH     = fullH * progress;
-            const y         = PAD_TOP + chartH - animH;
-            const isHovered = hoveredIdx === i;
-            const radius    = Math.min(6, barW * 0.25);
-
-            // Sombra glow
-            ctx.save();
-            ctx.shadowColor = d.color;
-            ctx.shadowBlur  = isHovered ? 20 : 10;
-
-            // Gradiente vertical
-            const grad = ctx.createLinearGradient(x, y, x, PAD_TOP + chartH);
-            grad.addColorStop(0, d.color);
-            grad.addColorStop(1, d.color + "55");
-            ctx.fillStyle = grad;
-            ctx.globalAlpha = isHovered ? 1 : 0.82;
-
-            // Barra con esquinas redondeadas arriba
-            ctx.beginPath();
-            ctx.moveTo(x + radius, y);
-            ctx.lineTo(x + barW - radius, y);
-            ctx.quadraticCurveTo(x + barW, y, x + barW, y + radius);
-            ctx.lineTo(x + barW, PAD_TOP + chartH);
-            ctx.lineTo(x, PAD_TOP + chartH);
-            ctx.lineTo(x, y + radius);
-            ctx.quadraticCurveTo(x, y, x + radius, y);
-            ctx.closePath();
-            ctx.fill();
-            ctx.restore();
-
-            // Valor encima de la barra
-            if (progress > 0.6) {
-                const alpha = Math.min(1, (progress - 0.6) / 0.4);
-                ctx.globalAlpha = alpha;
-                ctx.fillStyle = "#fff";
-                ctx.font = `bold ${esMobile() ? 11 : 13}px Arial`;
-                ctx.textAlign = "center";
-                ctx.fillText(d.cantidad, x + barW / 2, y - 6);
-                ctx.globalAlpha = 1;
-            }
-
-            // Etiqueta eje X
-            ctx.fillStyle = isHovered ? "#fff" : "rgba(255,255,255,0.6)";
-            ctx.font = `${isHovered ? "bold " : ""}${esMobile() ? 9 : 11}px Arial`;
-            ctx.textAlign = "center";
-            // Etiqueta abreviada si no cabe
-            const label = d.tipo.length > 10 ? d.tipo.split("/")[0].trim() : d.tipo;
-            ctx.fillText(label, x + barW / 2, PAD_TOP + chartH + 18);
-
-            // Segunda línea si hay barra (split agresiones)
-            if (d.tipo.includes("/")) {
-                ctx.fillStyle = isHovered ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.4)";
-                ctx.font = `${esMobile() ? 8 : 9}px Arial`;
-                ctx.fillText("/ Amenazas", x + barW / 2, PAD_TOP + chartH + 30);
-            }
-        });
+    if (chartBarras) {
+        chartBarras.destroy();
     }
 
-    function animate(now) {
-        const elapsed  = now - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        // Ease out cubic
-        const eased = 1 - Math.pow(1 - progress, 3);
-        draw(eased);
-        if (progress < 1 || hoveredIdx !== -1) {
-            graficoAnimFrame = requestAnimationFrame(animate);
+    const totalCount = data.reduce((acc, curr) => acc + curr.cantidad, 0);
+    const labels = data.map(d => d.tipo);
+    const valores = data.map(d => d.cantidad);
+
+    function obtenerColorGradiente(tipoStr, colorBackend) {
+        const t = (tipoStr || '').toLowerCase();
+        if (t.includes('robo') || t.includes('hurto')) {
+            return { border: '#ef4444', fillStart: 'rgba(239, 68, 68, 0.12)', fillEnd: 'rgba(239, 68, 68, 0.45)' };
+        } else if (t.includes('accidente') || t.includes('tránsito') || t.includes('transito')) {
+            return { border: '#f59e0b', fillStart: 'rgba(245, 158, 11, 0.12)', fillEnd: 'rgba(245, 158, 11, 0.45)' };
+        } else if (t.includes('pique')) {
+            return { border: '#a855f7', fillStart: 'rgba(168, 85, 247, 0.12)', fillEnd: 'rgba(168, 85, 247, 0.45)' };
+        } else if (t.includes('agresi') || t.includes('amenaza')) {
+            return { border: '#ec4899', fillStart: 'rgba(236, 72, 153, 0.12)', fillEnd: 'rgba(236, 72, 153, 0.45)' };
         }
+        const base = colorBackend || '#00d2ff';
+        return { border: base, fillStart: 'rgba(0, 210, 255, 0.12)', fillEnd: 'rgba(0, 210, 255, 0.45)' };
     }
 
-    // Re-render en hover para que el glow sea reactivo
-    canvas.onmousemove = (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const mx = e.clientX - rect.left;
-        hoveredIdx = -1;
-        data.forEach((_, i) => {
-            const x = PAD_LEFT + barGap * (i + 1) + barW * i;
-            if (mx >= x && mx <= x + barW) hoveredIdx = i;
-        });
-        draw(1);
-    };
-    canvas.onmouseleave = () => { hoveredIdx = -1; draw(1); };
+    const parentWidth = canvas.parentElement ? canvas.parentElement.clientWidth : 300;
 
-    graficoAnimFrame = requestAnimationFrame(animate);
+    const backgroundGradients = data.map(d => {
+        const style = obtenerColorGradiente(d.tipo, d.color);
+        const grad = ctx.createLinearGradient(0, 0, parentWidth, 0);
+        grad.addColorStop(0, style.fillStart);
+        grad.addColorStop(1, style.fillEnd);
+        return grad;
+    });
+
+    const borderColors = data.map(d => {
+        const style = obtenerColorGradiente(d.tipo, d.color);
+        return style.border;
+    });
+
+    chartBarras = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Incidentes',
+                data: valores,
+                backgroundColor: backgroundGradients,
+                borderColor: borderColors,
+                borderWidth: 2,
+                borderRadius: 20,
+                borderSkipped: false,
+                barThickness: 22
+            }]
+        },
+        options: {
+            indexAxis: 'y', // Orientación horizontal ejecutiva
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(13, 17, 23, 0.95)',
+                    titleColor: '#00d2ff',
+                    bodyColor: '#ffffff',
+                    borderColor: '#30363d',
+                    borderWidth: 1,
+                    padding: 12,
+                    displayColors: true,
+                    callbacks: {
+                        label: (context) => {
+                            const val = context.raw || 0;
+                            const pct = totalCount > 0 ? ((val / totalCount) * 100).toFixed(1) : 0;
+                            return ` Total: ${val} incidentes (${pct}%)`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                    ticks: {
+                        color: '#8b949e',
+                        font: { size: 11, family: "'Outfit', sans-serif" },
+                        stepSize: 1
+                    },
+                    beginAtZero: true,
+                    border: { display: false }
+                },
+                y: {
+                    grid: { display: false },
+                    ticks: {
+                        color: '#ffffff',
+                        font: { size: 12, family: "'Outfit', sans-serif", weight: '600' }
+                    },
+                    border: { display: false }
+                }
+            }
+        }
+    });
 }
 
 window.addEventListener("resize", () => {
@@ -1788,3 +1968,27 @@ window.addEventListener("click", (e) => {
         modalLugares.classList.remove("mostrar");
     }
 });
+
+// Bloqueo estricto de auto-scroll en los contenedores del mapa para evitar desplazamientos por foco del navegador
+const bloquearScrollContenedores = () => {
+    const contenedores = [
+        document.querySelector('.content-wrapper'),
+        document.querySelector('.main-content'),
+        document.getElementById('vistaMapa'),
+        document.querySelector('.layout-wrapper'),
+        document.querySelector('.map-wrapper')
+    ];
+    contenedores.forEach(el => {
+        if (el) {
+            el.addEventListener('scroll', () => {
+                if (el.scrollTop !== 0) el.scrollTop = 0;
+                if (el.scrollLeft !== 0) el.scrollLeft = 0;
+            }, { passive: true });
+        }
+    });
+};
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bloquearScrollContenedores);
+} else {
+    bloquearScrollContenedores();
+}

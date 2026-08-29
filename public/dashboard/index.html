@@ -22,7 +22,80 @@
             flex-direction: column;
         }
         
-        #vistaMapa { position: relative; }
+        .content-wrapper {
+            flex: 1 1 0% !important;
+            display: flex;
+            flex-direction: column;
+            height: 100vh !important;
+            max-height: 100vh !important;
+            overflow: hidden !important;
+            box-sizing: border-box;
+        }
+
+        #vistaMapa { 
+            position: relative; 
+            flex: 1 1 0% !important;
+            height: 0 !important;
+            min-height: 0 !important;
+            margin: 12px 12px 4px 12px;
+            box-sizing: border-box;
+            overflow: hidden !important;
+        }
+
+        .map-wrapper {
+            flex: 1 1 0% !important;
+            height: 100% !important;
+            min-height: 0 !important;
+            position: relative;
+            overflow: hidden !important;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #map {
+            flex: 1 1 0% !important;
+            height: 100% !important;
+            min-height: 0 !important;
+            width: 100%;
+        }
+
+        .sigi-footer {
+            position: static !important;
+            flex: 0 0 24px !important;
+            height: 24px !important;
+            max-height: 24px !important;
+            box-sizing: border-box !important;
+            overflow: hidden !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 0 12px !important;
+            margin: 2px 12px 6px 12px !important;
+            background: transparent !important;
+            z-index: 10 !important;
+            width: auto !important;
+            transform: none !important;
+            left: auto !important;
+            bottom: auto !important;
+            box-shadow: none !important;
+            border: none !important;
+        }
+
+        .sigi-footer .footer-copy {
+            font-size: 0.72rem !important;
+            color: var(--texto-suave, #8b949e) !important;
+            margin: 0 !important;
+            text-align: center !important;
+            white-space: nowrap !important;
+            line-height: 24px !important;
+        }
+
+        .main-content {
+            overflow: hidden !important;
+            height: 100% !important;
+            max-height: 100% !important;
+        }
         
         #map {
             flex: 1;
@@ -150,26 +223,6 @@
             .leyenda {
                 bottom: 30px !important; /* Vuelve a su posición normal */
             }
-            .sigi-footer {
-                position: static !important; /* Quitar absolute para no superponer */
-                padding-right: 360px !important;
-                justify-content: center !important;
-                flex-shrink: 0;
-            }
-        #vistaMapa, #vistaMapaCompleto, #vistaTabla {
-            flex: 1;
-        }
-
-        @media (min-width: 900px) {
-            .leyenda {
-                bottom: 30px !important; /* Vuelve a su posición normal */
-            }
-            .sigi-footer {
-                position: static !important; /* Quitar absolute para no superponer */
-                padding-right: 360px !important;
-                justify-content: center !important;
-                flex-shrink: 0;
-            }
         }
     </style>
 </head>
@@ -177,17 +230,24 @@
 <body>
     <div class="layout-wrapper">
         <aside class="sidebar desktop-only">
-            <div class="sidebar-logo" style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 10px; padding: 0 10px;">
-                <img src="../assets/img/image.png" alt="Logo SIGI" style="max-width: 65px; margin-bottom: 2px;">
-                <span style="font-size: 0.75rem; font-weight: bold; color: #e6edf3; letter-spacing: 0.03em;">Sistema de Información Geográfica de Incidentes</span>
-                <span style="font-size: 0.65rem; color: var(--acento); background: rgba(56, 139, 253, 0.15); padding: 3px 10px; border-radius: 12px; margin-top: 4px; display: inline-block;">Consulta pública</span>
+            <button id="btnToggleSidebar" class="btn-toggle-sidebar" title="Colapsar / Expandir menú">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+            <div class="sidebar-logo" style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 8px; padding: 0 8px; width: 100%; box-sizing: border-box;">
+                <img src="../assets/img/image.png" alt="Logo SIGI" style="width: 50px; max-width: 50px; height: auto; margin-bottom: 4px;">
+                <span class="logo-title" style="font-size: 0.72rem; font-weight: bold; color: #e6edf3; letter-spacing: 0.02em; line-height: 1.25; white-space: normal; text-align: center; display: block; width: 100%;">Sistema de Información Geográfica de Incidentes</span>
+                <span class="logo-tag" style="font-size: 0.62rem; color: var(--acento); background: rgba(56, 139, 253, 0.15); padding: 2px 8px; border-radius: 12px; margin-top: 4px; display: inline-block;">Consulta pública</span>
             </div>
-            <nav class="sidebar-nav">
-                <button class="nav-btn active" data-view="mapa" title="Dashboard">
-                    <i class="bi bi-house"></i> <span class="nav-text">Dashboard</span>
+
+            <!-- Separador 1: Entre Logo y Menú de Navegación -->
+            <hr class="sidebar-divider" style="border: 0; border-top: 1px solid var(--borde); margin: 6px 15px 8px 15px; width: calc(100% - 30px); opacity: 0.7;">
+
+            <nav class="sidebar-nav" style="display: flex; flex-direction: column; gap: 3px; width: 100%;">
+                <button class="nav-btn active" data-view="inicio" title="Inicio / Panel Informativo">
+                    <i class="bi bi-house"></i> <span class="nav-text">Inicio</span>
                 </button>
-                <button class="nav-btn" data-view="mapa-completo" title="Mapa Completo">
-                    <i class="bi bi-map"></i> <span class="nav-text">Explorar</span>
+                <button class="nav-btn" data-view="mapa" title="Mapa Principal">
+                    <i class="bi bi-map"></i> <span class="nav-text">Mapa Principal</span>
                 </button>
                 <button class="nav-btn" data-view="tabla" title="Tabla de Incidentes">
                     <i class="bi bi-table"></i> <span class="nav-text">Incidentes</span>
@@ -197,18 +257,42 @@
                 </button>
             </nav>
             
-            <div class="leyenda-sidebar desktop-only" style="padding: 0 15px; width: 100%; box-sizing: border-box; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; margin-bottom: 5px;">
-                <hr style="border: 0; border-top: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 10px; width: 100%;">
-                <h4 style="font-size: 0.75rem; color: var(--texto-suave); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">Simbología</h4>
-                <div class="itemLeyenda" style="margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 0.75rem;"><span class="rojo" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--rojo);"></span> Robo</div>
-                <div class="itemLeyenda" style="margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 0.75rem;"><span class="morado" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--magenta);"></span> Piques</div>
-                <div class="itemLeyenda" style="margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 0.75rem;"><span class="amarillo" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--amarillo);"></span> Agresiones</div>
-                <div class="itemLeyenda" style="margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 0.75rem;"><span class="verde" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--verde);"></span> Accidente</div>
-            </div>
-            <div class="sidebar-footer" style="padding: 10px 0; border-top: 1px solid rgba(255, 255, 255, 0.05); width: 100%;">
-                <button id="iniciarSesion" style="background: none; border: none; color: var(--texto-suave); font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 15px; width: 100%; padding: 8px 15px 8px 15px; transition: color 0.2s;" title="Acceso Administrativo">
-                    <i class="bi bi-lock-fill" style="color: var(--texto-suave); font-size: 1.1rem;"></i> <span class="nav-text" style="color: var(--texto-suave); font-size: 0.8rem; font-weight: normal;">Acceso administrativo</span>
-                </button>
+            <div style="margin-top: auto; width: 100%; display: flex; flex-direction: column;">
+                <!-- Separador 2: Entre Menú y Simbología -->
+                <hr class="sidebar-divider" style="border: 0; border-top: 1px solid var(--borde); margin: 8px 15px 8px 15px; width: calc(100% - 30px); opacity: 0.7;">
+
+                <!-- Simbología -->
+                <div class="leyenda-sidebar desktop-only" style="padding: 0 12px; width: 100%; box-sizing: border-box; display: flex; flex-direction: column;">
+                    <div class="simbologia-card">
+                        <h4 style="font-size: 0.72rem; color: var(--texto-suave); margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                            <i class="bi bi-palette-fill" style="font-size: 0.8rem; color: var(--acento);"></i> <span class="simbologia-title-text">Simbología</span>
+                        </h4>
+                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                            <div class="itemLeyenda" style="display: flex; align-items: center; gap: 10px; font-size: 0.75rem; color: var(--texto);" title="Robo">
+                                <span class="dot-leyenda dot-rojo" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); flex-shrink: 0;"></span> <span class="simbologia-item-text">Robo</span>
+                            </div>
+                            <div class="itemLeyenda" style="display: flex; align-items: center; gap: 10px; font-size: 0.75rem; color: var(--texto);" title="Piques">
+                                <span class="dot-leyenda dot-morado" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: #a855f7; box-shadow: 0 0 8px rgba(168, 85, 247, 0.6); flex-shrink: 0;"></span> <span class="simbologia-item-text">Piques</span>
+                            </div>
+                            <div class="itemLeyenda" style="display: flex; align-items: center; gap: 10px; font-size: 0.75rem; color: var(--texto);" title="Agresiones">
+                                <span class="dot-leyenda dot-amarillo" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.6); flex-shrink: 0;"></span> <span class="simbologia-item-text">Agresiones</span>
+                            </div>
+                            <div class="itemLeyenda" style="display: flex; align-items: center; gap: 10px; font-size: 0.75rem; color: var(--texto);" title="Accidente">
+                                <span class="dot-leyenda dot-verde" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.6); flex-shrink: 0;"></span> <span class="simbologia-item-text">Accidente</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Separador 3: Entre Simbología y Acceso Administrativo -->
+                <hr class="sidebar-divider" style="border: 0; border-top: 1px solid var(--borde); margin: 8px 15px 8px 15px; width: calc(100% - 30px); opacity: 0.7;">
+
+                <!-- Botón Integrado de Acceso Administrativo -->
+                <div class="sidebar-footer" style="padding: 0 12px 12px 12px; width: 100%; box-sizing: border-box;">
+                    <button id="iniciarSesion" class="nav-btn btn-admin-acceso" style="width: 100%; padding: 7px 10px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--borde); border-radius: 10px; color: var(--texto-suave); cursor: pointer; display: flex; align-items: center; justify-content: flex-start; gap: 8px; box-sizing: border-box; overflow: hidden; transition: all 0.2s ease;" title="Acceso Administrativo">
+                        <i class="bi bi-lock-fill" style="color: var(--texto-suave); font-size: 0.95rem; flex-shrink: 0;"></i> <span class="nav-text admin-text" style="color: var(--texto-suave); font-size: 0.75rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Acceso administrativo</span>
+                    </button>
+                </div>
             </div>
         </aside>
 
@@ -295,7 +379,59 @@
             </div>
         </div>
 
-        <main id="vistaMapa" class="vista-activa">
+        <!-- Vista Inicio (Panel Informativo Simplificado) -->
+        <div id="vistaInicio" class="vista-inicio vista-activa">
+            <div class="inicio-hero">
+                <div class="hero-badge">Plataforma Oficial SIGI</div>
+                <h1 class="hero-title">Sistema de Información Geográfica de Incidentes</h1>
+                <p class="hero-subtitle">
+                    Herramienta tecnológica avanzada para el monitoreo, georreferenciación y análisis espacial de eventos de riesgo e incidentes en Florencia, Caquetá. Desarrollado en el marco del programa SENA.
+                </p>
+                <div class="hero-actions">
+                    <button type="button" class="btn-hero btn-hero-primary" onclick="cambiarVista('mapa')">
+                        Explorar Mapa de Incidentes
+                    </button>
+                    <button type="button" class="btn-hero btn-hero-secondary" onclick="cambiarVista('estadisticas')">
+                        Ver Analítica y Tendencias
+                    </button>
+                </div>
+            </div>
+
+            <div class="inicio-cards-grid">
+                <div class="inicio-card">
+                    <h3>Geolocalización & Clustering</h3>
+                    <p>Mapeo preciso de coordenadas con agrupación inteligente (Marker Clusters) y capas satelitales/oscuras en tiempo real.</p>
+                </div>
+
+                <div class="inicio-card">
+                    <h3>Mapas de Calor (Heatmaps)</h3>
+                    <p>Identificación de áreas de alta concentración de riesgo mediante algoritmos de densidad de kernel espacial.</p>
+                </div>
+
+                <div class="inicio-card">
+                    <h3>Filtros y Control Multivariable</h3>
+                    <p>Búsqueda en tiempo real por barrios/veredas, rangos de fecha y tipologías con exportación directa de reportes CSV.</p>
+                </div>
+
+                <div class="inicio-card">
+                    <h3>Matriz Día × Hora</h3>
+                    <p>Análisis temporal de patrones de recurrencia horaria y días críticos para apoyo a la toma de decisiones preventivas.</p>
+                </div>
+            </div>
+
+            <div class="inicio-info-footer">
+                <div class="info-footer-item">
+                    <span class="info-footer-label">Proyecto Formativo SENA</span>
+                    <span class="info-footer-sub">Análisis y Desarrollo de Software</span>
+                </div>
+                <div class="info-footer-item">
+                    <span class="info-footer-label">Cobertura Geográfica</span>
+                    <span class="info-footer-sub">Florencia, Caquetá · Zonas Urbana y Rural</span>
+                </div>
+            </div>
+        </div>
+
+        <main id="vistaMapa" class="esconder">
             <div class="map-wrapper">
             <div class="kpi-ribbon">
                 <div class="kpi-card">
@@ -345,6 +481,11 @@
 
             <!-- Grupo de herramientas GIS (derecha) -->
             <div class="gis-tools-group">
+                <button id="btnMiUbicacion" type="button" class="fab fab-location" aria-label="Mi ubicación en tiempo real" title="Centrar en mi ubicación">
+                    <i class="bi bi-geo-alt-fill icono-mobile" aria-hidden="true"></i>
+                    <i class="bi bi-geo-alt-fill icono-desktop" aria-hidden="true"></i>
+                    <span class="texto-desktop" style="margin-left: 5px;">Mi ubicación</span>
+                </button>
                 <button id="btnToggleHeatmap" type="button" class="fab fab-heatmap" aria-label="Alternar mapa de calor">
                     <i class="bi bi-fire icono-mobile" aria-hidden="true"></i>
                     <i class="bi bi-fire icono-desktop" aria-hidden="true"></i>
@@ -400,81 +541,120 @@
         </div>
     </section>
 
-    <!-- ESTADÍSTICAS -->
+    <!-- ESTADÍSTICAS / ANALÍTICA -->
     <div id="estadisticas" class="esconder">
+        <!-- Banner Header Analítica -->
+        <div class="analitica-header">
+            <div class="analitica-titulo">
+                <h2><i class="bi bi-bar-chart-line-fill"></i> Panel de Analítica & Estadísticas</h2>
+                <p>Visualización avanzada de patrones espacio-temporales y resumen ejecutivo en tiempo real.</p>
+            </div>
+            <div class="analitica-badge">
+                <span class="pulse-indicator"></span>
+                <span>Analizando datos en tiempo real</span>
+            </div>
+        </div>
+
+        <!-- Tarjetas KPI Resumen -->
         <div class="resumen">
             <div class="contResumen">
                 <div class="cardResumen totalResumen">
-                    <span>Total</span>
-                    <h2 id="total"></h2>
+                    <div class="card-content">
+                        <span>Total Registros</span>
+                        <h2 id="total">0</h2>
+                    </div>
                 </div>
                 <div class="cardResumen roboResumen">
-                    <span>Robos</span>
-                    <h2 id="robos"></h2>
+                    <div class="card-content">
+                        <span>Robos</span>
+                        <h2 id="robos">0</h2>
+                    </div>
                 </div>
                 <div class="cardResumen accidenteResumen">
-                    <span>Accidentes</span>
-                    <h2 id="accidentes"></h2>
+                    <div class="card-content">
+                        <span>Accidentes</span>
+                        <h2 id="accidentes">0</h2>
+                    </div>
                 </div>
                 <div class="cardResumen piqueResumen">
-                    <span>Piques</span>
-                    <h2 id="piques"></h2>
+                    <div class="card-content">
+                        <span>Piques</span>
+                        <h2 id="piques">0</h2>
+                    </div>
                 </div>
                 <div class="cardResumen agresionResumen">
-                    <span>Agresiones</span>
-                    <h2 id="agresiones"></h2>
+                    <div class="card-content">
+                        <span>Agresiones</span>
+                        <h2 id="agresiones">0</h2>
+                    </div>
                 </div>
                 <div class="cardResumen topBarrio">
-                    <span>Barrio con más incidentes</span>
-                    <h2 id="topBarrio">...</h2>
+                    <div class="card-content">
+                        <span>Barrio Crítico</span>
+                        <h2 id="topBarrio">...</h2>
+                    </div>
                 </div>
                 <div class="cardResumen topVereda">
-                    <span>Vereda con más incidentes</span>
-                    <h2 id="topVereda">...</h2>
+                    <div class="card-content">
+                        <span>Vereda Crítica</span>
+                        <h2 id="topVereda">...</h2>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Ranking Top 10 Zonas Críticas -->
-        <div class="grafico-scroll" id="topZonasContainer">
-            <h3 class="seccion-titulo" style="margin-bottom: 12px; margin-top: 10px;">
-                <i class="bi bi-exclamation-triangle-fill" style="color: var(--rojo);"></i> Ranking Top 10 Zonas Críticas
-            </h3>
-            <div id="panelTopZonas" class="panel-grafico" style="padding: 16px;">
-                <ul class="top-zonas-list" id="topZonasList">
-                    <!-- Renderizado dinámico por JS -->
-                </ul>
+        <!-- Dashboard Grid Layout -->
+        <div class="estadisticas-grid">
+            <!-- Ranking Top 10 Zonas Críticas -->
+            <div class="grafico-scroll" id="topZonasContainer">
+                <h3 class="seccion-titulo">
+                    <i class="bi bi-exclamation-triangle-fill" style="color: var(--rojo);"></i> Ranking Top 10 Zonas Críticas
+                </h3>
+                <div id="panelTopZonas" class="panel-grafico" style="padding: 16px;">
+                    <ul class="top-zonas-list" id="topZonasList">
+                        <!-- Renderizado dinámico por JS -->
+                    </ul>
+                </div>
             </div>
-        </div>
-        <!-- Gráfico de Tendencia Temporal -->
-        <div class="grafico-scroll">
-            <h3 class="seccion-titulo" style="margin-bottom: 12px; margin-top: 10px;"><i class="bi bi-graph-up"></i> Evolución de incidentes (Tendencia Temporal)</h3>
-            <div id="panelTendencia" class="panel-grafico">
-                <canvas id="graficoTendencia"></canvas>
-            </div>
-        </div>
 
-        <!-- Gráfico por Hora -->
-        <div class="grafico-scroll">
-            <h3 class="seccion-titulo" style="margin-bottom: 12px; margin-top: 10px;"><i class="bi bi-clock-history"></i> Análisis por Hora (00:00 - 23:59)</h3>
-            <div id="panelHoras" class="panel-grafico">
-                <canvas id="graficoHoras"></canvas>
+            <!-- Gráfico de Dona: Distribución Porcentual -->
+            <div class="grafico-scroll">
+                <h3 class="seccion-titulo"><i class="bi bi-pie-chart-fill"></i> Proporción por Tipo de Incidente</h3>
+                <div id="panelDona" class="panel-grafico">
+                    <canvas id="graficoDona"></canvas>
+                </div>
             </div>
-        </div>
 
-        <!-- Matriz de Concentración -->
-        <div class="grafico-scroll">
-            <h3 class="seccion-titulo" style="margin-bottom: 12px; margin-top: 10px;"><i class="bi bi-grid-3x3-gap-fill"></i> Matriz de Concentración (Día × Hora)</h3>
-            <div id="panelMatriz" class="panel-grafico" style="padding: 16px; overflow-x: auto;">
-                <div id="matrizDiaHora" class="heatmap-grid"></div>
+            <!-- Gráfico de Tendencia Temporal -->
+            <div class="grafico-scroll">
+                <h3 class="seccion-titulo"><i class="bi bi-graph-up"></i> Evolución de Incidentes (Tendencia)</h3>
+                <div id="panelTendencia" class="panel-grafico">
+                    <canvas id="graficoTendencia"></canvas>
+                </div>
             </div>
-        </div>
 
-        <!-- Gráfico de barras verticales -->
-        <div class="grafico-scroll">
-            <h3 class="seccion-titulo" style="margin-bottom: 12px; margin-top: 10px;"><i class="bi bi-bar-chart-fill"></i> Tipos de incidentes frecuentes</h3>
-            <div id="panelIncidentes" class="panel-grafico">
-                <canvas id="graficoBarras"></canvas>
+            <!-- Gráfico por Hora -->
+            <div class="grafico-scroll">
+                <h3 class="seccion-titulo"><i class="bi bi-clock-history"></i> Distribución por Hora del Día</h3>
+                <div id="panelHoras" class="panel-grafico">
+                    <canvas id="graficoHoras"></canvas>
+                </div>
+            </div>
+
+            <!-- Gráfico de barras verticales -->
+            <div class="grafico-scroll">
+                <h3 class="seccion-titulo"><i class="bi bi-bar-chart-fill"></i> Comparativo por Categoría</h3>
+                <div id="panelIncidentes" class="panel-grafico">
+                    <canvas id="graficoBarras"></canvas>
+                </div>
+            </div>
+
+            <!-- Matriz de Concentración -->
+            <div class="grafico-scroll grid-full-width">
+                <h3 class="seccion-titulo"><i class="bi bi-grid-3x3-gap-fill"></i> Matriz de Concentración (Día × Hora)</h3>
+                <div id="panelMatriz" class="panel-grafico" style="padding: 16px; overflow-x: auto;">
+                    <div id="matrizDiaHora" class="heatmap-grid"></div>
+                </div>
             </div>
         </div>
     </div> <!-- Cierra estadisticas -->
@@ -514,19 +694,19 @@
     <div id="modalFiltroTiempo" class="modal">
         <div class="modal-contenido modal-tiempo">
             <div class="modal-cabecera">
-                <h3>Filtrar por tiempo</h3>
-                <span class="cerrar-modal-tiempo" id="btnCerrarFiltroTiempo">&times;</span>
+                <h3><i class="bi bi-calendar-event"></i> Filtrar por tiempo</h3>
+                <span class="cerrar-modal-tiempo" id="btnCerrarFiltroTiempo" title="Cerrar">&times;</span>
             </div>
             
             <div class="modal-cuerpo">
                 <!-- BOTONES RÁPIDOS -->
                 <div class="seccion-filtro-modal">
-                    <span class="titulo-seccion-modal">Botones rápidos</span>
+                    <span class="titulo-seccion-modal">Filtros rápidos</span>
                     <div class="botones-rapidos-grid">
                         <button type="button" class="btn-rapido-modal" data-rango="hoy">Hoy</button>
-                        <button type="button" class="btn-rapido-modal" data-rango="semana">Última semana</button>
+                        <button type="button" class="btn-rapido-modal" data-rango="semana">7 días</button>
                         <button type="button" class="btn-rapido-modal" data-rango="15dias">15 días</button>
-                        <button type="button" class="btn-rapido-modal" data-rango="mes">Último mes</button>
+                        <button type="button" class="btn-rapido-modal" data-rango="mes">1 mes</button>
                         <button type="button" class="btn-rapido-modal" data-rango="3meses">3 meses</button>
                         <button type="button" class="btn-rapido-modal" data-rango="1anio">1 año</button>
                     </div>
@@ -553,29 +733,23 @@
                     </div>
                 </div>
 
-                <!-- MES ESPECÍFICO -->
-                <div class="seccion-filtro-modal">
-                    <span class="titulo-seccion-modal">Mes específico</span>
-                    <div class="mes-especifico-modal">
-                        <div class="campo-modal">
-                            <label for="mesFiltroModal">Mes y año</label>
+                <!-- MES Y AÑO EN 2 COLUMNAS -->
+                <div class="seccion-filtro-modal grid-dos-columnas" style="border-bottom: none; padding-bottom: 0;">
+                    <div class="campo-modal">
+                        <label for="mesFiltroModal">Por Mes</label>
+                        <div class="input-con-boton">
                             <input type="month" id="mesFiltroModal" class="input-modal-month">
+                            <button type="button" id="btnFiltrarMesModal" class="btn-verde btn-icono" title="Filtrar mes"><i class="bi bi-funnel-fill"></i></button>
                         </div>
-                        <button type="button" id="btnFiltrarMesModal" class="btn-verde">Filtrar</button>
                     </div>
-                </div>
-
-                <!-- AÑO ESPECÍFICO -->
-                <div class="seccion-filtro-modal" style="border-bottom: none; padding-bottom: 0;">
-                    <span class="titulo-seccion-modal">Año específico</span>
-                    <div class="mes-especifico-modal">
-                        <div class="campo-modal">
-                            <label for="anioFiltroModal">Seleccionar año</label>
+                    <div class="campo-modal">
+                        <label for="anioFiltroModal">Por Año</label>
+                        <div class="input-con-boton">
                             <select id="anioFiltroModal" class="input-modal-fecha">
                                 <option value="">---</option>
                             </select>
+                            <button type="button" id="btnFiltrarAnioModal" class="btn-verde btn-icono" title="Filtrar año"><i class="bi bi-funnel-fill"></i></button>
                         </div>
-                        <button type="button" id="btnFiltrarAnioModal" class="btn-verde">Filtrar</button>
                     </div>
                 </div>
             </div>
@@ -583,7 +757,7 @@
             <!-- FOOTER CON LIMPIEZA GENERAL -->
             <div class="modal-pie">
                 <button type="button" id="btnLimpiarTodoModal" class="btn-limpiar-general">
-                    Limpiar Filtros
+                    <i class="bi bi-arrow-counterclockwise"></i> Restablecer filtros
                 </button>
             </div>
         </div>
