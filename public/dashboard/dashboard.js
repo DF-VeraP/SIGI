@@ -108,11 +108,11 @@ function cambiarVista(vistaId) {
         cargarResumen();
     }
 
-    // Actualizar botones de navegación
+    // Actualizar botones de navegación móviles y desktop
     document.querySelectorAll(".nav-btn[data-view]").forEach(btn => {
         btn.classList.toggle("active", btn.dataset.view === vistaId);
     });
-    document.querySelectorAll(".bottom-nav-item[data-view]").forEach(btn => {
+    document.querySelectorAll(".bottom-nav-item[data-view], .mobile-nav-tab[data-view]").forEach(btn => {
         btn.classList.toggle("active", btn.dataset.view === vistaId);
     });
 }
@@ -129,6 +129,10 @@ function llenarTablaIncidentes(resetPagina = false) {
     const infoPaginacion = document.getElementById("infoPaginacionTabla");
     const botonesPaginacion = document.getElementById("botonesPaginacionTabla");
 
+    // Llenar Feed Nativo Móvil si aplica
+    renderizarFeedIncidentesMobile();
+
+    if (!tbody) return;
     tbody.innerHTML = "";
 
     if (!incidentesData || incidentesData.length === 0) {
@@ -148,34 +152,25 @@ function llenarTablaIncidentes(resetPagina = false) {
     });
 
     const totalRegistros = incidentesOrdenados.length;
-    const totalPaginas = Math.ceil(totalRegistros / REGISTROS_POR_PAGINA) || 1;
-
-    if (paginaActualTabla > totalPaginas) {
-        paginaActualTabla = totalPaginas;
-    }
-    if (paginaActualTabla < 1) {
-        paginaActualTabla = 1;
-    }
-
+    const totalPaginas = Math.ceil(totalRegistros / REGISTROS_POR_PAGINA);
     const inicio = (paginaActualTabla - 1) * REGISTROS_POR_PAGINA;
     const fin = Math.min(inicio + REGISTROS_POR_PAGINA, totalRegistros);
     const incidentesPagina = incidentesOrdenados.slice(inicio, fin);
 
-    incidentesPagina.forEach((inc, index) => {
-        const tr = document.createElement("tr");
-        
-        const fecha = new Date(inc.fechaincidente).toLocaleDateString("es-CO");
+    incidentesPagina.forEach((inc, idx) => {
+        const consecutivo = inicio + idx + 1;
+        const fecha = inc.fechaincidente ? new Date(inc.fechaincidente).toLocaleDateString("es-CO") : "N/A";
         const hora = inc.horaincidente ? inc.horaincidente.slice(0, 5) : "N/A";
-        
+        const zona = inc.namebarrio || inc.nombrevereda || 'Sin zona';
+
         let badgeClass = "badge-default";
         if (inc.idtipoincidente === 1) badgeClass = "badge-robo";
         if (inc.idtipoincidente === 2) badgeClass = "badge-agresion";
         if (inc.idtipoincidente === 3) badgeClass = "badge-pique";
         if (inc.idtipoincidente === 4) badgeClass = "badge-accidente";
 
-        const zona = inc.namebarrio || inc.nombrevereda || 'Sin zona';
-        const consecutivo = inicio + index + 1;
-
+        const tr = document.createElement("tr");
+        tr.className = "fila-incidente-hover";
         tr.innerHTML = `
             <td style="color: var(--texto-suave); font-weight: bold;">${consecutivo}</td>
             <td><strong>${inc.codigoincidente || 'N/A'}</strong></td>
@@ -213,6 +208,126 @@ function llenarTablaIncidentes(resetPagina = false) {
         htmlBotones += `<button class="btn-pag" ${paginaActualTabla === totalPaginas ? 'disabled' : ''} onclick="cambiarPaginaTabla(${paginaActualTabla + 1})">Siguiente <i class="bi bi-chevron-right"></i></button>`;
 
         botonesPaginacion.innerHTML = htmlBotones;
+    }
+}
+
+function renderizarFeedIncidentesMobile(datos = incidentesData) {
+    const feed = document.getElementById("feedIncidentesMobile");
+    const badge = document.getElementById("badgeIncidentesMobile");
+    const paginacion = document.getElementById("paginacionFeedMobile");
+    if (!feed) return;
+
+    feed.innerHTML = "";
+
+    if (!datos || datos.length === 0) {
+        feed.innerHTML = `
+            <div style="text-align:center; padding: 40px 16px; color:#64748b;">
+                <i class="bi bi-inbox" style="font-size: 2.5rem; display:block; margin-bottom:10px;"></i>
+                <p style="margin:0;">No se encontraron reportes con los filtros aplicados.</p>
+            </div>
+        `;
+        if (badge) badge.textContent = "0 reportes";
+        if (paginacion) paginacion.innerHTML = "";
+        return;
+    }
+
+    if (badge) badge.textContent = `${datos.length} reportes`;
+
+    // Ordenar de más reciente a más antiguo por fecha y hora
+    const incidentesOrdenados = [...datos].sort((a, b) => {
+        const fechaStrA = a.fechaincidente ? a.fechaincidente.slice(0, 10) : "";
+        const fechaStrB = b.fechaincidente ? b.fechaincidente.slice(0, 10) : "";
+        const timeA = new Date(`${fechaStrA}T${a.horaincidente || "00:00:00"}`).getTime() || 0;
+        const timeB = new Date(`${fechaStrB}T${b.horaincidente || "00:00:00"}`).getTime() || 0;
+        return timeB - timeA;
+    });
+
+    const totalPaginas = Math.ceil(incidentesOrdenados.length / REGISTROS_POR_PAGINA);
+    const inicio = (paginaActualTabla - 1) * REGISTROS_POR_PAGINA;
+    const fin = Math.min(inicio + REGISTROS_POR_PAGINA, incidentesOrdenados.length);
+    const paginaDatos = incidentesOrdenados.slice(inicio, fin);
+
+    paginaDatos.forEach(inc => {
+        const fecha = inc.fechaincidente ? new Date(inc.fechaincidente).toLocaleDateString("es-CO", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+        }) : "N/A";
+        const hora = inc.horaincidente ? inc.horaincidente.slice(0, 5) : "N/A";
+        const zona = inc.namebarrio || inc.nombrevereda || 'Sin zona';
+        const tipoName = inc.nametipoincidente || 'Incidente';
+
+        let iconClass = "bi-exclamation-triangle-fill";
+        let colorClass = "#38bdf8";
+        let badgeBg = "rgba(56, 189, 248, 0.15)";
+
+        if (inc.idtipoincidente === 1) { // Robo
+            iconClass = "bi-shield-exclamation";
+            colorClass = "#ff4d4d";
+            badgeBg = "rgba(255, 77, 77, 0.15)";
+        } else if (inc.idtipoincidente === 2) { // Agresión
+            iconClass = "bi-person-badge-fill";
+            colorClass = "#f59e0b";
+            badgeBg = "rgba(245, 158, 11, 0.15)";
+        } else if (inc.idtipoincidente === 3) { // Pique
+            iconClass = "bi-lightning-charge-fill";
+            colorClass = "#a855f7";
+            badgeBg = "rgba(168, 85, 247, 0.15)";
+        } else if (inc.idtipoincidente === 4) { // Accidente
+            iconClass = "bi-car-front-fill";
+            colorClass = "#10b981";
+            badgeBg = "rgba(16, 185, 129, 0.15)";
+        }
+
+        const card = document.createElement("div");
+        card.className = "mobile-incident-card";
+        card.innerHTML = `
+            <div class="mic-header">
+                <div class="mic-type-badge">
+                    <div class="mic-icon-box" style="background: ${badgeBg}; color: ${colorClass};">
+                        <i class="bi ${iconClass}"></i>
+                    </div>
+                    <span>${tipoName}</span>
+                </div>
+                <span class="mic-code">${inc.codigoincidente || 'N/A'}</span>
+            </div>
+
+            <div class="mic-grid">
+                <div class="mic-item">
+                    <span class="mic-label">Barrio / Zona</span>
+                    <span class="mic-val">${zona}</span>
+                </div>
+                <div class="mic-item">
+                    <span class="mic-label">Fecha y Hora</span>
+                    <span class="mic-val">${fecha} · ${hora}</span>
+                </div>
+            </div>
+
+            <div class="mic-footer">
+                <span style="font-size: 0.72rem; color: #94a3b8; display: flex; align-items: center; gap: 4px;">
+                    <i class="bi bi-clock-history"></i> Registrado
+                </span>
+                <button type="button" class="btn-mic-view">
+                    <i class="bi bi-geo-alt-fill"></i> Ver detalle
+                </button>
+            </div>
+        `;
+
+        card.querySelector(".btn-mic-view").addEventListener("click", () => mostrarDetalleIncidente(inc));
+        feed.appendChild(card);
+    });
+
+    // Renderizar paginador móvil
+    if (paginacion && totalPaginas > 1) {
+        paginacion.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:10px;">
+                <button class="btn-mic-view" ${paginaActualTabla === 1 ? 'disabled style="opacity:0.4;"' : ''} onclick="cambiarPaginaTabla(${paginaActualTabla - 1})"><i class="bi bi-chevron-left"></i> Anterior</button>
+                <span style="font-size:0.8rem; color:#94a3b8; font-weight:600;">${paginaActualTabla} / ${totalPaginas}</span>
+                <button class="btn-mic-view" ${paginaActualTabla === totalPaginas ? 'disabled style="opacity:0.4;"' : ''} onclick="cambiarPaginaTabla(${paginaActualTabla + 1})">Siguiente <i class="bi bi-chevron-right"></i></button>
+            </div>
+        `;
+    } else if (paginacion) {
+        paginacion.innerHTML = "";
     }
 }
 
@@ -1212,6 +1327,120 @@ if(btnToggleHeatmap) {
     });
 }
 
+// ════════════════════════════════
+// LÓGICA DE MI UBICACIÓN EN TIEMPO REAL
+// ════════════════════════════════
+let miUbicacionMarker = null;
+let miUbicacionCircle = null;
+
+const btnMiUbicacion = document.getElementById("btnMiUbicacion");
+if (btnMiUbicacion) {
+    btnMiUbicacion.addEventListener("click", () => {
+        if (!navigator.geolocation) {
+            alert("Tu navegador no soporta geolocalización en tiempo real.");
+            return;
+        }
+
+        btnMiUbicacion.classList.add("activo");
+        const badgeDot = document.getElementById("badgeUbicacion");
+        if (badgeDot) badgeDot.style.display = "block";
+
+        // Animación visual de carga en el botón
+        const icono = btnMiUbicacion.querySelector('.icono-desktop');
+        if (icono) icono.className = "bi bi-arrow-repeat icono-desktop spin-icon";
+
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+                const accuracy = Math.round(pos.coords.accuracy);
+
+                // Restaurar ícono
+                if (icono) icono.className = "bi bi-crosshair2 icono-desktop";
+
+                // Remover marcador y círculo anteriores si existen
+                if (miUbicacionMarker && map) map.removeLayer(miUbicacionMarker);
+                if (miUbicacionCircle && map) map.removeLayer(miUbicacionCircle);
+
+                // Círculo de precisión GPS translúcido
+                miUbicacionCircle = L.circle([lat, lng], {
+                    radius: accuracy,
+                    color: '#38bdf8',
+                    fillColor: '#38bdf8',
+                    fillOpacity: 0.12,
+                    weight: 1.5,
+                    dashArray: '4, 4'
+                }).addTo(map);
+
+                // Marcador Radar GIF/CSS animado
+                const userIcon = L.divIcon({
+                    className: 'user-location-marker-container',
+                    html: `<div class="user-location-radar" title="Tu posición GPS"></div>`,
+                    iconSize: [22, 22],
+                    iconAnchor: [11, 11]
+                });
+
+                const popupHtml = `
+                    <div class="popup-card">
+                        <div class="popup-user-header">
+                            <i class="bi bi-geo-alt-fill" style="color: #38bdf8; font-size: 1.1rem;"></i>
+                            <span>Tu ubicación actual</span>
+                        </div>
+                        
+                        <div class="popup-user-coords">
+                            <div class="popup-coord-item">
+                                <span class="popup-coord-label">Latitud</span>
+                                <span class="popup-coord-val">${lat.toFixed(5)}</span>
+                            </div>
+                            <div class="popup-coord-item">
+                                <span class="popup-coord-label">Longitud</span>
+                                <span class="popup-coord-val">${lng.toFixed(5)}</span>
+                            </div>
+                        </div>
+
+                        <div style="font-size: 0.72rem; color: #94a3b8; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 8px;">
+                            <span style="display: flex; align-items: center; gap: 5px;">
+                                <i class="bi bi-bullseye" style="color: #38bdf8;"></i> Precisión:
+                            </span>
+                            <strong style="color: #e2e8f0;">±${accuracy} metros</strong>
+                        </div>
+                    </div>
+                `;
+
+                miUbicacionMarker = L.marker([lat, lng], { icon: userIcon })
+                    .addTo(map)
+                    .bindPopup(popupHtml, {
+                        className: 'custom-popup-container',
+                        minWidth: 260,
+                        autoPanPaddingTopLeft: L.point(20, 90)
+                    });
+
+                // Vuelo fluido con flyTo
+                map.flyTo([lat, lng], 16, {
+                    animate: true,
+                    duration: 1.4
+                });
+
+                setTimeout(() => {
+                    if (miUbicacionMarker) miUbicacionMarker.openPopup();
+                }, 1500);
+            },
+            (err) => {
+                if (icono) icono.className = "bi bi-crosshair2 icono-desktop";
+                btnMiUbicacion.classList.remove("activo");
+                if (badgeDot) badgeDot.style.display = "none";
+                console.warn("Error de geolocalización:", err);
+                if (err.code === 1) {
+                    alert("Permiso de ubicación denegado. Por favor, habilítalo en la barra de direcciones de tu navegador.");
+                } else {
+                    alert("No se pudo obtener tu ubicación en este momento.");
+                }
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+    });
+}
+
 function actualizarAnalisisRapido(data) {
     // Nuevos KPIs (Cinta superior)
     const elTotal = document.getElementById("kpi-total");
@@ -1992,3 +2221,49 @@ if (document.readyState === 'loading') {
 } else {
     bloquearScrollContenedores();
 }
+
+// ════════════════════════════════
+// CONTROLADORES NATIVOS PARA MÓVIL
+// ════════════════════════════════
+document.addEventListener("DOMContentLoaded", () => {
+    // Sincronizar clics en las pestañas de la barra inferior móvil
+    document.querySelectorAll(".mobile-nav-tab[data-view]").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            const vista = btn.dataset.view;
+            cambiarVista(vista);
+        });
+    });
+
+    const navFiltrosMobileTab = document.getElementById("navFiltrosMobileTab");
+    if (navFiltrosMobileTab) {
+        navFiltrosMobileTab.addEventListener("click", () => {
+            abrirPanelFiltros();
+        });
+    }
+
+    const btnFiltrosMobileHeader = document.getElementById("btnFiltrosMobileHeader");
+    if (btnFiltrosMobileHeader) {
+        btnFiltrosMobileHeader.addEventListener("click", () => {
+            abrirPanelFiltros();
+        });
+    }
+
+    const buscarIncidenteMobile = document.getElementById("buscarIncidenteMobile");
+    if (buscarIncidenteMobile) {
+        buscarIncidenteMobile.addEventListener("input", (e) => {
+            const term = e.target.value.toLowerCase().trim();
+            if (!term) {
+                renderizarFeedIncidentesMobile(incidentesData);
+                return;
+            }
+            const filtrados = incidentesData.filter(inc => {
+                const zona = (inc.namebarrio || inc.nombrevereda || '').toLowerCase();
+                const tipo = (inc.nametipoincidente || '').toLowerCase();
+                const cod = (inc.codigoincidente || '').toLowerCase();
+                return zona.includes(term) || tipo.includes(term) || cod.includes(term);
+            });
+            renderizarFeedIncidentesMobile(filtrados);
+        });
+    }
+});

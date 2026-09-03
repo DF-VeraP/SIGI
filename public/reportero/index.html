@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIGI — Captura en Terreno (Reportero)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="reportero.css">
+</head>
+<body>
+    <!-- HEADER APP MÓVIL -->
+    <header class="app-header">
+        <div class="header-brand" style="display: flex; align-items: center; gap: 10px;">
+            <img src="../assets/img/logo_sigi.png" alt="SIGI Logo" style="height: 32px; width: auto; border-radius: 6px; box-shadow: 0 0 8px rgba(70, 214, 247, 0.4);">
+            <div>
+                <h1>SIGI Terreno</h1>
+                <span class="sub-brand">Captura de Incidentes</span>
+            </div>
+        </div>
+        <div class="header-user">
+            <span id="userBadge" class="user-badge"><i class="bi bi-person-badge"></i> ...</span>
+            <button id="btnLogout" class="btn-logout" title="Cerrar Sesión">
+                <i class="bi bi-box-arrow-right"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- NAVEGACIÓN MÓVIL (PESTAÑAS) -->
+    <nav class="tab-nav">
+        <button id="tabCrear" class="tab-btn active">
+            <i class="bi bi-plus-circle-fill"></i>
+            <span>Nuevo Reporte</span>
+        </button>
+        <button id="tabMisReportes" class="tab-btn">
+            <i class="bi bi-list-task"></i>
+            <span>Mis Reportes</span>
+            <span id="countReportes" class="badge-count">0</span>
+        </button>
+    </nav>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <main class="app-container">
+        <div id="alertContainer"></div>
+
+        <!-- SECCIÓN 1: FORMULARIO DE NUEVO REPORTE -->
+        <section id="secNuevoReporte" class="tab-content active">
+            <div class="card-form">
+                <div class="card-header">
+                    <h2><i class="bi bi-geo-alt-fill text-danger"></i> Capturar Incidente</h2>
+                    <p class="card-sub">Completa los datos del hecho presenciado en terreno.</p>
+                </div>
+
+                <form id="formReporte">
+                    <!-- BOTÓN GPS DE 1-CLIC -->
+                    <div class="gps-box">
+                        <button type="button" id="btnGps" class="btn-gps">
+                            <i class="bi bi-crosshair"></i>
+                            <span>Obtener mi ubicación GPS actual</span>
+                        </button>
+                        <div id="gpsStatus" class="gps-status">GPS no inicializado</div>
+                    </div>
+
+                    <!-- MINIMAPA DE CONFIRMACIÓN -->
+                    <div class="map-mini-wrapper">
+                        <div id="mapaMini" class="mapa-mini"></div>
+                        <span class="map-hint">Puedes tocar el mapa para ajustar el punto exacto.</span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="lat">Latitud *</label>
+                            <input type="number" step="any" id="lat" required readonly>
+                        </div>
+                        <div class="form-group half">
+                            <label for="lng">Longitud *</label>
+                            <input type="number" step="any" id="lng" required readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tipoIncidente">Tipo de Incidente *</label>
+                        <select id="tipoIncidente" required>
+                            <option value="">Cargando tipos de incidente...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="fecha">Fecha del Hecho *</label>
+                            <input type="date" id="fecha" required>
+                        </div>
+                        <div class="form-group half">
+                            <label for="hora">Hora aproximada *</label>
+                            <input type="time" id="hora" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="gravedad">Gravedad Percibida</label>
+                            <select id="gravedad">
+                                <option value="1">1 - Muy Baja</option>
+                                <option value="2">2 - Baja</option>
+                                <option value="3" selected>3 - Media</option>
+                                <option value="4">4 - Alta</option>
+                                <option value="5">5 - Crítica</option>
+                            </select>
+                        </div>
+                        <div class="form-group half">
+                            <label for="modalidad">Modalidad</label>
+                            <select id="modalidad">
+                                <option value="">Sin especificar</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="direccion">Dirección / Referencia de Ubicación</label>
+                        <input type="text" id="direccion" placeholder="Ej: Calle 15 con Cra 4, cerca al parque">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="descripcion">Descripción detallada del incidente *</label>
+                        <textarea id="descripcion" rows="3" placeholder="Describe brevemente lo ocurrido..." required></textarea>
+                    </div>
+
+                    <!-- ASISTENCIAS NECESARIAS -->
+                    <div class="form-group">
+                        <label>Asistencia requerida en el sitio:</label>
+                        <div class="checkbox-group" style="display: flex; gap: 12px; margin-top: 6px; flex-wrap: wrap;">
+                            <label class="chk-label"><input type="checkbox" id="chkPolicia" checked> 👮 Policía</label>
+                            <label class="chk-label"><input type="checkbox" id="chkAmbulancia"> 🚑 Ambulancia</label>
+                            <label class="chk-label"><input type="checkbox" id="chkBomberos"> 🚒 Bomberos</label>
+                        </div>
+                    </div>
+
+                    <!-- FOTO DE EVIDENCIA -->
+                    <div class="form-group">
+                        <label><i class="bi bi-camera-fill text-primary"></i> Foto de Evidencia (Opcional)</label>
+                        <input type="file" id="fotoInput" accept="image/*" capture="environment" style="display:none">
+                        <button type="button" id="btnTomarFoto" class="btn-foto-upload" style="width: 100%; padding: 10px; background: rgba(59, 130, 246, 0.12); border: 1px dashed rgba(59, 130, 246, 0.4); color: #60a5fa; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <i class="bi bi-camera"></i> <span>Adjuntar / Tomar Foto de Terreno</span>
+                        </button>
+                        <div id="previewContainer" class="preview-container" style="display:none; margin-top: 10px; position: relative;">
+                            <img id="imgPreview" src="" alt="Previsualización de evidencia" style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); object-fit: cover;">
+                            <button type="button" id="btnQuitarFoto" title="Quitar foto" style="position: absolute; top: 5px; right: 5px; background: rgba(239,68,68,0.85); color: white; border: none; border-radius: 50%; width: 26px; height: 26px; cursor: pointer; font-weight: bold;">&times;</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btnSubmit" class="btn-submit">
+                        <i class="bi bi-send-fill"></i> Registrar Incidente
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 2: LISTA DE MIS REPORTES -->
+        <section id="secMisReportes" class="tab-content">
+            <div class="section-header">
+                <h2>Mis Reportes Registrados</h2>
+                <button id="btnRefreshReports" class="btn-refresh"><i class="bi bi-arrow-clockwise"></i> Actualizar</button>
+            </div>
+            <div id="reportsList" class="reports-list">
+                <div class="loading-spinner">Cargando mis reportes...</div>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="reportero.js"></script>
+</body>
+</html>

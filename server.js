@@ -36,6 +36,8 @@ app.use('/', require('./routes/autocompletado.routes'));
 app.use('/', require('./routes/estadisticas.routes'));
 app.use('/', require('./routes/tablas.routes'));
 app.use('/', require('./routes/auth.routes'));
+app.use('/', require('./routes/usuarios.routes'));
+app.use('/', require('./routes/catalogos.routes'));
 app.use('/', require('./routes/filtros.routes'));
 
 app.use(errorHandler);

@@ -18,7 +18,11 @@ document.getElementById("loginForm").addEventListener("submit", async function (
             const data = await response.json();
             validacion.innerText = data.mensaje;
             if (response.ok) {
-                window.location.href = "/admin"; 
+                if (data.rol === 'reportero') {
+                    window.location.href = "/reportero/index.html";
+                } else {
+                    window.location.href = "/admin/index.html"; 
+                }
             }
         } catch (error) {
             alert("Error conectando con el servidor");

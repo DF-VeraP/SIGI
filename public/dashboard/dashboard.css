@@ -3340,52 +3340,155 @@ main.filtros-abiertos .fab-tiempo {
 .user-location-marker-container {
     background: transparent !important;
     border: none !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.pulse-user-dot {
-    width: 14px;
-    height: 14px;
-    background: #00d2ff;
-    border: 2px solid #ffffff;
-    border-radius: 50%;
-    box-shadow: 0 0 12px #00d2ff;
-    position: relative;
-}
-
-.pulse-user-dot::after {
-    content: '';
-    position: absolute;
-    top: -6px;
-    left: -6px;
+.user-location-radar {
     width: 22px;
     height: 22px;
+    background: #38bdf8;
+    border: 3px solid #ffffff;
     border-radius: 50%;
-    border: 2px solid #00d2ff;
-    animation: userPulse 1.8s infinite ease-out;
-    opacity: 0.8;
+    box-shadow: 0 0 18px rgba(56, 189, 248, 0.95), 0 4px 12px rgba(0, 0, 0, 0.5);
+    position: relative;
+    box-sizing: border-box;
 }
 
-@keyframes userPulse {
-    0% {
-        transform: scale(0.5);
-        opacity: 1;
-    }
-    100% {
-        transform: scale(2.2);
-        opacity: 0;
-    }
+.user-location-radar::before {
+    content: '';
+    position: absolute;
+    top: -14px;
+    left: -14px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(56, 189, 248, 0.3);
+    border: 1.5px solid rgba(56, 189, 248, 0.7);
+    animation: radarWave 2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+    box-sizing: border-box;
+}
+
+.user-location-radar::after {
+    content: '';
+    position: absolute;
+    top: -24px;
+    left: -24px;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(56, 189, 248, 0.08);
+    border: 1px dashed rgba(56, 189, 248, 0.5);
+    animation: radarRotate 10s infinite linear;
+    box-sizing: border-box;
+}
+
+@keyframes radarWave {
+    0% { transform: scale(0.3); opacity: 1; }
+    100% { transform: scale(2.2); opacity: 0; }
+}
+
+@keyframes radarRotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .fab-location {
-    background: rgba(15, 23, 42, 0.85) !important;
-    border: 1px solid rgba(0, 210, 255, 0.4) !important;
-    color: #00d2ff !important;
+    background: rgba(13, 20, 36, 0.88) !important;
+    border: 1px solid rgba(56, 189, 248, 0.4) !important;
+    color: #38bdf8 !important;
+    padding: 9px 18px !important;
+    border-radius: 30px !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
 }
 
 .fab-location:hover {
-    background: rgba(0, 210, 255, 0.2) !important;
-    border-color: #00d2ff !important;
-    box-shadow: 0 0 14px rgba(0, 210, 255, 0.4) !important;
+    background: rgba(56, 189, 248, 0.22) !important;
+    border-color: #38bdf8 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+    transform: translateY(-2px);
+}
+
+.fab-location.activo {
+    background: rgba(56, 189, 248, 0.3) !important;
+    border-color: #38bdf8 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 24px rgba(56, 189, 248, 0.7) !important;
+}
+
+.location-pulse-dot {
+    width: 9px;
+    height: 9px;
+    background: #38bdf8;
+    border-radius: 50%;
+    position: absolute;
+    top: 7px;
+    right: 8px;
+    box-shadow: 0 0 10px #38bdf8;
+    animation: locationDotPulse 1.5s infinite ease-in-out;
+}
+
+@keyframes locationDotPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.4); opacity: 0.5; }
+}
+
+.spin-icon {
+    animation: iconSpin 1s infinite linear !important;
+}
+
+@keyframes iconSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.popup-user-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #38bdf8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.popup-user-coords {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.popup-coord-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.popup-coord-label {
+    font-size: 0.65rem;
+    color: #64748b;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.popup-coord-val {
+    font-size: 0.82rem;
+    font-family: 'Courier New', monospace;
+    color: #f1f5f9;
+    font-weight: 700;
 }
 
 /* ════════════════════════════════
@@ -3395,8 +3498,8 @@ main.filtros-abiertos .fab-tiempo {
     background: rgba(13, 20, 36, 0.96) !important;
     backdrop-filter: blur(16px) !important;
     border: 1px solid rgba(0, 210, 255, 0.25) !important;
-    border-radius: 16px !important;
-    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 210, 255, 0.12) !important;
+    border-radius: 22px !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 24px rgba(0, 210, 255, 0.15) !important;
     padding: 0 !important;
     color: #e6edf3 !important;
     overflow: hidden !important;
@@ -3409,7 +3512,7 @@ main.filtros-abiertos .fab-tiempo {
 
 .custom-popup-container .leaflet-popup-content {
     margin: 0 !important;
-    width: 270px !important;
+    width: 275px !important;
 }
 
 .custom-popup-container a.leaflet-popup-close-button {
@@ -3549,3 +3652,392 @@ main.filtros-abiertos .fab-tiempo {
 .sev-media { background: rgba(245, 158, 11, 0.15); color: #fde047; }
 .sev-alta { background: rgba(239, 68, 68, 0.15); color: #fca5a5; }
 .sev-critica { background: rgba(220, 38, 38, 0.25); color: #f87171; border: 1px solid rgba(220, 38, 38, 0.5); }
+
+/* ════════════════════════════════════════════════════════════════
+   SIGI MOBILE NATIVE APP CSS SYSTEM (DISPOSITIVOS MÓVILES)
+   ════════════════════════════════════════════════════════════════ */
+
+:root {
+    --mobile-header-h: 58px;
+    --mobile-bottom-bar-h: 66px;
+}
+
+/* Cabecera Móvil Nativa (Mobile App Bar) */
+.mobile-app-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--mobile-header-h);
+    background: rgba(13, 20, 36, 0.94) !important;
+    backdrop-filter: blur(18px) !important;
+    -webkit-backdrop-filter: blur(18px) !important;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.2) !important;
+    z-index: 2500;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.mobile-app-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mobile-brand-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.4));
+}
+
+.mobile-brand-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.mobile-brand-title {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: 0.02em;
+    line-height: 1.1;
+}
+
+.mobile-brand-subtitle {
+    font-size: 0.68rem;
+    color: #38bdf8;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 600;
+}
+
+.pulse-green-dot {
+    width: 6px;
+    height: 6px;
+    background: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 6px #10b981;
+    animation: locationDotPulse 1.8s infinite ease-in-out;
+}
+
+.mobile-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-mobile-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-mobile-icon:active {
+    background: rgba(56, 189, 248, 0.2);
+    border-color: #38bdf8;
+    color: #38bdf8;
+    transform: scale(0.92);
+}
+
+/* Barra de Navegación Inferior Nativa (Mobile Bottom Bar) */
+.mobile-bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: var(--mobile-bottom-bar-h);
+    background: rgba(13, 20, 36, 0.96) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-top: 1px solid rgba(56, 189, 248, 0.25) !important;
+    z-index: 2500;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 10px;
+    box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.5);
+}
+
+.mobile-nav-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 8px 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.mobile-nav-tab i {
+    font-size: 1.25rem;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.mobile-nav-tab.active {
+    color: #38bdf8 !important;
+    font-weight: 700;
+}
+
+.mobile-nav-tab.active i {
+    transform: translateY(-2px);
+    color: #38bdf8;
+    filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6));
+}
+
+.mobile-nav-tab.active::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    width: 20px;
+    height: 3px;
+    background: #38bdf8;
+    border-radius: 3px;
+    box-shadow: 0 0 10px #38bdf8;
+}
+
+/* Feed Nativo de Tarjetas de Incidentes para Teléfonos */
+.mobile-incident-container {
+    padding: 16px 14px 80px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.mobile-incident-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.mobile-feed-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #f1f5f9;
+}
+
+.mobile-feed-title i {
+    font-size: 1.2rem;
+    color: #38bdf8;
+}
+
+.mobile-feed-title h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.mobile-feed-badge {
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    color: #38bdf8;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.mobile-feed-search {
+    position: relative;
+    width: 100%;
+}
+
+.mobile-feed-search i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+.mobile-feed-search input {
+    width: 100%;
+    padding: 12px 14px 12px 40px;
+    background: rgba(18, 26, 47, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    color: #ffffff;
+    font-size: 0.85rem;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mobile-feed-search input:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
+}
+
+.mobile-incident-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Tarjeta Móvil Individual de Incidente */
+.mobile-incident-card {
+    background: rgba(18, 26, 47, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.mobile-incident-card:active {
+    transform: scale(0.98);
+    border-color: rgba(56, 189, 248, 0.4);
+}
+
+.mic-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.mic-type-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #ffffff;
+}
+
+.mic-icon-box {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.mic-code {
+    font-family: 'Courier New', monospace;
+    font-size: 0.72rem;
+    color: #64748b;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+
+.mic-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.mic-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.mic-label {
+    font-size: 0.64rem;
+    color: #64748b;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.mic-val {
+    font-size: 0.82rem;
+    color: #e2e8f0;
+    font-weight: 600;
+}
+
+.mic-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 4px;
+}
+
+.btn-mic-view {
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    color: #38bdf8;
+    padding: 7px 14px;
+    border-radius: 10px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+/* Reglas Móviles Específicas para Pantallas Pequeñas (< 768px) */
+@media (max-width: 768px) {
+    header.mobile-app-header {
+        display: flex !important;
+    }
+
+    body {
+        padding-top: var(--mobile-header-h);
+        padding-bottom: var(--mobile-bottom-bar-h);
+    }
+
+    .layout-wrapper {
+        height: calc(100vh - var(--mobile-header-h) - var(--mobile-bottom-bar-h)) !important;
+        margin-top: var(--mobile-header-h) !important;
+    }
+
+    .content-wrapper {
+        height: 100% !important;
+    }
+
+    /* Ocultar elementos exclusivos de escritorio en teléfonos */
+    .desktop-only {
+        display: none !important;
+    }
+
+    .mobile-only {
+        display: flex !important;
+    }
+
+    /* Posicionar herramientas de mapa por encima de la barra inferior */
+    .gis-tools-group, .map-actions-group {
+        bottom: calc(var(--mobile-bottom-bar-h) + 12px) !important;
+    }
+
+    .leyenda {
+        bottom: calc(var(--mobile-bottom-bar-h) + 10px) !important;
+    }
+}

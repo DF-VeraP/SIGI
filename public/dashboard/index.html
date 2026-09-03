@@ -234,9 +234,9 @@
                 <i class="bi bi-chevron-left"></i>
             </button>
             <div class="sidebar-logo" style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 8px; padding: 0 8px; width: 100%; box-sizing: border-box;">
-                <img src="../assets/img/image.png" alt="Logo SIGI" style="width: 50px; max-width: 50px; height: auto; margin-bottom: 4px;">
-                <span class="logo-title" style="font-size: 0.72rem; font-weight: bold; color: #e6edf3; letter-spacing: 0.02em; line-height: 1.25; white-space: normal; text-align: center; display: block; width: 100%;">Sistema de Información Geográfica de Incidentes</span>
-                <span class="logo-tag" style="font-size: 0.62rem; color: var(--acento); background: rgba(56, 139, 253, 0.15); padding: 2px 8px; border-radius: 12px; margin-top: 4px; display: inline-block;">Consulta pública</span>
+                <img src="../assets/img/logo_sigi.png" alt="Logo SIGI" style="width: 52px; max-width: 52px; height: auto; margin-bottom: 6px; border-radius: 10px; box-shadow: 0 0 12px rgba(70, 214, 247, 0.35);">
+                <span class="logo-title" style="font-size: 0.75rem; font-weight: bold; color: #e6edf3; letter-spacing: 0.02em; line-height: 1.25; white-space: normal; text-align: center; display: block; width: 100%;">Sistema de Información Geográfica de Incidentes — Consulta Pública</span>
+                <span class="logo-tag" style="font-size: 0.62rem; color: var(--acento); background: rgba(56, 139, 253, 0.15); padding: 2px 8px; border-radius: 12px; margin-top: 4px; display: inline-block;">v2.0 Beta</span>
             </div>
 
             <!-- Separador 1: Entre Logo y Menú de Navegación -->
@@ -249,8 +249,8 @@
                 <button class="nav-btn" data-view="mapa" title="Mapa Principal">
                     <i class="bi bi-map"></i> <span class="nav-text">Mapa Principal</span>
                 </button>
-                <button class="nav-btn" data-view="tabla" title="Tabla de Incidentes">
-                    <i class="bi bi-table"></i> <span class="nav-text">Incidentes</span>
+                <button class="nav-btn" data-view="tabla" title="Tabla de Registros de Incidentes">
+                    <i class="bi bi-list-task"></i> <span class="nav-text">📋 Incidentes</span>
                 </button>
                 <button class="nav-btn" data-view="estadisticas" title="Estadísticas">
                     <i class="bi bi-bar-chart"></i> <span class="nav-text">Analítica</span>
@@ -290,21 +290,29 @@
                 <!-- Botón Integrado de Acceso Administrativo -->
                 <div class="sidebar-footer" style="padding: 0 12px 12px 12px; width: 100%; box-sizing: border-box;">
                     <button id="iniciarSesion" class="nav-btn btn-admin-acceso" style="width: 100%; padding: 7px 10px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--borde); border-radius: 10px; color: var(--texto-suave); cursor: pointer; display: flex; align-items: center; justify-content: flex-start; gap: 8px; box-sizing: border-box; overflow: hidden; transition: all 0.2s ease;" title="Acceso Administrativo">
-                        <i class="bi bi-lock-fill" style="color: var(--texto-suave); font-size: 0.95rem; flex-shrink: 0;"></i> <span class="nav-text admin-text" style="color: var(--texto-suave); font-size: 0.75rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Acceso administrativo</span>
+                        <i class="bi bi-shield-lock-fill" style="color: var(--acento); font-size: 0.95rem; flex-shrink: 0;"></i> <span class="nav-text admin-text" style="color: var(--texto-suave); font-size: 0.75rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🔐 Acceso administrativo</span>
                     </button>
                 </div>
             </div>
         </aside>
 
-        <!-- Cabecera móvil -->
-        <header class="mobile-header mobile-only">
-            <div class="contFlexCent">
-                <img src="../assets/img/image.png" alt="Logo SIGI" class="nav-logo">
-                <span class="titulo-corto">SIGI</span>
+        <!-- Cabecera Móvil Nativa (Mobile App Bar) -->
+        <header class="mobile-app-header mobile-only">
+            <div class="mobile-app-brand">
+                <img src="../assets/img/logo_sigi.png" alt="Logo SIGI" class="mobile-brand-logo" style="border-radius: 6px;">
+                <div class="mobile-brand-info">
+                    <span class="mobile-brand-title">SIGI Mobile</span>
+                    <span class="mobile-brand-subtitle"><span class="pulse-green-dot"></span> Florencia · En vivo</span>
+                </div>
             </div>
-            <button id="iniciarSesionMobile" class="btn-login-mobile">
-                <i class="bi bi-box-arrow-in-right"></i>
-            </button>
+            <div class="mobile-header-actions">
+                <button id="btnFiltrosMobileHeader" class="btn-mobile-icon" title="Buscar y Filtros">
+                    <i class="bi bi-search"></i>
+                </button>
+                <button id="iniciarSesionMobile" class="btn-mobile-icon btn-admin-mobile" title="Acceso Admin">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </button>
+            </div>
         </header>
 
         <div class="content-wrapper">
@@ -482,9 +490,10 @@
             <!-- Grupo de herramientas GIS (derecha) -->
             <div class="gis-tools-group">
                 <button id="btnMiUbicacion" type="button" class="fab fab-location" aria-label="Mi ubicación en tiempo real" title="Centrar en mi ubicación">
-                    <i class="bi bi-geo-alt-fill icono-mobile" aria-hidden="true"></i>
-                    <i class="bi bi-geo-alt-fill icono-desktop" aria-hidden="true"></i>
+                    <i class="bi bi-crosshair2 icono-mobile" aria-hidden="true"></i>
+                    <i class="bi bi-crosshair2 icono-desktop" aria-hidden="true"></i>
                     <span class="texto-desktop" style="margin-left: 5px;">Mi ubicación</span>
+                    <span id="badgeUbicacion" class="location-pulse-dot" style="display: none;"></span>
                 </button>
                 <button id="btnToggleHeatmap" type="button" class="fab fab-heatmap" aria-label="Alternar mapa de calor">
                     <i class="bi bi-fire icono-mobile" aria-hidden="true"></i>
@@ -507,9 +516,10 @@
 
 
 
-    <!-- TABLA DE DATOS -->
+    <!-- TABLA DE DATOS / FEED DE INCIDENTES -->
     <section id="vistaTabla" class="esconder">
-        <div class="tabla-container">
+        <!-- Vista Desktop: Tabla Tradicional -->
+        <div class="tabla-container desktop-only">
             <div class="tabla-header">
                 <h2><i class="bi bi-table"></i> Incidentes Registrados</h2>
                 <div class="tabla-acciones" id="contenedorAccionesTabla" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
@@ -538,6 +548,31 @@
                 <span class="paginacion-info" id="infoPaginacionTabla">Mostrando 0 - 0 de 0 incidentes</span>
                 <div class="paginacion-botones" id="botonesPaginacionTabla"></div>
             </div>
+        </div>
+
+        <!-- Vista Móvil: Feed Nativo de Tarjetas de Incidentes -->
+        <div class="mobile-incident-container mobile-only">
+            <div class="mobile-incident-header">
+                <div class="mobile-feed-title">
+                    <i class="bi bi-card-list"></i>
+                    <h2>Reportes de Incidentes</h2>
+                </div>
+                <span class="mobile-feed-badge" id="badgeIncidentesMobile">0 reportes</span>
+            </div>
+
+            <!-- Buscador rápido táctil -->
+            <div class="mobile-feed-search">
+                <i class="bi bi-search"></i>
+                <input type="text" id="buscarIncidenteMobile" placeholder="Buscar por barrio, tipo o código...">
+            </div>
+
+            <!-- Contenedor dinámico de tarjetas móviles -->
+            <div class="mobile-incident-feed" id="feedIncidentesMobile">
+                <!-- Se llena dinámicamente desde JS -->
+            </div>
+
+            <!-- Paginación Móvil -->
+            <div class="mobile-feed-pagination" id="paginacionFeedMobile"></div>
         </div>
     </section>
 
@@ -668,22 +703,23 @@
     </div> <!-- Cierra content-wrapper -->
     </div> <!-- Cierra layout-wrapper -->
 
-    <nav class="bottom-nav mobile-only" aria-label="Navegación principal">
-        <button type="button" class="bottom-nav-item active" data-view="mapa" aria-current="page">
-            <i class="bi bi-map" aria-hidden="true"></i>
+    <!-- BARRA DE NAVEGACIÓN INFERIOR NATIVA (MOBILE BOTTOM BAR) -->
+    <nav class="mobile-bottom-bar mobile-only" aria-label="Navegación principal móvil">
+        <button type="button" class="mobile-nav-tab active" data-view="mapa" aria-current="page">
+            <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
             <span>Mapa</span>
         </button>
-        <button type="button" class="bottom-nav-item" data-view="filtros">
-            <i class="bi bi-sliders" aria-hidden="true"></i>
+        <button type="button" class="mobile-nav-tab" data-view="tabla">
+            <i class="bi bi-card-checklist" aria-hidden="true"></i>
+            <span>Incidentes</span>
+        </button>
+        <button type="button" class="mobile-nav-tab" data-view="estadisticas">
+            <i class="bi bi-bar-chart-line-fill" aria-hidden="true"></i>
+            <span>Analítica</span>
+        </button>
+        <button type="button" class="mobile-nav-tab" id="navFiltrosMobileTab">
+            <i class="bi bi-funnel-fill" aria-hidden="true"></i>
             <span>Filtros</span>
-        </button>
-        <button type="button" class="bottom-nav-item" data-view="estadisticas">
-            <i class="bi bi-bar-chart" aria-hidden="true"></i>
-            <span>Estadísticas</span>
-        </button>
-        <button type="button" class="bottom-nav-item" data-view="perfil" id="navPerfil">
-            <i class="bi bi-person" aria-hidden="true"></i>
-            <span>Perfil</span>
         </button>
     </nav>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
