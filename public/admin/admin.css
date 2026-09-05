@@ -15,72 +15,117 @@
 
 /* ── Variables ── */
 :root {
-    --bg-body: #0b0f1a;
-    --bg-card: #161b27;
-    --bg-input: #1e2433;
-    --bg-hover: #1c2640;
-    --azul: #1f6feb;
-    --azul-hover: #388bfd;
-    --acento: #46d6f7;
-    --texto: #e6edf3;
-    --texto-suave: #8b949e;
-    --borde: rgba(255, 255, 255, 0.07);
-    --borde-acento: rgba(70, 214, 247, 0.35);
-    --rojo: #f85149;
-    --verde: #3fb950;
-    --amarillo: #e3b341;
-    --magenta: #bc8cff;
-    --radio: 10px;
-    --sombra: 0 4px 16px rgba(0, 0, 0, 0.45);
-    --sombra-glow: 0 0 12px rgba(70, 214, 247, 0.25);
+    /* Fondos Dark (Escala de Superficies Frías Controlada) */
+    --bg-body: #0B0F1A;
+    --superficie-secundaria: #111622;
+    --bg-card: #161B27;
+    --bg-input: #161B27;
+    --bg-hover: #202A3D;
+    
+    /* Identidad & Navegación Dark */
+    --azul: #2684FF;
+    --azul-hover: #3B91FF;
+    --azul-soft: #172A46;
+    --cian: #32C7D6;
+    --acento: #2684FF;
+    
+    /* Textos Dark */
+    --texto: #F1F5F9;
+    --texto-suave: #CBD5E1;
+    --texto-terciario: #94A3B8;
+    --texto-disabled: #64748B;
+    
+    /* Bordes Dark */
+    --borde: #283449;
+    --borde-suave: #20293A;
+    --borde-activo: #2563A8;
+    --borde-input: #283449;
+    --borde-acento: rgba(38, 132, 255, 0.35);
+
+    /* Estados Semánticos Funcionales Dark */
+    --color-primario: #2684FF;
+    --color-secundario: #35D6B8; /* Teal operativo */
+    --color-exito: #35D6B8;
+    --color-advertencia: #FFC45C;
+    --color-critico: #FF737F;
+    --color-peligro: #FF737F;
+
+    --radio: 8px;
+    --sombra: 0 4px 16px rgba(0, 0, 0, 0.35);
+    --sombra-glow: 0 0 12px rgba(38, 132, 255, 0.2);
     --header-h: 54px;
 
-    /* Tabla (Variables Modo Oscuro) */
-    --bg-tabla-header: #1e293b;
-    --texto-tabla-header: #f8fafc;
-    --borde-tabla-header: rgba(255, 255, 255, 0.12);
-    --bg-tabla-row: var(--bg-card);
-    --bg-tabla-row-alt: rgba(255, 255, 255, 0.02);
-    --bg-tabla-row-hover: #1e2638;
-    --texto-tabla: #e6edf3;
-    --borde-tabla: rgba(255, 255, 255, 0.07);
+    /* Tabla Dark */
+    --bg-tabla-header: #1E293B;
+    --texto-tabla-header: #F8FAFC;
+    --borde-tabla-header: #283449;
+    --bg-tabla-row: #161B27;
+    --bg-tabla-row-alt: #1B202C;
+    --bg-tabla-row-hover: #202A3D;
+    --texto-tabla: #F1F5F9;
+    --borde-tabla: #20293A;
 }
 
-/* Tema Claro (Visual Comfort & Ergonomics) */
+/* ☀️ TEMA CLARO — Superficies Frías, Azul Institucional y Contraste WCAG 2.1 AA */
 body.tema-claro {
-    --bg-body: #e5e9f0;                   /* Fondo de página gris mate neutro muy suave (no blanco cegador) */
-    --bg-card: #f4f7fa;                   /* Tarjetas, paneles y header en off-white elegante de descanso visual */
-    --bg-input: #e2e8f0;                  /* Campos e inputs integrados */
-    --bg-hover: #cbd5e1;                  /* Interacciones hover */
-    --azul: #2563eb;
-    --azul-hover: #1d4ed8;
-    --acento: #0284c7;
-    --texto: #0f172a;                     /* Texto principal oscuro muy legible y nítido */
-    --texto-suave: #475569;               /* Subtítulos */
-    --borde: #cbd5e1;                     /* Delimitaciones suaves entre paneles */
-    --borde-acento: rgba(2, 132, 199, 0.4);
-    --sombra: 0 4px 16px rgba(0, 0, 0, 0.05);
-    --sombra-glow: 0 0 12px rgba(2, 132, 199, 0.12);
+    /* Fondos Light (Subtonos Fríos / Azulados) */
+    --bg-body: #F5F7FA;                   /* Fondo general frío */
+    --superficie-secundaria: #F8FAFC;     /* Contenedor principal */
+    --bg-card: #FFFFFF;                   /* Tarjetas pulcras */
+    --bg-input: #FFFFFF;                  /* Campos e inputs interactivos */
+    --bg-hover: #EAF2FF;                  /* Hover suave con ligero matiz azul */
 
-    /* Tabla (Variables Modo Claro Comfort) */
-    --bg-tabla-header: #dbe2ea;           /* Encabezado elegante en tono slate tenue (no blanco deslumbrante) */
-    --texto-tabla-header: #0f172a;        /* Texto de encabezado oscuro muy legible */
-    --borde-tabla-header: #cbd5e1;        /* Borde divisorio */
-    --bg-tabla-row: #ffffff;             /* Fila principal pulcra */
-    --bg-tabla-row-alt: #f1f5f9;          /* Fila alterna en gris suave para descanso visual */
-    --bg-tabla-row-hover: #e2e8f0;        /* Highlight sutil */
-    --texto-tabla: #1e293b;               /* Texto de celdas */
-    --borde-tabla: #e2e8f0;               /* Separadores limpios */
+    /* Identidad & Navegación Light */
+    --azul: #1677FF;                      /* Azul institucional SIGI */
+    --azul-hover: #0F6FEF;
+    --azul-soft: #E8F1FF;
+    --cian: #22C7D6;
+    --acento: #1677FF;
+
+    /* Textos Light (Gris Frío Antifatiga) */
+    --texto: #172033;                     /* Texto principal */
+    --texto-suave: #526176;               /* Texto secundario */
+    --texto-terciario: #718096;           /* Texto terciario / metadatos */
+    --texto-disabled: #9AA5B5;           /* Texto deshabilitado */
+
+    /* Bordes Light */
+    --borde: #DCE3EC;                     /* Borde normal */
+    --borde-suave: #E8EDF3;               /* Borde sutil */
+    --borde-activo: #9CC5FF;              /* Borde activo */
+    --borde-input: #DCE3EC;
+    --borde-acento: rgba(22, 119, 255, 0.35);
+
+    /* Sombras Light */
+    --sombra: 0 2px 8px rgba(22, 119, 255, 0.05);
+    --sombra-glow: 0 0 10px rgba(22, 119, 255, 0.12);
+
+    /* Estados Semánticos Funcionales Light */
+    --color-primario: #1677FF;
+    --color-secundario: #12BFA3;          /* Teal operativo para "Tomar Revisión" */
+    --color-exito: #12A779;               /* Verde reservado para éxito/completado */
+    --color-advertencia: #A65A00;         /* Ámbar para atención/pendientes */
+    --color-critico: #C5303E;             /* Rojo sobrio para incidentes críticos */
+    --color-peligro: #C5303E;
+
+    /* Tabla Light */
+    --bg-tabla-header: #EEF2F7;           /* Header gris azulado fresco */
+    --texto-tabla-header: #172033;        /* Encabezados nítidos */
+    --borde-tabla-header: #DCE3EC;
+    --bg-tabla-row: #FFFFFF;              /* Filas normales blancas */
+    --bg-tabla-row-alt: #F6F8FB;          /* Filas alternas con toque azulado suave */
+    --bg-tabla-row-hover: #EAF2FF;        /* Hover azul claro */
+    --texto-tabla: #172033;
+    --borde-tabla: #E8EDF3;
 }
 
-/* Switch Tipo iPhone para Tema en Header */
+/* Switch Tipo iPhone para Tema en Header (Integrado y Elegante) */
 button.toggle-iphone-header,
 .toggle-iphone-header {
     padding: 0 6px !important;
     border-radius: 20px !important;
-    background: #1e293b !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+    background: #253248 !important;
+    border: 1px solid #283449 !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25) !important;
     height: 26px !important;
     width: 52px !important;
     display: inline-flex !important;
@@ -91,24 +136,25 @@ button.toggle-iphone-header,
     margin: 0 4px !important;
     outline: none !important;
     flex-shrink: 0 !important;
+    transition: background 0.25s ease, border-color 0.25s ease;
 }
 
 button.toggle-iphone-header:hover,
 .toggle-iphone-header:hover {
-    background: #334155 !important;
+    background: #2e3d57 !important;
     color: inherit !important;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3) !important;
 }
 
 body.tema-claro button.toggle-iphone-header,
 body.tema-claro .toggle-iphone-header {
-    background: #cbd5e1 !important;
-    border-color: rgba(0, 0, 0, 0.18) !important;
+    background: #E4EAF2 !important;
+    border: 1px solid #DCE3EC !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06) !important;
 }
 
 body.tema-claro button.toggle-iphone-header:hover,
 body.tema-claro .toggle-iphone-header:hover {
-    background: #94a3b8 !important;
+    background: #d8e1ec !important;
 }
 
 .toggle-iphone-header .sw-slider {
@@ -118,7 +164,7 @@ body.tema-claro .toggle-iphone-header:hover {
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #46d6f7, #1f6feb);
+    background: #1B74D1;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
     z-index: 2;
@@ -126,7 +172,8 @@ body.tema-claro .toggle-iphone-header:hover {
 
 body.tema-claro .toggle-iphone-header .sw-slider {
     transform: translateX(26px);
-    background: linear-gradient(135deg, #f59e0b, #ea580c);
+    background: #FFFFFF;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.18);
 }
 
 .toggle-iphone-header .icono-sol,
@@ -136,25 +183,27 @@ body.tema-claro .toggle-iphone-header .sw-slider {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.2s ease, color 0.2s ease;
 }
 
 .toggle-iphone-header .icono-sol {
-    color: #f59e0b;
-    opacity: 0.4;
+    color: #64748B;
+    opacity: 0.35;
 }
 
 .toggle-iphone-header .icono-luna {
-    color: #388bfd;
+    color: #8CB8FF;
     opacity: 1;
 }
 
 body.tema-claro .toggle-iphone-header .icono-sol {
+    color: #D58A16;
     opacity: 1;
 }
 
 body.tema-claro .toggle-iphone-header .icono-luna {
-    opacity: 0.3;
+    color: #9AA5B5;
+    opacity: 0.35;
 }
 
 /* ── Utilidades flex (mantienes tus clases) ── */
@@ -274,22 +323,47 @@ nav {
 nav button {
     padding: 5px 12px;
     border-radius: 6px;
-    border: 1px solid var(--borde-acento);
-    color: var(--texto);
-    font-weight: 700;
+    border: 1px solid #283449;
+    color: var(--texto-suave);
+    font-weight: 600;
     font-size: 0.78rem;
-    background: var(--bg-input);
+    background: #111622;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: all 0.2s ease;
     white-space: nowrap;
 }
 
-nav button:hover,
+nav button:hover {
+    background: #161B27;
+    color: var(--texto);
+    border-color: #2684FF;
+}
+
 .pintarBotonNav {
-    background: var(--acento);
-    color: #000;
-    border-color: var(--acento);
-    box-shadow: var(--sombra-glow);
+    background: #1B74D1 !important;
+    color: #FFFFFF !important;
+    border-color: #2AAFD0 !important;
+    box-shadow: 0 2px 8px rgba(27, 116, 209, 0.35) !important;
+    font-weight: 700;
+}
+
+body.tema-claro nav button {
+    border: 1px solid #DCE3EC;
+    color: #526176;
+    background: #FFFFFF;
+}
+
+body.tema-claro nav button:hover {
+    background: #EAF2FF;
+    color: #1677FF;
+    border-color: #9CC5FF;
+}
+
+body.tema-claro .pintarBotonNav {
+    background: #1677FF !important;
+    color: #FFFFFF !important;
+    border-color: #1677FF !important;
+    box-shadow: 0 2px 8px rgba(22, 119, 255, 0.25) !important;
 }
 
 #textoBienvenida {
@@ -1872,20 +1946,60 @@ select option {
 .card-total-incidentes {
     background: var(--bg-card);
     border: 1px solid var(--borde);
-    border-radius: 10px;
+    border-radius: 8px;
     padding: 10px 14px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--sombra);
+    transition: all 0.2s ease;
+}
+
+.card-total-incidentes h2 {
+    color: var(--texto);
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.card-total-incidentes .label-total {
+    font-size: 0.74rem;
+    color: var(--texto-suave);
+    font-weight: 500;
+}
+
+.card-total-incidentes .numero,
+.badge-total-incidentes {
+    font-size: 0.95rem;
+    font-weight: 800;
+    padding: 2px 10px;
+    border-radius: 6px;
+    display: inline-block;
+    letter-spacing: 0.02em;
+    transition: all 0.2s ease;
+}
+
+/* Modo Claro: Contador de verificación (Sección 15) */
+body.tema-claro .card-total-incidentes .numero,
+body.tema-claro .badge-total-incidentes {
+    color: #1261D6 !important;
+    background: #E8F1FF !important;
+    border: 1px solid #9CC5FF !important;
+}
+
+/* Modo Oscuro: Contador de verificación */
+:root .card-total-incidentes .numero,
+:root .badge-total-incidentes {
+    color: #65A7FF !important;
+    background: #172A46 !important;
+    border: 1px solid #315B8E !important;
 }
 
 .card-filtros-incidentes {
     background: var(--bg-card);
     border: 1px solid var(--borde);
-    border-radius: 10px;
+    border-radius: 8px;
     padding: 10px 14px;
     display: flex;
     flex-direction: column;
     gap: 4px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--sombra);
 }
 
 .header-filtros-toggle {
@@ -1897,9 +2011,22 @@ select option {
     padding: 2px 0;
 }
 
+.header-filtros-toggle .titulo-filtros {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--texto);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.header-filtros-toggle .icono-embudo {
+    color: var(--azul);
+    font-size: 0.85rem;
+}
+
 .btn-toggle-desplegar {
     background: var(--bg-input);
-    border: 1px solid var(--borde);
+    border: 1px solid var(--borde-input, var(--borde));
     border-radius: 6px;
     width: 26px;
     height: 26px;
@@ -1908,8 +2035,20 @@ select option {
     justify-content: center;
     color: var(--texto);
     cursor: pointer;
-    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s ease;
     outline: none;
+}
+
+body.tema-claro .btn-toggle-desplegar {
+    background: #FFFFFF;
+    border-color: #DCE3EC;
+    color: #172033;
+}
+
+body.tema-claro .btn-toggle-desplegar:hover {
+    background: #EAF2FF;
+    border-color: #9CC5FF;
+    color: #1677FF;
 }
 
 .btn-toggle-desplegar.rotado {
@@ -1935,19 +2074,630 @@ select option {
 }
 
 .btn-limpiar-filtros {
-    padding: 3px 8px;
-    background: transparent;
-    border: 1px solid var(--borde);
+    padding: 4px 10px;
+    background: var(--bg-input);
+    border: 1px solid var(--borde-input, var(--borde));
     border-radius: 6px;
     color: var(--texto-suave);
     font-size: 0.74rem;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
-.btn-limpiar-filtros:hover {
+body.tema-claro .btn-limpiar-filtros {
+    background: #FFFFFF;
+    border-color: #DCE3EC;
+    color: #526176;
+}
+
+body.tema-claro .btn-limpiar-filtros:hover {
+    color: #C5303E;
+    border-color: #F5A6AD;
+    background: #FDEBEC;
+}
+
+/* Controles de Filtros Interactivos (Buscador, Selects, Botón Tiempo) */
+.filtro-input-control {
+    width: 100%;
+    padding: 6px 10px;
+    background: var(--bg-input);
+    border: 1px solid var(--borde-input, var(--borde));
+    border-radius: 6px;
     color: var(--texto);
-    border-color: var(--acento);
+    font-size: 0.78rem;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.filtro-select-control {
+    padding: 6px 8px;
+    background: var(--bg-input);
+    border: 1px solid var(--borde-input, var(--borde));
+    border-radius: 6px;
+    color: var(--texto);
+    font-size: 0.78rem;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+body.tema-claro .filtro-input-control,
+body.tema-claro .filtro-select-control {
+    background: #FFFFFF !important;
+    border-color: #DCE3EC !important;
+    color: #172033 !important;
+}
+
+body.tema-claro .filtro-input-control:focus,
+body.tema-claro .filtro-select-control:focus {
+    border-color: #1677FF !important;
+    box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.15) !important;
+}
+
+.filtro-etiqueta {
+    font-size: 0.74rem;
+    color: var(--texto-suave);
+    font-weight: 500;
+}
+
+body.tema-claro .filtro-etiqueta {
+    color: #526176 !important;
+}
+
+.btn-filtro-tiempo {
+    padding: 6px 12px;
+    background: var(--bg-input);
+    border: 1px solid var(--borde-input, var(--borde));
+    border-radius: 6px;
+    color: var(--texto);
+    font-size: 0.76rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+body.tema-claro .btn-filtro-tiempo {
+    background: #FFFFFF !important;
+    border-color: #DCE3EC !important;
+    color: #172033 !important;
+}
+
+body.tema-claro .btn-filtro-tiempo:hover {
+    background: #EAF2FF !important;
+    border-color: #9CC5FF !important;
+    color: #1677FF !important;
+}
+
+/* ════════════════════════════════════════════════════════
+   TABLA DE INCIDENTES (Secciones 4, 5 y 8 de Observacion.txt)
+   ════════════════════════════════════════════════════════ */
+.contTablaDatos {
+    background: var(--bg-card);
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+    overflow-x: auto;
+    margin-bottom: 16px;
+    box-shadow: var(--sombra);
+}
+
+body.tema-claro .tabla-sigi thead th {
+    background: #EEF2F7 !important;
+    color: #172033 !important;
+    border-bottom: 2px solid #DCE3EC !important;
+    font-weight: 700;
+}
+
+body.tema-claro .tabla-sigi tbody tr {
+    background: #FFFFFF;
+    color: #172033;
+    border-bottom: 1px solid #E8EDF3;
+    transition: background 0.15s ease;
+}
+
+/* Striped Light: Par Blanco #FFFFFF, Impar Gris Azulado Suave #F6F8FB */
+body.tema-claro .tabla-sigi tbody tr:nth-child(even) {
+    background: #F6F8FB;
+}
+
+body.tema-claro .tabla-sigi tbody tr:hover {
+    background: #EAF2FF !important;
+}
+
+body.tema-claro .tabla-sigi td {
+    color: #172033 !important;
+    border-bottom: 1px solid #E8EDF3;
+    font-size: 0.81rem;
+}
+
+.celda-consecutivo {
+    color: var(--texto-terciario) !important;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+body.tema-claro .celda-consecutivo {
+    color: #718096 !important;
+}
+
+.celda-texto-principal {
+    color: var(--texto) !important;
+    font-size: 0.82rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+body.tema-claro .celda-texto-principal {
+    color: #172033 !important;
+}
+
+/* ── Badge #INC-685 (Sección 9 de Observacion.txt) ── */
+.badge-incidente-id {
+    font-weight: 700;
+    font-size: 0.78rem;
+    padding: 3px 8px;
+    border-radius: 5px;
+    white-space: nowrap;
+    display: inline-block;
+    letter-spacing: 0.02em;
+    transition: all 0.2s ease;
+}
+
+body.tema-claro .badge-incidente-id {
+    color: #1261D6 !important;
+    background: #E8F1FF !important;
+    border: 1px solid #A8CBFF !important;
+}
+
+:root .badge-incidente-id {
+    color: #65A7FF !important;
+    background: #172A46 !important;
+    border: 1px solid #315B8E !important;
+}
+
+/* ── Botones de Acción en Tabla ── */
+
+/* Sección 10: Detalle (CTA Principal de la fila) */
+.btn-primario-detalle {
+    padding: 5px 12px;
+    background: #1677FF;
+    color: #FFFFFF !important;
+    border: 1px solid #1677FF;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(22, 119, 255, 0.2);
+}
+
+.btn-primario-detalle:hover {
+    background: #0F6FEF !important;
+    border-color: #0F6FEF !important;
+    box-shadow: 0 2px 5px rgba(22, 119, 255, 0.35);
+}
+
+:root:not(.tema-claro) .btn-primario-detalle {
+    background: #2684FF;
+    border-color: #2684FF;
+}
+
+:root:not(.tema-claro) .btn-primario-detalle:hover {
+    background: #3B91FF !important;
+    border-color: #3B91FF !important;
+}
+
+/* Sección 11: Tomar Revisión (Acción Operativa -> Teal/Cian #12BFA3) */
+.btn-secundario-accion,
+.btnTomarIncidente {
+    padding: 5px 12px;
+    background: #E4F7F3 !important;
+    color: #087F6D !important;
+    border: 1.5px solid #7ADCC9 !important;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.btn-secundario-accion:hover,
+.btnTomarIncidente:hover {
+    background: #12BFA3 !important;
+    border-color: #12BFA3 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 2px 5px rgba(18, 191, 163, 0.3);
+}
+
+:root:not(.tema-claro) .btn-secundario-accion,
+:root:not(.tema-claro) .btnTomarIncidente {
+    background: #132F2D !important;
+    color: #35D6B8 !important;
+    border: 1.5px solid #168A78 !important;
+}
+
+:root:not(.tema-claro) .btn-secundario-accion:hover,
+:root:not(.tema-claro) .btnTomarIncidente:hover {
+    background: #168A78 !important;
+    border-color: #168A78 !important;
+    color: #FFFFFF !important;
+}
+
+/* Acciones adicionales en fila */
+.btn-accion-aprobar {
+    padding: 4px 10px;
+    background: #E6F8F2;
+    border: 1.5px solid #8CE5CA;
+    color: #0F825E !important;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+.btn-accion-aprobar:hover {
+    background: #12A779 !important;
+    border-color: #12A779 !important;
+    color: #FFFFFF !important;
+}
+
+:root:not(.tema-claro) .btn-accion-aprobar {
+    background: #132F26;
+    border-color: #1E7A5A;
+    color: #35D6B8 !important;
+}
+:root:not(.tema-claro) .btn-accion-aprobar:hover {
+    background: #1E7A5A !important;
+    color: #FFFFFF !important;
+}
+
+.btn-accion-desestimar {
+    padding: 4px 10px;
+    background: #FDEBEC;
+    border: 1.5px solid #F5A6AD;
+    color: #C5303E !important;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+.btn-accion-desestimar:hover {
+    background: #C5303E !important;
+    border-color: #C5303E !important;
+    color: #FFFFFF !important;
+}
+
+:root:not(.tema-claro) .btn-accion-desestimar {
+    background: #321D23;
+    border-color: #74303A;
+    color: #FF737F !important;
+}
+:root:not(.tema-claro) .btn-accion-desestimar:hover {
+    background: #74303A !important;
+    color: #FFFFFF !important;
+}
+
+.btn-accion-liberar {
+    padding: 4px 10px;
+    background: #FFFFFF;
+    border: 1px solid #DCE3EC;
+    color: #526176 !important;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+.btn-accion-liberar:hover {
+    background: #EEF2F7 !important;
+    color: #172033 !important;
+}
+
+:root:not(.tema-claro) .btn-accion-liberar {
+    background: #161B27;
+    border-color: #283449;
+    color: #CBD5E1 !important;
+}
+:root:not(.tema-claro) .btn-accion-liberar:hover {
+    background: #202A3D !important;
+    color: #F1F5F9 !important;
+}
+
+.btn-accion-editar {
+    padding: 4px 10px;
+    background: #E8F1FF;
+    border: 1px solid #A8CBFF;
+    color: #1261D6 !important;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+.btn-accion-editar:hover {
+    background: #1677FF !important;
+    border-color: #1677FF !important;
+    color: #FFFFFF !important;
+}
+
+:root:not(.tema-claro) .btn-accion-editar {
+    background: #172A46;
+    border-color: #315B8E;
+    color: #65A7FF !important;
+}
+:root:not(.tema-claro) .btn-accion-editar:hover {
+    background: #2684FF !important;
+    color: #FFFFFF !important;
+}
+
+.btn-accion-eliminar {
+    padding: 4px 10px;
+    background: #FDEBEC;
+    border: 1px solid #F5A6AD;
+    color: #C5303E !important;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+.btn-accion-eliminar:hover {
+    background: #C5303E !important;
+    border-color: #C5303E !important;
+    color: #FFFFFF !important;
+}
+
+:root:not(.tema-claro) .btn-accion-eliminar {
+    background: #321D23;
+    border-color: #74303A;
+    color: #FF737F !important;
+}
+:root:not(.tema-claro) .btn-accion-eliminar:hover {
+    background: #74303A !important;
+    color: #FFFFFF !important;
+}
+
+/* ── Badges Semánticos de Estado (Secciones 12, 13 y 14) ── */
+.badge-estado {
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    white-space: nowrap;
+    display: inline-block;
+}
+
+/* Sección 12: En Cola (Ámbar Sobrio #A65A00) */
+body.tema-claro .badge-estado-cola {
+    background: #FFF3E0 !important;
+    color: #A65A00 !important;
+    border: 1px solid #FFCC99 !important;
+}
+:root .badge-estado-cola {
+    background: #332A1B !important;
+    color: #FFC45C !important;
+    border: 1px solid #795B20 !important;
+}
+
+/* Info: En Proceso / Revisando */
+body.tema-claro .badge-estado-proceso {
+    background: #EBF8FA !important;
+    color: #0E7C8B !important;
+    border: 1px solid #A5E4ED !important;
+}
+:root .badge-estado-proceso {
+    background: #142E35 !important;
+    color: #4DD2E6 !important;
+    border: 1px solid #206E7D !important;
+}
+
+body.tema-claro .badge-estado-otro-revisor {
+    background: #EEF2F7 !important;
+    color: #526176 !important;
+    border: 1px solid #DCE3EC !important;
+}
+:root .badge-estado-otro-revisor {
+    background: #1B202C !important;
+    color: #94A3B8 !important;
+    border: 1px solid #283449 !important;
+}
+
+/* Éxito: Aprobado / Completado */
+body.tema-claro .badge-estado-aprobado {
+    background: #E6F8F2 !important;
+    color: #0F825E !important;
+    border: 1px solid #8CE5CA !important;
+}
+:root .badge-estado-aprobado {
+    background: #132F26 !important;
+    color: #35D6B8 !important;
+    border: 1px solid #1E7A5A !important;
+}
+
+/* Peligro/Crítico: Desestimado / Rechazado */
+body.tema-claro .badge-estado-rechazado {
+    background: #FDEBEC !important;
+    color: #C5303E !important;
+    border: 1px solid #F5A6AD !important;
+}
+:root .badge-estado-rechazado {
+    background: #321D23 !important;
+    color: #FF737F !important;
+    border: 1px solid #74303A !important;
+}
+
+/* ── Badges de Categoría / Tipo (Secciones 13 y 14) ── */
+.badge-tipo {
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+    display: inline-block;
+}
+
+/* Sección 13: Robo (Rojo Crítico Sobrio) */
+body.tema-claro .badge-tipo-robo {
+    background: #FDEBEC !important;
+    color: #C5303E !important;
+    border: 1px solid #F5A6AD !important;
+}
+:root .badge-tipo-robo {
+    background: #321D23 !important;
+    color: #FF737F !important;
+    border: 1px solid #74303A !important;
+}
+
+/* Sección 14: Agresiones / Amenazas (Ámbar Atención) */
+body.tema-claro .badge-tipo-agresion {
+    background: #FFF4DE !important;
+    color: #9A5B00 !important;
+    border: 1px solid #F4CB82 !important;
+}
+:root .badge-tipo-agresion {
+    background: #332A1A !important;
+    color: #FFC857 !important;
+    border: 1px solid #76571F !important;
+}
+
+/* Piques / Tránsito */
+body.tema-claro .badge-tipo-piques {
+    background: #F3E8FF !important;
+    color: #7E22CE !important;
+    border: 1px solid #D8B4FE !important;
+}
+:root .badge-tipo-piques {
+    background: #2E1B4E !important;
+    color: #C084FC !important;
+    border: 1px solid #6B21A8 !important;
+}
+
+/* Accidente */
+body.tema-claro .badge-tipo-accidente {
+    background: #E8F1FF !important;
+    color: #1261D6 !important;
+    border: 1px solid #A8CBFF !important;
+}
+:root .badge-tipo-accidente {
+    background: #172A46 !important;
+    color: #65A7FF !important;
+    border: 1px solid #315B8E !important;
+}
+
+/* Otro */
+body.tema-claro .badge-tipo-otro {
+    background: #E6F8F2 !important;
+    color: #0F825E !important;
+    border: 1px solid #8CE5CA !important;
+}
+:root .badge-tipo-otro {
+    background: #132F26 !important;
+    color: #35D6B8 !important;
+    border: 1px solid #1E7A5A !important;
+}
+
+/* ════════════════════════════════════════════════════════
+   PAGINACIÓN DE INCIDENTES (Sección 3 y 20)
+   ════════════════════════════════════════════════════════ */
+.user-pagination-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-card);
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+    padding: 8px 14px;
+    flex-wrap: wrap;
+    gap: 10px;
+    box-shadow: var(--sombra);
+}
+
+#infoPaginacionIncidentes {
+    font-size: 0.78rem;
+    color: var(--texto-suave);
+    font-weight: 500;
+}
+
+body.tema-claro #infoPaginacionIncidentes {
+    color: #526176 !important;
+}
+
+#labelPaginaIncidente {
+    font-size: 0.78rem;
+    color: var(--texto);
+    font-weight: 600;
+    padding: 0 4px;
+}
+
+body.tema-claro #labelPaginaIncidente {
+    color: #172033 !important;
+}
+
+/* Botones Anterior y Siguiente de Paginación */
+#btnPagAntIncidente,
+#btnPagSigIncidente,
+.btn-pag-incidente {
+    padding: 5px 14px;
+    background: #FFFFFF;
+    border: 1.5px solid #1677FF;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1677FF;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#btnPagAntIncidente:hover:not(:disabled),
+#btnPagSigIncidente:hover:not(:disabled),
+.btn-pag-incidente:hover:not(:disabled) {
+    background: #1677FF;
+    color: #FFFFFF;
+    box-shadow: 0 2px 6px rgba(22, 119, 255, 0.25);
+}
+
+#btnPagAntIncidente:disabled,
+#btnPagSigIncidente:disabled,
+.btn-pag-incidente:disabled {
+    background: #F5F7FA !important;
+    border-color: #DCE3EC !important;
+    color: #9AA5B5 !important;
+    cursor: not-allowed;
+    opacity: 0.65;
+    box-shadow: none !important;
+}
+
+:root:not(.tema-claro) #btnPagAntIncidente,
+:root:not(.tema-claro) #btnPagSigIncidente,
+:root:not(.tema-claro) .btn-pag-incidente {
+    background: #161B27;
+    border: 1.5px solid #2684FF;
+    color: #2684FF;
+}
+
+:root:not(.tema-claro) #btnPagAntIncidente:hover:not(:disabled),
+:root:not(.tema-claro) #btnPagSigIncidente:hover:not(:disabled),
+:root:not(.tema-claro) .btn-pag-incidente:hover:not(:disabled) {
+    background: #2684FF;
+    color: #FFFFFF;
+    box-shadow: 0 2px 6px rgba(38, 132, 255, 0.3);
+}
+
+:root:not(.tema-claro) #btnPagAntIncidente:disabled,
+:root:not(.tema-claro) #btnPagSigIncidente:disabled,
+:root:not(.tema-claro) .btn-pag-incidente:disabled {
+    background: transparent !important;
+    border-color: #283449 !important;
+    color: #64748B !important;
 }
 
 /* ════════════════════════════════════════════════════════

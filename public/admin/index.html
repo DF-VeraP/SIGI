@@ -147,12 +147,12 @@
                     <!-- Contenedor Izquierdo: Título & Total Incidentes Compacto -->
                     <div class="card-total-incidentes">
                         <div class="contFlexCent" style="justify-content: space-between; gap: 10px;">
-                            <h2 style="font-size: 1.05rem; color: var(--texto); font-weight: 700; margin: 0; line-height: 1.2;">
+                            <h2 style="font-size: 1.05rem; font-weight: 700; margin: 0; line-height: 1.2;">
                                 Verificación
                             </h2>
                             <div style="display: flex; align-items: center; gap: 6px;">
-                                <span style="font-size: 0.74rem; color: var(--texto-suave); font-weight: 500;">Total:</span>
-                                <span class="numero" style="font-size: 1rem; font-weight: 800; color: #60a5fa; background: rgba(96, 165, 250, 0.12); padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(96, 165, 250, 0.25);">0</span>
+                                <span class="label-total" style="font-size: 0.74rem; font-weight: 500;">Total:</span>
+                                <span class="numero badge-total-incidentes" id="conteoTotalVerificacion">0</span>
                             </div>
                         </div>
                     </div>
@@ -161,8 +161,8 @@
                     <div class="card-filtros-incidentes">
                         <div class="header-filtros-toggle" id="headerFiltrosIncidentes">
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <i class="bi bi-funnel-fill" style="color: var(--acento); font-size: 0.85rem;"></i>
-                                <span style="font-size: 0.8rem; font-weight: 700; color: var(--texto); text-transform: uppercase; letter-spacing: 0.04em;">
+                                <i class="bi bi-funnel-fill icono-embudo"></i>
+                                <span class="titulo-filtros">
                                     Filtros de Búsqueda
                                 </span>
                             </div>
@@ -181,13 +181,13 @@
                             <div class="user-filter-bar" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 8px;">
                                 <!-- Buscador de texto -->
                                 <div style="flex: 1; min-width: 180px;">
-                                    <input type="text" id="buscarIncidenteInput" placeholder="Buscar por barrio, vereda, usuario o descripción..." style="width: 100%; padding: 6px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.78rem; outline: none; box-sizing: border-box;">
+                                    <input type="text" id="buscarIncidenteInput" class="filtro-input-control" placeholder="Buscar por barrio, vereda, usuario o descripción...">
                                 </div>
 
                                 <!-- Selector Estado -->
                                 <div style="display: flex; gap: 6px; align-items: center;">
-                                    <label style="font-size: 0.74rem; color: var(--texto-suave); font-weight: 500;">Estado:</label>
-                                    <select id="estadoIncidenteFiltro" style="padding: 6px 8px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.78rem; outline: none; cursor: pointer;">
+                                    <label class="filtro-etiqueta">Estado:</label>
+                                    <select id="estadoIncidenteFiltro" class="filtro-select-control">
                                         <option value="">Todos los estados</option>
                                         <option value="1">Pendientes (Cola pública)</option>
                                         <option value="2">En Evaluación (Tomados)</option>
@@ -198,14 +198,14 @@
 
                                 <!-- Selector Categoría -->
                                 <div style="display: flex; gap: 6px; align-items: center;">
-                                    <label style="font-size: 0.74rem; color: var(--texto-suave); font-weight: 500;">Categoría:</label>
-                                    <select id="tipoIncidenteFiltro" style="padding: 6px 8px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.78rem; outline: none; cursor: pointer;">
+                                    <label class="filtro-etiqueta">Categoría:</label>
+                                    <select id="tipoIncidenteFiltro" class="filtro-select-control">
                                         <option value="">Todas las categorías</option>
                                     </select>
                                 </div>
 
                                 <!-- Filtrar por tiempo -->
-                                <button type="button" id="btnAbrirFiltroTiempo" style="padding: 6px 10px; background: transparent; border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.76rem; cursor: pointer;">
+                                <button type="button" id="btnAbrirFiltroTiempo" class="btn-filtro-tiempo">
                                     Tiempo
                                 </button>
                             </div>
@@ -220,7 +220,7 @@
                 </div>
 
                 <!-- 3. Tabla Completa de Incidentes -->
-                <div class="contTablaDatos" style="background: var(--bg-card); border: 1px solid var(--borde); border-radius: 8px; overflow-x: auto; margin-bottom: 16px;">
+                <div class="contTablaDatos">
                     <table class="tabla-sigi" style="text-align: center;">
                         <thead>
                             <tr>
@@ -240,14 +240,14 @@
                 </div>
 
                 <!-- 4. Paginación de Incidentes -->
-                <div class="user-pagination-bar" style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); border: 1px solid var(--borde); border-radius: 8px; padding: 8px 14px; flex-wrap: wrap; gap: 10px;">
-                    <span id="infoPaginacionIncidentes" style="font-size: 0.78rem; color: var(--texto-suave);">Mostrando 0 de 0 incidentes</span>
+                <div class="user-pagination-bar">
+                    <span id="infoPaginacionIncidentes">Mostrando 0 de 0 incidentes</span>
                     <div style="display: flex; gap: 8px; align-items: center;">
-                        <button type="button" id="btnPagAntIncidente" style="padding: 4px 10px; background: transparent; border: 1px solid var(--borde); border-radius: 6px; font-size: 0.75rem; color: var(--texto); cursor: pointer;">
+                        <button type="button" id="btnPagAntIncidente" class="btn-pag-incidente">
                             Anterior
                         </button>
-                        <span id="labelPaginaIncidente" style="font-size: 0.78rem; color: var(--texto-suave); padding: 0 4px;">Página 1 de 1</span>
-                        <button type="button" id="btnPagSigIncidente" style="padding: 4px 10px; background: transparent; border: 1px solid var(--borde); border-radius: 6px; font-size: 0.75rem; color: var(--texto); cursor: pointer;">
+                        <span id="labelPaginaIncidente">Página 1 de 1</span>
+                        <button type="button" id="btnPagSigIncidente" class="btn-pag-incidente">
                             Siguiente
                         </button>
                     </div>

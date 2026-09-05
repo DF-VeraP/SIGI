@@ -3,85 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#ffffff">
-    <title>SIGI — Iniciar sesión</title>
-    <link rel="stylesheet" href="login.css">
+    <meta name="theme-color" content="#090d16">
+    <title>SIGI — Acceso al Sistema</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="login.css?v=3">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 </head>
 <body>
+    <!-- Fondos ambientales dinámicos -->
+    <div class="bg-mesh" aria-hidden="true">
+        <div class="mesh-orb orb-1"></div>
+        <div class="mesh-orb orb-2"></div>
+        <div class="mesh-orb orb-3"></div>
+        <div class="grid-overlay"></div>
+    </div>
+
     <div class="main-wrapper">
-        <div class="login-container">
-            <!-- Lado Izquierdo: Carrusel -->
-            <div class="split-left">
-                <div class="carousel-overlay"></div>
-                <div class="carousel-fade">
-                    <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjdfTDwQVh8mAW2iWgRR-WJ64FIKVxRx8OVOhHjqDmQKRmdgnamFZLewiUFi4cvfn_XBM9o7u6u3H5rBXd49xsgmfEnpT_sXOuM6UZpSEB3O0wOFtfbrErHGKElPNso9AnHX79fOwJByNTz/w1200-h630-p-k-no-nu/Florencia+Caquet%25C3%25A1.jpg" alt="Palacio de Bellas Artes" class="img-slide active">
-                    <img src="https://images.trvl-media.com/place/6262382/5fab3fa4-0db4-496f-a1d6-60b352525075.jpg" alt="Gobernación del Caquetá" class="img-slide">
-                    <img src="https://imagescdn.citix.com.co/citix/production/media/media/eff4f1ca69ec225874f6944b78ebe525.jpg" alt="Plaza Pizarro" class="img-slide">
-                    <img src="https://soyviajerocolombia.com/wp-content/uploads/2022/12/PHOTO-2022-12-23-18-25-18-4.jpg" alt="Río Caquetá" class="img-slide">
-                </div>
+        
+        <!-- Barra Superior con Botón Volver Integrado (Sin colisiones) -->
+        <header class="top-nav-bar">
+            <a href="/dashboard/index.html" class="btn-back-pill" title="Volver al mapa interactivo">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                <span>Volver al Mapa</span>
+            </a>
+
+            <div class="live-status-badge">
+                <span class="pulse-dot"></span>
+                <span class="status-text">Red de Monitoreo Activa · Caquetá</span>
             </div>
+        </header>
+
+        <div class="login-layout">
             
-            <!-- Lado Derecho: Formulario -->
-            <div class="split-right">
-                
-                <a href="/dashboard/index.html" class="btn-volver">
-                    <i class="bi bi-arrow-left" aria-hidden="true"></i>
-                    <span>Volver</span>
-                </a>
-                
-                <main class="form-container">
-                    <div class="form-content">
-                        <div class="login-marca-form">
-                            <img src="../assets/img/logo_sigi.png" alt="Logo SIGI" class="login-logo" style="height: 48px; width: auto; border-radius: 10px; box-shadow: 0 0 12px rgba(70, 214, 247, 0.4);">
-                            <span>SIGI</span>
-                        </div>
-                        <h1>Análisis de incidentes</h1>
-                        <p class="subtitle">Acceso para administradores.</p>
+            <!-- Panel Izquierdo: Hero Tecnológico & Geoespacial -->
+            <aside class="hero-panel" aria-label="Información del Sistema SIGI">
+                <div class="hero-content">
+
+                    <!-- Gráfico Geo / Radar Holográfico -->
+                    <div class="geo-radar-container">
+                        <div class="radar-circle circle-1"></div>
+                        <div class="radar-circle circle-2"></div>
+                        <div class="radar-circle circle-3"></div>
+                        <div class="radar-scan"></div>
                         
-                        <form id="loginForm" class="login-form">
-                            <section class="input-group">
-                                <label for="nameuser">Correo institucional</label>
-                                <div class="input-wrapper">
-                                    <i class="bi bi-person" aria-hidden="true"></i>
-                                    <input type="text" placeholder="admin@sigi.gov.co" id="nameuser" autocomplete="username">
-                                </div>
-                            </section>
-                            
-                            <section class="input-group">
-                                <label for="pssuser">Contraseña</label>
-                                <div class="input-wrapper">
-                                    <i class="bi bi-lock" aria-hidden="true"></i>
-                                    <input type="password" placeholder="•••••••••••" id="pssuser" autocomplete="current-password">
-                                    <i class="bi bi-eye toggle-password" id="togglePassword" aria-label="Mostrar contraseña" role="button" tabindex="0"></i>
-                                </div>
-                            </section>
-                            
-                            <p id="resp" role="alert"></p>
-                            
-                            <button type="submit" class="btn-primary">
-                                Iniciar sesión
-                            </button>
-                            
-                            <div class="secure-badge">
-                                <i class="bi bi-lock-fill" aria-hidden="true"></i>
-                                <span>Entorno seguro y encriptado</span>
-                            </div>
-                        </form>
+                        <!-- Nodos de incidentes solicitados: Barrios y Veredas -->
+                        <div class="radar-node node-1" style="top: 26%; left: 46%;">
+                            <span class="node-dot"></span>
+                            <span class="node-tag">Florencia</span>
+                        </div>
+                        <div class="radar-node node-2" style="top: 58%; left: 66%;">
+                            <span class="node-dot"></span>
+                            <span class="node-tag">Barrios</span>
+                        </div>
+                        <div class="radar-node node-3" style="top: 56%; left: 20%;">
+                            <span class="node-dot"></span>
+                            <span class="node-tag">Veredas</span>
+                        </div>
+
+                        <!-- Icono Central del Radar -->
+                        <div class="radar-core">
+                            <i class="bi bi-geo-alt-fill"></i>
+                        </div>
                     </div>
-                </main>
-            </div>
+
+                    <!-- Texto Descriptivo Hero -->
+                    <div class="hero-text-block">
+                        <h2>Sistema de Información Geográfica de Incidentes</h2>
+                        <p>Plataforma centralizada de geolocalización, análisis espacial y gestión operativa de emergencias en tiempo real.</p>
+                    </div>
+
+                    <!-- Métricas o Características Rápidas -->
+                    <div class="hero-features">
+                        <div class="feature-item">
+                            <div class="feature-icon"><i class="bi bi-shield-check"></i></div>
+                            <div class="feature-info">
+                                <strong>Control RBAC</strong>
+                                <span>Acceso Seguro</span>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon"><i class="bi bi-layers-half"></i></div>
+                            <div class="feature-info">
+                                <strong>Motor PostGIS</strong>
+                                <span>Cálculo Espacial</span>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon"><i class="bi bi-activity"></i></div>
+                            <div class="feature-info">
+                                <strong>Telemetría</strong>
+                                <span>Logs en Vivo</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </aside>
+
+            <!-- Panel Derecho: Formulario Glassmorphism -->
+            <main class="form-panel">
+                <div class="glass-card">
+                    
+                    <!-- Header del Formulario con Logo -->
+                    <div class="card-header">
+                        <div class="brand-badge">
+                            <div class="logo-wrapper">
+                                <img src="../assets/img/logo_sigi.png" alt="Logo SIGI" class="brand-logo">
+                                <div class="logo-glow"></div>
+                            </div>
+                            <div class="brand-titles">
+                                <span class="brand-name">SIGI</span>
+                                <span class="brand-tag">PORTAL ADMINISTRATIVO</span>
+                            </div>
+                        </div>
+                        <h1 class="card-title">Iniciar Sesión</h1>
+                        <p class="card-subtitle">Ingresa tus credenciales para acceder a la consola</p>
+                    </div>
+
+                    <!-- Formulario de Acceso -->
+                    <form id="loginForm" class="auth-form" novalidate>
+                        
+                        <!-- Input Usuario / Email -->
+                        <div class="form-group">
+                            <label for="nameuser">Usuario o Correo Institucional</label>
+                            <div class="input-container">
+                                <i class="bi bi-person-badge input-icon" aria-hidden="true"></i>
+                                <input 
+                                    type="text" 
+                                    id="nameuser" 
+                                    placeholder="ej. admin@sigi.gov.co" 
+                                    autocomplete="username" 
+                                    required 
+                                    spellcheck="false"
+                                >
+                            </div>
+                        </div>
+
+                        <!-- Input Contraseña -->
+                        <div class="form-group">
+                            <div class="label-row">
+                                <label for="pssuser">Contraseña</label>
+                            </div>
+                            <div class="input-container">
+                                <i class="bi bi-shield-lock input-icon" aria-hidden="true"></i>
+                                <input 
+                                    type="password" 
+                                    id="pssuser" 
+                                    placeholder="••••••••••••" 
+                                    autocomplete="current-password" 
+                                    required
+                                >
+                                <button type="button" class="btn-toggle-pwd" id="togglePassword" aria-label="Mostrar u ocultar contraseña">
+                                    <i class="bi bi-eye" id="eyeIcon" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Alerta de Respuesta (animada) -->
+                        <div id="alertBox" class="alert-box" role="alert" style="display: none;">
+                            <i id="alertIcon" class="bi bi-info-circle-fill"></i>
+                            <span id="resp"></span>
+                        </div>
+
+                        <!-- Botón de Envío -->
+                        <button type="submit" class="btn-submit" id="btnSubmit">
+                            <span class="btn-text">Ingresar al Sistema</span>
+                            <i class="bi bi-arrow-right-short btn-arrow" aria-hidden="true"></i>
+                            <div class="btn-spinner" aria-hidden="true"></div>
+                        </button>
+
+                        <!-- Sello de Seguridad -->
+                        <div class="security-footer">
+                            <i class="bi bi-lock-fill"></i>
+                            <span>Conexión protegida con cifrado de punto a punto</span>
+                        </div>
+                    </form>
+
+                </div>
+            </main>
+
         </div>
 
-        <!-- Footer original -->
+        <!-- Footer Semántico -->
         <footer class="sigi-footer">
-            <div class="footer-contenido">
-                <p class="footer-marca">SIGI — Sistema de Información Geográfica de Incidentes</p>
-                <p class="footer-autor">Daniel Felipe Vera Perdomo · Proyecto académico del SENA</p>
-                <p class="footer-copy">© 2025 SENA. Todos los derechos reservados.</p>
-            </div>
+            <p><strong>SIGI</strong> — Sistema de Información Geográfica de Incidentes · <span class="footer-meta">Daniel Felipe Vera Perdomo · SENA © 2026</span></p>
         </footer>
     </div>
-    <script src="login.js"></script>
+
+    <script src="login.js?v=3"></script>
 </body>
 </html>

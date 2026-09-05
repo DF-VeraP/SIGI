@@ -18,9 +18,6 @@ if (btnTemaHeader) {
         document.body.classList.toggle("tema-claro");
         const esClaro = document.body.classList.contains("tema-claro");
         localStorage.setItem("tema_sigi_admin", esClaro ? "claro" : "oscuro");
-        if (typeof mostrarToast === 'function') {
-            mostrarToast(`Modo ${esClaro ? 'Claro' : 'Oscuro'} activado`, "info");
-        }
     });
 }
 
@@ -867,7 +864,7 @@ function mostrarToast(mensaje) {
     }, 3000);
 }
 
-const contInc = document.querySelector(".numero");
+const contInc = document.getElementById("conteoTotalVerificacion") || document.querySelector(".numero");
 async function contar() {
     try {
         const res = await fetch("/conteoIncidente");
@@ -1052,21 +1049,20 @@ function renderTabla(data) {
     tbody.innerHTML = "";
     paginados.forEach((incidente, index) => {
         const fila = document.createElement("tr");
-        fila.style.borderBottom = "1px solid var(--borde)";
 
         const nombreTipo = incidente.nametipoincidente || 'Incidente';
         let tipoBadge = '';
         const tipoId = parseInt(incidente.idtipoincidente);
         if (tipoId === 1) { // Robo
-            tipoBadge = `<span style="background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.25); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600; white-space: nowrap;" title="${nombreTipo}">${nombreTipo}</span>`;
+            tipoBadge = `<span class="badge-tipo badge-tipo-robo" title="${nombreTipo}">${nombreTipo}</span>`;
         } else if (tipoId === 2) { // Agresión
-            tipoBadge = `<span style="background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.25); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600; white-space: nowrap;" title="${nombreTipo}">${nombreTipo}</span>`;
+            tipoBadge = `<span class="badge-tipo badge-tipo-agresion" title="${nombreTipo}">${nombreTipo}</span>`;
         } else if (tipoId === 3) { // Piques
-            tipoBadge = `<span style="background: rgba(168, 85, 247, 0.12); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.25); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600; white-space: nowrap;" title="${nombreTipo}">${nombreTipo}</span>`;
+            tipoBadge = `<span class="badge-tipo badge-tipo-piques" title="${nombreTipo}">${nombreTipo}</span>`;
         } else if (tipoId === 4) { // Accidente
-            tipoBadge = `<span style="background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.25); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600; white-space: nowrap;" title="${nombreTipo}">${nombreTipo}</span>`;
+            tipoBadge = `<span class="badge-tipo badge-tipo-accidente" title="${nombreTipo}">${nombreTipo}</span>`;
         } else {
-            tipoBadge = `<span style="background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600; white-space: nowrap;" title="${nombreTipo}">${nombreTipo}</span>`;
+            tipoBadge = `<span class="badge-tipo badge-tipo-otro" title="${nombreTipo}">${nombreTipo}</span>`;
         }
 
         // Estado y Revisor Badge
@@ -1078,32 +1074,32 @@ function renderTabla(data) {
                        (adminLogueado && incidente.admin_revisor_nombre === adminLogueado);
 
         if (estadoId === 1) { // 1 = Reportado (Pendiente en Cola Pública)
-            estadoBadge = `<span style="background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.25); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600; white-space: nowrap;" title="Disponible en la cola pública">En Cola</span>`;
-            opcionesHtml = `<button class="btnTomarIncidente" data-id="${incidente.idincidente}" style="padding: 4px 10px; background: transparent; border: 1px solid rgba(59, 130, 246, 0.4); color: #60a5fa; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: 500; white-space: nowrap; transition: all 0.2s ease;">Tomar Revisión</button>`;
+            estadoBadge = `<span class="badge-estado badge-estado-cola" title="Disponible en la cola pública">En Cola</span>`;
+            opcionesHtml = `<button class="btnTomarIncidente btn-secundario-accion" data-id="${incidente.idincidente}">Tomar Revisión</button>`;
         } else if (estadoId === 2) { // 2 = En evaluación
             const revisorNombre = incidente.admin_revisor_nombre || 'un Admin';
             if (esMio || isSuperadmin) {
-                estadoBadge = `<span style="background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.25); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600; white-space: nowrap;" title="Revisando por ti">Revisando: ${revisorNombre}</span>`;
+                estadoBadge = `<span class="badge-estado badge-estado-proceso" title="Revisando por ti">Revisando: ${revisorNombre}</span>`;
                 opcionesHtml = `
-                    <button class="btnResolverIncidente" data-id="${incidente.idincidente}" style="padding: 4px 10px; background: transparent; border: 1px solid rgba(52, 211, 153, 0.4); color: #34d399; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: 500; white-space: nowrap;">Aprobar</button>
-                    <button class="btnCerrarIncidente" data-id="${incidente.idincidente}" style="padding: 4px 10px; background: transparent; border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: 500; white-space: nowrap;">Desestimar</button>
-                    <button class="btnLiberarIncidente" data-id="${incidente.idincidente}" style="padding: 4px 10px; background: transparent; border: 1px solid var(--borde); color: var(--texto-suave); border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: 500; white-space: nowrap;" title="Devolver a la cola pública">Liberar</button>
+                    <button class="btnResolverIncidente btn-accion-aprobar" data-id="${incidente.idincidente}">Aprobar</button>
+                    <button class="btnCerrarIncidente btn-accion-desestimar" data-id="${incidente.idincidente}">Desestimar</button>
+                    <button class="btnLiberarIncidente btn-accion-liberar" data-id="${incidente.idincidente}" title="Devolver a la cola pública">Liberar</button>
                 `;
             } else {
-                estadoBadge = `<span style="background: rgba(107, 114, 128, 0.12); color: #9ca3af; border: 1px solid rgba(107, 114, 128, 0.25); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600; white-space: nowrap;">Revisando por ${revisorNombre}</span>`;
+                estadoBadge = `<span class="badge-estado badge-estado-otro-revisor">Revisando por ${revisorNombre}</span>`;
                 opcionesHtml = `<span style="font-size: 0.75rem; color: var(--texto-suave); font-style: italic;">En revisión</span>`;
             }
         } else if (estadoId === 5) { // 5 = Resuelto / Aprobado
-            estadoBadge = `<span style="background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600; white-space: nowrap;">Aprobado</span>`;
+            estadoBadge = `<span class="badge-estado badge-estado-aprobado">Aprobado</span>`;
             opcionesHtml = `
-                <button class="btnEditar" data-id="${incidente.idincidente}" style="padding: 4px 10px; background: transparent; border: 1px solid rgba(96, 165, 250, 0.3); color: #60a5fa; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: 500; white-space: nowrap;">Editar</button>
-                <button class="btnEliminar" data-id="${incidente.idincidente}" style="padding: 4px 10px; background: transparent; border: 1px solid rgba(248, 113, 113, 0.3); color: #f87171; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: 500; white-space: nowrap;">Eliminar</button>
+                <button class="btnEditar btn-accion-editar" data-id="${incidente.idincidente}">Editar</button>
+                <button class="btnEliminar btn-accion-eliminar" data-id="${incidente.idincidente}">Eliminar</button>
             `;
         } else { // 6 = Cerrado / Desestimado
-            estadoBadge = `<span style="background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.25); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600; white-space: nowrap;">Desestimado</span>`;
+            estadoBadge = `<span class="badge-estado badge-estado-rechazado">Desestimado</span>`;
             opcionesHtml = `
-                <button class="btnEditar" data-id="${incidente.idincidente}" style="padding: 4px 10px; background: transparent; border: 1px solid rgba(96, 165, 250, 0.3); color: #60a5fa; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: 500; white-space: nowrap;">Editar</button>
-                <button class="btnEliminar" data-id="${incidente.idincidente}" style="padding: 4px 10px; background: transparent; border: 1px solid rgba(248, 113, 113, 0.3); color: #f87171; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: 500; white-space: nowrap;">Eliminar</button>
+                <button class="btnEditar btn-accion-editar" data-id="${incidente.idincidente}">Editar</button>
+                <button class="btnEliminar btn-accion-eliminar" data-id="${incidente.idincidente}">Eliminar</button>
             `;
         }
 
@@ -1112,11 +1108,11 @@ function renderTabla(data) {
         const creadorNombre = incidente.nombreusuario || 'Sistema';
 
         fila.innerHTML = `
-            <td style="padding: 10px 12px; text-align: center; vertical-align: middle; color: var(--texto-suave); font-size: 0.8rem;">
+            <td style="padding: 10px 12px; text-align: center; vertical-align: middle;" class="celda-consecutivo">
                 #${consecutivo}
             </td>
             <td style="padding: 10px 12px; text-align: center; vertical-align: middle;">
-                <span style="font-weight: 700; color: #60a5fa; font-size: 0.78rem; background: rgba(96, 165, 250, 0.12); padding: 3px 7px; border-radius: 5px; white-space: nowrap;">#INC-${incidente.idincidente}</span>
+                <span class="badge-incidente-id">#INC-${incidente.idincidente}</span>
             </td>
             <td style="padding: 10px 12px; text-align: center; vertical-align: middle;">
                 <div style="display: flex; justify-content: center; align-items: center;">
@@ -1128,15 +1124,15 @@ function renderTabla(data) {
                     ${estadoBadge}
                 </div>
             </td>
-            <td style="padding: 10px 12px; color: var(--texto); text-align: center; vertical-align: middle; font-size: 0.82rem; font-weight: 500; white-space: nowrap;">
+            <td style="padding: 10px 12px; text-align: center; vertical-align: middle;" class="celda-texto-principal">
                 ${revisorNombre}
             </td>
-            <td style="padding: 10px 12px; color: var(--texto); text-align: center; vertical-align: middle; font-size: 0.82rem; font-weight: 500; white-space: nowrap;">
+            <td style="padding: 10px 12px; text-align: center; vertical-align: middle;" class="celda-texto-principal">
                 ${creadorNombre}
             </td>
             <td style="padding: 10px 12px; text-align: center; vertical-align: middle;">
                 <div style="display: flex; gap: 6px; justify-content: center; align-items: center; align-content: center; flex-wrap: wrap; width: 100%; text-align: center;">
-                    <button onclick="verDetalleIncidente(${incidente.idincidente})" style="padding: 4px 10px; background: transparent; border: 1px solid rgba(96, 165, 250, 0.3); color: #60a5fa; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: 500; white-space: nowrap; transition: all 0.2s ease;">Detalle</button>
+                    <button onclick="verDetalleIncidente(${incidente.idincidente})" class="btn-primario-detalle">Detalle</button>
                     ${opcionesHtml}
                 </div>
             </td>
@@ -1190,20 +1186,23 @@ function verDetalleIncidente(id) {
 
     // Llenar metadatos del modal (Sin redundancia con la tabla)
     const idEl = document.getElementById("detModalId");
-    if (idEl) idEl.innerText = `#INC-${incidente.idincidente}`;
+    if (idEl) {
+        idEl.className = "badge-incidente-id";
+        idEl.innerText = `#INC-${incidente.idincidente}`;
+    }
     
     // Categoría / Tipo Badge
     const detTipoBadge = document.getElementById("detModalTipoBadge");
     const tipoId = parseInt(incidente.idtipoincidente);
     const nombreTipo = incidente.nametipoincidente || 'Incidente';
-    let colorBg = 'rgba(16, 185, 129, 0.12)', colorFg = '#34d399', colorBrd = 'rgba(16, 185, 129, 0.25)';
-    if (tipoId === 1) { colorBg = 'rgba(239, 68, 68, 0.12)'; colorFg = '#f87171'; colorBrd = 'rgba(239, 68, 68, 0.25)'; }
-    else if (tipoId === 2) { colorBg = 'rgba(245, 158, 11, 0.12)'; colorFg = '#fbbf24'; colorBrd = 'rgba(245, 158, 11, 0.25)'; }
-    else if (tipoId === 3) { colorBg = 'rgba(168, 85, 247, 0.12)'; colorFg = '#c084fc'; colorBrd = 'rgba(168, 85, 247, 0.25)'; }
-    else if (tipoId === 4) { colorBg = 'rgba(59, 130, 246, 0.12)'; colorFg = '#60a5fa'; colorBrd = 'rgba(59, 130, 246, 0.25)'; }
+    let tipoClase = 'badge-tipo-otro';
+    if (tipoId === 1) tipoClase = 'badge-tipo-robo';
+    else if (tipoId === 2) tipoClase = 'badge-tipo-agresion';
+    else if (tipoId === 3) tipoClase = 'badge-tipo-piques';
+    else if (tipoId === 4) tipoClase = 'badge-tipo-accidente';
 
     if (detTipoBadge) {
-        detTipoBadge.innerHTML = `<span style="background: ${colorBg}; color: ${colorFg}; border: 1px solid ${colorBrd}; padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 600;">${nombreTipo}</span>`;
+        detTipoBadge.innerHTML = `<span class="badge-tipo ${tipoClase}">${nombreTipo}</span>`;
     }
 
     const fechaFmt = new Date(incidente.fechaincidente).toLocaleDateString("es-CO");
