@@ -649,14 +649,14 @@
                     <input type="text" id="newNombreUsuario" required placeholder="ej: juan_perez" style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; outline: none;">
                 </div>
                 <div class="grupo" style="margin-bottom: 12px;">
-                    <label style="display: block; font-size: 0.78rem; color: var(--texto-suave); margin-bottom: 4px;">Correo electrónico</label>
-                    <input type="email" id="newEmail" placeholder="ej: juan@entidad.gov.co" style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; outline: none;">
+                    <label style="display: block; font-size: 0.78rem; color: var(--texto-suave); margin-bottom: 4px;">Correo electrónico *</label>
+                    <input type="email" id="newEmail" required placeholder="ej: juan@entidad.gov.co" style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; outline: none;">
                 </div>
                 <div class="grupo" style="margin-bottom: 12px;">
                     <label style="display: block; font-size: 0.78rem; color: var(--texto-suave); margin-bottom: 4px;">
                         Contraseña <span id="passHelpText" style="font-size: 0.7rem; color: var(--texto-suave); font-weight: normal;">(Requerida para nuevo usuario)</span>
                     </label>
-                    <input type="password" id="newPassword" placeholder="Mínimo 6 caracteres" style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; outline: none;">
+                    <input type="password" id="newPassword" minlength="6" placeholder="Mínimo 6 caracteres" style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; outline: none;">
                 </div>
                 <div style="display: flex; gap: 12px; margin-bottom: 12px;">
                     <div class="grupo" style="flex: 1;">
@@ -671,7 +671,6 @@
                         <label style="display: block; font-size: 0.78rem; color: var(--texto-suave); margin-bottom: 4px;">Estado *</label>
                         <select id="newEstado" required style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; outline: none; cursor: pointer;">
                             <option value="activo">Activo</option>
-                            <option value="bloqueado">Bloqueado</option>
                             <option value="inactivo">Inactivo</option>
                         </select>
                     </div>
@@ -684,7 +683,9 @@
                     <label style="display: block; font-size: 0.78rem; color: var(--texto-suave); margin-bottom: 4px;">Teléfono de contacto</label>
                     <input type="text" id="newTelefono" placeholder="ej: 3001234567" style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; outline: none;">
                 </div>
-                <div class="acciones" style="display: flex; gap: 10px; margin-top: 20px;">
+                <!-- Alerta interna del modal para visibilidad inmediata -->
+                <div id="modalUserAlert" style="display: none; padding: 10px 14px; border-radius: 6px; font-size: 0.8rem; margin-bottom: 14px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; line-height: 1.4;"></div>
+                <div class="acciones" style="display: flex; gap: 10px; margin-top: 10px;">
                     <button type="submit" id="btnGuardarUsuarioSubmit" style="flex: 1; padding: 9px; background: #10b981; color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer;">Guardar usuario</button>
                     <button type="button" id="btnCerrarModalUsuario" onclick="cerrarModalUsuario()" style="padding: 9px 16px; background: transparent; border: 1px solid var(--borde); color: var(--texto-suave); border-radius: 6px; font-size: 0.85rem; cursor: pointer;">Cancelar</button>
                 </div>
@@ -830,7 +831,8 @@
         </div>
     </footer>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="admin.js?v=57"></script>
+    <script src="../js/session-timer.js"></script>
+    <script src="admin.js?v=59"></script>
 </body>
 
 </html>

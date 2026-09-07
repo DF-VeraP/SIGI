@@ -1,6 +1,10 @@
 const bcrypt = require('bcrypt');
 const pool = require('../db');
 const { registrarLogActividad } = require('../utils/logger');
+const { enviarEmailBienvenida } = require('../utils/mailer');
+
+// Expresión regular para validación de formato de correo
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Obtener todos los usuarios (Superadmin y Admin)
 const getUsuarios = async (req, res) => {
@@ -14,6 +18,7 @@ const getUsuarios = async (req, res) => {
         estado,
         dependencia,
         telefono,
+        debe_cambiar_password,
         ultimo_acceso,
         fecha_registro
       FROM usuario
@@ -40,6 +45,7 @@ const getUsuarioById = async (req, res) => {
         estado,
         dependencia,
         telefono,
+        debe_cambiar_password,
         ultimo_acceso,
         fecha_registro
       FROM usuario
@@ -62,58 +68,86 @@ const crearUsuario = async (req, res) => {
   const { nombreusuario, email, rol, estado, dependencia, telefono } = req.body;
   const contrasenia = req.body.contrasenia || req.body.contraseniausuario;
 
-  if (!nombreusuario || !contrasenia) {
-    return res.status(400).json({ mensaje: 'El nombre de usuario y la contraseña son obligatorios ⚠️' });
+  // 1. Validaciones de obligatoriedad
+  if (!nombreusuario || !nombreusuario.trim()) {
+    return res.status(400).json({ mensaje: 'El nombre de usuario es obligatorio ⚠️' });
   }
 
+  if (!email || !email.trim()) {
+    return res.status(400).json({ mensaje: 'El correo electrónico es obligatorio para el registro ⚠️' });
+  }
+
+  if (!EMAIL_REGEX.test(email.trim())) {
+    return res.status(400).json({ mensaje: 'Debes ingresar un formato de correo electrónico válido ⚠️' });
+  }
+
+  if (!contrasenia || contrasenia.length < 6) {
+    return res.status(400).json({ mensaje: 'La contraseña temporal es obligatoria y debe tener al menos 6 caracteres ⚠️' });
+  }
+
+  const cleanNombre = nombreusuario.trim();
+  const cleanEmail = email.trim();
   const userRol = rol || 'reportero';
-  const userEstado = estado || 'activo';
+  // El estado al registrar solo puede ser activo o inactivo (no bloqueado)
+  const userEstado = (estado === 'inactivo') ? 'inactivo' : 'activo';
   const userDependencia = dependencia || 'General';
 
   try {
-    // Verificar duplicado por nombre de usuario o email
+    // 2. Verificar duplicado estricto por nombre de usuario o email (insensible a mayúsculas)
     const dupCheck = await pool.query(
-      'SELECT idusuario FROM usuario WHERE nombreusuario = $1 OR (email IS NOT NULL AND email = $2)',
-      [nombreusuario, email || null]
+      'SELECT idusuario, nombreusuario, email FROM usuario WHERE LOWER(nombreusuario) = LOWER($1) OR LOWER(email) = LOWER($2)',
+      [cleanNombre, cleanEmail]
     );
 
     if (dupCheck.rows.length > 0) {
-      return res.status(400).json({ mensaje: 'El nombre de usuario o email ya se encuentra registrado ⚠️' });
+      const match = dupCheck.rows[0];
+      if (match.email && match.email.toLowerCase() === cleanEmail.toLowerCase()) {
+        return res.status(400).json({ mensaje: 'El correo electrónico ya se encuentra registrado por otro usuario ⚠️' });
+      }
+      return res.status(400).json({ mensaje: 'El nombre de usuario ya se encuentra registrado ⚠️' });
     }
 
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(contrasenia, saltRounds);
 
+    // 3. Insertar nuevo usuario con debe_cambiar_password = true por defecto
     const result = await pool.query(`
       INSERT INTO usuario (
-        nombreusuario, contraseniausuario, entidadusuario, email, rol, estado, dependencia, telefono, created_by
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      RETURNING idusuario, nombreusuario, email, rol, estado, dependencia
+        nombreusuario, contraseniausuario, entidadusuario, email, rol, estado, dependencia, telefono, created_by, debe_cambiar_password
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true)
+      RETURNING idusuario, nombreusuario, email, rol, estado, dependencia, debe_cambiar_password
     `, [
-      nombreusuario,
+      cleanNombre,
       hashedPassword,
       userDependencia,
-      email || null,
+      cleanEmail,
       userRol,
       userEstado,
       userDependencia,
-      telefono || null,
+      telefono ? telefono.trim() : null,
       req.session.idusuario || null
     ]);
 
     const nuevoUsuario = result.rows[0];
+
+    // 4. Enviar correo de bienvenida con credenciales y notificación de primer ingreso
+    try {
+      await enviarEmailBienvenida(cleanEmail, cleanNombre, contrasenia, req);
+    } catch (mailError) {
+      console.error('Aviso: No se pudo enviar el correo de bienvenida:', mailError);
+    }
 
     await registrarLogActividad(
       req.session.idusuario,
       'CREAR_USUARIO',
       'usuario',
       nuevoUsuario.idusuario,
-      `Usuario ${nuevoUsuario.nombreusuario} creado con rol ${nuevoUsuario.rol}`,
+      `Usuario ${nuevoUsuario.nombreusuario} creado con correo ${nuevoUsuario.email} y rol ${nuevoUsuario.rol}`,
       req
     );
 
     res.status(201).json({
-      mensaje: 'Usuario creado exitosamente ✅',
+      mensaje: 'Usuario registrado exitosamente. Se ha enviado una notificación a su correo electrónico ✅',
       usuario: nuevoUsuario
     });
   } catch (error) {
@@ -133,6 +167,31 @@ const actualizarUsuario = async (req, res) => {
       return res.status(404).json({ mensaje: 'Usuario no encontrado ❌' });
     }
 
+    // Validación de duplicidad si se actualiza el nombre de usuario
+    if (nombreusuario && nombreusuario.trim() !== '') {
+      const dupUser = await pool.query(
+        'SELECT idusuario FROM usuario WHERE LOWER(nombreusuario) = LOWER($1) AND idusuario != $2',
+        [nombreusuario.trim(), id]
+      );
+      if (dupUser.rows.length > 0) {
+        return res.status(400).json({ mensaje: 'El nombre de usuario ya se encuentra registrado por otro usuario ⚠️' });
+      }
+    }
+
+    // Validación de correo si se actualiza
+    if (email && email.trim() !== '') {
+      if (!EMAIL_REGEX.test(email.trim())) {
+        return res.status(400).json({ mensaje: 'El correo electrónico no tiene un formato válido ⚠️' });
+      }
+      const dupEmail = await pool.query(
+        'SELECT idusuario FROM usuario WHERE LOWER(email) = LOWER($1) AND idusuario != $2',
+        [email.trim(), id]
+      );
+      if (dupEmail.rows.length > 0) {
+        return res.status(400).json({ mensaje: 'El correo electrónico ya se encuentra registrado por otro usuario ⚠️' });
+      }
+    }
+
     let hashedPassword = userCheck.rows[0].contraseniausuario;
     if (contrasenia && contrasenia.trim() !== '') {
       hashedPassword = await bcrypt.hash(contrasenia, 10);
@@ -149,15 +208,15 @@ const actualizarUsuario = async (req, res) => {
         telefono = COALESCE($7, telefono),
         fecha_actualizacion = CURRENT_TIMESTAMP
       WHERE idusuario = $8
-      RETURNING idusuario, nombreusuario, email, rol, estado, dependencia
+      RETURNING idusuario, nombreusuario, email, rol, estado, dependencia, debe_cambiar_password
     `, [
-      nombreusuario || null,
-      email || null,
+      nombreusuario ? nombreusuario.trim() : null,
+      email ? email.trim() : null,
       hashedPassword,
       rol || null,
       estado || null,
       dependencia || null,
-      telefono || null,
+      telefono ? telefono.trim() : null,
       id
     ]);
 

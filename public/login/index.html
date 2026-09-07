@@ -143,8 +143,9 @@
 
                         <!-- Input Contraseña -->
                         <div class="form-group">
-                            <div class="label-row">
+                            <div class="label-row" style="display: flex; justify-content: space-between; align-items: center;">
                                 <label for="pssuser">Contraseña</label>
+                                <button type="button" class="link-forgot-pwd" id="btnForgotPass" style="background: none; border: none; color: var(--accent-teal); font-size: 0.76rem; cursor: pointer; text-decoration: none; padding: 0;">¿Olvidaste tu contraseña?</button>
                             </div>
                             <div class="input-container">
                                 <i class="bi bi-shield-lock input-icon" aria-hidden="true"></i>
@@ -192,6 +193,80 @@
         </footer>
     </div>
 
-    <script src="login.js?v=3"></script>
+    <!-- MODAL RECUPERAR CONTRASEÑA -->
+    <div id="modalRecuperarPass" class="auth-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="titleRecuperar">
+        <div class="auth-modal-card">
+            <button type="button" class="auth-modal-close" id="btnCloseRecuperar" aria-label="Cerrar modal">&times;</button>
+            <div class="auth-modal-header">
+                <h2 id="titleRecuperar"><i class="bi bi-key-fill text-primary" style="color: #38bdf8;"></i> Recuperar Contraseña</h2>
+                <p>Ingresa tu correo institucional registrado. Te enviaremos un enlace seguro para restablecer tu acceso.</p>
+            </div>
+            <form id="formRecuperarPass" novalidate>
+                <div class="form-group">
+                    <label for="emailRecuperar">Correo Electrónico Registrado</label>
+                    <div class="input-container">
+                        <i class="bi bi-envelope-fill input-icon"></i>
+                        <input type="email" id="emailRecuperar" placeholder="ej. usuario@sigi.gov.co" required>
+                    </div>
+                </div>
+                <div id="alertRecuperar" class="alert-box" style="display: none; margin-top: 10px;">
+                    <i id="alertIconRecuperar" class="bi bi-info-circle-fill"></i>
+                    <span id="respRecuperar"></span>
+                </div>
+                <div class="auth-modal-actions">
+                    <button type="button" class="btn-modal-cancel" id="btnCancelRecuperar">Cancelar</button>
+                    <button type="submit" class="btn-modal-primary" id="btnSubmitRecuperar">
+                        <span>Enviar Enlace</span>
+                        <i class="bi bi-send-fill" style="font-size: 0.8rem;"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL PRIMER INGRESO (CAMBIO OBLIGATORIO DE CONTRASEÑA) -->
+    <div id="modalPrimerIngreso" class="auth-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="titlePrimerIngreso">
+        <div class="auth-modal-card">
+            <div class="auth-modal-header">
+                <h2 id="titlePrimerIngreso"><i class="bi bi-shield-check" style="color: #10b981;"></i> Primer Ingreso — Seguridad</h2>
+                <p>Por políticas de seguridad institucional, debes cambiar la contraseña temporal asignada por una contraseña personal para continuar.</p>
+            </div>
+            <form id="formPrimerIngreso" novalidate>
+                <div class="form-group">
+                    <label for="passActualPrimerIngreso">Contraseña Temporal Actual</label>
+                    <div class="input-container">
+                        <i class="bi bi-lock input-icon"></i>
+                        <input type="password" id="passActualPrimerIngreso" placeholder="••••••••••••" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="passNuevaPrimerIngreso">Nueva Contraseña Personal</label>
+                    <div class="input-container">
+                        <i class="bi bi-shield-lock-fill input-icon"></i>
+                        <input type="password" id="passNuevaPrimerIngreso" placeholder="Mínimo 6 caracteres" required minlength="6">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="passConfirmarPrimerIngreso">Confirmar Nueva Contraseña</label>
+                    <div class="input-container">
+                        <i class="bi bi-check2-circle input-icon"></i>
+                        <input type="password" id="passConfirmarPrimerIngreso" placeholder="Repite la nueva contraseña" required minlength="6">
+                    </div>
+                </div>
+                <div id="alertPrimerIngreso" class="alert-box" style="display: none; margin-top: 10px;">
+                    <i id="alertIconPrimerIngreso" class="bi bi-info-circle-fill"></i>
+                    <span id="respPrimerIngreso"></span>
+                </div>
+                <div class="auth-modal-actions">
+                    <button type="submit" class="btn-modal-primary" id="btnSubmitPrimerIngreso" style="flex: 1;">
+                        <span>Actualizar y Continuar</span>
+                        <i class="bi bi-arrow-right-short" style="font-size: 1.1rem;"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="login.js?v=4"></script>
 </body>
 </html>

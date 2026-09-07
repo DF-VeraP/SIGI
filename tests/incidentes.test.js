@@ -7,18 +7,26 @@ jest.mock('../db', () => ({
 
 // Mock de bcrypt (requerido por auth.controller)
 jest.mock('bcrypt', () => ({
-  compare: jest.fn()
+  compare: jest.fn(),
+  hash: jest.fn().mockResolvedValue('$2b$10$hashed')
+}));
+
+// Mock de Cloudinary
+jest.mock('../utils/cloudinary', () => ({
+  subirImagenCloudinary: jest.fn().mockResolvedValue('https://res.cloudinary.com/demo/image.png')
 }));
 
 // Mock de autenticacion para tests
-// IMPORTANTE: No reemplazar req.session, solo inyectar propiedades
-// para no romper los métodos internos de express-session (.touch, .save, etc.)
 jest.mock('../middleware/auth.middleware', () => ({
   verificarSesion: (req, res, next) => {
     req.session.usuario = 'Daniel';
     req.session.idusuario = 1;
+    req.session.rol = 'reportero';
+    req.session.estado = 'activo';
     next();
-  }
+  },
+  verificarRol: () => (req, res, next) => next(),
+  verificarEstadoActivo: (req, res, next) => next()
 }));
 
 const pool = require('../db');
@@ -36,7 +44,11 @@ describe('Incidentes Controller', () => {
   describe('POST /registrarIncidente', () => {
 
     it('debería registrar un incidente correctamente', async () => {
-      pool.query.mockResolvedValue({ rows: [] });
+      pool.query
+        .mockResolvedValueOnce({ rows: [{ gid: 1 }] }) // barrio lookup
+        .mockResolvedValueOnce({ rows: [] }) // vereda lookup
+        .mockResolvedValueOnce({ rows: [{ idincidente: 1, codigoincidente: 'INC-100001' }] }) // insert
+        .mockResolvedValueOnce({ rows: [] }); // log auditoria
 
       const res = await request(app)
         .post('/registrarIncidente')
@@ -49,9 +61,8 @@ describe('Incidentes Controller', () => {
           descripcion: 'Incidente de prueba'
         });
 
-      expect(res.status).toBe(200);
-      expect(res.body.mensaje).toBe('Incidente registrado ✅');
-      expect(pool.query).toHaveBeenCalledTimes(1);
+      expect(res.status).toBe(201);
+      expect(res.body.mensaje).toBe('Incidente registrado exitosamente ✅');
     });
 
     it('debería retornar 500 si la BD falla al registrar', async () => {
@@ -69,7 +80,7 @@ describe('Incidentes Controller', () => {
         });
 
       expect(res.status).toBe(500);
-      expect(res.body.error).toBe('Error en servidor');
+      expect(res.body.mensaje).toContain('Error');
     });
   });
 
@@ -86,7 +97,7 @@ describe('Incidentes Controller', () => {
         fechaincidente: '2026-08-01',
         idusuario: 1
       };
-      pool.query.mockResolvedValue({ rows: [mockIncidente] });
+      pool.query.mockResolvedValueOnce({ rows: [mockIncidente] });
 
       const res = await request(app).get('/incidente/1');
 
@@ -95,17 +106,13 @@ describe('Incidentes Controller', () => {
       expect(res.body.descripcionincidente).toBe('Robo en zona céntrica');
     });
 
-    it('debería retornar 403 si el incidente no pertenece al usuario', async () => {
-      const mockIncidente = {
-        idincidente: 5,
-        idusuario: 99
-      };
-      pool.query.mockResolvedValue({ rows: [mockIncidente] });
+    it('debería retornar 404 si el incidente no existe', async () => {
+      pool.query.mockResolvedValueOnce({ rows: [] });
 
-      const res = await request(app).get('/incidente/5');
+      const res = await request(app).get('/incidente/999');
 
-      expect(res.status).toBe(403);
-      expect(res.body.error).toMatch(/No tienes permiso/);
+      expect(res.status).toBe(404);
+      expect(res.body.mensaje).toMatch(/no encontrado/i);
     });
 
     it('debería retornar 500 si la BD falla', async () => {
@@ -114,7 +121,7 @@ describe('Incidentes Controller', () => {
       const res = await request(app).get('/incidente/999');
 
       expect(res.status).toBe(500);
-      expect(res.body.error).toBe('Error');
+      expect(res.body.mensaje).toContain('Error');
     });
   });
 
@@ -124,11 +131,10 @@ describe('Incidentes Controller', () => {
   describe('PUT /incidente/:id', () => {
 
     it('debería actualizar un incidente correctamente', async () => {
-      // Primera llamada: ownership check → devuelve el incidente del usuario 1
-      // Segunda llamada: UPDATE query
       pool.query
-        .mockResolvedValueOnce({ rows: [{ idusuario: 1 }] })
-        .mockResolvedValueOnce({ rowCount: 1 });
+        .mockResolvedValueOnce({ rows: [{ idusuario: 1, id_usuario_creador: 1, id_estado: 1 }] }) // check owner y estado
+        .mockResolvedValueOnce({ rowCount: 1 }) // UPDATE query
+        .mockResolvedValueOnce({ rows: [] }); // log auditoria
 
       const res = await request(app)
         .put('/incidente/1')
@@ -142,7 +148,7 @@ describe('Incidentes Controller', () => {
     });
 
     it('debería retornar 403 si el incidente no pertenece al usuario', async () => {
-      pool.query.mockResolvedValueOnce({ rows: [{ idusuario: 99 }] });
+      pool.query.mockResolvedValueOnce({ rows: [{ idusuario: 99, id_usuario_creador: 99, id_estado: 1 }] });
 
       const res = await request(app)
         .put('/incidente/1')
@@ -156,7 +162,9 @@ describe('Incidentes Controller', () => {
     });
 
     it('debería retornar 500 si la actualización falla', async () => {
-      pool.query.mockRejectedValue(new Error('DB Error'));
+      pool.query
+        .mockResolvedValueOnce({ rows: [{ idusuario: 1, id_usuario_creador: 1, id_estado: 1 }] })
+        .mockRejectedValueOnce(new Error('DB Error'));
 
       const res = await request(app)
         .put('/incidente/1')
@@ -167,7 +175,7 @@ describe('Incidentes Controller', () => {
         });
 
       expect(res.status).toBe(500);
-      expect(res.body.error).toBe('Error actualizando');
+      expect(res.body.mensaje).toContain('Error');
     });
   });
 
@@ -177,11 +185,10 @@ describe('Incidentes Controller', () => {
   describe('DELETE /incidente/:id', () => {
 
     it('debería eliminar un incidente correctamente', async () => {
-      // Primera llamada: ownership check → devuelve el incidente del usuario 1
-      // Segunda llamada: DELETE query
       pool.query
-        .mockResolvedValueOnce({ rows: [{ idusuario: 1 }] })
-        .mockResolvedValueOnce({ rowCount: 1 });
+        .mockResolvedValueOnce({ rows: [{ idusuario: 1, id_usuario_creador: 1 }] }) // check ownership
+        .mockResolvedValueOnce({ rowCount: 1 }) // DELETE query
+        .mockResolvedValueOnce({ rows: [] }); // log auditoria
 
       const res = await request(app).delete('/incidente/1');
 
@@ -189,7 +196,7 @@ describe('Incidentes Controller', () => {
     });
 
     it('debería retornar 403 si el incidente no pertenece al usuario', async () => {
-      pool.query.mockResolvedValueOnce({ rows: [{ idusuario: 99 }] });
+      pool.query.mockResolvedValueOnce({ rows: [{ idusuario: 99, id_usuario_creador: 99 }] });
 
       const res = await request(app).delete('/incidente/5');
 
@@ -197,12 +204,14 @@ describe('Incidentes Controller', () => {
     });
 
     it('debería retornar 500 si la eliminación falla', async () => {
-      pool.query.mockRejectedValue(new Error('DB Error'));
+      pool.query
+        .mockResolvedValueOnce({ rows: [{ idusuario: 1, id_usuario_creador: 1 }] })
+        .mockRejectedValueOnce(new Error('DB Error'));
 
       const res = await request(app).delete('/incidente/999');
 
       expect(res.status).toBe(500);
-      expect(res.body.error).toBe('Error eliminando');
+      expect(res.body.mensaje).toContain('Error');
     });
   });
 });

@@ -4,14 +4,28 @@ require('dotenv').config();
 const pool = require("./db");
 const { errorHandler } = require('./middleware/error.middleware');
 
+const helmet = require("helmet");
 const app = express();
+
+// Protección de cabeceras HTTP (Anti-clickjacking, XSS, MIME Sniffing, ocultar X-Powered-By)
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false
+}));
+
 app.use(express.static("public"));
 app.use(express.json());
 
 app.use(session({
   secret: process.env.SESSION_SECRET || "mi_secreto_super_seguro",
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 40 * 60 * 1000, // 40 minutos de inactividad
+    httpOnly: true,
+    sameSite: 'lax'
+  },
+  rolling: true // Renueva automáticamente la sesión en cada petición
 }));
 
 app.get("/", (req, res) => {

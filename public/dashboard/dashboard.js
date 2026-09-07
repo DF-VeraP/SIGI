@@ -1075,8 +1075,26 @@ const baseMaps = {
     "Calles (Normal)": osmStreet
 };
 
-// Control de capas abajo a la izquierda para no estorbar arriba a la derecha
-L.control.layers(baseMaps, null, { position: 'bottomleft' }).addTo(map);
+// Control de capas ubicado debajo de los controles de zoom (topleft)
+L.control.layers(baseMaps, null, { position: 'topleft' }).addTo(map);
+
+// Cambio dinámico de clases según la vista activa para estilizar los botones de zoom y capas
+const mapContainerEl = document.getElementById("map");
+if (mapContainerEl) {
+    mapContainerEl.classList.add("map-theme-dark");
+}
+
+map.on('baselayerchange', function (e) {
+    if (!mapContainerEl) return;
+    mapContainerEl.classList.remove("map-theme-dark", "map-theme-sat", "map-theme-streets");
+    if (e.name === "Modo Oscuro") {
+        mapContainerEl.classList.add("map-theme-dark");
+    } else if (e.name === "Satelital") {
+        mapContainerEl.classList.add("map-theme-sat");
+    } else if (e.name === "Calles (Normal)") {
+        mapContainerEl.classList.add("map-theme-streets");
+    }
+});
 
 let capaIncidentes = L.markerClusterGroup({
     spiderfyOnMaxZoom: true,
@@ -1456,6 +1474,25 @@ function actualizarAnalisisRapido(data) {
     
     if (elTotal) elTotal.textContent = data.length;
     if (elVisibles) elVisibles.textContent = data.length;
+
+    // Conteo interactivo de tipologías para la Simbología de la barra lateral
+    let countRobo = 0, countPiques = 0, countAgresiones = 0, countAccidente = 0;
+    data.forEach(inc => {
+        if (inc.idtipoincidente === 1) countRobo++;
+        else if (inc.idtipoincidente === 2) countAgresiones++;
+        else if (inc.idtipoincidente === 3) countPiques++;
+        else if (inc.idtipoincidente === 4) countAccidente++;
+    });
+
+    const elCountRobo = document.getElementById("sidebarCountRobo");
+    const elCountPiques = document.getElementById("sidebarCountPiques");
+    const elCountAgresiones = document.getElementById("sidebarCountAgresiones");
+    const elCountAccidente = document.getElementById("sidebarCountAccidente");
+
+    if (elCountRobo) elCountRobo.textContent = countRobo;
+    if (elCountPiques) elCountPiques.textContent = countPiques;
+    if (elCountAgresiones) elCountAgresiones.textContent = countAgresiones;
+    if (elCountAccidente) elCountAccidente.textContent = countAccidente;
 
     if (data.length === 0) {
         if(elVariacion) { elVariacion.innerHTML = `0% <span style="font-size: 0.55em; font-weight: normal; color: var(--secundario, #94a3b8); margin-left: 5px;">vs. mes anterior</span>`; elVariacion.className = "kpi-valor"; }

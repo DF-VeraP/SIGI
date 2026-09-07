@@ -2186,9 +2186,11 @@ function abrirModalCrearUsuario() {
     }
 
     form.reset();
+    const modalAlert = document.getElementById("modalUserAlert");
+    if (modalAlert) modalAlert.style.display = "none";
     if (editUserId) editUserId.value = "";
     if (title) title.innerHTML = "Crear nuevo usuario";
-    if (passHelpText) passHelpText.innerText = "(Requerida para nuevo usuario)";
+    if (passHelpText) passHelpText.innerText = "(Requerida para nuevo usuario, mín. 6 caracteres)";
     if (passInput) passInput.required = true;
 
     modal.classList.add("active");
@@ -2219,6 +2221,9 @@ function abrirModalEditarUsuario(u) {
         console.error("No se encontró el elemento modalNuevoUsuario en el DOM");
         return;
     }
+
+    const modalAlert = document.getElementById("modalUserAlert");
+    if (modalAlert) modalAlert.style.display = "none";
 
     document.getElementById("editUserId").value = u.idusuario;
     document.getElementById("newNombreUsuario").value = u.nombreusuario || "";
@@ -2320,17 +2325,28 @@ if (formCrearUsuario) {
             });
 
             const data = await res.json();
+            const modalAlert = document.getElementById("modalUserAlert");
 
             if (res.ok) {
+                if (modalAlert) modalAlert.style.display = "none";
                 mostrarToast(`✅ ${data.mensaje}`, "exito");
                 formCrearUsuario.reset();
                 document.getElementById("modalNuevoUsuario").style.display = "none";
                 cargarUsuarios();
             } else {
+                if (modalAlert) {
+                    modalAlert.textContent = `❌ ${data.mensaje || "Error al procesar usuario"}`;
+                    modalAlert.style.display = "block";
+                }
                 mostrarToast(`❌ ${data.mensaje || "Error al procesar usuario"}`, "error");
             }
         } catch (err) {
             console.error("Error al procesar usuario:", err);
+            const modalAlert = document.getElementById("modalUserAlert");
+            if (modalAlert) {
+                modalAlert.textContent = "❌ Error de conexión con el servidor";
+                modalAlert.style.display = "block";
+            }
             mostrarToast("❌ Error de conexión con el servidor", "error");
         }
     });

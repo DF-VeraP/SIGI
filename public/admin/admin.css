@@ -1181,7 +1181,7 @@ select option {
     position: fixed;
     top: 80px;
     right: 20px;
-    z-index: 99999;
+    z-index: 9999999;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -3064,7 +3064,7 @@ body.tema-claro #labelPaginaIncidente {
     position: fixed;
     top: 20px;
     right: 20px;
-    z-index: 9999;
+    z-index: 9999999;
     display: flex;
     flex-direction: column;
     gap: 10px;

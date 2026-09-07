@@ -4041,3 +4041,117 @@ main.filtros-abiertos .fab-tiempo {
         bottom: calc(var(--mobile-bottom-bar-h) + 10px) !important;
     }
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   PERSONALIZACIONES SOLICITADAS: CONTEOS, PULSO Y ZOOM ADAPTABLE
+   ══════════════════════════════════════════════════════════════════ */
+
+/* 1. Tag de Conteo en la Simbología de la Sidebar */
+.simbologia-count-tag {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 1px 7px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--texto-suave, #94a3b8);
+    min-width: 24px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.itemLeyenda:hover .simbologia-count-tag {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+}
+
+/* 2. Indicador Flotante con Punto Verde Suave Animado (Agranda / Achica) */
+.pulse-dot-indicador {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    background-color: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 6px #10b981;
+    animation: softPulseGreen 2.4s ease-in-out infinite;
+    flex-shrink: 0;
+}
+
+@keyframes softPulseGreen {
+    0%, 100% {
+        transform: scale(0.85);
+        opacity: 0.75;
+        box-shadow: 0 0 3px #10b981;
+    }
+    50% {
+        transform: scale(1.35);
+        opacity: 1;
+        box-shadow: 0 0 8px #10b981;
+    }
+}
+
+/* 3. Posicionamiento del Control de Capas Debajo del Zoom (Top-Left) */
+.leaflet-top.leaflet-left {
+    top: 14px;
+    left: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.leaflet-top.leaflet-left .leaflet-control-layers {
+    margin-top: 4px;
+    margin-left: 0;
+}
+
+/* 4. Estilos Dinámicos de los Botones de Zoom y Capas según la Vista del Mapa */
+
+/* Tema 1: Modo Oscuro (Dark Matter) */
+.map-theme-dark .leaflet-bar a,
+.map-theme-dark .leaflet-control-layers {
+    background: rgba(13, 17, 23, 0.88) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #e6edf3 !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+}
+
+.map-theme-dark .leaflet-bar a:hover {
+    background: rgba(30, 41, 59, 0.95) !important;
+    color: #38bdf8 !important;
+    border-color: rgba(56, 189, 248, 0.4) !important;
+}
+
+/* Tema 2: Satelital (Esri Satellite) */
+.map-theme-sat .leaflet-bar a,
+.map-theme-sat .leaflet-control-layers {
+    background: rgba(15, 23, 42, 0.82) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    border: 1px solid rgba(56, 189, 248, 0.35) !important;
+    color: #38bdf8 !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55) !important;
+}
+
+.map-theme-sat .leaflet-bar a:hover {
+    background: rgba(14, 165, 233, 0.25) !important;
+    color: #ffffff !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.5) !important;
+}
+
+/* Tema 3: Calles (Normal / OSM) */
+.map-theme-streets .leaflet-bar a,
+.map-theme-streets .leaflet-control-layers {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #1e293b !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.map-theme-streets .leaflet-bar a:hover {
+    background: #f1f5f9 !important;
+    color: #0284c7 !important;
+    border-color: #94a3b8 !important;
+}

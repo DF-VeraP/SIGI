@@ -42,7 +42,7 @@ describe('Auth Controller', () => {
       expect(res.status).toBe(200);
       expect(res.body.mensaje).toBe('Login correcto ✅');
       expect(pool.query).toHaveBeenCalledWith(
-        'SELECT * FROM usuario WHERE nombreusuario = $1',
+        'SELECT * FROM usuario WHERE nombreusuario = $1 OR email = $1',
         ['admin']
       );
       expect(bcrypt.compare).toHaveBeenCalledWith('miPassword123', '$2b$10$hashedpassword');
