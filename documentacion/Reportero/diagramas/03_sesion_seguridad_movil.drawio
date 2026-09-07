@@ -1,0 +1,64 @@
+<mxfile host="app.diagrams.net" modified="2026-09-07T21:00:00.000Z" agent="SIGI-Architecture" version="22.0.0" type="device">
+  <diagram id="diag-reportero-03" name="03_Sesion_Seguridad_Movil">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <mxCell id="r_user" value="Reportero en Terreno" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="240" width="40" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Monitor de Actividad -->
+        <mxCell id="timer_js" value="Listener de Eventos&#xa;public/js/session-timer.js&#xa;(touchstart, scroll, click)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="170" y="230" width="200" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="es1" value="Interacción física" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="r_user" target="timer_js">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Decisión de Tiempo -->
+        <mxCell id="time_eval" value="Evaluación Temporal&#xa;¿Minutos transcurridos?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="440" y="210" width="180" height="140" as="geometry" />
+        </mxCell>
+
+        <mxCell id="es2" value="Tick de temporizador" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="timer_js" target="time_eval">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Warning Toast -->
+        <mxCell id="box_warn" value="Minuto 38:&#xa;Alerta / Toast de Advertencia&#xa;'Sesión expira en 2 minutos'" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="430" y="70" width="200" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="es3" value="Tiempo = 38m" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="time_eval" target="box_warn">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Auto Logout -->
+        <mxCell id="box_kick" value="Minuto 40:&#xa;Auto-Logout Forzoso&#xa;Redirección /login?motivo=inactividad" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="235" width="230" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="es4" value="Tiempo &gt;= 40m" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="time_eval" target="box_kick">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Servidor Express Session -->
+        <mxCell id="srv_sess" value="Express Session Store&#xa;cookie: maxAge: 40min,&#xa;httpOnly: true, sameSite: 'lax'&#xa;rolling: true" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="430" y="420" width="200" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="es5" value="Cada request HTTP&#xa;renueva cookie en servidor" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="timer_js" target="srv_sess">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="270" y="470" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

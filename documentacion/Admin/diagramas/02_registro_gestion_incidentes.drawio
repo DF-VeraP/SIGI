@@ -1,0 +1,73 @@
+<mxfile host="app.diagrams.net" modified="2026-09-07T21:00:00.000Z" agent="SIGI-Architecture" version="22.0.0" type="device">
+  <diagram id="diag-admin-02" name="02_Registro_Gestion_Incidentes">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <mxCell id="ad_u" value="Admin / Analista" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="60" y="240" width="40" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- UI Admin Inicio -->
+        <mxCell id="ui_ad_ini" value="Panel Administrativo (Inicio)&#xa;1. Mapa Leaflet (#map) interactivo&#xa;2. Buscador de barrios&#xa;3. Formulario con catálogos" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="170" y="225" width="220" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="eb1" value="Clic en mapa / Completa datos" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ad_u" target="ui_ad_ini">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Operaciones CRUD -->
+        <mxCell id="box_ops" value="Operaciones Backend:&#xa;POST /api/incidentes (Crear)&#xa;PUT /api/incidentes/:id (Editar)&#xa;DELETE /api/incidentes/:id (Eliminar)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="470" y="225" width="230" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="eb2" value="Solicitud HTTP (Auth Guard)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ui_ad_ini" target="box_ops">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Base de Datos -->
+        <mxCell id="db_admin_inc" value="PostgreSQL / PostGIS&#xa;Transformación espacial:&#xa;ST_SetSRID(ST_MakePoint(x,y),4326)&#xa;Historial y auditoría" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="780" y="210" width="190" height="140" as="geometry" />
+        </mxCell>
+
+        <mxCell id="eb3" value="Persistencia inmediata" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="box_ops" target="db_admin_inc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Capa de Consulta -->
+        <mxCell id="layer_view" value="Capa de Incidentes (#mapa2):&#xa;Alternancia con botón #ver&#xa;Detección visual de incidentes previos" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="340" y="430" width="250" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="eb4" value="Confirmación 200/201" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="db_admin_inc" target="box_ops">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="740" y="295" />
+              <mxPoint x="740" y="295" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="eb5" value="Actualiza capa y tabla" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="box_ops" target="layer_view">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="585" y="380" />
+              <mxPoint x="465" y="380" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="eb6" value="Feedback visual" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="layer_view" target="ui_ad_ini">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="280" y="475" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

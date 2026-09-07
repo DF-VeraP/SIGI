@@ -1,0 +1,80 @@
+<mxfile host="app.diagrams.net" modified="2026-09-07T21:00:00.000Z" agent="SIGI-Architecture" version="22.0.0" type="device">
+  <diagram id="diag-superadmin-03" name="03_Gobernanza_Sistema">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <mxCell id="sup_g" value="Superadmin / SecOps" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="60" y="240" width="40" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Capa Perimetral -->
+        <mxCell id="box_perim" value="Capa de Seguridad Perimetral:&#xa;1. Helmet.js (Security Headers)&#xa;2. Rate Limiters (Login, Reset, General)&#xa;3. Sanitización de Errores 500" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="170" y="220" width="240" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="eg1" value="Define políticas y reglas" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="sup_g" target="box_perim">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Motor Central Node/Express -->
+        <mxCell id="srv_core" value="Servidor Express (server.js)&#xa;Sesiones: 40 min maxAge&#xa;rolling: true, httpOnly: true&#xa;Mapeo de Rutas y RBAC" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="480" y="220" width="220" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="eg2" value="Aplica en pipelines" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="box_perim" target="srv_core">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Servicios Externos -->
+        <mxCell id="ext_db" value="PostgreSQL + PostGIS&#xa;SRID 4326 WGS 84&#xa;Tablas, Índices GiST" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="800" y="80" width="180" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ext_mail" value="Gmail SMTP&#xa;Puerto 587 / TLS&#xa;Plantillas de correo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="800" y="235" width="180" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ext_cloud" value="Cloudinary Storage&#xa;HTTPS CDN / Evidencias&#xa;Carpeta sigi_incidentes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="800" y="370" width="180" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="eg3" value="Conexión Pool DB" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="srv_core" target="ext_db">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="590" y="135" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="eg4" value="Credenciales SMTP" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="srv_core" target="ext_mail">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="eg5" value="API Key / Secret" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="srv_core" target="ext_cloud">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="590" y="415" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Monitoreo y Disponibilidad -->
+        <mxCell id="box_mon" value="Supervisión Operativa:&#xa;Docker Compose / Dokploy VPS&#xa;Reinicios automáticos (unless-stopped)&#xa;Certificados SSL Let's Encrypt" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="340" y="460" width="270" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="eg6" value="Gobernanza de Infraestructura" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="srv_core" target="box_mon">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="475" y="400" />
+              <mxPoint x="475" y="400" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

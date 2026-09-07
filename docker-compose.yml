@@ -6,7 +6,7 @@ services:
     container_name: sigi_app
     restart: unless-stopped
     ports:
-      - "127.0.0.1:3000:3000" # Expone al localhost en el puerto 3000
+      - "127.0.0.1:3005:3000" # Expone al localhost en el puerto 3000
     env_file:
       - .env
     depends_on:
@@ -19,7 +19,7 @@ services:
     container_name: sigi_db
     restart: unless-stopped
     ports:
-    - "5432:5432"
+      - "5432:5432"
     env_file:
       - .env
     environment:

@@ -1,0 +1,73 @@
+<mxfile host="app.diagrams.net" modified="2026-09-07T21:00:00.000Z" agent="SIGI-Architecture" version="22.0.0" type="device">
+  <diagram id="diag-admin-04" name="04_Tablas_Filtros_Avanzados">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <mxCell id="u_ad4" value="Admin / Analista" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="60" y="240" width="40" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- UI Data Grid -->
+        <mxCell id="ui_grid" value="Cuadrícula Data Grid&#xa;1. Tabla interactiva paginada&#xa;2. Panel animado de filtros&#xa;3. Acciones rápidas (Editar/Foto)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="170" y="225" width="220" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ed_g1" value="Aplica filtros / Ordena columnas" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="u_ad4" target="ui_grid">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Controller -->
+        <mxCell id="ctrl_tab" value="Controlador de Tablas&#xa;controllers/tablas.controller.js&#xa;GET /incidentesTabla&#xa;GET /incidentesFiltroAdmin" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="460" y="225" width="220" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ed_g2" value="Petición con Query Params" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ui_grid" target="ctrl_tab">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- DB Postgres -->
+        <mxCell id="db_grid" value="PostgreSQL&#xa;SELECT i.*, t.nombre_tipo,&#xa;u.nombre as reportado_por&#xa;FROM incidente i ...&#xa;LIMIT $limit OFFSET $offset" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="760" y="205" width="220" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ed_g3" value="Query con Joins y Paginación" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ctrl_tab" target="db_grid">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Visualización y Acciones -->
+        <mxCell id="box_grid_out" value="Renderizado Dinámico:&#xa;1. Filas con semáforos de gravedad&#xa;2. Popups de fotos Cloudinary&#xa;3. Cambio de estado en 1-clic" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="340" y="430" width="240" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ed_g4" value="Dataset JSON paginado" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="db_grid" target="ctrl_tab">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="720" y="300" />
+              <mxPoint x="720" y="300" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="ed_g5" value="Puebla tabla" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="ctrl_tab" target="box_grid_out">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="570" y="380" />
+              <mxPoint x="460" y="380" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="ed_g6" value="Actualiza vista de usuario" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="box_grid_out" target="ui_grid">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="280" y="475" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

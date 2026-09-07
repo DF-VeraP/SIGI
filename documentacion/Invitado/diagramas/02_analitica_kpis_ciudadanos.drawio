@@ -1,0 +1,69 @@
+<mxfile host="app.diagrams.net" modified="2026-09-07T21:00:00.000Z" agent="SIGI-Architecture" version="22.0.0" type="device">
+  <diagram id="diag-invitado-02" name="02_Analitica_KPIs_Ciudadanos">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Usuario / Ciudadano -->
+        <mxCell id="user_inv" value="Ciudadano / Invitado" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="240" width="40" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Panel de KPIs y Graficas -->
+        <mxCell id="ui_kpi" value="Panel Analítico&#xa;(Tarjetas KPI + Chart.js)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="180" y="235" width="180" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" value="Visualiza estadísticas" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="user_inv" target="ui_kpi">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Endpoints Controller -->
+        <mxCell id="ctrl_stat" value="Controlador Estadísticas&#xa;controllers/estadisticas.controller.js" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="440" y="225" width="220" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e2" value="Solicitudes en Paralelo:&#xa;1. GET /resumen&#xa;2. GET /conteoPorTipo&#xa;3. GET /top-zonas&#xa;4. GET /top-incidentes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ui_kpi" target="ctrl_stat">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Base de Datos Postgres -->
+        <mxCell id="db_pg" value="PostgreSQL&#xa;COUNT(*) / GROUP BY&#xa;WHERE estado = 'Aprobado'" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="760" y="220" width="160" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e3" value="Agregaciones SQL" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ctrl_stat" target="db_pg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Visualizaciones Resultantes -->
+        <mxCell id="out_cards" value="1. Tarjeta Total Incidentes&#xa;2. Gráfico Distribución (Chart.js)&#xa;3. Ranking Top 5 Zonas Críticas&#xa;4. Badge Última Actualización" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="440" y="420" width="220" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e4" value="Datasets JSON" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="db_pg" target="ctrl_stat">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="710" y="290" />
+              <mxPoint x="710" y="290" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="e5" value="Renderiza componentes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="ctrl_stat" target="out_cards">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e6" value="Actualiza vista" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="out_cards" target="ui_kpi">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="270" y="465" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

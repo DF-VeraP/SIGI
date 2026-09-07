@@ -1,0 +1,72 @@
+<mxfile host="app.diagrams.net" modified="2026-09-07T21:00:00.000Z" agent="SIGI-Architecture" version="22.0.0" type="device">
+  <diagram id="diag-admin-01" name="01_Cola_Compartida_Validacion">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <mxCell id="admin_act" value="Analista / Admin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="60" y="240" width="40" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- UI Bandeja Pendientes -->
+        <mxCell id="ui_cola" value="Mesa de Incidentes&#xa;Badge Pendientes: &gt; 0&#xa;Tabla de Casos Pendientes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="170" y="225" width="190" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ea1" value="1. Selecciona caso&#xa;GET /api/incidentes/pendientes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="admin_act" target="ui_cola">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Control de Concurrencia -->
+        <mxCell id="lock_eval" value="Toma de Control:&#xa;POST /api/incidentes/:id/tomar&#xa;¿Está libre o expiró?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="420" y="200" width="200" height="160" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ea2" value="Solicitud de revisión" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ui_cola" target="lock_eval">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Bloqueado por otro -->
+        <mxCell id="box_conflict" value="Error 409: Conflicto&#xa;'El caso está siendo evaluado&#xa;por otro analista'" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="420" y="70" width="200" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ea3" value="Ya bloqueado" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="lock_eval" target="box_conflict">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Base de Datos Bloqueo -->
+        <mxCell id="db_lock" value="PostgreSQL&#xa;UPDATE incidente SET&#xa;bloqueado_por = $user,&#xa;fecha_bloqueo = NOW()" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="690" y="215" width="180" height="130" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ea4" value="Caso disponible" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="lock_eval" target="db_lock">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Acciones de Resolución -->
+        <mxCell id="box_decide" value="Resolución de Caso:&#xa;A: POST /:id/resolver (Aprobar)&#xa;B: POST /:id/cerrar (Desestimar)&#xa;C: POST /:id/liberar (Devolver)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="410" y="440" width="220" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ea5" value="Abre modal exclusivo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="db_lock" target="box_decide">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="780" y="490" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="ea6" value="Aprobado: Pasa a Mapa Ciudadano&#xa;Desestimado: Con motivo forense" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="box_decide" target="ui_cola">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="265" y="490" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,76 @@
+<mxfile host="app.diagrams.net" modified="2026-09-07T21:00:00.000Z" agent="SIGI-Architecture" version="22.0.0" type="device">
+  <diagram id="diag-invitado-01" name="01_Visor_Geografico_Publico">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Rol Invitado -->
+        <mxCell id="inv_user" value="Ciudadano / Invitado&#xa;(Navegador Web)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="240" width="40" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Frontend Dashboard -->
+        <mxCell id="front_dash" value="Frontend: Dashboard Público&#xa;(Leaflet.js + CartoDB / OSM)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="180" y="230" width="180" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Petición API Incidentes -->
+        <mxCell id="edge1" value="Accede al visor&#xa;GET /api/incidentes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="inv_user" target="front_dash">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Servidor Express -->
+        <mxCell id="srv_node" value="Backend API Gateway&#xa;(Express.js / Helmet / RateLimit)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="440" y="230" width="200" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge2" value="Solicitud HTTP" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="front_dash" target="srv_node">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Filtro Estado Aprobado -->
+        <mxCell id="decision_filtro" value="Filtro de Seguridad:&#xa;¿Estado = 'Aprobado'?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="720" y="215" width="160" height="130" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge3" value="Aplica filtro&#xa;WHERE estado = 'Aprobado'" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="srv_node" target="decision_filtro">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Base de Datos PostGIS -->
+        <mxCell id="db_postgis" value="Base de Datos&#xa;PostgreSQL / PostGIS&#xa;ST_AsGeoJSON(geometria)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="940" y="220" width="130" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge4" value="Consulta espacial" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="decision_filtro" target="db_postgis">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Retorno y renderizado -->
+        <mxCell id="box_render" value="Renderizado Cartográfico:&#xa;1. Clustering por gravedad&#xa;2. Popups informativos seguros&#xa;3. Alternancia tema claro/oscuro" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="300" y="420" width="250" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge5" value="GeoJSON sanitizado" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="srv_node" target="box_render">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="540" y="380" />
+              <mxPoint x="425" y="380" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="edge6" value="Muestra mapa visual" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="box_render" target="front_dash">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="270" y="465" />
+              <mxPoint x="270" y="330" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

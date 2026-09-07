@@ -1,0 +1,72 @@
+<mxfile host="app.diagrams.net" modified="2026-09-07T21:00:00.000Z" agent="SIGI-Architecture" version="22.0.0" type="device">
+  <diagram id="diag-admin-03" name="03_Importacion_Masiva_Datos">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <mxCell id="adm_act3" value="Admin / Analista" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="60" y="240" width="40" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- UI Modal Importación -->
+        <mxCell id="ui_imp" value="Modal de Importación&#xa;1. Seleccionar CSV / Excel&#xa;2. Botón 'Subir Lote'&#xa;3. Botón 'Deshacer Último'" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="170" y="225" width="200" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ec1" value="Carga archivo tabular" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="adm_act3" target="ui_imp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Parser Backend -->
+        <mxCell id="box_parse" value="Procesador Masivo&#xa;controllers/incidentes.controller.js&#xa;Valida columnas, tipos y coordenadas&#xa;Genera batch_id (UUID)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="440" y="220" width="240" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ec2" value="POST /importar-incidentes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ui_imp" target="box_parse">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Base de Datos Postgres -->
+        <mxCell id="db_batch" value="PostgreSQL / PostGIS&#xa;BEGIN TRANSACTION;&#xa;INSERT INTO incidente (...) VALUES (...);&#xa;COMMIT;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="760" y="210" width="220" height="140" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ec3" value="Inserción en bloque (Bulk)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="box_parse" target="db_batch">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Reversión Rollback -->
+        <mxCell id="box_undo" value="Mecanismo de Reversión:&#xa;DELETE /importados/ultimo&#xa;WHERE batch_id = (SELECT MAX(batch_id))" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="440" y="420" width="240" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ec4" value="Solicita Rollback" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ui_imp" target="box_undo">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="270" y="465" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="ec5" value="Elimina lote completo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="box_undo" target="db_batch">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="870" y="465" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="ec6" value="Reporte: X registros insertados" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="db_batch" target="box_parse">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="720" y="300" />
+              <mxPoint x="720" y="300" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

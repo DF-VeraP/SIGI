@@ -1,0 +1,69 @@
+<mxfile host="app.diagrams.net" modified="2026-09-07T21:00:00.000Z" agent="SIGI-Architecture" version="22.0.0" type="device">
+  <diagram id="diag-reportero-02" name="02_Mis_Reportes_Seguimiento">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <mxCell id="rep_u" value="Reportero de Campo" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="240" width="40" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ui_mis_rep" value="Pestaña 'Mis Reportes'&#xa;Listado con Badges:&#xa;[Pendiente] [Aprobado] [Desestimado]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="180" y="230" width="210" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="em1" value="Abre pestaña" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="rep_u" target="ui_mis_rep">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="auth_sec" value="Endpoint Seguro:&#xa;GET /api/incidentes/mis-reportes&#xa;(Extrae req.session.id_usuario)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="460" y="235" width="220" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="em2" value="Consulta autenticada" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ui_mis_rep" target="auth_sec">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="db_user_inc" value="PostgreSQL&#xa;SELECT * FROM incidente&#xa;WHERE id_usuario = $1&#xa;ORDER BY fecha DESC" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="760" y="215" width="180" height="130" as="geometry" />
+        </mxCell>
+
+        <mxCell id="em3" value="Aislamiento multi-tenant" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="auth_sec" target="db_user_inc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="modal_view" value="Modal de Detalle:&#xa;1. Foto Cloudinary en Alta Resolución&#xa;2. Coordenadas y punto Leaflet&#xa;3. Observaciones del Validador" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="320" y="420" width="240" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="em4" value="Datos personales de reportes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="db_user_inc" target="auth_sec">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="720" y="295" />
+              <mxPoint x="720" y="295" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="em5" value="Renderiza tarjetas" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="auth_sec" target="ui_mis_rep">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="420" y="300" />
+              <mxPoint x="420" y="300" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="em6" value="Clic en reporte" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ui_mis_rep" target="modal_view">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="285" y="470" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

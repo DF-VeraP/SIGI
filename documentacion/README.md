@@ -1,62 +1,103 @@
-# 📚 Documentación Técnica del Sistema SIGI
+# Documentación Técnica Integral — SIGI (Sistema de Información Geográfica de Incidentes)
 
-**SIGI (Sistema de Información Geográfica de Incidentes)** es una plataforma web y móvil para la recepción, georreferenciación, análisis espacial y gestión en tiempo real de incidentes de seguridad y emergencias en el territorio.
-
----
-
-## 🗺️ Mapa de Documentación por Módulos
-
-Haz clic en cualquiera de los siguientes módulos para acceder a su documentación técnica detallada con diagramas de arquitectura, secuencias, modelos de datos y manuales de API:
-
-| Módulo | Nombre del Módulo | Descripción Principal | Enlace a Documentación |
-| :---: | :--- | :--- | :---: |
-| **01** | **Autenticacion y Usuarios** | Gestión de roles (RBAC: Superadmin, Admin, Reportero, Invitado), Login, control de sesiones y auditoría. | [Ver Módulo 01](./01_autenticacion_y_usuarios.md) |
-| **02** | **Gestión de Incidentes & Cola Compartida** | Registro de incidentes, ciclo de vida, cola de verificación compartida y bloqueos atómicos (*Takeover*). | [Ver Módulo 02](./02_gestion_incidentes_y_cola_compartida.md) |
-| **03** | **Geografía & Mapas Interactivos** | Capas GeoJSON (Barrios/Veredas), consultas espaciales en PostGIS (`ST_Contains`) y autocompletado unificado. | [Ver Módulo 03](./03_geografia_y_mapas_interactivos.md) |
-| **04** | **Analítica, KPIs & Carga Masiva** | Dashboard analítico, KPIs contextuales (variación mensual ↑/↓), Top 10 zonas críticas e importación CSV con Undo. | [Ver Módulo 04](./04_analitica_y_reportes_kpi.md) |
-| **05** | **Evidencia Fotográfica Cloudinary** | Integración CDN Cloudinary (`sigi_preset`), protocolo de resiliencia local (Fallback) y Visor Modal Lightbox. | [Ver Módulo 05](./05_evidencia_fotografica_cloudinary.md) |
+Bienvenido a la documentación oficial del sistema **SIGI**, estructurada por perfiles de usuario (**Roles**) para garantizar claridad técnica, coherencia funcional y trazabilidad de los flujos de información y seguridad.
 
 ---
 
-## 🏛️ Arquitectura General del Sistema
+## 🧭 Matriz de Navegación por Rol
 
-```mermaid
-graph TD
-    subgraph Capa de Presentación (Frontend)
-        MOB[📱 App Móvil Reportero - HTML5/CSS/JS]
-        ADM[🖥️ Mesa de Control Admin - Dashboard/Leaflet]
-        INV[👁️ Panel Invitado - Consulta Pública]
-    end
-
-    subgraph Capa de Servicios & Seguridad (Backend)
-        EXP[⚡ Node.js / Express Web Server]
-        AUT[🔒 Middleware RBAC & Control de Sesiones]
-        MUL[📦 Middleware Multer (Archivos Multipart)]
-        EXP --> AUT
-        EXP --> MUL
-    end
-
-    subgraph Capa de Persistencia & Nube
-        DB[(🗄️ PostgreSQL + Extension PostGIS)]
-        CDN[☁️ Cloudinary CDN - Almacenamiento Fotos]
-        LOC[📁 Fallback Local - /public/uploads/]
-    end
-
-    MOB -->|POST /api/incidentes| EXP
-    ADM -->|REST APIs JSON| EXP
-    INV -->|Consulta Read-only| EXP
-
-    EXP --> DB
-    MUL --> CDN
-    MUL -->|Si falla la Nube| LOC
+```
+documentacion/
+├── Invitado/                     # Ciudadanía y usuarios no autenticados
+│   ├── README.md                 # Índice y mapa funcional del Invitado
+│   ├── 01_visor_geografico_publico.md
+│   ├── 02_analitica_kpis_ciudadanos.md
+│   ├── 03_filtros_interactivos_mapa.md
+│   ├── 04_autenticacion_recuperacion_clave.md
+│   └── diagramas/                # 4 Diagramas en formato .drawio
+├── Reportero/                    # Agentes de campo y cuadrantes móviles
+│   ├── README.md                 # Índice y mapa funcional del Reportero
+│   ├── 01_captura_incidente_gps.md
+│   ├── 02_mis_reportes_seguimiento.md
+│   ├── 03_sesion_seguridad_movil.md
+│   └── diagramas/                # 3 Diagramas en formato .drawio
+├── Admin/                        # Analistas de seguridad y validadores de incidentes
+│   ├── README.md                 # Índice y mapa funcional del Administrador
+│   ├── 01_cola_compartida_validacion.md
+│   ├── 02_registro_gestion_incidentes.md
+│   ├── 03_importacion_masiva_datos.md
+│   ├── 04_tablas_filtros_avanzados.md
+│   └── diagramas/                # 4 Diagramas en formato .drawio
+└── Superadmin/                   # Administrador general del sistema y gobernanza
+    ├── README.md                 # Índice y mapa funcional del Superadmin
+    ├── 01_gestion_usuarios.md
+    ├── 02_auditoria_seguridad.md
+    ├── 03_gobernanza_sistema.md
+    └── diagramas/                # 3 Diagramas en formato .drawio
 ```
 
 ---
 
-## 🛠️ Tecnologías Principales
+## 👥 Matriz de Roles y Permisos (RBAC)
 
-* **Backend:** Node.js, Express.js.
-* **Base de Datos:** PostgreSQL con extensión espacial PostGIS.
-* **Frontend:** Javascript (Vanilla JS), HTML5, CSS3 (Glassmorphism & Mobile-first), Leaflet.js.
-* **Almacenamiento Cloud:** Cloudinary API & CDN.
-* **Pruebas:** Jest, Supertest.
+| Módulo / Funcionalidad | Invitado | Reportero | Admin | Superadmin |
+| :--- | :---: | :---: | :---: | :---: |
+| **Visor Geográfico Público** | ✅ Lectura | ✅ Lectura | ✅ Lectura | ✅ Lectura |
+| **Tableros Analíticos y KPIs** | ✅ Lectura | ✅ Lectura | ✅ Lectura | ✅ Lectura |
+| **Motor de Filtros Espacio-Temporal** | ✅ Activo | ✅ Activo | ✅ Activo | ✅ Activo |
+| **Autenticación y Recuperación** | ✅ Autoservicio | ✅ Autoservicio | ✅ Autoservicio | ✅ Autoservicio |
+| **Captura en Terreno (GPS + Cloudinary)** | ❌ | ✅ Completo | ✅ Completo | ✅ Completo |
+| **Mis Reportes y Seguimiento** | ❌ | ✅ Propios | ✅ Propios | ✅ Propios |
+| **Mesa de Validación (Cola Compartida / Lock)** | ❌ | ❌ | ✅ Completo | ✅ Completo |
+| **Registro y Edición Administrativa** | ❌ | ❌ | ✅ Completo | ✅ Completo |
+| **Importación Masiva y Rollback** | ❌ | ❌ | ✅ Completo | ✅ Completo |
+| **Explorador Tabular y Filtros Admin** | ❌ | ❌ | ✅ Completo | ✅ Completo |
+| **Gestión de Usuarios (CRUD + Correos)** | ❌ | ❌ | ❌ | ✅ Exclusivo |
+| **Bitácora de Auditoría y Trazabilidad** | ❌ | ❌ | ❌ | ✅ Exclusivo |
+| **Gobernanza y Políticas Globales** | ❌ | ❌ | ❌ | ✅ Exclusivo |
+
+---
+
+## 🔄 Flujo de Información Transversal entre Roles
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Invitado as Invitado / Público
+    actor Reportero as Reportero (Campo)
+    actor Admin as Admin (Mesa de Validación)
+    actor Superadmin as Superadmin (Gobernanza)
+
+    Superadmin->>Reportero: 1. Crea cuenta de usuario y envía credenciales por correo
+    Reportero->>Reportero: 2. Ingresa y cambia contraseña obligatoriamente
+    Reportero->>Admin: 3. Radica incidente con GPS y Foto Cloudinary (Estado: Pendiente)
+    Admin->>Admin: 4. Toma control con bloqueo concurrente (Locking)
+    Admin->>Invitado: 5. Aprueba el reporte (Pasa a Estado: Aprobado)
+    Invitado->>Invitado: 6. Consulta el incidente en el mapa público y gráficos KPI
+    Superadmin->>Superadmin: 7. Monitorea auditoría de todo el ciclo de vida
+```
+
+---
+
+## 📊 Diagramas de Arquitectura y Flujo (.drawio)
+
+Todos los diagramas han sido generados en formato XML estándar de **[Diagrams.net (Draw.io)](https://app.diagrams.net/)** y pueden abrirse directamente con la extensión de Draw.io en VS Code o en la herramienta web:
+
+1. **Rol Invitado:**
+   - [`Invitado/diagramas/01_visor_geografico_publico.drawio`](Invitado/diagramas/01_visor_geografico_publico.drawio)
+   - [`Invitado/diagramas/02_analitica_kpis_ciudadanos.drawio`](Invitado/diagramas/02_analitica_kpis_ciudadanos.drawio)
+   - [`Invitado/diagramas/03_filtros_interactivos_mapa.drawio`](Invitado/diagramas/03_filtros_interactivos_mapa.drawio)
+   - [`Invitado/diagramas/04_autenticacion_recuperacion_clave.drawio`](Invitado/diagramas/04_autenticacion_recuperacion_clave.drawio)
+2. **Rol Reportero:**
+   - [`Reportero/diagramas/01_captura_incidente_gps.drawio`](Reportero/diagramas/01_captura_incidente_gps.drawio)
+   - [`Reportero/diagramas/02_mis_reportes_seguimiento.drawio`](Reportero/diagramas/02_mis_reportes_seguimiento.drawio)
+   - [`Reportero/diagramas/03_sesion_seguridad_movil.drawio`](Reportero/diagramas/03_sesion_seguridad_movil.drawio)
+3. **Rol Admin:**
+   - [`Admin/diagramas/01_cola_compartida_validacion.drawio`](Admin/diagramas/01_cola_compartida_validacion.drawio)
+   - [`Admin/diagramas/02_registro_gestion_incidentes.drawio`](Admin/diagramas/02_registro_gestion_incidentes.drawio)
+   - [`Admin/diagramas/03_importacion_masiva_datos.drawio`](Admin/diagramas/03_importacion_masiva_datos.drawio)
+   - [`Admin/diagramas/04_tablas_filtros_avanzados.drawio`](Admin/diagramas/04_tablas_filtros_avanzados.drawio)
+4. **Rol Superadmin:**
+   - [`Superadmin/diagramas/01_gestion_usuarios.drawio`](Superadmin/diagramas/01_gestion_usuarios.drawio)
+   - [`Superadmin/diagramas/02_auditoria_seguridad.drawio`](Superadmin/diagramas/02_auditoria_seguridad.drawio)
+   - [`Superadmin/diagramas/03_gobernanza_sistema.drawio`](Superadmin/diagramas/03_gobernanza_sistema.drawio)
