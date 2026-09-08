@@ -698,6 +698,7 @@ const tomarIncidente = async (req, res) => {
   }
 
   try {
+    const incId = parseInt(id);
     // Intentar tomar el incidente si no está tomado por otro admin o si ya estaba tomado por el mismo admin
     const result = await pool.query(`
       UPDATE incidente
@@ -707,7 +708,7 @@ const tomarIncidente = async (req, res) => {
       WHERE idincidente = $2
         AND (id_admin_revisor IS NULL OR id_admin_revisor = $1 OR id_estado = 1)
       RETURNING idincidente, codigoincidente, id_estado, id_admin_revisor;
-    `, [idAdmin, id]);
+    `, [idAdmin, incId]);
 
     if (result.rows.length === 0) {
       const checkRes = await pool.query(`
@@ -715,7 +716,7 @@ const tomarIncidente = async (req, res) => {
         FROM incidente i 
         LEFT JOIN usuario u ON i.id_admin_revisor = u.idusuario 
         WHERE i.idincidente = $1
-      `, [id]);
+      `, [incId]);
 
       const adminAsignado = checkRes.rows.length > 0 ? (checkRes.rows[0].nombreusuario || 'otro administrador') : 'otro administrador';
       return res.status(409).json({
@@ -723,10 +724,11 @@ const tomarIncidente = async (req, res) => {
       });
     }
 
-    await registrarLogActividad(idAdmin, 'TOMAR_REVISION', 'incidente', id, `Tomó la revisión del incidente #${id}`, req);
+    // Registrar log en segundo plano sin retrasar la respuesta al usuario
+    registrarLogActividad(idAdmin, 'TOMAR_REVISION', 'incidente', incId, `Tomó la revisión del incidente #${incId}`, req).catch(err => console.error("Error en log:", err.message));
 
     res.json({
-      mensaje: `Has tomado la revisión del incidente #${id} ✅`,
+      mensaje: `Has tomado la revisión del incidente #${incId} ✅`,
       incidente: result.rows[0],
       admin_revisor_nombre: nombreAdmin
     });
@@ -748,6 +750,7 @@ const liberarIncidente = async (req, res) => {
   }
 
   try {
+    const incId = parseInt(id);
     let query = `
       UPDATE incidente
       SET id_admin_revisor = NULL,
@@ -755,7 +758,7 @@ const liberarIncidente = async (req, res) => {
           fecha_toma_revision = NULL
       WHERE idincidente = $1
     `;
-    const params = [id];
+    const params = [incId];
 
     if (rolAdmin !== 'superadmin') {
       query += ` AND id_admin_revisor = $2`;
@@ -770,9 +773,10 @@ const liberarIncidente = async (req, res) => {
       return res.status(403).json({ mensaje: "No tienes permisos para liberar este incidente o ya no está asignado a ti ⛔" });
     }
 
-    await registrarLogActividad(idAdmin, 'LIBERAR_REVISION', 'incidente', id, `Liberó el incidente #${id} devolviéndolo a la cola pública`, req);
+    // Registrar log en segundo plano
+    registrarLogActividad(idAdmin, 'LIBERAR_REVISION', 'incidente', incId, `Liberó el incidente #${incId} devolviéndolo a la cola pública`, req).catch(err => console.error("Error en log:", err.message));
 
-    res.json({ mensaje: `Incidente #${id} devuelto a la cola pública de verificación ↩️` });
+    res.json({ mensaje: `Incidente #${incId} devuelto a la cola pública de verificación ↩️` });
 
   } catch (error) {
     console.error("Error en liberarIncidente:", error);
@@ -783,7 +787,7 @@ const liberarIncidente = async (req, res) => {
 // Resolver / Aprobar incidente
 const resolverIncidente = async (req, res) => {
   const { id } = req.params;
-  const { notas } = req.body;
+  const notas = (req.body && req.body.notas) ? req.body.notas : null;
   const idAdmin = req.session.idusuario;
 
   if (!idAdmin) {
@@ -791,6 +795,7 @@ const resolverIncidente = async (req, res) => {
   }
 
   try {
+    const incId = parseInt(id);
     const result = await pool.query(`
       UPDATE incidente
       SET id_estado = 5, -- 5 = Resuelto / Aprobado
@@ -799,15 +804,16 @@ const resolverIncidente = async (req, res) => {
           comentarios_adicionales = COALESCE($2, comentarios_adicionales)
       WHERE idincidente = $3
       RETURNING idincidente, id_estado;
-    `, [idAdmin, notas || null, id]);
+    `, [idAdmin, notas, incId]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ mensaje: "Incidente no encontrado" });
     }
 
-    await registrarLogActividad(idAdmin, 'APROBAR_INCIDENTE', 'incidente', id, `Aprobó y resolvió el incidente #${id}`, req);
+    // Registrar log en segundo plano
+    registrarLogActividad(idAdmin, 'APROBAR_INCIDENTE', 'incidente', incId, `Aprobó y resolvió el incidente #${incId}`, req).catch(err => console.error("Error en log:", err.message));
 
-    res.json({ mensaje: `Incidente #${id} verificado y aprobado exitosamente ✅` });
+    res.json({ mensaje: `Incidente #${incId} verificado y aprobado exitosamente ✅` });
 
   } catch (error) {
     console.error("Error en resolverIncidente:", error);
@@ -818,7 +824,7 @@ const resolverIncidente = async (req, res) => {
 // Cerrar / Desestimar incidente (Rechazar con motivo)
 const cerrarIncidente = async (req, res) => {
   const { id } = req.params;
-  const { motivo } = req.body;
+  const motivo = (req.body && req.body.motivo) ? req.body.motivo : null;
   const idAdmin = req.session.idusuario;
 
   if (!idAdmin) {
@@ -826,6 +832,7 @@ const cerrarIncidente = async (req, res) => {
   }
 
   try {
+    const incId = parseInt(id);
     const result = await pool.query(`
       UPDATE incidente
       SET id_estado = 6, -- 6 = Cerrado sin resolver / Desestimado
@@ -834,15 +841,16 @@ const cerrarIncidente = async (req, res) => {
           comentarios_adicionales = COALESCE($2, comentarios_adicionales)
       WHERE idincidente = $3
       RETURNING idincidente, id_estado;
-    `, [idAdmin, motivo ? `[DESESTIMADO]: ${motivo}` : null, id]);
+    `, [idAdmin, motivo ? `[DESESTIMADO]: ${motivo}` : null, incId]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ mensaje: "Incidente no encontrado" });
     }
 
-    await registrarLogActividad(idAdmin, 'DESESTIMAR_INCIDENTE', 'incidente', id, `Desestimó/cerró el incidente #${id}`, req);
+    // Registrar log en segundo plano
+    registrarLogActividad(idAdmin, 'DESESTIMAR_INCIDENTE', 'incidente', incId, `Desestimó/cerró el incidente #${incId}`, req).catch(err => console.error("Error en log:", err.message));
 
-    res.json({ mensaje: `Incidente #${id} desestimado / cerrado exitosamente ❌` });
+    res.json({ mensaje: `Incidente #${incId} desestimado / cerrado exitosamente ❌` });
 
   } catch (error) {
     console.error("Error en cerrarIncidente:", error);

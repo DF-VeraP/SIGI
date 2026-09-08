@@ -1276,75 +1276,123 @@ window.abrirVisorFoto = abrirVisorFoto;
 window.cerrarVisorFoto = cerrarVisorFoto;
 
 // Funciones de Acción para Cola Compartida
-async function tomarIncidente(id) {
+async function tomarIncidente(id, btnElement = null) {
+    if (btnElement) {
+        btnElement.disabled = true;
+        btnElement.dataset.originalHtml = btnElement.innerHTML;
+        btnElement.innerHTML = '<i class="bi bi-arrow-repeat spin-icon"></i> Tomando...';
+    }
     try {
         const response = await fetch(`/api/incidentes/${id}/tomar`, { method: 'POST' });
         const resData = await response.json();
         if (response.ok) {
             mostrarMensajeFlotante(resData.mensaje || "Has tomado la revisión del incidente ✅");
-            filtrar();
+            await cargarTabla(true);
         } else {
             mostrarMensajeFlotante(resData.mensaje || "No se pudo tomar el incidente ⚠️", true);
-            filtrar();
+            await cargarTabla(true);
         }
     } catch (err) {
         console.error("Error al tomar incidente:", err);
         mostrarMensajeFlotante("Error de conexión al tomar el incidente", true);
+    } finally {
+        if (btnElement && btnElement.dataset.originalHtml) {
+            btnElement.disabled = false;
+            btnElement.innerHTML = btnElement.dataset.originalHtml;
+        }
     }
 }
 
-async function liberarIncidente(id) {
+async function liberarIncidente(id, btnElement = null) {
+    if (btnElement) {
+        btnElement.disabled = true;
+        btnElement.dataset.originalHtml = btnElement.innerHTML;
+        btnElement.innerHTML = '<i class="bi bi-arrow-repeat spin-icon"></i> Liberando...';
+    }
     try {
         const response = await fetch(`/api/incidentes/${id}/liberar`, { method: 'POST' });
         const resData = await response.json();
         if (response.ok) {
             mostrarMensajeFlotante(resData.mensaje || "Incidente devuelto a la cola pública ↩️");
-            filtrar();
+            await cargarTabla(true);
         } else {
             mostrarMensajeFlotante(resData.mensaje || "Error al liberar ⚠️", true);
+            await cargarTabla(true);
         }
     } catch (err) {
         console.error("Error al liberar incidente:", err);
         mostrarMensajeFlotante("Error de conexión al liberar el incidente", true);
+    } finally {
+        if (btnElement && btnElement.dataset.originalHtml) {
+            btnElement.disabled = false;
+            btnElement.innerHTML = btnElement.dataset.originalHtml;
+        }
     }
 }
 
-async function resolverIncidente(id) {
+async function resolverIncidente(id, btnElement = null) {
+    if (btnElement) {
+        btnElement.disabled = true;
+        btnElement.dataset.originalHtml = btnElement.innerHTML;
+        btnElement.innerHTML = '<i class="bi bi-arrow-repeat spin-icon"></i> Aprobando...';
+    }
     try {
-        const response = await fetch(`/api/incidentes/${id}/resolver`, { method: 'POST' });
+        const response = await fetch(`/api/incidentes/${id}/resolver`, { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ notas: 'Aprobado desde mesa de validación' })
+        });
         const resData = await response.json();
         if (response.ok) {
             mostrarMensajeFlotante(resData.mensaje || "Incidente verificado y aprobado ✅");
-            filtrar();
+            await cargarTabla(true);
         } else {
             mostrarMensajeFlotante(resData.mensaje || "Error al aprobar ⚠️", true);
+            await cargarTabla(true);
         }
     } catch (err) {
         console.error("Error al resolver incidente:", err);
         mostrarMensajeFlotante("Error de conexión al aprobar el incidente", true);
+    } finally {
+        if (btnElement && btnElement.dataset.originalHtml) {
+            btnElement.disabled = false;
+            btnElement.innerHTML = btnElement.dataset.originalHtml;
+        }
     }
 }
 
-async function cerrarIncidente(id) {
+async function cerrarIncidente(id, btnElement = null) {
     const motivo = prompt("Por favor ingresa el motivo por el cual se desestima/cierra este incidente:");
-    if (motivo === null) return;
+    if (motivo === null || motivo.trim() === '') return;
+
+    if (btnElement) {
+        btnElement.disabled = true;
+        btnElement.dataset.originalHtml = btnElement.innerHTML;
+        btnElement.innerHTML = '<i class="bi bi-arrow-repeat spin-icon"></i> Desestimando...';
+    }
 
     try {
         const response = await fetch(`/api/incidentes/${id}/cerrar`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ motivo })
+            body: JSON.stringify({ motivo: motivo.trim() })
         });
         const resData = await response.json();
         if (response.ok) {
             mostrarMensajeFlotante(resData.mensaje || "Incidente desestimado / cerrado ❌");
-            filtrar();
+            await cargarTabla(true);
         } else {
             mostrarMensajeFlotante(resData.mensaje || "Error al desestimar ⚠️", true);
+            await cargarTabla(true);
         }
     } catch (err) {
         console.error("Error al desestimar incidente:", err);
         mostrarMensajeFlotante("Error de conexión al desestimar el incidente", true);
+    } finally {
+        if (btnElement && btnElement.dataset.originalHtml) {
+            btnElement.disabled = false;
+            btnElement.innerHTML = btnElement.dataset.originalHtml;
+        }
     }
 }
 
@@ -1361,13 +1409,13 @@ if (tabla) {
         } else if (btn.classList.contains("btnEditar")) {
             editarIncidente(id);
         } else if (btn.classList.contains("btnTomarIncidente")) {
-            tomarIncidente(id);
+            tomarIncidente(id, btn);
         } else if (btn.classList.contains("btnLiberarIncidente")) {
-            liberarIncidente(id);
+            liberarIncidente(id, btn);
         } else if (btn.classList.contains("btnResolverIncidente")) {
-            resolverIncidente(id);
+            resolverIncidente(id, btn);
         } else if (btn.classList.contains("btnCerrarIncidente")) {
-            cerrarIncidente(id);
+            cerrarIncidente(id, btn);
         }
     });
 }
