@@ -4010,21 +4010,44 @@ main.filtros-abiertos .fab-tiempo {
     }
 
     body {
-        padding-top: var(--mobile-header-h);
-        padding-bottom: var(--mobile-bottom-bar-h);
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+        width: 100vw !important;
+        height: 100vh !important;
     }
 
     .layout-wrapper {
-        height: calc(100vh - var(--mobile-header-h) - var(--mobile-bottom-bar-h)) !important;
-        margin-top: var(--mobile-header-h) !important;
+        position: fixed !important;
+        top: calc(var(--mobile-header-h) + 6px) !important;
+        bottom: var(--mobile-bottom-bar-h) !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: auto !important;
+        max-height: calc(100vh - var(--mobile-header-h) - var(--mobile-bottom-bar-h) - 6px) !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
     }
 
     .content-wrapper {
         height: 100% !important;
+        max-height: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        position: relative !important;
+        flex: 1 1 auto !important;
     }
 
-    /* Ocultar elementos exclusivos de escritorio en teléfonos */
-    .desktop-only {
+    /* Ocultar elementos exclusivos de escritorio en teléfonos y footer */
+    .desktop-only, .sigi-footer {
         display: none !important;
     }
 
@@ -4032,13 +4055,353 @@ main.filtros-abiertos .fab-tiempo {
         display: flex !important;
     }
 
-    /* Posicionar herramientas de mapa por encima de la barra inferior */
+    /* VISTA MAPA CON PADDING Y BORDES REDONDEADOS VISIBLES */
+    #vistaMapa {
+        margin: 0 !important;
+        padding: 4px 10px 10px 10px !important;
+        box-sizing: border-box !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        width: 100% !important;
+        display: none;
+        flex-direction: column !important;
+        position: relative !important;
+        overflow: hidden !important;
+        flex: 1 1 0% !important;
+        gap: 8px !important;
+    }
+
+    #vistaMapa.vista-activa {
+        display: flex !important;
+    }
+
+    .map-wrapper {
+        flex: 1 1 0% !important;
+        height: 100% !important;
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        position: relative !important;
+        overflow: hidden !important;
+        border-radius: 18px !important;
+        border: 1px solid rgba(56, 189, 248, 0.25) !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45) !important;
+    }
+
+    /* El contenedor de los KPIs se ubica entre el header y el mapa, con botón de cierre X */
+    .kpi-ribbon {
+        position: relative !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        flex: 0 0 auto !important;
+        z-index: 1000 !important;
+        background: rgba(13, 20, 36, 0.96) !important;
+        backdrop-filter: blur(14px) !important;
+        -webkit-backdrop-filter: blur(14px) !important;
+        border-bottom: 1px solid rgba(56, 189, 248, 0.18) !important;
+        padding: 6px 8px !important;
+        margin: 0 !important;
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 6px !important;
+        pointer-events: auto !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
+        border-radius: 17px 17px 0 0 !important;
+        transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, transform 0.35s ease !important;
+        max-height: 120px !important;
+        overflow: hidden !important;
+    }
+
+    .kpi-ribbon.kpi-oculto {
+        max-height: 0 !important;
+        opacity: 0 !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        border-bottom: none !important;
+        pointer-events: none !important;
+        transform: translateY(-16px) !important;
+    }
+
+    .kpi-cards-scroll {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        justify-content: flex-start !important;
+        gap: 8px !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        flex: 1 !important;
+        min-width: 0 !important;
+        scrollbar-width: none !important;
+    }
+    .kpi-cards-scroll::-webkit-scrollbar { display: none !important; }
+
+    .kpi-card {
+        flex: 0 0 auto !important;
+        min-width: 125px !important;
+        max-width: 155px !important;
+        padding: 5px 9px !important;
+        border-radius: 10px !important;
+        gap: 8px !important;
+        background: rgba(22, 32, 54, 0.85) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+
+    .kpi-label {
+        font-size: 0.58rem !important;
+    }
+
+    .kpi-valor {
+        font-size: 0.90rem !important;
+    }
+
+    .btn-cerrar-kpis {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.14) !important;
+        color: var(--texto-suave, #94a3b8) !important;
+        width: 26px !important;
+        height: 26px !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 0.70rem !important;
+        cursor: pointer !important;
+        flex-shrink: 0 !important;
+        transition: all 0.2s ease !important;
+        margin-left: 4px !important;
+    }
+
+    .btn-cerrar-kpis:hover, .btn-cerrar-kpis:active {
+        background: rgba(239, 68, 68, 0.3) !important;
+        border-color: #ef4444 !important;
+        color: #ffffff !important;
+        transform: scale(1.08) !important;
+    }
+
+    .btn-abrir-kpis {
+        position: absolute !important;
+        top: 10px !important;
+        left: 10px !important;
+        z-index: 1010 !important;
+        background: rgba(13, 20, 36, 0.9) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        border: 1px solid rgba(56, 189, 248, 0.4) !important;
+        color: #38bdf8 !important;
+        padding: 5px 12px !important;
+        border-radius: 20px !important;
+        font-size: 0.72rem !important;
+        font-weight: 700 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        cursor: pointer !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45), 0 0 12px rgba(56, 189, 248, 0.2) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        animation: fadeInDown 0.3s ease !important;
+    }
+
+    .btn-abrir-kpis:hover, .btn-abrir-kpis:active {
+        background: rgba(56, 189, 248, 0.2) !important;
+        border-color: #38bdf8 !important;
+        color: #ffffff !important;
+        transform: translateY(-2px) !important;
+    }
+
+    #map {
+        flex: 1 1 0% !important;
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        position: relative !important;
+        border-radius: 0 0 17px 17px !important;
+        overflow: hidden !important;
+    }
+
+    #map .leaflet-container {
+        border-radius: 0 0 17px 17px !important;
+        overflow: hidden !important;
+    }
+
+    .kpi-ribbon.kpi-oculto ~ #map,
+    .kpi-ribbon.kpi-oculto ~ #map .leaflet-container {
+        border-radius: 17px !important;
+    }
+
+    /* Posicionar herramientas de mapa y leyenda justo sobre el borde inferior */
     .gis-tools-group, .map-actions-group {
-        bottom: calc(var(--mobile-bottom-bar-h) + 12px) !important;
+        bottom: 12px !important;
+        z-index: 1050 !important;
     }
 
     .leyenda {
-        bottom: calc(var(--mobile-bottom-bar-h) + 10px) !important;
+        bottom: 10px !important;
+        z-index: 1040 !important;
+    }
+
+    #indicador-actualizacion {
+        bottom: 10px !important;
+    }
+
+    /* SCROLL HABILITADO EN CONTENEDOR DE INCIDENTES */
+    #vistaTabla {
+        padding: 0 !important;
+        margin: 0 !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        width: 100% !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        display: none;
+        flex-direction: column !important;
+        background: var(--bg-dark);
+        flex: 1 1 0% !important;
+    }
+
+    #vistaTabla.vista-activa {
+        display: flex !important;
+    }
+
+    .mobile-incident-container {
+        padding: 12px 12px 28px 12px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-y: visible !important;
+        height: auto !important;
+        flex: 1 0 auto !important;
+    }
+
+    /* VISTA DE ANALÍTICA COMPACTA Y SIN FOOTER INTERFIRIENDO */
+    #estadisticas {
+        position: relative !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        width: 100% !important;
+        padding: 12px 12px 28px 12px !important;
+        gap: 12px !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        box-sizing: border-box !important;
+        display: none;
+        flex-direction: column !important;
+        flex: 1 1 0% !important;
+    }
+
+    #estadisticas.vista-activa {
+        display: flex !important;
+    }
+
+    .analitica-header {
+        padding: 10px 12px !important;
+        margin-bottom: 8px !important;
+        border-radius: 12px !important;
+        gap: 8px !important;
+    }
+
+    .analitica-titulo h2 {
+        font-size: 1.05rem !important;
+    }
+
+    .analitica-titulo p {
+        font-size: 0.74rem !important;
+    }
+
+    .analitica-badge {
+        padding: 4px 10px !important;
+        font-size: 0.72rem !important;
+    }
+
+    /* Agrupación compacta de cards en 2 columnas */
+    .resumen {
+        overflow: visible !important;
+    }
+
+    .contResumen {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+        padding: 0 !important;
+        margin-bottom: 10px !important;
+    }
+
+    .cardResumen {
+        padding: 8px 10px !important;
+        gap: 8px !important;
+        border-radius: 10px !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .cardResumen.totalResumen {
+        grid-column: span 2 !important;
+        background: linear-gradient(135deg, rgba(0, 210, 255, 0.12) 0%, rgba(31, 111, 235, 0.18) 100%) !important;
+        border-color: rgba(0, 210, 255, 0.28) !important;
+    }
+
+    .cardResumen .card-icon {
+        width: 28px !important;
+        height: 28px !important;
+        border-radius: 7px !important;
+        font-size: 0.9rem !important;
+    }
+
+    .cardResumen .card-content {
+        min-width: 0 !important;
+        overflow: hidden !important;
+    }
+
+    .cardResumen .card-content span {
+        font-size: 0.62rem !important;
+        letter-spacing: 0.02em !important;
+        margin-bottom: 2px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .cardResumen .card-content h2 {
+        font-size: 1.1rem !important;
+        line-height: 1.1 !important;
+        margin: 0 !important;
+    }
+
+    .cardResumen.topBarrio .card-content h2,
+    .cardResumen.topVereda .card-content h2 {
+        font-size: 0.8rem !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .estadisticas-grid {
+        gap: 12px !important;
+    }
+
+    .grafico-scroll {
+        border-radius: 12px !important;
+        padding: 10px !important;
+    }
+
+    .panel-grafico {
+        padding: 8px !important;
+    }
+
+    .vista-inicio {
+        padding: 14px 14px 28px 14px !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        height: 100% !important;
     }
 }
 

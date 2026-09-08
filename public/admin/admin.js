@@ -1284,17 +1284,10 @@ async function tomarIncidente(id, btnElement = null) {
     }
     try {
         const response = await fetch(`/api/incidentes/${id}/tomar`, { method: 'POST' });
-        const resData = await response.json();
-        if (response.ok) {
-            mostrarMensajeFlotante(resData.mensaje || "Has tomado la revisión del incidente ✅");
-            await cargarTabla(true);
-        } else {
-            mostrarMensajeFlotante(resData.mensaje || "No se pudo tomar el incidente ⚠️", true);
-            await cargarTabla(true);
-        }
+        await response.json();
+        await cargarTabla(true);
     } catch (err) {
         console.error("Error al tomar incidente:", err);
-        mostrarMensajeFlotante("Error de conexión al tomar el incidente", true);
     } finally {
         if (btnElement && btnElement.dataset.originalHtml) {
             btnElement.disabled = false;
@@ -1311,17 +1304,10 @@ async function liberarIncidente(id, btnElement = null) {
     }
     try {
         const response = await fetch(`/api/incidentes/${id}/liberar`, { method: 'POST' });
-        const resData = await response.json();
-        if (response.ok) {
-            mostrarMensajeFlotante(resData.mensaje || "Incidente devuelto a la cola pública ↩️");
-            await cargarTabla(true);
-        } else {
-            mostrarMensajeFlotante(resData.mensaje || "Error al liberar ⚠️", true);
-            await cargarTabla(true);
-        }
+        await response.json();
+        await cargarTabla(true);
     } catch (err) {
         console.error("Error al liberar incidente:", err);
-        mostrarMensajeFlotante("Error de conexión al liberar el incidente", true);
     } finally {
         if (btnElement && btnElement.dataset.originalHtml) {
             btnElement.disabled = false;
@@ -1342,17 +1328,10 @@ async function resolverIncidente(id, btnElement = null) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ notas: 'Aprobado desde mesa de validación' })
         });
-        const resData = await response.json();
-        if (response.ok) {
-            mostrarMensajeFlotante(resData.mensaje || "Incidente verificado y aprobado ✅");
-            await cargarTabla(true);
-        } else {
-            mostrarMensajeFlotante(resData.mensaje || "Error al aprobar ⚠️", true);
-            await cargarTabla(true);
-        }
+        await response.json();
+        await cargarTabla(true);
     } catch (err) {
         console.error("Error al resolver incidente:", err);
-        mostrarMensajeFlotante("Error de conexión al aprobar el incidente", true);
     } finally {
         if (btnElement && btnElement.dataset.originalHtml) {
             btnElement.disabled = false;
@@ -1377,17 +1356,10 @@ async function cerrarIncidente(id, btnElement = null) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ motivo: motivo.trim() })
         });
-        const resData = await response.json();
-        if (response.ok) {
-            mostrarMensajeFlotante(resData.mensaje || "Incidente desestimado / cerrado ❌");
-            await cargarTabla(true);
-        } else {
-            mostrarMensajeFlotante(resData.mensaje || "Error al desestimar ⚠️", true);
-            await cargarTabla(true);
-        }
+        await response.json();
+        await cargarTabla(true);
     } catch (err) {
         console.error("Error al desestimar incidente:", err);
-        mostrarMensajeFlotante("Error de conexión al desestimar el incidente", true);
     } finally {
         if (btnElement && btnElement.dataset.originalHtml) {
             btnElement.disabled = false;
@@ -1483,11 +1455,10 @@ btnConfirmarEliminar.addEventListener("click", async () => {
             method: "DELETE"
         });
         if (res.ok) {
-            mostrarToast("Incidente eliminado correctamente", "exito");
             filtrar();
             contar();
         } else {
-            mostrarToast("Error al eliminar el incidente", "error");
+            console.error("Error al eliminar el incidente");
         }
     } catch (error) {
         console.error("Error eliminando:", error);
@@ -1540,11 +1511,10 @@ document.getElementById("btnGuardar").addEventListener("click", async () => {
         });
 
         if (res.ok) {
-            mostrarToast("Actualizado correctamente", "exito");
             cerrarModal();
             filtrar(); // refresca tabla
         } else {
-            mostrarToast("Error al actualizar", "error");
+            console.error("Error al actualizar incidente");
         }
 
     } catch (error) {

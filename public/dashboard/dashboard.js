@@ -2303,4 +2303,33 @@ document.addEventListener("DOMContentLoaded", () => {
             renderizarFeedIncidentesMobile(filtrados);
         });
     }
+
+    // Toggle para mostrar/esconder el contenedor de métricas de incidentes sobre el mapa
+    const btnCerrarKpis = document.getElementById("btnCerrarKpis");
+    const btnAbrirKpis = document.getElementById("btnAbrirKpis");
+    const ribbonKpis = document.getElementById("kpiRibbon");
+
+    if (btnCerrarKpis && ribbonKpis && btnAbrirKpis) {
+        btnCerrarKpis.addEventListener("click", (e) => {
+            e.stopPropagation();
+            ribbonKpis.classList.add("kpi-oculto");
+            btnAbrirKpis.style.display = "inline-flex";
+            setTimeout(() => {
+                if (typeof map !== "undefined" && map) {
+                    map.invalidateSize();
+                }
+            }, 300);
+        });
+
+        btnAbrirKpis.addEventListener("click", (e) => {
+            e.stopPropagation();
+            btnAbrirKpis.style.display = "none";
+            ribbonKpis.classList.remove("kpi-oculto");
+            setTimeout(() => {
+                if (typeof map !== "undefined" && map) {
+                    map.invalidateSize();
+                }
+            }, 350);
+        });
+    }
 });
