@@ -58,19 +58,31 @@ function cambiarVista(vistaId) {
     panelEst.classList.add("esconder");
     panelEst.classList.remove("vista-activa");
 
-    // Reubicación dinámica de la barra de filtros
+    // Reubicación dinámica de la barra de filtros y acciones
     const actionsGroup = document.querySelector(".map-actions-group");
     const contenedorTabla = document.getElementById("contenedorAccionesTabla");
     const btnExportarCsv = document.getElementById("btnExportarCsv");
+    const mapEl = document.getElementById("map");
+    const btnMiUbicacion = document.getElementById("btnMiUbicacion");
+    const btnToggleHeatmap = document.getElementById("btnToggleHeatmap");
 
     if (actionsGroup) {
-        if (vistaId === "tabla" && contenedorTabla && btnExportarCsv) {
-            contenedorTabla.insertBefore(actionsGroup, btnExportarCsv);
-        } else {
-            const gisTools = document.querySelector(".gis-tools-group");
-            if (gisTools && gisTools.parentElement) {
-                gisTools.parentElement.insertBefore(actionsGroup, gisTools);
+        if (vistaId === "tabla" && contenedorTabla) {
+            if (btnExportarCsv && btnExportarCsv.parentElement === contenedorTabla) {
+                contenedorTabla.insertBefore(actionsGroup, btnExportarCsv);
+            } else {
+                contenedorTabla.appendChild(actionsGroup);
             }
+            actionsGroup.classList.add("en-tabla");
+            if (btnMiUbicacion) btnMiUbicacion.style.display = "none";
+            if (btnToggleHeatmap) btnToggleHeatmap.style.display = "none";
+        } else {
+            if (mapEl && mapEl.parentElement) {
+                mapEl.parentElement.insertBefore(actionsGroup, mapEl);
+            }
+            actionsGroup.classList.remove("en-tabla");
+            if (btnMiUbicacion) btnMiUbicacion.style.display = "";
+            if (btnToggleHeatmap) btnToggleHeatmap.style.display = "";
         }
     }
 

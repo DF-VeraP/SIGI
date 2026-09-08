@@ -2242,6 +2242,14 @@ main.filtros-abiertos .fab-tiempo {
         align-items: center !important;
         gap: 10px !important;
     }
+
+    /* Ocultar botones geográficos del mapa al reutilizar los filtros en incidentes/tabla */
+    .tabla-acciones .map-actions-group #btnMiUbicacion,
+    .tabla-acciones .map-actions-group #btnToggleHeatmap,
+    .map-actions-group.en-tabla #btnMiUbicacion,
+    .map-actions-group.en-tabla #btnToggleHeatmap {
+        display: none !important;
+    }
     
     /* Grupo de Herramientas GIS (Separado a la derecha) */
     .gis-tools-group {
