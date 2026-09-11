@@ -1,0 +1,530 @@
+Falta
+
+Control de acceso:
+    Por el momento solo se puede acceder por usuario y contraseñas pero surge un inconveniente
+    Que pasa si el usuario olvida la contraseña?
+    Tenemos un campo en la tabla usuarios(Creo yo que es en esa tabla) que es de correo verdad, entonces 
+    considero que lo mas logico seria que el usuario envie un correo y nosotros le enviemos un 
+    enlace para que pueda restablecer la contraseña
+
+Control de registro:
+    Cuando el superadmin registra a un usuario este al registrar su correo, 
+    no le llega correo de notificacion ni nada por el estilo.
+    Cuando el usuario ingresa por primera vez no se le solicita cambiar la contraseña, 
+    entonces el usuario puede seguir usando esa contraseña durante el tiempo que desee.
+    No se debe repetir el correo de un usuario.
+
+Tiempo limite de sesion activa:
+    Por el momento no se ha establecido un tiempo limite de sesion activa, lo que 
+    significa que el usuario puede permanecer conectado durante el tiempo que desee.
+    Lo ideal seria que el usuario permanezca conectado durante el tiempo que desee, pero
+    no mas de un cierto tiempo (ej: 40 minutos) sin hacer nada
+    Si pasa mucho tiempo sin actividad, que se cierre la sesion automaticamente
+
+Ventana emergente de "Nuevo usuario"
+    Cuando registramos o el superadmin registra un nuevo usuario
+    el campo de estado aparecen 3 opciones, considero que la opcion
+    de "bloqueado" no debe estar ahi porque no podemos registrar a alguien 
+    e inmediamente bloquearlo de una, para eso esta la opcion en la tabla.
+    Entonces por el momento solo quita esa opcion de bloqueado y solo deja las otras 2
+    opciones, "Activo" o "Inactivo".
+
+Seccion 2 Seguridad [
+
+     INSTRUCCIONES DE SEGURIDAD CRÍTICAS PARA EL SISTEMA DE LOGIN
+1. GESTIÓN DE CONTRASEÑAS - PELIGROS OCULTOS
+CUIDADO CON:
+
+Almacenar contraseñas en texto plano bajo cualquier circunstancia
+
+Usar algoritmos de hash obsoletos como MD5, SHA1 o SHA256 sin sal
+
+Salt fijo o inexistente en el hashing de contraseñas
+
+Loggear contraseñas en archivos de registro o consola
+
+Permitir contraseñas débiles sin validación de complejidad
+
+No forzar cambio de contraseña en primeros accesos o después de reseteo
+
+¿POR QUÉ ES PELIGROSO?
+Si tu base de datos es comprometida, los atacantes pueden obtener todas las contraseñas en texto plano o descifrar hashes débiles. Esto no solo compromete tu sistema sino también las cuentas de tus usuarios en otros servicios (por reutilización de contraseñas).
+
+2. MANEJO DE SESIONES - VULNERABILIDADES COMUNES
+CUIDADO CON:
+
+Sesiones sin expiración que duran indefinidamente
+
+Cookies sin flag Secure en entornos de producción (se transmiten por HTTP)
+
+Cookies sin flag HttpOnly (accesibles desde JavaScript, XSS)
+
+Cookies sin flag SameSite (vulnerables a CSRF)
+
+IDs de sesión predecibles o generados débilmente
+
+Almacenar datos sensibles en la sesión (contraseñas, tarjetas de crédito)
+
+No invalidar sesiones al cerrar sesión o cambiar contraseña
+
+No limitar sesiones simultáneas por usuario
+
+¿POR QUÉ ES PELIGROSO?
+Un atacante puede robar la cookie de sesión mediante XSS, sniffing de red (sin HTTPS) o ataques de sesión fija, tomando control completo de la cuenta del usuario sin necesidad de su contraseña.
+
+3. INTENTOS FALLIDOS Y BLOQUEOS - ERRORES FATALES
+CUIDADO CON:
+
+No limitar intentos de login (permite ataques de fuerza bruta)
+
+No implementar retraso progresivo entre intentos fallidos
+
+Bloqueo permanente de cuentas (causa DoS contra usuarios legítimos)
+
+No notificar al usuario sobre intentos fallidos sospechosos
+
+Revelar qué dato es incorrecto (email o contraseña)
+
+¿POR QUÉ ES PELIGROSO?
+Sin limitación, un atacante puede probar millones de combinaciones de contraseñas en minutos usando herramientas automatizadas. Si revelas si el email existe o no, facilitas el descubrimiento de usuarios válidos para ataques dirigidos.
+
+4. REGISTRO DE USUARIOS - VECTORES DE ATAQUE
+CUIDADO CON:
+
+Permitir emails duplicados sin verificación de unicidad
+
+No validar formato de email (inyección de caracteres maliciosos)
+
+No verificar dominio de email (cuentas temporales o spam)
+
+No requerir verificación de email antes de activar cuenta
+
+Permitir nombres de usuario que puedan confundirse visualmente (homoglyphs)
+
+No sanitizar campos de entrada antes de insertar en BD
+
+¿POR QUÉ ES PELIGROSO?
+Los atacantes pueden crear cuentas falsas, saturar tu sistema de spam, realizar ataques de inyección SQL a través de campos de registro, o crear cuentas con caracteres visualmente idénticos para hacerse pasar por otros usuarios.
+
+5. RECUPERACIÓN DE CONTRASEÑA - EL PUNTO DÉBIL
+CUIDADO CON:
+
+Enviar contraseñas por email (nunca, bajo ninguna circunstancia)
+
+Tokens de reseteo predecibles (basados en timestamp o email)
+
+Tokens sin expiración o con expiración demasiado larga
+
+No invalidar tokens después de usarlos
+
+Revelar si un email está registrado en el proceso de reseteo
+
+No registrar eventos de reseteo para auditoría
+
+¿POR QUÉ ES PELIGROSO?
+Los tokens débiles pueden ser adivinados, y los ataques de "password reset poisoning" pueden redirigir al usuario a sitios maliciosos. Si revelas qué emails están registrados, permites enumeración de usuarios válidos.
+
+6. LOGS Y AUDITORÍA - EL ENEMIGO OCULTO
+CUIDADO CON:
+
+Almacenar contraseñas en logs (incluso en logs de error)
+
+Almacenar tokens de sesión en logs (pueden ser robados)
+
+No registrar intentos de login (no puedes detectar ataques)
+
+Logs sin rotación (llenan el disco y causan problemas de rendimiento)
+
+Logs accesibles públicamente (en repositorios o directorios web)
+
+¿POR QUÉ ES PELIGROSO?
+Los logs son el primer lugar donde buscan los atacantes después de comprometer tu sistema. Si almacenas contraseñas o tokens de sesión en logs, facilitas el acceso a información crítica que permite moverse lateralmente o escalar privilegios.
+
+7. EXPOSICIÓN DE DATOS EN RESPUESTAS
+CUIDADO CON:
+
+Devolver contraseñas hasheadas en respuestas API
+
+Devolver toda la información del usuario incluyendo campos internos
+
+Incluir detalles internos en errores (stack traces, queries SQL)
+
+Exponer el estado de intentos fallidos en mensajes de error
+
+No sanitizar mensajes de error según el entorno
+
+¿POR QUÉ ES PELIGROSO?
+Los detalles técnicos en respuestas dan pistas a los atacantes sobre la estructura de tu sistema, tecnología usada y posibles vulnerabilidades. Las contraseñas hasheadas, aunque no sean directamente utilizables, pueden ser crackeadas offline con suficiente tiempo.
+
+8. CONFIGURACIÓN DE CABECERAS HTTP
+CUIDADO CON:
+
+No forzar HTTPS mediante HSTS
+
+Permitir navegación en iframes (clickjacking)
+
+No configurar Content-Security-Policy
+
+Exponer información del servidor en headers
+
+No configurar X-Frame-Options, X-XSS-Protection, X-Content-Type-Options
+
+¿POR QUÉ ES PELIGROSO?
+La falta de cabeceras de seguridad adecuadas permite ataques como clickjacking (robo de sesiones mediante iframes), inyección de scripts maliciosos, MIME type sniffing, y expone tu tecnología a posibles atacantes que busquen vulnerabilidades específicas.
+
+9. PROTECCIÓN CONTRA ATAQUES AUTOMATIZADOS
+CUIDADO CON:
+
+No implementar CAPTCHA en login después de múltiples intentos
+
+No usar honeypots para detectar bots
+
+No analizar patrones de comportamiento (velocidad de escritura, tiempos)
+
+Permitir peticiones desde cualquier IP sin bloqueo
+
+No implementar listas de IPs bloqueadas para usuarios maliciosos conocidos
+
+¿POR QUÉ ES PELIGROSO?
+Los atacantes utilizan bots para probar credenciales a gran velocidad. Sin medidas anti-bot, tu sistema es vulnerable a ataques de fuerza bruta, enumeración de usuarios y ataques de credenciales robadas (credential stuffing).
+
+10. MANTENIMIENTO Y LIMPIEZA
+CUIDADO CON:
+
+No limpiar sesiones expiradas en el servidor
+
+No archivar/limpiar usuarios inactivos por largo tiempo
+
+No tener política de contraseñas que requiera cambios periódicos
+
+No tener política de cierre de sesión por inactividad
+
+No revisar y renovar secretos (SESSION_SECRET, SALT_ROUNDS)
+
+¿POR QUÉ ES PELIGROSO?
+Las sesiones y cuentas abandonadas son puertas traseras para atacantes. Los secretos que nunca se renuevan aumentan el riesgo si han sido comprometidos sin que lo sepas. Una buena limpieza reduce la superficie de ataque.
+
+📋 LISTA DE VERIFICACIÓN DE SEGURIDAD PARA LOGIN
+□ HTTPS forzado en toda la aplicación
+□ Cookies de sesión con flags Secure, HttpOnly, SameSite
+□ Expiración de sesión configurada (máximo 24 horas)
+□ Límite de intentos de login (5 intentos, 15 minutos de bloqueo)
+□ Mensajes de error genéricos ("Credenciales inválidas")
+□ Contraseñas hasheadas con bcrypt (salt rounds = 10-12)
+□ Validación y sanitización de todos los inputs
+□ Tokens de reseteo seguros (expiración, no predecibles)
+□ Logs de auditoría sin datos sensibles
+□ Rate limiting para todas las rutas sensibles
+□ Cabeceras de seguridad HTTP configuradas
+□ No almacenar información sensible en sesión
+□ Invalidación de sesiones al cerrar sesión
+□ Verificación de email antes de activar cuenta
+□ Monitoreo de intentos de login sospechosos
+🚨 ESCENARIOS DE ATAQUE COMUNES A PREVENIR
+Ataque de fuerza bruta: Usar rate limiting + CAPTCHA + bloqueo por IP
+
+Credential stuffing: Único email + contraseñas comunes, usar comprobación de leaks de contraseñas
+
+Session hijacking: HTTPS + HttpOnly + regenerar sessionId en login
+
+Session fixation: Regenerar ID de sesión después de login exitoso
+
+SQL injection: Usar queries parametrizadas (NUNCA concatenar strings)
+
+XSS: Sanitizar outputs, Content-Security-Policy
+
+CSRF: Tokens CSRF en formularios, SameSite cookies
+
+Man-in-the-middle: HSTS, HTTPS, no HTTP en producción
+
+Phishing: No enviar enlaces de login por email sin autenticación
+
+Brute force con listas de usuarios: No revelar si usuario existe
+
+🔑 RECOMENDACIONES FINALES
+NUNCA CONFÍES EN NADA DEL CLIENTE
+
+Todo dato enviado desde el frontend debe ser validado en el servidor
+
+Las sesiones son la única forma confiable de identificar usuarios
+
+Las cookies pueden ser manipuladas o robadas
+
+MANTÉN UN MONITOREO CONSTANTE
+
+Logea TODOS los intentos de login (exitosos y fallidos)
+
+Configura alertas para patrones sospechosos
+
+Revisa regularmente logs de accesos y errores
+
+MANTÉN TODO ACTUALIZADO
+
+Dependencias de seguridad actualizadas periódicamente
+
+Revisa y rota secretos regularmente
+
+Actualiza políticas de seguridad según nuevas amenazas
+
+APLICA EL PRINCIPIO DE MÍNIMO PRIVILEGIO
+
+Los usuarios solo deben tener acceso a lo que necesitan
+
+Las sesiones deben tener el menor tiempo de vida posible
+
+La información expuesta debe ser la mínima necesaria
+]
+
+Seccion 3 [
+    :~/proyectos/SIGI$ docker exec -i sigi_db psql -U postgres -d sigi_db < backup_sigi.sql
+SET
+invalid command \restrict
+SET
+SET
+ERROR:  unrecognized configuration parameter "transaction_timeout"
+SET
+SET
+ set_config
+------------
+
+(1 row)
+
+SET
+SET
+SET
+SET
+CREATE EXTENSION
+COMMENT
+CREATE EXTENSION
+COMMENT
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+SET
+SET
+CREATE TABLE
+CREATE SEQUENCE
+ALTER SEQUENCE
+CREATE TABLE
+CREATE SEQUENCE
+ALTER SEQUENCE
+CREATE TABLE
+CREATE SEQUENCE
+ALTER SEQUENCE
+CREATE TABLE
+CREATE SEQUENCE
+ALTER SEQUENCE
+CREATE TABLE
+CREATE SEQUENCE
+ALTER SEQUENCE
+CREATE TABLE
+CREATE SEQUENCE
+ALTER SEQUENCE
+CREATE TABLE
+CREATE SEQUENCE
+ALTER SEQUENCE
+CREATE TABLE
+CREATE SEQUENCE
+ALTER SEQUENCE
+CREATE TABLE
+CREATE TABLE
+CREATE SEQUENCE
+ALTER SEQUENCE
+CREATE SEQUENCE
+ALTER SEQUENCE
+CREATE TABLE
+CREATE SEQUENCE
+ALTER SEQUENCE
+CREATE TABLE
+CREATE SEQUENCE
+ALTER SEQUENCE
+CREATE TABLE
+CREATE SEQUENCE
+ALTER SEQUENCE
+CREATE SEQUENCE
+CREATE TABLE
+CREATE SEQUENCE
+ALTER SEQUENCE
+CREATE TABLE
+CREATE SEQUENCE
+ALTER SEQUENCE
+CREATE TABLE
+CREATE SEQUENCE
+ALTER SEQUENCE
+CREATE TABLE
+CREATE SEQUENCE
+ALTER SEQUENCE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+COPY 0
+COPY 40
+COPY 5
+COPY 8
+COPY 6
+COPY 4
+COPY 5
+COPY 621
+COPY 0
+COPY 178
+COPY 5
+COPY 22
+COPY 0
+COPY 0
+COPY 4
+COPY 0
+COPY 8
+COPY 154
+ setval
+--------
+    168
+(1 row)
+
+ setval
+--------
+      1
+(1 row)
+
+ setval
+--------
+     40
+(1 row)
+
+ setval
+--------
+      5
+(1 row)
+
+ setval
+--------
+      8
+(1 row)
+
+ setval
+--------
+      6
+(1 row)
+
+ setval
+--------
+      4
+(1 row)
+
+ setval
+--------
+      5
+(1 row)
+
+ setval
+--------
+      1
+(1 row)
+
+ setval
+--------
+    685
+(1 row)
+
+ setval
+--------
+    179
+(1 row)
+
+ setval
+--------
+      5
+(1 row)
+
+ setval
+--------
+     24
+(1 row)
+
+ setval
+--------
+    685
+(1 row)
+
+ setval
+--------
+      1
+(1 row)
+
+ setval
+--------
+      4
+(1 row)
+
+ setval
+--------
+      1
+(1 row)
+
+ setval
+--------
+     21
+(1 row)
+
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TRIGGER
+CREATE TRIGGER
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+invalid command \unrestrict
+ALTER TABLE
+]

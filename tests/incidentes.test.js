@@ -65,6 +65,37 @@ describe('Incidentes Controller', () => {
       expect(res.body.mensaje).toBe('Incidente registrado exitosamente ✅');
     });
 
+    it('debería retornar 400 si falta el campo obligatorio descripcion o está vacío', async () => {
+      // Caso 1: Omitiendo descripcion
+      const resSinDesc = await request(app)
+        .post('/registrarIncidente')
+        .send({
+          tipo: 1,
+          fecha: '2026-08-01',
+          hora: '14:30',
+          lat: 2.4419,
+          lng: -76.6063
+        });
+
+      expect(resSinDesc.status).toBe(400);
+      expect(resSinDesc.body.mensaje).toContain('Faltan campos obligatorios');
+
+      // Caso 2: Descripcion como string vacío
+      const resDescVacia = await request(app)
+        .post('/registrarIncidente')
+        .send({
+          tipo: 1,
+          fecha: '2026-08-01',
+          hora: '14:30',
+          lat: 2.4419,
+          lng: -76.6063,
+          descripcion: ''
+        });
+
+      expect(resDescVacia.status).toBe(400);
+      expect(resDescVacia.body.mensaje).toContain('Faltan campos obligatorios');
+    });
+
     it('debería retornar 500 si la BD falla al registrar', async () => {
       pool.query.mockRejectedValue(new Error('DB Error'));
 

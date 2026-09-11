@@ -1,0 +1,528 @@
+================================================================================
+  SIGI — ANÁLISIS COMPLETO DE ARQUITECTURA, STACK Y TECNOLOGÍAS
+  Sistema de Información Geográfica de Incidentes
+  Fecha de análisis: Septiembre 2026
+================================================================================
+
+
+1. TIPO DE ARQUITECTURA DE CARPETAS
+================================================================================
+
+El proyecto SIGI sigue una arquitectura de tipo:
+
+    "Monolito MVC con Servido de Archivos Estáticos"
+
+Es decir, un servidor monolítico en Node.js/Express que:
+  - Expone una API REST (el backend)
+  - Sirve los archivos estáticos del frontend directamente desde la carpeta public/
+
+No hay un framework frontend como React, Angular o Vue.
+No hay un proceso de build/compilación del frontend (no hay webpack, vite, etc.).
+El frontend son archivos HTML, CSS y JS planos servidos directamente por Express.
+
+Dentro de ese monolito, la capa backend sí sigue el patrón MVC clásico:
+  - Model:      Las queries SQL directas al pool de PostgreSQL (no hay ORM)
+  - View:       Los archivos estáticos en public/ (HTML + CSS + JS vanilla)
+  - Controller: La carpeta controllers/ con la lógica de negocio
+
+La variante específica es "MVC sin capa de modelo explícita", porque
+no existe una carpeta models/ con archivos dedicados. Las consultas SQL
+están embebidas directamente dentro de los controladores.
+
+
+ESTRUCTURA ACTUAL DEL PROYECTO:
+--------------------------------------------------------------------------------
+
+SIGI/
+|
+|-- server.js                    -> Punto de entrada (Express app)
+|-- db.js                        -> Pool de conexión a PostgreSQL
+|-- package.json                 -> Dependencias y scripts npm
+|-- .env / .env.example          -> Variables de entorno
+|-- Dockerfile                   -> Imagen Docker de la app
+|-- docker-compose.yml           -> Orquestación: app + PostgreSQL/PostGIS
+|-- jest.config.js               -> Configuración de testing
+|-- .gitignore
+|
+|-- config/
+|   |-- db.config.js             -> Configuración de conexión a BD
+|
+|-- controllers/                 -> Lógica de negocio (7 controladores)
+|   |-- auth.controller.js       -> Login, logout, sesión, redirecciones
+|   |-- catalogos.controller.js  -> Tipos de incidente, catálogos
+|   |-- estadisticas.controller.js -> KPIs, conteos, agrupaciones
+|   |-- geografia.controller.js  -> Barrios, veredas, corregimientos, GeoJSON
+|   |-- incidentes.controller.js -> CRUD completo, cola compartida, importación
+|   |-- tablas.controller.js     -> Consultas tabulares con filtros
+|   |-- usuarios.controller.js   -> CRUD de usuarios, roles, estados
+|
+|-- routes/                      -> Definición de rutas (9 archivos)
+|   |-- auth.routes.js
+|   |-- autocompletado.routes.js
+|   |-- catalogos.routes.js
+|   |-- estadisticas.routes.js
+|   |-- filtros.routes.js
+|   |-- geografia.routes.js
+|   |-- incidentes.routes.js
+|   |-- tablas.routes.js
+|   |-- usuarios.routes.js
+|
+|-- middleware/                  -> Middlewares transversales
+|   |-- auth.middleware.js       -> Sesión, RBAC, verificación de estado
+|   |-- error.middleware.js      -> Manejador global de errores
+|
+|-- utils/                       -> Utilidades auxiliares
+|   |-- cloudinary.js            -> Subida de imágenes (Cloudinary + fallback local)
+|   |-- logger.js                -> Registro de actividad en BD (auditoría)
+|
+|-- sql/                         -> Scripts de base de datos
+|   |-- schema.sql               -> Esquema inicial (tablas, índices, FK)
+|   |-- migration_v2.sql         -> Migración con campos nuevos
+|   |-- migrate_passwords.sql    -> Migración de contraseñas a bcrypt
+|
+|-- tests/                       -> Pruebas automatizadas (Jest + Supertest)
+|   |-- auth.test.js
+|   |-- estadisticas.test.js
+|   |-- incidentes.test.js
+|
+|-- public/                      -> Frontend (archivos estáticos)
+|   |-- login/                   -> Página de inicio de sesión
+|   |   |-- index.html
+|   |   |-- login.css
+|   |   |-- login.js
+|   |
+|   |-- dashboard/               -> Dashboard público (mapa interactivo)
+|   |   |-- index.html           -> ~40 KB
+|   |   |-- dashboard.css        -> ~100 KB
+|   |   |-- dashboard.js         -> ~91 KB
+|   |
+|   |-- admin/                   -> Panel de Administración/Superadmin
+|   |   |-- index.html           -> ~68 KB
+|   |   |-- admin.css            -> ~73 KB
+|   |   |-- admin.js             -> ~106 KB
+|   |
+|   |-- reportero/               -> Vista del usuario Reportero
+|   |   |-- index.html
+|   |   |-- reportero.css
+|   |   |-- reportero.js
+|   |
+|   |-- assets/img/              -> Imágenes estáticas (logo, mockups)
+|   |-- uploads/incidentes/      -> Almacenamiento local de fotos (fallback)
+|
+|-- documentacion/               -> Documentación técnica del proyecto
+|   |-- 01_autenticacion_y_usuarios.md
+|   |-- 02_gestion_incidentes_y_cola_compartida.md
+|   |-- 03_geografia_y_mapas_interactivos.md
+|   |-- 04_analitica_y_reportes_kpi.md
+|   |-- 05_evidencia_fotografica_cloudinary.md
+|   |-- flujo_evidencia_cloudinary.md
+|   |-- README.md
+|
+|-- .github/workflows/
+|   |-- ci.yml                   -> Pipeline CI (GitHub Actions)
+|
+|-- coverage/                    -> Reportes de cobertura de tests
+
+
+
+2. STACK TECNOLÓGICO COMPLETO
+================================================================================
+
+A. FRONTEND
+-----------
+  Lenguaje:       HTML5 + CSS3 + JavaScript ES6+ (Vanilla, sin framework)
+  Tipografía:     Google Fonts (Inter)
+  Iconografía:    Bootstrap Icons (CDN)
+  Mapas:          Leaflet.js (CDN) + Leaflet.MarkerCluster (CDN)
+  Peticiones:     Fetch API nativa del navegador (no Axios)
+  Estado:         Variables globales en JS (no hay state management)
+
+B. BACKEND
+----------
+  Runtime:        Node.js (v18+)
+  Framework:      Express.js v5.2.1
+  Tipo de módulo: CommonJS (require/module.exports)
+  Autenticación:  express-session (sesiones en memoria del servidor)
+  Hashing:        bcrypt v6 (encriptación de contraseñas)
+  Upload:         Multer v2.2 (procesamiento de archivos en memoria)
+  Variables:      dotenv v17.4 (lectura de .env)
+  CORS:           cors v2.8
+  CSV:            csv-parser v3.2 (importación masiva de incidentes)
+
+C. BASE DE DATOS
+----------------
+  Motor:          PostgreSQL 15
+  Extensión GIS:  PostGIS 3.4 (datos geoespaciales: puntos, polígonos, GIST)
+  Driver Node:    pg v8.18 (node-postgres)
+  ORM:            Ninguno. Queries SQL crudas con el pool de pg.
+  Imagen Docker:  postgis/postgis:15-3.4-alpine
+
+D. ALMACENAMIENTO DE ARCHIVOS
+------------------------------
+  Primario:       Cloudinary (nube, via API unsigned upload)
+  Fallback:       Sistema de archivos local (public/uploads/incidentes/)
+
+E. INFRAESTRUCTURA / DEVOPS
+-----------------------------
+  Contenedores:   Docker + Docker Compose (app + db)
+  CI/CD:          GitHub Actions (pipeline: checkout -> npm ci -> npm test)
+  Testing:        Jest v30.4 + Supertest v7.2
+  Cobertura:      Jest --coverage (carpeta coverage/)
+
+
+
+3. LISTA COMPLETA DE TECNOLOGÍAS Y LIBRERÍAS
+================================================================================
+
+DEPENDENCIAS DE PRODUCCIÓN (package.json -> dependencies):
+--------------------------------------------------------------------------------
+
+  Tecnología         Versión    Para qué se usa
+  -----------------  ---------  ------------------------------------------------
+  bcrypt             ^6.0.0     Hashear y comparar contraseñas de usuarios
+                                (algoritmo bcrypt con salt rounds)
+
+  cloudinary         ^2.11.0    SDK de Cloudinary para subir evidencia
+                                fotográfica de incidentes a la nube
+
+  cors               ^2.8.6     Middleware de Cross-Origin Resource Sharing
+                                (permite peticiones desde otros orígenes)
+
+  csv-parser         ^3.2.1     Parsear archivos CSV para la importación
+                                masiva de incidentes desde la vista Admin
+
+  dotenv             ^17.4.2    Cargar variables de entorno desde .env
+                                (credenciales de BD, Cloudinary, sesión)
+
+  express            ^5.2.1     Framework HTTP del servidor (ruteo, middleware,
+                                servido de estáticos, API REST)
+
+  express-session    ^1.19.0    Gestión de sesiones con cookies del lado
+                                del servidor (autenticación stateful)
+
+  multer             ^2.2.0     Middleware para procesar multipart/form-data
+                                (subida de archivos e imágenes)
+
+  pg                 ^8.18.0    Driver nativo de PostgreSQL para Node.js
+                                (Pool de conexiones, queries parametrizadas)
+
+
+DEPENDENCIAS DE DESARROLLO (package.json -> devDependencies):
+--------------------------------------------------------------------------------
+
+  Tecnología         Versión    Para qué se usa
+  -----------------  ---------  ------------------------------------------------
+  jest               ^30.4.2    Framework de testing unitario y de integración
+                                (ejecuta los archivos en tests/)
+
+  supertest          ^7.2.2     Librería para hacer peticiones HTTP de prueba
+                                contra la app Express sin levantar servidor
+
+
+CDNs UTILIZADAS EN EL FRONTEND (no están en package.json):
+--------------------------------------------------------------------------------
+
+  Tecnología              Para qué se usa
+  ----------------------  -----------------------------------------------
+  Leaflet.js              Librería de mapas interactivos (renderizado
+                          de incidentes geolocalizados, polígonos de
+                          barrios/veredas, marcadores)
+
+  Leaflet.MarkerCluster   Plugin de Leaflet para agrupar marcadores
+                          cercanos en clusters visuales
+
+  Bootstrap Icons         Librería de iconos SVG (interfaz de usuario)
+
+  Google Fonts (Inter)    Tipografía del sistema de diseño
+
+
+
+4. EVALUACIÓN DE LA ORGANIZACIÓN DEL PROYECTO
+================================================================================
+
+NOTA GENERAL: 7.5 / 10
+
+La organización es BUENA para un proyecto académico/SENA. La separación
+controllers/routes/middleware es correcta y demuestra conocimiento del
+patrón MVC. Sin embargo, hay varios puntos que podrían mejorar.
+
+
+A. LO QUE ESTÁ BIEN HECHO (Fortalezas)
+--------------------------------------------------------------------------------
+
+  [OK] Separación controllers / routes / middleware
+       Existe una clara separación de responsabilidades entre quién
+       define las rutas (routes/), quién ejecuta la lógica (controllers/)
+       y quién intercepta las peticiones (middleware/).
+
+  [OK] Configuración externalizada
+       Las credenciales están en .env con un .env.example como plantilla.
+       La configuración de BD está en config/db.config.js, no hardcodeada.
+
+  [OK] Middleware de autenticación RBAC
+       El sistema de roles (superadmin, admin, reportero) con verificarSesion,
+       verificarRol y verificarEstadoActivo está bien diseñado y es reutilizable.
+
+  [OK] Docker y Docker Compose
+       La app puede levantarse con un solo "docker-compose up". La imagen
+       de PostGIS se monta con volúmenes persistentes y los scripts SQL
+       se ejecutan automáticamente al iniciar el contenedor.
+
+  [OK] Testing automatizado
+       Existen tests con Jest y Supertest, con configuración de cobertura.
+       El CI/CD en GitHub Actions ejecuta los tests automáticamente.
+
+  [OK] Documentación técnica
+       La carpeta documentacion/ tiene guías detalladas por módulo.
+
+  [OK] Sistema de auditoría (logger.js)
+       Cada acción relevante se registra en la tabla logs_actividad con
+       IP, user-agent y descripción. Esto es buena práctica de seguridad.
+
+  [OK] Manejo de evidencia fotográfica con fallback
+       cloudinary.js intenta subir a la nube y si falla (o no hay credenciales)
+       guarda localmente. Buen patrón de resiliencia.
+
+  [OK] Scripts SQL versionados
+       schema.sql + migration_v2.sql + migrate_passwords.sql muestran
+       una evolución ordenada del esquema de base de datos.
+
+  [OK] Patrón de exportación del server
+       server.js exporta module.exports = app y solo levanta el listener
+       si se ejecuta directamente (require.main === module). Esto permite
+       que Supertest pueda importar la app para testing sin levantar puerto.
+
+
+B. LO QUE SE PUEDE MEJORAR (Debilidades)
+--------------------------------------------------------------------------------
+
+  [MEJORAR] No existe carpeta models/
+            Las queries SQL están embebidas directamente en los controladores.
+            Esto mezcla la lógica de negocio con el acceso a datos.
+            Idealmente cada tabla tendría su modelo:
+              models/incidente.model.js
+              models/usuario.model.js
+              models/barrio.model.js
+
+  [MEJORAR] Archivos frontend monolíticos demasiado grandes
+            admin.js tiene ~106 KB (2561 líneas)
+            dashboard.js tiene ~91 KB
+            dashboard.css tiene ~102 KB
+            admin.css tiene ~74 KB
+            Estos archivos son difíciles de mantener. En proyectos más
+            maduros se dividen en módulos o componentes.
+
+  [MEJORAR] No hay carpeta services/
+            La lógica compleja (como la cola compartida de incidentes,
+            la importación CSV, la subida de imágenes) debería estar en
+            una capa de servicios separada de los controladores:
+              services/incidentes.service.js
+              services/auth.service.js
+
+  [MEJORAR] Todas las rutas se montan en '/'
+            En server.js todas las rutas se montan con app.use('/', ...),
+            lo que significa que no hay prefijo API consistente. Algunas
+            rutas usan /api/incidentes y otras /registrarIncidente.
+            Lo ideal sería un prefijo unificado:
+              app.use('/api', require('./routes/incidentes.routes'));
+
+  [MEJORAR] Rutas duplicadas
+            Existen rutas duplicadas para el mismo recurso:
+              router.post('/registrarIncidente', ...) y
+              router.post('/api/incidentes', ...)
+            Esto genera confusión sobre cuál es la correcta.
+
+  [MEJORAR] No hay validación formal de datos de entrada
+            No se usa ninguna librería de validación como Joi, Zod o
+            express-validator. La validación se hace manualmente con
+            if/else en los controladores.
+
+  [MEJORAR] Sesiones en memoria
+            express-session almacena las sesiones en la memoria RAM del
+            servidor (MemoryStore). Esto significa que si el servidor se
+            reinicia, todos los usuarios pierden su sesión. En producción
+            debería usarse connect-pg-simple (PostgreSQL) o connect-redis.
+
+  [MEJORAR] No hay un archivo de constantes / enums
+            Los estados de incidente (1=Reportado, 2=En evaluación, 5=Resuelto,
+            6=Cerrado) están hardcodeados como números mágicos en el JS del
+            frontend y del backend. Debería haber un archivo compartido o
+            al menos un archivo de constantes en el backend.
+
+  [MEJORAR] El frontend no tiene estructura modular
+            Cada vista (login, dashboard, admin, reportero) tiene exactamente
+            3 archivos (HTML + CSS + JS) sin subdivisiones. No hay carpetas
+            como components/, services/ o utils/ en el frontend.
+
+
+C. LO QUE ESTÁ BIEN Y SE PUEDE DEJAR ASÍ
+--------------------------------------------------------------------------------
+
+  [DEJAR] La estructura general controllers/routes/middleware/utils/config
+          Para el alcance del proyecto (SENA) es perfectamente adecuada.
+
+  [DEJAR] No usar ORM (queries SQL directas)
+          Para un proyecto con PostGIS y consultas geoespaciales complejas
+          (ST_AsGeoJSON, ST_SetSRID, ST_MakePoint), usar SQL crudo con
+          el driver pg es la decisión correcta. Un ORM como Sequelize
+          complicaría las queries espaciales sin beneficio real.
+
+  [DEJAR] No usar framework frontend (React, Vue, etc.)
+          Para el alcance del proyecto, HTML + CSS + JS vanilla es
+          totalmente válido. Un framework agregaría complejidad innecesaria.
+
+  [DEJAR] Servir estáticos desde Express
+          En desarrollo y para un proyecto de este tamaño, servir los
+          archivos desde Express con express.static("public") es correcto.
+          Solo se necesitaría un Nginx separado en producción a gran escala.
+
+  [DEJAR] Docker Compose con PostGIS Alpine
+          Excelente decisión. El contenedor de PostGIS es liviano y
+          ejecuta automáticamente los scripts SQL al iniciar.
+
+  [DEJAR] CommonJS (require) en lugar de ESM (import)
+          Express 5 y las dependencias actuales funcionan perfectamente
+          con CommonJS. No hay razón para migrar a ESM ahora.
+
+
+D. MEJORAS PRIORITARIAS (Si se quisiera profesionalizar)
+--------------------------------------------------------------------------------
+
+  Prioridad  Mejora                        Esfuerzo  Impacto
+  ---------  ----------------------------  --------  -------
+  1. ALTA    Crear carpeta models/         Medio     Alto
+             Extraer las queries SQL de
+             los controladores a archivos
+             de modelo dedicados
+
+  2. ALTA    Unificar prefijo de rutas     Bajo      Medio
+             Todo bajo /api/v1/... y
+             eliminar rutas duplicadas
+
+  3. MEDIA   Crear carpeta services/       Medio     Alto
+             Extraer lógica compleja de
+             los controladores
+
+  4. MEDIA   Usar connect-pg-simple        Bajo      Alto
+             Para sesiones persistentes
+             en PostgreSQL
+
+  5. BAJA    Modularizar archivos JS       Alto      Medio
+             del frontend (admin.js,
+             dashboard.js) en módulos
+             más pequeños
+
+  6. BAJA    Agregar validación con        Medio     Medio
+             Joi o express-validator
+             en las rutas de entrada
+
+
+
+5. MAPA VISUAL DE LA ARQUITECTURA
+================================================================================
+
+  +------------------------------------------------------------------+
+  |                        NAVEGADOR (Cliente)                       |
+  |                                                                  |
+  |  +------------+  +-----------+  +--------+  +-----------+       |
+  |  |   Login    |  | Dashboard |  | Admin  |  | Reportero |       |
+  |  | HTML+CSS+JS|  | HTML+CSS+JS| | HTML+CSS+JS| HTML+CSS+JS|    |
+  |  +------+-----+  +-----+-----+  +----+---+  +-----+-----+     |
+  |         |              |              |             |            |
+  |         +------+-------+------+-------+------+------+           |
+  |                |              |              |                   |
+  |           Leaflet.js    Bootstrap Icons   Fetch API              |
+  +------------------------------------------------------------------+
+                                |
+                          HTTP Requests
+                          (JSON / FormData)
+                                |
+  +------------------------------------------------------------------+
+  |                     SERVIDOR (Node.js + Express)                  |
+  |                                                                  |
+  |  server.js (Punto de entrada)                                    |
+  |     |                                                            |
+  |     +-- express.static("public")  -> Sirve el frontend           |
+  |     +-- express.json()            -> Parsea body JSON            |
+  |     +-- express-session           -> Maneja sesiones             |
+  |     |                                                            |
+  |     +-- routes/                                                  |
+  |     |    |-- auth.routes.js       -> /login, /logout, /usuario   |
+  |     |    |-- incidentes.routes.js -> /api/incidentes/*            |
+  |     |    |-- geografia.routes.js  -> /barrios, /veredas           |
+  |     |    |-- estadisticas.routes.js -> /api/estadisticas/*        |
+  |     |    |-- usuarios.routes.js   -> /api/usuarios/*              |
+  |     |    |-- catalogos.routes.js  -> /tipos-incidente             |
+  |     |    +-- (otros)                                              |
+  |     |                                                            |
+  |     +-- middleware/                                               |
+  |     |    |-- auth.middleware.js    -> RBAC (superadmin/admin/rep) |
+  |     |    +-- error.middleware.js   -> Manejador global de errores |
+  |     |                                                            |
+  |     +-- controllers/                                              |
+  |     |    |-- auth.controller.js                                   |
+  |     |    |-- incidentes.controller.js                             |
+  |     |    |-- geografia.controller.js                              |
+  |     |    |-- estadisticas.controller.js                           |
+  |     |    |-- usuarios.controller.js                               |
+  |     |    +-- (otros)                                              |
+  |     |                                                            |
+  |     +-- utils/                                                    |
+  |          |-- cloudinary.js -> Subida de imágenes                  |
+  |          +-- logger.js     -> Auditoría en BD                     |
+  |                                                                  |
+  +------------------------------------------------------------------+
+                                |
+                          Pool de pg
+                     (queries SQL directas)
+                                |
+  +------------------------------------------------------------------+
+  |                   BASE DE DATOS                                   |
+  |              PostgreSQL 15 + PostGIS 3.4                          |
+  |                                                                  |
+  |  Tablas principales:                                              |
+  |    - usuario          (autenticación, roles, estados)             |
+  |    - incidente        (reportes con geometría Point 4326)         |
+  |    - tipo_incidente   (catálogo de categorías)                    |
+  |    - barrio           (polígonos MultiPolygon 4326)               |
+  |    - vereda           (polígonos MultiPolygon 4326)               |
+  |    - corregimiento    (catálogo geográfico)                       |
+  |    - logs_actividad   (auditoría de acciones)                     |
+  |                                                                  |
+  |  Índices espaciales:                                              |
+  |    - idx_incidente_geom (GIST)                                    |
+  |    - idx_barrio_geom    (GIST)                                    |
+  |    - idx_vereda_geom    (GIST)                                    |
+  +------------------------------------------------------------------+
+                                |
+                     (Almacenamiento de fotos)
+                                |
+  +------------------------------------------------------------------+
+  |         CLOUDINARY (nube)  <-->  LOCAL (fallback)                 |
+  |    sigi_incidentes/            public/uploads/incidentes/         |
+  +------------------------------------------------------------------+
+
+
+
+6. RESUMEN EJECUTIVO
+================================================================================
+
+  Aspecto                  Estado         Nota
+  -----------------------  -----------    -----
+  Tipo de arquitectura     Monolito MVC    Correcta para el alcance
+  Separación de capas      Buena           Falta models/ y services/
+  Stack backend            Sólido          Express 5 + pg + bcrypt + multer
+  Stack frontend           Funcional       HTML+CSS+JS sin framework
+  Base de datos            Excelente       PostgreSQL + PostGIS bien aprovechado
+  Testing                  Presente        Jest + Supertest + CI/CD
+  DevOps                   Bueno           Docker + GitHub Actions
+  Documentación            Buena           7 archivos técnicos detallados
+  Seguridad                Aceptable       bcrypt + RBAC + sesiones
+  Escalabilidad            Limitada        Sesiones en memoria, archivos grandes
+  Mantenibilidad           Regular         Archivos monolíticos en frontend
+
+  Veredicto: El proyecto tiene una base sólida y bien pensada.
+  La arquitectura es adecuada para su contexto (proyecto SENA).
+  Las mejoras principales serían extraer una capa models/, unificar
+  las rutas de la API y eventualmente modularizar los archivos JS
+  del frontend cuando crezcan más.

@@ -1,0 +1,153 @@
+=== POSIBILIDAD DE APLICAR MACHINE LEARNING EN SIGI ===
+
+**Respuesta directa**: Sí, con los datos que ya posee el sistema (incidentes, tipos, fechas, coordenadas, gravedad, descripciones, etc.) es factible construir modelos de Machine Learning (ML) que aporten valor, como predicción del tipo de incidente, estimación de gravedad, detección de zonas de alta ocurrencia (hotspots) o pronóstico de la cantidad de incidentes en periodos futuros.
+
+---
+
+## 1. ¿Qué es Machine Learning?
+
+- **Definición**: Conjunto de técnicas que permiten a una computadora aprender patrones a partir de datos y tomar decisiones o hacer predicciones sin estar programada explícitamente para cada caso.
+- **Tipos principales**:
+  - **Supervisado**: Se entrena con datos etiquetados (p.ej., tipo de incidente). Se usan para clasificación o regresión.
+  - **No supervisado**: No hay etiquetas; se busca estructura interna (p.ej., clustering, reducción de dimensionalidad).
+  - **Por refuerzo**: Un agente aprende mediante recompensas/penalizaciones (menos usado en SIGI).
+
+---
+
+## 2. Componentes de un proyecto de ML
+
+| Componente | Descripción |
+|------------|-------------|
+| **Datos** | Fuente primaria: tabla `incidente` (geom, fecha, hora, tipo, gravedad, descripción, etc.). También tablas auxiliares: `tipo_incidente`, `usuario`, `barrio`, `vereda`.
+| **Pre‑procesamiento** | Limpieza, manejo de valores nulos, codificación de variables categóricas, creación de features (p.ej., día de la semana, distancia a puntos críticos, indicadores climatológicos). Normalización/escalado.
+| **Ingeniería de atributos** | Transformar la geometría a coordenadas numéricas (lat/lng), crear variables de tiempo (`mes`, `hora_del_día`, `is_weekend`), extracción de texto con TF‑IDF o embeddings (de `descripcionincidente`).
+| **Selección del modelo** | Algoritmos clásicos (Random Forest, Gradient Boosting, SVM, K‑NN) o redes neuronales (PyTorch, TensorFlow). Para datos espaciales, modelos basados en *GeoSpatial ML* (XGBoost con features lat/lng, o incluso *Graph Neural Networks*).
+| **Entrenamiento** | Dividir en train/validation/test, usar `scikit‑learn` o `lightgbm` para entrenar, ajustar hiper‑parámetros con `GridSearchCV` o `Optuna`.
+| **Evaluación** | Métricas: precisión, recall, F1 (clasificación); MAE, RMSE (regresión); silhouette score (clustering).
+| **Despliegue** | Exportar modelo (`joblib`/`pickle`), crear un endpoint REST con **FastAPI** o **Flask**, o bien usar **ONNX** para servir en producción.
+| **Monitorización** | Registrar métricas de predicción, drift de datos, re‑entrenamiento periódico.
+
+---
+
+## 3. Cómo aplicar ML con los datos actuales
+
+### 3.1. Casos de uso típicos
+1. **Clasificación del tipo de incidente**
+   - Entrada: coordenadas, hora, día, texto de descripción.
+   - Salida: `idtipoincidente` (categoría).
+2. **Predicción de gravedad**
+   - Entrada: atributos anteriores + indicadores de zona (p.ej., proximidad a hospitales).
+   - Salida: nivel de gravedad (1‑5).
+3. **Detección de hotspots** (clustering espacial)
+   - Algoritmos: DBSCAN, K‑Means sobre lat/lng + peso de gravedad.
+4. **Series temporales** – pronóstico de número de incidentes por mes.
+   - Algoritmos: ARIMA, Prophet, LSTM.
+
+### 3.2. Pipeline de ejemplo (Python – scikit‑learn)
+```python
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report
+
+# 1️⃣ Carga de datos (ejemplo usando psycopg2 o SQLAlchemy)
+import sqlalchemy
+engine = sqlalchemy.create_engine('postgresql://user:pwd@localhost:5432/sigi')
+query = """
+SELECT i.idincidente,
+       i.geom::text AS geom_wkt,
+       i.fechaincidente,
+       i.horaincidente,
+       i.descripcionincidente,
+       i.idtipoincidente,
+       i.idbarrio,
+       i.idvereda,
+       i.idusuario,
+       t.nametipoincidente
+FROM incidente i
+JOIN tipo_incidente t ON i.idtipoincidente = t.idtipoincidente;
+"""
+df = pd.read_sql(query, engine)
+
+# 2️⃣ Feature engineering básica
+#   - Extraer lat/lng del WKT (POINT(lon lat))
+import re
+coords = df['geom_wkt'].str.extract(r'POINT\(([-0-9.]+) ([-0-9.]+)\)')
+df['lon'] = coords[0].astype(float)
+df['lat'] = coords[1].astype(float)
+#   - Variables temporales
+df['fecha'] = pd.to_datetime(df['fechaincidente'])
+df['mes'] = df['fecha'].dt.month
+df['dia_sem'] = df['fecha'].dt.dayofweek
+#   - Texto → TF‑IDF (solo un ejemplo simple)
+from sklearn.feature_extraction.text import TfidfVectorizer
+vectorizer = TfidfVectorizer(max_features=200)
+text_features = vectorizer.fit_transform(df['descripcionincidente'].fillna(''))
+
+# 3️⃣ Preparar X / y
+y = df['idtipoincidente']
+X_numeric = df[['lon','lat','mes','dia_sem']]
+numeric_transformer = StandardScaler()
+preprocess = ColumnTransformer(
+    [('num', numeric_transformer, ['lon','lat','mes','dia_sem'])],
+    remainder='drop')
+
+# 4️⃣ Modelo (Random Forest) con pipeline que combina numeric + text
+model = Pipeline([
+    ('preprocess', preprocess),
+    ('clf', RandomForestClassifier(n_estimators=200, random_state=42))
+])
+
+# 5️⃣ Train / test split
+X_train, X_test, y_train, y_test = train_test_split(
+    X_numeric, y, test_size=0.2, stratify=y, random_state=42)
+model.fit(X_train, y_train)
+
+# 6️⃣ Evaluación
+pred = model.predict(X_test)
+print(classification_report(y_test, pred))
+```
+> **Nota**: El fragmento anterior es solo ilustrativo. En producción se combinaría el `text_features` (convertido a densidad o usando `FeatureUnion`).
+
+### 3.3. Clustering espacial (hotspots) con DBSCAN
+```python
+from sklearn.cluster import DBSCAN
+coords = df[['lat','lon']].values
+# eps en grados ≈ 0.01 ≈ 1 km (ajustar según zona)
+cluster = DBSCAN(eps=0.01, min_samples=10).fit(coords)
+df['cluster_id'] = cluster.labels_
+# Visualizar con Folium
+import folium
+m = folium.Map(location=[df['lat'].mean(), df['lon'].mean()], zoom_start=12)
+for _, row in df.iterrows():
+    folium.CircleMarker(
+        location=[row['lat'], row['lon']],
+        radius=3,
+        color='red' if row['cluster_id']!=-1 else 'gray',
+        fill=True,
+    ).add_to(m)
+#m.save('hotspots.html')
+```
+---
+
+## 4. Recomendaciones prácticas para SIGI
+1. **Exportar los datos** a un *data lake* (CSV, Parquet) o conectar directamente desde Python usando `SQLAlchemy`.
+2. **Crear un entorno virtual** (`venv` o `conda`) con las librerías: `pandas, scikit-learn, sqlalchemy, psycopg2-binary, folium, nltk` (para NLP).
+3. **Versionar experimentos** con `MLflow` o `Weights & Biases` para rastrear métricas y parámetros.
+4. **Desplegar** el modelo como micro‑servicio: un endpoint `/predict` que reciba lat/lng y hora y devuelva la categoría prevista.
+5. **Monitorear** el drift de datos (por ejemplo, cambios en la distribución de coordenadas) y re‑entrenar cada trimestre.
+
+---
+
+## 5. Conclusión
+- **Viabilidad**: Los datos presentes (geolocalización, tiempo, atributos descriptivos) son suficientes para construir modelos útiles.
+- **Valor**: Mejora la priorización de recursos, permite anticipar incidentes y detectar áreas críticas.
+- **Siguiente paso**: Definir el caso de uso que aporte mayor impacto (p.ej., clasificación del tipo de incidente) y crear un *proof‑of‑concept* siguiendo el pipeline anterior.
+
+---
+
+*Este documento ha sido creado para responder la pregunta y servir de guía teórica y práctica sobre Machine Learning aplicado a SIGI.*
