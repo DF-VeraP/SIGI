@@ -62,7 +62,7 @@ describe('Incidentes Controller', () => {
         });
 
       expect(res.status).toBe(201);
-      expect(res.body.mensaje).toBe('Incidente registrado exitosamente ✅');
+      expect(res.body.mensaje).toBe('Incidente registrado exitosamente.');
     });
 
     it('debería registrar un incidente correctamente incluso sin descripción (campo opcional)', async () => {
@@ -83,7 +83,7 @@ describe('Incidentes Controller', () => {
         });
 
       expect(res.status).toBe(201);
-      expect(res.body.mensaje).toBe('Incidente registrado exitosamente ✅');
+      expect(res.body.mensaje).toBe('Incidente registrado exitosamente.');
     });
 
     it('debería retornar 400 si faltan campos obligatorios como tipo, fecha u hora', async () => {

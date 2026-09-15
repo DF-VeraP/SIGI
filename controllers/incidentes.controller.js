@@ -75,11 +75,12 @@ const registrarIncidente = async (req, res) => {
       console.warn("Advertencia en consulta espacial PostGIS:", spatialErr.message);
     }
 
-    // Si quien registra es Admin o Superadmin, el incidente ya es verídico (Estado 2 = En evaluación / verificado)
-    // Si es Reportero, queda en Estado 1 = Reportado (pendiente de revisión)
+    // Si quien registra es Admin o Superadmin, el incidente ya es verídico (Estado 5 = Aprobado / Resuelto)
+    // Si es Reportero, queda en Estado 1 = Reportado (pendiente de revisión en cola)
     const rolCreador = req.session.rol || 'reportero';
     const esAdminOSuper = rolCreador === 'admin' || rolCreador === 'superadmin';
-    const idEstado = esAdminOSuper ? 2 : 1;
+    const idEstado = esAdminOSuper ? 5 : 1;
+    const adminRevisor = esAdminOSuper ? idusuarioLogueado : null;
     const parsedGravedad = parseInt(id_gravedad);
     const idGravedad = (!isNaN(parsedGravedad) && parsedGravedad > 0) ? parsedGravedad : 3;
 
@@ -90,22 +91,22 @@ const registrarIncidente = async (req, res) => {
       INSERT INTO incidente
       (
         codigoincidente, idtipoincidente, fechaincidente, horaincidente, descripcionincidente,
-        geom, idusuario, id_usuario_creador, id_estado, id_gravedad, id_modalidad, idbarrio, idvereda,
+        geom, idusuario, id_usuario_creador, id_estado, id_admin_revisor, id_gravedad, id_modalidad, idbarrio, idvereda,
         direccion, comentarios_adicionales, numero_victimas, numero_vehiculos_afectados, valor_perdidas,
         requiere_ambulancia, requiere_policia, requiere_bomberos, origen, imagen_url
       )
       VALUES (
         $1, $2, $3, $4, $5,
         ST_SetSRID(ST_MakePoint($6, $7), 4326),
-        $8, $8, $9, $10, $11, $12, $13,
-        $14, $15, $16, $17, $18,
-        $19, $20, $21, 'manual', $22
+        $8, $8, $9, $10, $11, $12, $13, $14,
+        $15, $16, $17, $18, $19,
+        $20, $21, $22, 'manual', $23
       )
       RETURNING idincidente, codigoincidente, fechaincidente, horaincidente, imagen_url
     `, [
       codigoincidente, parseInt(tipo), fecha, hora, textoDescripcion,
       lngNum, latNum,
-      idusuarioLogueado, idEstado, idGravedad, idModalidad, idbarrio, idvereda,
+      idusuarioLogueado, idEstado, adminRevisor, idGravedad, idModalidad, idbarrio, idvereda,
       direccion || null, comentarios_adicionales || null,
       numero_victimas ? parseInt(numero_victimas) : 1,
       numero_vehiculos_afectados ? parseInt(numero_vehiculos_afectados) : 0,
@@ -129,24 +130,30 @@ const registrarIncidente = async (req, res) => {
     }
 
     // Registrar en auditoría
+    const descAuditoria = esAdminOSuper
+      ? `Incidente ${nuevoIncidente.codigoincidente} creado en estado Aprobado por ${rolCreador}`
+      : `Incidente ${nuevoIncidente.codigoincidente} creado en estado Reportado`;
+
     await registrarLogActividad(
       idusuarioLogueado,
       'CREAR_INCIDENTE',
       'incidente',
       nuevoIncidente.idincidente,
-      `Incidente ${nuevoIncidente.codigoincidente} creado en estado Reportado`,
+      descAuditoria,
       req
     );
 
-    // Crear notificación para Administradores
-    await pool.query(`
-      INSERT INTO notificaciones (id_usuario, tipo, asunto, mensaje)
-      SELECT idusuario, 'alerta', 'Nuevo reporte de incidente', $1
-      FROM usuario WHERE rol IN ('admin', 'superadmin')
-    `, [`Nuevo incidente ${nuevoIncidente.codigoincidente} reportado en espera de revisión.`]);
+    // Si fue creado por reportero, notificar a los administradores
+    if (!esAdminOSuper) {
+      await pool.query(`
+        INSERT INTO notificaciones (id_usuario, tipo, asunto, mensaje)
+        SELECT idusuario, 'alerta', 'Nuevo reporte de incidente', $1
+        FROM usuario WHERE rol IN ('admin', 'superadmin')
+      `, [`Nuevo incidente ${nuevoIncidente.codigoincidente} reportado en espera de revisión.`]);
+    }
 
     res.status(201).json({
-      mensaje: "Incidente registrado exitosamente ✅",
+      mensaje: "Incidente registrado exitosamente.",
       incidente: nuevoIncidente
     });
 

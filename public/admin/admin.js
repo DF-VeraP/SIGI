@@ -803,7 +803,7 @@ function esFechaHoraFutura(fechaVal, horaVal) {
     const hoyStr = `${anio}-${mes}-${dia}`;
 
     if (fechaVal > hoyStr) {
-        return { invalido: true, mensaje: "La fecha del incidente no puede ser futura 📅" };
+        return { invalido: true, mensaje: "La fecha del incidente no puede ser futura." };
     }
 
     if (fechaVal === hoyStr && horaVal) {
@@ -812,7 +812,7 @@ function esFechaHoraFutura(fechaVal, horaVal) {
         const minActual = ahora.getMinutes();
 
         if (horas > horaActual || (horas === horaActual && minutos > minActual)) {
-            return { invalido: true, mensaje: "Si la fecha es hoy, la hora no puede ser mayor a la hora actual ⏰" };
+            return { invalido: true, mensaje: "Si la fecha es hoy, la hora no puede ser mayor a la hora actual." };
         }
     }
     return { invalido: false };
@@ -850,7 +850,7 @@ if (btnAhora) {
         if (inputFechaInc) inputFechaInc.value = `${anio}-${mes}-${dia}`;
         if (inputHoraInc) inputHoraInc.value = `${horas}:${minutos}`;
 
-        mostrarToast("Fecha y hora establecidas al momento actual ⏱️", "info");
+        mostrarToast("Fecha y hora establecidas al momento actual.", "info");
     });
 }
 
@@ -896,7 +896,7 @@ document.querySelector(".registrarD").addEventListener("click", async (e) => {
             mostrarToast(result.mensaje || result.error || "Error en el servidor", "error");
             return;
         }
-        mostrarToast(result.mensaje || "Incidente registrado exitosamente", "exito");
+        mostrarToast(result.mensaje || "Incidente registrado exitosamente.", "exito");
         limpiarFormulario();
         cargarTabla();
         contar();
