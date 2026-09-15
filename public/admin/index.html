@@ -166,12 +166,15 @@
                     <div class="card-filtros-incidentes">
                         <div class="header-filtros-toggle" id="headerFiltrosIncidentes">
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <i class="bi bi-funnel-fill icono-embudo"></i>
+                                <i class="bi bi-search icono-embudo"></i>
                                 <span class="titulo-filtros">
                                     Filtros de Búsqueda
                                 </span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
+                                <span id="badgeFiltrosActivosIncidentes" class="badge-filtros-activos" style="display: none;">
+                                    <span class="dot-filtro-activo"></span> <span id="textoFiltrosActivos">0 filtros</span>
+                                </span>
                                 <button type="button" id="btnResetFiltrosIncidentes" class="btn-limpiar-filtros" title="Restablecer filtros">
                                     Limpiar
                                 </button>
@@ -183,21 +186,29 @@
 
                         <!-- Cuerpo Desplegable de Filtros -->
                         <div class="cuerpo-filtros-desplegable" id="cuerpoFiltrosIncidentes">
-                            <div class="user-filter-bar" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 8px;">
-                                <!-- Buscador por Código de Incidente -->
-                                <div style="flex: 0 1 230px; min-width: 180px;">
-                                    <input type="text" id="buscarCodigoIncidenteInput" class="filtro-input-control" placeholder="Buscar por código (ej: RO17...)" title="Escribe el código del incidente">
+                            <!-- Fila 1: Búsquedas de texto / código -->
+                            <div class="fila-filtros-grid fila-grid-busquedas">
+                                <div class="grupo-filtro-campo">
+                                    <label for="buscarCodigoIncidenteInput" class="filtro-campo-label">Buscar por código</label>
+                                    <div class="input-con-icono-wrapper">
+                                        <i class="bi bi-hash icono-input-campo"></i>
+                                        <input type="text" id="buscarCodigoIncidenteInput" class="filtro-input-control con-padding-icono" placeholder="#INC-685 o código completo..." title="Escribe el código o ID del incidente">
+                                    </div>
                                 </div>
-
-                                <!-- Buscador de texto general -->
-                                <div style="flex: 1; min-width: 180px;">
-                                    <input type="text" id="buscarIncidenteInput" class="filtro-input-control" placeholder="Buscar por barrio, vereda, usuario o descripción...">
+                                <div class="grupo-filtro-campo">
+                                    <label for="buscarIncidenteInput" class="filtro-campo-label">Buscar por ubicación o texto</label>
+                                    <div class="input-con-icono-wrapper">
+                                        <i class="bi bi-geo-alt icono-input-campo"></i>
+                                        <input type="text" id="buscarIncidenteInput" class="filtro-input-control con-padding-icono" placeholder="barrio, vereda, usuario o descripción...">
+                                    </div>
                                 </div>
+                            </div>
 
-                                <!-- Selector Estado -->
-                                <div style="display: flex; gap: 6px; align-items: center;">
-                                    <label class="filtro-etiqueta">Estado:</label>
-                                    <select id="estadoIncidenteFiltro" class="filtro-select-control">
+                            <!-- Fila 2: Selectores y Tiempo -->
+                            <div class="fila-filtros-grid fila-grid-selectores">
+                                <div class="grupo-filtro-campo">
+                                    <label for="estadoIncidenteFiltro" class="filtro-campo-label">Estado</label>
+                                    <select id="estadoIncidenteFiltro" class="filtro-select-control w-100">
                                         <option value="">Todos los estados</option>
                                         <option value="1">Pendientes (Cola pública)</option>
                                         <option value="2">En Evaluación (Tomados)</option>
@@ -206,18 +217,19 @@
                                     </select>
                                 </div>
 
-                                <!-- Selector Categoría -->
-                                <div style="display: flex; gap: 6px; align-items: center;">
-                                    <label class="filtro-etiqueta">Categoría:</label>
-                                    <select id="tipoIncidenteFiltro" class="filtro-select-control">
+                                <div class="grupo-filtro-campo">
+                                    <label for="tipoIncidenteFiltro" class="filtro-campo-label">Categoría</label>
+                                    <select id="tipoIncidenteFiltro" class="filtro-select-control w-100">
                                         <option value="">Todas las categorías</option>
                                     </select>
                                 </div>
 
-                                <!-- Filtrar por tiempo -->
-                                <button type="button" id="btnAbrirFiltroTiempo" class="btn-filtro-tiempo">
-                                    Tiempo
-                                </button>
+                                <div class="grupo-filtro-campo">
+                                    <label class="filtro-campo-label">Tiempo</label>
+                                    <button type="button" id="btnAbrirFiltroTiempo" class="btn-filtro-tiempo w-100">
+                                        <i class="bi bi-calendar3"></i> <span id="labelBotonTiempo">3 meses</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 

@@ -1074,11 +1074,58 @@ function aplicarFiltrosIncidentes(resetPagina = true) {
         return coincideCodigo && coincideBusqueda && coincideEstado && coincideTipo && coincideFecha;
     });
 
+    // Actualizar badge de filtros activos
+    actualizarBadgeFiltrosActivos(busquedaCodigo, busqueda, filtroEstado, filtroTipo);
+
     if (resetPagina) {
         paginaActualIncidentes = 1;
     }
     renderTabla();
     renderMapa(incidentesFiltrados);
+}
+
+function actualizarBadgeFiltrosActivos(codigo, busqueda, estado, tipo) {
+    const badge = document.getElementById("badgeFiltrosActivosIncidentes");
+    const texto = document.getElementById("textoFiltrosActivos");
+    if (!badge || !texto) return;
+
+    let activos = 0;
+    if (codigo) activos++;
+    if (busqueda) activos++;
+    if (estado) activos++;
+    if (tipo) activos++;
+
+    // Verificar si el rango de fecha no es el default o está activo
+    const r3m = obtenerRangoDefault3Meses();
+    const esRangoDefault = (filtroFechaDesde === r3m.desde && filtroFechaHasta === r3m.hasta);
+    if (!esRangoDefault && (filtroFechaDesde || filtroFechaHasta)) {
+        activos++;
+    }
+
+    // Actualizar etiqueta del botón de tiempo
+    const labelTiempo = document.getElementById("labelBotonTiempo");
+    if (labelTiempo) {
+        if (esRangoDefault) {
+            labelTiempo.textContent = "3 meses";
+        } else if (!filtroFechaDesde && !filtroFechaHasta) {
+            labelTiempo.textContent = "Todo el tiempo";
+        } else if (filtroFechaDesde && filtroFechaHasta) {
+            if (filtroFechaDesde === filtroFechaHasta) {
+                labelTiempo.textContent = "Hoy";
+            } else {
+                labelTiempo.textContent = `${filtroFechaDesde} a ${filtroFechaHasta}`;
+            }
+        } else {
+            labelTiempo.textContent = "Personalizado";
+        }
+    }
+
+    if (activos > 0) {
+        texto.textContent = `${activos} ${activos === 1 ? 'filtro' : 'filtros'}`;
+        badge.style.display = "inline-flex";
+    } else {
+        badge.style.display = "none";
+    }
 }
 
 function renderTabla(data) {

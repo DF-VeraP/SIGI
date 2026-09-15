@@ -2207,6 +2207,122 @@ body.tema-claro .btn-filtro-tiempo:hover {
     color: #1677FF !important;
 }
 
+/* ── Estructura de Rejilla Intencional de Filtros de Búsqueda ── */
+.badge-filtros-activos {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(31, 111, 235, 0.15);
+    border: 1px solid rgba(56, 139, 253, 0.35);
+    color: #58a6ff;
+    padding: 3px 9px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    user-select: none;
+    transition: all 0.2s ease;
+}
+
+.dot-filtro-activo {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #388bfd;
+    box-shadow: 0 0 6px rgba(56, 139, 253, 0.8);
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+body.tema-claro .badge-filtros-activos {
+    background: #EAF2FF !important;
+    border-color: #A8CBFF !important;
+    color: #1261D6 !important;
+}
+
+body.tema-claro .dot-filtro-activo {
+    background: #1677FF !important;
+    box-shadow: 0 0 6px rgba(22, 119, 255, 0.5) !important;
+}
+
+.fila-filtros-grid {
+    display: grid;
+    gap: 12px;
+    width: 100%;
+}
+
+.fila-grid-busquedas {
+    grid-template-columns: minmax(180px, 240px) 1fr;
+}
+
+.fila-grid-selectores {
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+@media (max-width: 900px) {
+    .fila-grid-busquedas {
+        grid-template-columns: 1fr;
+    }
+    .fila-grid-selectores {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 580px) {
+    .fila-grid-selectores {
+        grid-template-columns: 1fr;
+    }
+}
+
+.grupo-filtro-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.filtro-campo-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--texto-suave);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0;
+}
+
+body.tema-claro .filtro-campo-label {
+    color: #64748B !important;
+}
+
+.input-con-icono-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.icono-input-campo {
+    position: absolute;
+    left: 9px;
+    font-size: 0.82rem;
+    color: var(--texto-suave);
+    pointer-events: none;
+    z-index: 1;
+}
+
+body.tema-claro .icono-input-campo {
+    color: #94A3B8 !important;
+}
+
+.con-padding-icono {
+    padding-left: 28px !important;
+}
+
+.w-100 {
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
 /* ════════════════════════════════════════════════════════
    TABLA DE INCIDENTES (Secciones 4, 5 y 8 de Observacion.txt)
    ════════════════════════════════════════════════════════ */
