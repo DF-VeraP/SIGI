@@ -3072,45 +3072,68 @@ body.tema-claro #labelPaginaIncidente {
 ---------------------------*/
 #contenedorToast {
     position: fixed;
-    top: 20px;
-    right: 20px;
+    top: 24px;
+    right: 24px;
     z-index: 9999999;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
+    pointer-events: none;
 }
 
 .toast {
-    min-width: 250px;
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(10px);
-    color: #333;
-    padding: 15px 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    pointer-events: auto;
+    min-width: 280px;
+    max-width: 420px;
+    background: #111827;
+    color: #f3f4f6;
+    padding: 14px 20px;
+    border-radius: 12px;
+    border: none !important;
+    outline: none !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
+    font-size: 0.9rem;
     font-weight: 500;
-    transform: translateX(120%);
+    line-height: 1.4;
+    transform: translateX(110%) scale(0.95);
     opacity: 0;
-    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
 }
 
 .toast.mostrar {
-    transform: translateX(0);
+    transform: translateX(0) scale(1);
     opacity: 1;
 }
 
 .toast i {
-    font-size: 1.2rem;
+    font-size: 1.35rem;
+    flex-shrink: 0;
 }
 
-.toast.exito { border-left: 5px solid #28a745; }
-.toast.exito i { color: #28a745; }
+/* Variantes con fondo distinguible, limpio y sin bordes */
+.toast.exito {
+    background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+    color: #ecfdf5;
+}
+.toast.exito i {
+    color: #34d399;
+}
 
-.toast.error { border-left: 5px solid #dc3545; }
-.toast.error i { color: #dc3545; }
+.toast.error {
+    background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+    color: #fef2f2;
+}
+.toast.error i {
+    color: #f87171;
+}
 
-.toast.info { border-left: 5px solid #17a2b8; }
-.toast.info i { color: #17a2b8; }
+.toast.info {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    color: #f8fafc;
+}
+.toast.info i {
+    color: #38bdf8;
+}

@@ -65,9 +65,14 @@ describe('Incidentes Controller', () => {
       expect(res.body.mensaje).toBe('Incidente registrado exitosamente ✅');
     });
 
-    it('debería retornar 400 si falta el campo obligatorio descripcion o está vacío', async () => {
-      // Caso 1: Omitiendo descripcion
-      const resSinDesc = await request(app)
+    it('debería registrar un incidente correctamente incluso sin descripción (campo opcional)', async () => {
+      pool.query
+        .mockResolvedValueOnce({ rows: [{ gid: 1 }] }) // barrio lookup
+        .mockResolvedValueOnce({ rows: [] }) // vereda lookup
+        .mockResolvedValueOnce({ rows: [{ idincidente: 2, codigoincidente: 'INC-100002' }] }) // insert
+        .mockResolvedValueOnce({ rows: [] }); // log auditoria
+
+      const res = await request(app)
         .post('/registrarIncidente')
         .send({
           tipo: 1,
@@ -77,23 +82,22 @@ describe('Incidentes Controller', () => {
           lng: -76.6063
         });
 
-      expect(resSinDesc.status).toBe(400);
-      expect(resSinDesc.body.mensaje).toContain('Faltan campos obligatorios');
+      expect(res.status).toBe(201);
+      expect(res.body.mensaje).toBe('Incidente registrado exitosamente ✅');
+    });
 
-      // Caso 2: Descripcion como string vacío
-      const resDescVacia = await request(app)
+    it('debería retornar 400 si faltan campos obligatorios como tipo, fecha u hora', async () => {
+      const resSinTipo = await request(app)
         .post('/registrarIncidente')
         .send({
-          tipo: 1,
           fecha: '2026-08-01',
           hora: '14:30',
           lat: 2.4419,
-          lng: -76.6063,
-          descripcion: ''
+          lng: -76.6063
         });
 
-      expect(resDescVacia.status).toBe(400);
-      expect(resDescVacia.body.mensaje).toContain('Faltan campos obligatorios');
+      expect(resSinTipo.status).toBe(400);
+      expect(resSinTipo.body.mensaje).toContain('Faltan campos obligatorios');
     });
 
     it('debería retornar 500 si la BD falla al registrar', async () => {

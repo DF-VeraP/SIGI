@@ -32,10 +32,10 @@ const registrarIncidente = async (req, res) => {
     factores
   } = req.body;
 
-  const textoDescripcion = descripcionincidente || descripcion;
+  const textoDescripcion = (descripcionincidente || descripcion || '').trim();
 
-  if (!tipo || !fecha || !hora || lat === undefined || lng === undefined || !textoDescripcion) {
-    return res.status(400).json({ mensaje: "Faltan campos obligatorios: tipo, fecha, hora, coordenadas y descripción ⚠️" });
+  if (!tipo || !fecha || !hora || lat === undefined || lng === undefined) {
+    return res.status(400).json({ mensaje: "Faltan campos obligatorios: tipo, fecha, hora y coordenadas ⚠️" });
   }
 
   try {
@@ -75,7 +75,11 @@ const registrarIncidente = async (req, res) => {
       console.warn("Advertencia en consulta espacial PostGIS:", spatialErr.message);
     }
 
-    const idEstado = 1; // 1 = Reportado
+    // Si quien registra es Admin o Superadmin, el incidente ya es verídico (Estado 2 = En evaluación / verificado)
+    // Si es Reportero, queda en Estado 1 = Reportado (pendiente de revisión)
+    const rolCreador = req.session.rol || 'reportero';
+    const esAdminOSuper = rolCreador === 'admin' || rolCreador === 'superadmin';
+    const idEstado = esAdminOSuper ? 2 : 1;
     const parsedGravedad = parseInt(id_gravedad);
     const idGravedad = (!isNaN(parsedGravedad) && parsedGravedad > 0) ? parsedGravedad : 3;
 

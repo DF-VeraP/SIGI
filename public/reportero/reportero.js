@@ -120,9 +120,25 @@ function initMiniMapa() {
 
     mapMini = L.map("mapaMini").setView([latDef, lngDef], 14);
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; OpenStreetMap'
-    }).addTo(mapMini);
+    const capaSatelitalReportero = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: '&copy; Esri'
+    });
+
+    const capaOscuraReportero = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; CARTO',
+        subdomains: 'abcd',
+        maxZoom: 20
+    });
+
+    // Iniciar con la vista Satelital
+    capaSatelitalReportero.addTo(mapMini);
+
+    const baseMapsReportero = {
+        "Satelital": capaSatelitalReportero,
+        "Modo Oscuro": capaOscuraReportero
+    };
+
+    L.control.layers(baseMapsReportero, null, { position: 'topright' }).addTo(mapMini);
 
     markerMini = L.marker([latDef, lngDef], { draggable: true }).addTo(mapMini);
 

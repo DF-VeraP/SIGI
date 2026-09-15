@@ -179,8 +179,11 @@ map2.createPane('incidentesPane');
 map2.getPane('incidentesPane').style.zIndex = 450;
 
 //  Definir capas (NO recrearlas cada vez)
-const capaOscura = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+// Modo oscuro real con CartoDB Dark Matter (evita bloqueo 403 de OSM)
+const capaOscura = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 20
 });
 
 const capaSatelital = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
@@ -192,8 +195,8 @@ const capaSatelital2 = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/
 });
 
 
-// Agregar capa inicial
-capaOscura.addTo(map);
+// Agregar capa inicial: primero se muestra la vista satelital
+capaSatelital.addTo(map);
 
 //  Funciones de cambio (sin borrar todo)
 function activarMapaOscuro() {
@@ -379,20 +382,20 @@ const bolita = document.querySelector(".btnClaroNoche div");
 const btnbolita = document.querySelector(".btnClaroNoche");
 
 btnbolita.addEventListener("click", function () {
-    console.log("Presionado noche dia");
-
+    // Si ya está activo en modo oscuro, volver a satelital
     if (bolita.classList.contains("colorBolita")) {
         btnbolita.classList.remove("colorBolita");
         bolita.classList.remove("colorBolita");
         bolita.style.transform = "translateX(0)";
-        activarMapaOscuro();
-        console.log("modo oscuro");
-    } else {
-        console.log("modo satelital");
         activarMapaSatelital();
+        console.log("modo satelital activo");
+    } else {
+        // Pasar a modo oscuro
         btnbolita.classList.add("colorBolita");
-        bolita.style.transform = "translateX(1.5em)";
         bolita.classList.add("colorBolita");
+        bolita.style.transform = "translateX(1.5em)";
+        activarMapaOscuro();
+        console.log("modo oscuro activo");
     }
 });
 
@@ -774,6 +777,65 @@ async function cargarTipos() {
     });
 }
 
+// Configuración de límites en Fecha y Hora
+const inputFechaInc = document.getElementById("fecha");
+const inputHoraInc = document.getElementById("hora");
+
+function configurarLimitesFechaHora() {
+    const hoy = new Date();
+    const anio = hoy.getFullYear();
+    const mes = String(hoy.getMonth() + 1).padStart(2, "0");
+    const dia = String(hoy.getDate()).padStart(2, "0");
+    const fechaActualStr = `${anio}-${mes}-${dia}`;
+
+    if (inputFechaInc) {
+        inputFechaInc.max = fechaActualStr;
+    }
+}
+configurarLimitesFechaHora();
+
+function esFechaHoraFutura(fechaVal, horaVal) {
+    if (!fechaVal) return false;
+    const ahora = new Date();
+    const anio = ahora.getFullYear();
+    const mes = String(ahora.getMonth() + 1).padStart(2, "0");
+    const dia = String(ahora.getDate()).padStart(2, "0");
+    const hoyStr = `${anio}-${mes}-${dia}`;
+
+    if (fechaVal > hoyStr) {
+        return { invalido: true, mensaje: "La fecha del incidente no puede ser futura 📅" };
+    }
+
+    if (fechaVal === hoyStr && horaVal) {
+        const [horas, minutos] = horaVal.split(":").map(Number);
+        const horaActual = ahora.getHours();
+        const minActual = ahora.getMinutes();
+
+        if (horas > horaActual || (horas === horaActual && minutos > minActual)) {
+            return { invalido: true, mensaje: "Si la fecha es hoy, la hora no puede ser mayor a la hora actual ⏰" };
+        }
+    }
+    return { invalido: false };
+}
+
+if (inputFechaInc) {
+    inputFechaInc.addEventListener("change", () => {
+        const val = esFechaHoraFutura(inputFechaInc.value, inputHoraInc ? inputHoraInc.value : null);
+        if (val.invalido) {
+            mostrarToast(val.mensaje, "error");
+        }
+    });
+}
+
+if (inputHoraInc) {
+    inputHoraInc.addEventListener("change", () => {
+        const val = esFechaHoraFutura(inputFechaInc ? inputFechaInc.value : null, inputHoraInc.value);
+        if (val.invalido) {
+            mostrarToast(val.mensaje, "error");
+        }
+    });
+}
+
 document.querySelector(".registrarD").addEventListener("click", async (e) => {
     e.preventDefault();
     const tipInc = document.getElementById("tipoIncidente").value;
@@ -783,40 +845,47 @@ document.querySelector(".registrarD").addEventListener("click", async (e) => {
     const longitudInc = document.getElementById("longitud").value;
 
     if (!tipInc || !fechaInc || !horaInc || !latitudInc || !longitudInc) {
-        mostrarToast("Favor rellenar campos obligatorios *");
+        mostrarToast("Favor rellenar campos obligatorios *", "error");
         return;
-    } else {
-        const data = {
-            tipo: document.getElementById("tipoIncidente").value,
-            fecha: document.getElementById("fecha").value,
-            hora: document.getElementById("hora").value,
-            lat: document.getElementById("latitud").value,
-            lng: document.getElementById("longitud").value,
-            descripcion: document.getElementById("descripcion").value
-        };
+    }
 
-        try {
-            const res = await fetch("/registrarIncidente", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(data)
-            });
-            const result = await res.json();
-            if (!res.ok) {
-                mostrarToast(result.error || "Error en el servidor", "error");
-                return;
-            }
-            mostrarToast(result.mensaje, "exito");
-        } catch (err) {
-            console.error("El error es: " + err)
-            mostrarToast("Error de conexion en el servidor", "error");
+    // Validación estricta de fecha y hora futura
+    const validacionTiempo = esFechaHoraFutura(fechaInc, horaInc);
+    if (validacionTiempo.invalido) {
+        mostrarToast(validacionTiempo.mensaje, "error");
+        return;
+    }
+
+    const data = {
+        tipo: tipInc,
+        fecha: fechaInc,
+        hora: horaInc,
+        lat: latitudInc,
+        lng: longitudInc,
+        descripcion: document.getElementById("descripcion").value
+    };
+
+    try {
+        const res = await fetch("/registrarIncidente", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        if (!res.ok) {
+            mostrarToast(result.mensaje || result.error || "Error en el servidor", "error");
+            return;
         }
-/*         limpiarFormulario() */;
+        mostrarToast(result.mensaje || "Incidente registrado exitosamente", "exito");
+        limpiarFormulario();
         cargarTabla();
         contar();
         cargarIncidentes();
+    } catch (err) {
+        console.error("El error es: " + err);
+        mostrarToast("Error de conexión en el servidor", "error");
     }
 });
 
@@ -842,27 +911,6 @@ function limpiarFormulario() {
     }
 }
 
-function mostrarToast(mensaje) {
-    const contenedor = document.getElementById("contenedorToast");
-
-    const toast = document.createElement("div");
-    toast.classList.add("toastMensaje");
-    toast.textContent = mensaje;
-
-    contenedor.appendChild(toast);
-
-    setTimeout(() => {
-        toast.classList.add("toastMostrar");
-    }, 10);
-
-    setTimeout(() => {
-        toast.classList.remove("toastMostrar");
-
-        setTimeout(() => {
-            toast.remove();
-        }, 400);
-    }, 3000);
-}
 
 const contInc = document.getElementById("conteoTotalVerificacion") || document.querySelector(".numero");
 async function contar() {
