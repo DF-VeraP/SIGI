@@ -836,6 +836,24 @@ if (inputHoraInc) {
     });
 }
 
+// Botón "Ahora" para llenar automáticamente fecha y hora actual
+const btnAhora = document.getElementById("btnAhora");
+if (btnAhora) {
+    btnAhora.addEventListener("click", () => {
+        const ahora = new Date();
+        const anio = ahora.getFullYear();
+        const mes = String(ahora.getMonth() + 1).padStart(2, "0");
+        const dia = String(ahora.getDate()).padStart(2, "0");
+        const horas = String(ahora.getHours()).padStart(2, "0");
+        const minutos = String(ahora.getMinutes()).padStart(2, "0");
+
+        if (inputFechaInc) inputFechaInc.value = `${anio}-${mes}-${dia}`;
+        if (inputHoraInc) inputHoraInc.value = `${horas}:${minutos}`;
+
+        mostrarToast("Fecha y hora establecidas al momento actual ⏱️", "info");
+    });
+}
+
 document.querySelector(".registrarD").addEventListener("click", async (e) => {
     e.preventDefault();
     const tipInc = document.getElementById("tipoIncidente").value;

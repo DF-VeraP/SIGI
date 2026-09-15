@@ -13,10 +13,29 @@ document.addEventListener("DOMContentLoaded", async () => {
     // 3. Inicializar Leaflet Mini Mapa
     initMiniMapa();
 
-    // 4. Configurar fecha y hora actuales por defecto
-    const hoy = new Date();
-    document.getElementById("fecha").value = hoy.toISOString().split('T')[0];
-    document.getElementById("hora").value = hoy.toTimeString().split(' ')[0].slice(0, 5);
+    // 4. Configurar fecha y hora actuales por defecto y botón "Ahora"
+    function fijarFechaHoraActual() {
+        const ahora = new Date();
+        const anio = ahora.getFullYear();
+        const mes = String(ahora.getMonth() + 1).padStart(2, "0");
+        const dia = String(ahora.getDate()).padStart(2, "0");
+        const horas = String(ahora.getHours()).padStart(2, "0");
+        const minutos = String(ahora.getMinutes()).padStart(2, "0");
+
+        const elFecha = document.getElementById("fecha");
+        const elHora = document.getElementById("hora");
+        if (elFecha) elFecha.value = `${anio}-${mes}-${dia}`;
+        if (elHora) elHora.value = `${horas}:${minutos}`;
+    }
+    fijarFechaHoraActual();
+
+    const btnAhoraRep = document.getElementById("btnAhoraReportero");
+    if (btnAhoraRep) {
+        btnAhoraRep.addEventListener("click", () => {
+            fijarFechaHoraActual();
+            mostrarToastReportero("Fecha y hora actualizadas al momento actual ⏱️", "info");
+        });
+    }
 
     // 5. Configurar eventos de Pestañas
     setupTabs();

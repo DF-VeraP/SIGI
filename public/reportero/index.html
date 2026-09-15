@@ -87,11 +87,16 @@
 
                     <div class="form-row">
                         <div class="form-group half">
-                            <label for="fecha">Fecha del Hecho *</label>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                <label for="fecha" style="margin: 0;">Fecha del Hecho *</label>
+                                <button type="button" id="btnAhoraReportero" class="btn-ahora-reportero" title="Establecer fecha y hora actual">
+                                    <i class="bi bi-clock-history"></i> Ahora
+                                </button>
+                            </div>
                             <input type="date" id="fecha" required>
                         </div>
                         <div class="form-group half">
-                            <label for="hora">Hora aproximada *</label>
+                            <label for="hora" style="margin-bottom: 4px;">Hora aproximada *</label>
                             <input type="time" id="hora" required>
                         </div>
                     </div>

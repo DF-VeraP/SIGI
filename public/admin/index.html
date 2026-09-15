@@ -105,11 +105,16 @@
                         </section>
                         <div class="contFlex contVarios">
                             <section>
-                                <label for="fecha">Fecha *</label>
+                                <div class="contFlexCent" style="justify-content: space-between; margin-bottom: 2px;">
+                                    <label for="fecha" style="margin: 0;">Fecha *</label>
+                                    <button type="button" id="btnAhora" class="btn-ahora" title="Establecer fecha y hora actual">
+                                        <i class="bi bi-clock-history"></i> Ahora
+                                    </button>
+                                </div>
                                 <input type="date" id="fecha">
                             </section>
                             <section>
-                                <label for="hora">Hora *</label>
+                                <label for="hora" style="margin-bottom: 2px;">Hora *</label>
                                 <input type="time" id="hora">
                             </section>
                             <section>
