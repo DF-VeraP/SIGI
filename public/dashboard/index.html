@@ -402,6 +402,120 @@
                 bottom: 30px !important; /* Vuelve a su posición normal */
             }
         }
+
+        /* ═══════════════════════════════════════════════════
+           SWITCH TIPO IPHONE (DASHBOARD & MOBILE)
+        ═══════════════════════════════════════════════════ */
+        button.toggle-iphone-header,
+        .toggle-iphone-header {
+            padding: 0 6px !important;
+            border-radius: 20px !important;
+            background: #253248 !important;
+            border: 1px solid #283449 !important;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25) !important;
+            height: 26px !important;
+            width: 52px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            position: relative !important;
+            cursor: pointer !important;
+            margin: 0 !important;
+            outline: none !important;
+            flex-shrink: 0 !important;
+            transition: background 0.25s ease, border-color 0.25s ease;
+        }
+
+        button.toggle-iphone-header:hover,
+        .toggle-iphone-header:hover {
+            background: #2e3d57 !important;
+            color: inherit !important;
+        }
+
+        body.tema-claro button.toggle-iphone-header,
+        body.tema-claro .toggle-iphone-header {
+            background: #E4EAF2 !important;
+            border: 1px solid #DCE3EC !important;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06) !important;
+        }
+
+        body.tema-claro button.toggle-iphone-header:hover,
+        body.tema-claro .toggle-iphone-header:hover {
+            background: #d8e1ec !important;
+        }
+
+        .toggle-iphone-header .sw-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #1B74D1;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
+            z-index: 2;
+        }
+
+        body.tema-claro .toggle-iphone-header .sw-slider {
+            transform: translateX(26px);
+            background: #FFFFFF;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.18);
+        }
+
+        .toggle-iphone-header .icono-sol,
+        .toggle-iphone-header .icono-luna {
+            font-size: 0.72rem;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s ease, color 0.2s ease;
+        }
+
+        .toggle-iphone-header .icono-sol {
+            color: #64748B;
+            opacity: 0.35;
+        }
+
+        .toggle-iphone-header .icono-luna {
+            color: #8CB8FF;
+            opacity: 1;
+        }
+
+        body.tema-claro .toggle-iphone-header .icono-sol {
+            color: #D58A16;
+            opacity: 1;
+        }
+
+        body.tema-claro .toggle-iphone-header .icono-luna {
+            color: #9AA5B5;
+            opacity: 0.35;
+        }
+
+        /* ── Ajustes de contención de Sidebar para evitar desborde vertical ── */
+        .sidebar {
+            height: 100vh !important;
+            max-height: 100vh !important;
+            box-sizing: border-box !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            scrollbar-width: none !important;
+        }
+        .sidebar::-webkit-scrollbar {
+            display: none !important;
+        }
+
+        .sidebar.colapsada .sidebar-tema-fila {
+            justify-content: center !important;
+            padding: 2px 0 !important;
+        }
+        .sidebar.colapsada .sidebar-tema-fila .tema-label-text {
+            display: none !important;
+        }
+        .sidebar.colapsada .sidebar-tema-fila .toggle-iphone-header {
+            transform: scale(0.9);
+        }
     </style>
 </head>
 
@@ -418,7 +532,7 @@
             </div>
 
             <!-- Separador 1: Entre Logo y Menú de Navegación -->
-            <hr class="sidebar-divider" style="border: 0; border-top: 1px solid var(--borde); margin: 6px 15px 8px 15px; width: calc(100% - 30px); opacity: 0.7;">
+            <hr class="sidebar-divider" style="border: 0; border-top: 1px solid var(--borde); margin: 4px 15px 6px 15px; width: calc(100% - 30px); opacity: 0.7;">
 
             <nav class="sidebar-nav" style="display: flex; flex-direction: column; gap: 3px; width: 100%;">
                 <button class="nav-btn active" data-view="inicio" title="Inicio / Panel Informativo">
@@ -437,59 +551,62 @@
             
             <div style="margin-top: auto; width: 100%; display: flex; flex-direction: column;">
                 <!-- Separador 2: Entre Menú y Simbología -->
-                <hr class="sidebar-divider" style="border: 0; border-top: 1px solid var(--borde); margin: 8px 15px 8px 15px; width: calc(100% - 30px); opacity: 0.7;">
+                <hr class="sidebar-divider" style="border: 0; border-top: 1px solid var(--borde); margin: 4px 15px 4px 15px; width: calc(100% - 30px); opacity: 0.7;">
 
                 <!-- Simbología con Conteo Dinámico -->
-                <div class="leyenda-sidebar desktop-only" style="padding: 0 12px; width: 100%; box-sizing: border-box; display: flex; flex-direction: column;">
-                    <div class="simbologia-card">
-                        <h4 style="font-size: 0.72rem; color: var(--texto-suave); margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; display: flex; align-items: center; gap: 6px;">
-                            <i class="bi bi-palette-fill" style="font-size: 0.8rem; color: var(--acento);"></i> <span class="simbologia-title-text">Simbología</span>
+                <div class="leyenda-sidebar desktop-only" style="padding: 0 10px; width: 100%; box-sizing: border-box; display: flex; flex-direction: column;">
+                    <div class="simbologia-card" style="padding: 6px 10px !important;">
+                        <h4 style="font-size: 0.70rem; color: var(--texto-suave); margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                            <i class="bi bi-palette-fill" style="font-size: 0.78rem; color: var(--acento);"></i> <span class="simbologia-title-text">Simbología</span>
                         </h4>
-                        <div style="display: flex; flex-direction: column; gap: 6px;">
-                            <div class="itemLeyenda" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 0.75rem; color: var(--texto);" title="Robo">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <span class="dot-leyenda dot-rojo" style="width: 9px; height: 9px; border-radius: 50%; display: inline-block; background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); flex-shrink: 0;"></span>
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <div class="itemLeyenda" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 0.73rem; color: var(--texto);" title="Robo">
+                                <div style="display: flex; align-items: center; gap: 7px;">
+                                    <span class="dot-leyenda dot-rojo" style="width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); flex-shrink: 0;"></span>
                                     <span class="simbologia-item-text">Robo</span>
                                 </div>
-                                <span id="sidebarCountRobo" class="simbologia-count-tag" style="font-weight: 700; color: var(--texto-suave); font-size: 0.74rem;">0</span>
+                                <span id="sidebarCountRobo" class="simbologia-count-tag" style="font-weight: 700; color: var(--texto-suave); font-size: 0.72rem;">0</span>
                             </div>
-                            <div class="itemLeyenda" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 0.75rem; color: var(--texto);" title="Piques">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <span class="dot-leyenda dot-morado" style="width: 9px; height: 9px; border-radius: 50%; display: inline-block; background: #a855f7; box-shadow: 0 0 8px rgba(168, 85, 247, 0.6); flex-shrink: 0;"></span>
+                            <div class="itemLeyenda" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 0.73rem; color: var(--texto);" title="Piques">
+                                <div style="display: flex; align-items: center; gap: 7px;">
+                                    <span class="dot-leyenda dot-morado" style="width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: #a855f7; box-shadow: 0 0 8px rgba(168, 85, 247, 0.6); flex-shrink: 0;"></span>
                                     <span class="simbologia-item-text">Piques</span>
                                 </div>
-                                <span id="sidebarCountPiques" class="simbologia-count-tag" style="font-weight: 700; color: var(--texto-suave); font-size: 0.74rem;">0</span>
+                                <span id="sidebarCountPiques" class="simbologia-count-tag" style="font-weight: 700; color: var(--texto-suave); font-size: 0.72rem;">0</span>
                             </div>
-                            <div class="itemLeyenda" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 0.75rem; color: var(--texto);" title="Agresiones">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <span class="dot-leyenda dot-amarillo" style="width: 9px; height: 9px; border-radius: 50%; display: inline-block; background: #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.6); flex-shrink: 0;"></span>
+                            <div class="itemLeyenda" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 0.73rem; color: var(--texto);" title="Agresiones">
+                                <div style="display: flex; align-items: center; gap: 7px;">
+                                    <span class="dot-leyenda dot-amarillo" style="width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.6); flex-shrink: 0;"></span>
                                     <span class="simbologia-item-text">Agresiones</span>
                                 </div>
-                                <span id="sidebarCountAgresiones" class="simbologia-count-tag" style="font-weight: 700; color: var(--texto-suave); font-size: 0.74rem;">0</span>
+                                <span id="sidebarCountAgresiones" class="simbologia-count-tag" style="font-weight: 700; color: var(--texto-suave); font-size: 0.72rem;">0</span>
                             </div>
-                            <div class="itemLeyenda" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 0.75rem; color: var(--texto);" title="Accidente">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <span class="dot-leyenda dot-verde" style="width: 9px; height: 9px; border-radius: 50%; display: inline-block; background: #10b981; box-shadow: 0 0 8px rgba(168, 85, 247, 0.6); flex-shrink: 0;"></span>
+                            <div class="itemLeyenda" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 0.73rem; color: var(--texto);" title="Accidente">
+                                <div style="display: flex; align-items: center; gap: 7px;">
+                                    <span class="dot-leyenda dot-verde" style="width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: #10b981; box-shadow: 0 0 8px rgba(168, 85, 247, 0.6); flex-shrink: 0;"></span>
                                     <span class="simbologia-item-text">Accidente</span>
                                 </div>
-                                <span id="sidebarCountAccidente" class="simbologia-count-tag" style="font-weight: 700; color: var(--texto-suave); font-size: 0.74rem;">0</span>
+                                <span id="sidebarCountAccidente" class="simbologia-count-tag" style="font-weight: 700; color: var(--texto-suave); font-size: 0.72rem;">0</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Separador 3: Entre Simbología y Acceso Administrativo -->
-                <hr class="sidebar-divider" style="border: 0; border-top: 1px solid var(--borde); margin: 8px 15px 8px 15px; width: calc(100% - 30px); opacity: 0.7;">
+                <hr class="sidebar-divider" style="border: 0; border-top: 1px solid var(--borde); margin: 4px 15px 4px 15px; width: calc(100% - 30px); opacity: 0.7;">
 
-                <!-- Controles Inferiores: Selector de Tema + Acceso Administrativo -->
-                <div class="sidebar-footer" style="padding: 0 12px 12px 12px; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px;">
-                    <button id="btnTemaDashboard" class="nav-btn btn-tema-dashboard" style="width: 100%; padding: 7px 10px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--borde); border-radius: 10px; color: var(--texto-suave); cursor: pointer; display: flex; align-items: center; justify-content: flex-start; gap: 8px; box-sizing: border-box; overflow: hidden; transition: all 0.2s ease;" title="Cambiar tema Claro / Oscuro">
-                        <i class="bi bi-sun-fill icono-tema-sol" style="color: #f59e0b; font-size: 0.95rem; flex-shrink: 0; display: none;"></i>
-                        <i class="bi bi-moon-stars-fill icono-tema-luna" style="color: var(--acento); font-size: 0.95rem; flex-shrink: 0;"></i>
-                        <span class="nav-text tema-text" style="color: var(--texto-suave); font-size: 0.75rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Modo claro</span>
-                    </button>
-                    <button id="iniciarSesion" class="nav-btn btn-admin-acceso" style="width: 100%; padding: 7px 10px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--borde); border-radius: 10px; color: var(--texto-suave); cursor: pointer; display: flex; align-items: center; justify-content: flex-start; gap: 8px; box-sizing: border-box; overflow: hidden; transition: all 0.2s ease;" title="Acceso Administrativo">
-                        <i class="bi bi-shield-lock-fill" style="color: var(--acento); font-size: 0.95rem; flex-shrink: 0;"></i> <span class="nav-text admin-text" style="color: var(--texto-suave); font-size: 0.75rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Acceso administrativo</span>
+                <!-- Controles Inferiores: Switch iPhone de Tema + Acceso Administrativo -->
+                <div class="sidebar-footer" style="padding: 0 10px 8px 10px; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px; align-items: center;">
+                    <div class="sidebar-tema-fila" style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 2px 4px;">
+                        <span class="nav-text tema-label-text" style="font-size: 0.73rem; font-weight: 600; color: var(--texto-suave);">Tema</span>
+                        <button id="btnTemaHeaderDashboard" class="toggle-iphone-header" title="Cambiar modo Claro / Oscuro para comodidad visual">
+                            <span class="icono-sol"><i class="bi bi-sun-fill"></i></span>
+                            <div class="sw-slider"></div>
+                            <span class="icono-luna"><i class="bi bi-moon-stars-fill"></i></span>
+                        </button>
+                    </div>
+                    <button id="iniciarSesion" class="nav-btn btn-admin-acceso" style="width: 100%; padding: 5px 10px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--borde); border-radius: 10px; color: var(--texto-suave); cursor: pointer; display: flex; align-items: center; justify-content: flex-start; gap: 8px; box-sizing: border-box; overflow: hidden; transition: all 0.2s ease;" title="Acceso Administrativo">
+                        <i class="bi bi-shield-lock-fill" style="color: var(--acento); font-size: 0.90rem; flex-shrink: 0;"></i> <span class="nav-text admin-text" style="color: var(--texto-suave); font-size: 0.74rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Acceso administrativo</span>
                     </button>
                 </div>
             </div>
@@ -505,9 +622,10 @@
                 </div>
             </div>
             <div class="mobile-header-actions">
-                <button id="btnTemaMobile" class="btn-mobile-icon" title="Cambiar tema Claro / Oscuro">
-                    <i class="bi bi-sun-fill icono-tema-sol" style="color: #f59e0b; display: none;"></i>
-                    <i class="bi bi-moon-stars-fill icono-tema-luna" style="color: var(--acento);"></i>
+                <button id="btnTemaHeaderMobile" class="toggle-iphone-header" title="Cambiar modo Claro / Oscuro">
+                    <span class="icono-sol"><i class="bi bi-sun-fill"></i></span>
+                    <div class="sw-slider"></div>
+                    <span class="icono-luna"><i class="bi bi-moon-stars-fill"></i></span>
                 </button>
                 <button id="btnFiltrosMobileHeader" class="btn-mobile-icon" title="Buscar y Filtros">
                     <i class="bi bi-search"></i>

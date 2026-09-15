@@ -15,26 +15,6 @@ function inicializarTemaDashboard() {
 
 function actualizarIconosTema() {
     const esClaro = document.body.classList.contains("tema-claro");
-    
-    // Desktop button icons & text
-    const btnDesktop = document.getElementById("btnTemaDashboard");
-    if (btnDesktop) {
-        const sol = btnDesktop.querySelector(".icono-tema-sol");
-        const luna = btnDesktop.querySelector(".icono-tema-luna");
-        const texto = btnDesktop.querySelector(".tema-text");
-        if (sol) sol.style.display = esClaro ? "inline-block" : "none";
-        if (luna) luna.style.display = esClaro ? "none" : "inline-block";
-        if (texto) texto.textContent = esClaro ? "Modo oscuro" : "Modo claro";
-    }
-
-    // Mobile button icons
-    const btnMobile = document.getElementById("btnTemaMobile");
-    if (btnMobile) {
-        const solMob = btnMobile.querySelector(".icono-tema-sol");
-        const lunaMob = btnMobile.querySelector(".icono-tema-luna");
-        if (solMob) solMob.style.display = esClaro ? "inline-block" : "none";
-        if (lunaMob) lunaMob.style.display = esClaro ? "none" : "inline-block";
-    }
 
     // Actualizar meta theme-color para navegadores móviles
     const metaTheme = document.querySelector('meta[name="theme-color"]');
@@ -74,7 +54,7 @@ function alternarTemaDashboard() {
 document.addEventListener("DOMContentLoaded", () => {
     inicializarTemaDashboard();
     
-    const btnTemaDesk = document.getElementById("btnTemaDashboard");
+    const btnTemaDesk = document.getElementById("btnTemaHeaderDashboard");
     if (btnTemaDesk) {
         btnTemaDesk.addEventListener("click", (e) => {
             e.stopPropagation();
@@ -82,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    const btnTemaMob = document.getElementById("btnTemaMobile");
+    const btnTemaMob = document.getElementById("btnTemaHeaderMobile");
     if (btnTemaMob) {
         btnTemaMob.addEventListener("click", (e) => {
             e.stopPropagation();
