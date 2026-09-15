@@ -1471,15 +1471,6 @@ if (tabla) {
 // Event Listeners de Filtros y Paginación de Incidentes
 document.getElementById("buscarIncidenteInput")?.addEventListener("input", aplicarFiltrosIncidentes);
 document.getElementById("buscarCodigoIncidenteInput")?.addEventListener("input", aplicarFiltrosIncidentes);
-document.getElementById("buscarCodigoIncidenteInput")?.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-        e.preventDefault();
-        aplicarFiltrosIncidentes();
-    }
-});
-document.getElementById("btnBuscarCodigoIncidente")?.addEventListener("click", () => {
-    aplicarFiltrosIncidentes();
-});
 document.getElementById("estadoIncidenteFiltro")?.addEventListener("change", aplicarFiltrosIncidentes);
 document.getElementById("tipoIncidenteFiltro")?.addEventListener("change", aplicarFiltrosIncidentes);
 
