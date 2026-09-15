@@ -1042,17 +1042,24 @@ const filasPorPaginaIncidentes = 10;
 
 function aplicarFiltrosIncidentes(resetPagina = true) {
     const busqueda = (document.getElementById("buscarIncidenteInput")?.value || "").toLowerCase().trim();
+    const busquedaCodigo = (document.getElementById("buscarCodigoIncidenteInput")?.value || "").toLowerCase().trim();
     const filtroEstado = (document.getElementById("estadoIncidenteFiltro")?.value || "");
     const filtroTipo = (document.getElementById("tipoIncidenteFiltro")?.value || "");
 
     incidentesFiltrados = todosLosIncidentes.filter(inc => {
+        const coincideCodigo = !busquedaCodigo ||
+            (inc.codigoincidente || "").toLowerCase().includes(busquedaCodigo) ||
+            String(inc.idincidente || "").toLowerCase().includes(busquedaCodigo) ||
+            (`inc-${inc.idincidente}`).toLowerCase().includes(busquedaCodigo);
+
         const coincideBusqueda = !busqueda ||
             (inc.namebarrio || "").toLowerCase().includes(busqueda) ||
             (inc.nombre || "").toLowerCase().includes(busqueda) ||
             (inc.nombreusuario || "").toLowerCase().includes(busqueda) ||
             (inc.descripcionincidente || "").toLowerCase().includes(busqueda) ||
             (inc.nametipoincidente || "").toLowerCase().includes(busqueda) ||
-            (inc.admin_revisor_nombre || "").toLowerCase().includes(busqueda);
+            (inc.admin_revisor_nombre || "").toLowerCase().includes(busqueda) ||
+            (inc.codigoincidente || "").toLowerCase().includes(busqueda);
 
         const coincideEstado = !filtroEstado || String(inc.id_estado || 1) === String(filtroEstado);
         const coincideTipo = !filtroTipo || String(inc.idtipoincidente) === String(filtroTipo);
@@ -1064,7 +1071,7 @@ function aplicarFiltrosIncidentes(resetPagina = true) {
             if (filtroFechaHasta && fechaInc > filtroFechaHasta) coincideFecha = false;
         }
 
-        return coincideBusqueda && coincideEstado && coincideTipo && coincideFecha;
+        return coincideCodigo && coincideBusqueda && coincideEstado && coincideTipo && coincideFecha;
     });
 
     if (resetPagina) {
@@ -1173,12 +1180,15 @@ function renderTabla(data) {
         const revisorNombre = incidente.admin_revisor_nombre || 'Sin asignar';
         const creadorNombre = incidente.nombreusuario || 'Sistema';
 
+        const codigoTexto = incidente.codigoincidente ? `<div style="font-size: 0.72rem; color: var(--texto-suave); font-family: monospace; margin-top: 2px;">${incidente.codigoincidente}</div>` : '';
+
         fila.innerHTML = `
             <td style="padding: 10px 12px; text-align: center; vertical-align: middle;" class="celda-consecutivo">
                 #${consecutivo}
             </td>
             <td style="padding: 10px 12px; text-align: center; vertical-align: middle;">
-                <span class="badge-incidente-id">#INC-${incidente.idincidente}</span>
+                <span class="badge-incidente-id" title="${incidente.codigoincidente ? 'Código: ' + incidente.codigoincidente : ''}">#INC-${incidente.idincidente}</span>
+                ${codigoTexto}
             </td>
             <td style="padding: 10px 12px; text-align: center; vertical-align: middle;">
                 <div style="display: flex; justify-content: center; align-items: center;">
@@ -1460,14 +1470,26 @@ if (tabla) {
 
 // Event Listeners de Filtros y Paginación de Incidentes
 document.getElementById("buscarIncidenteInput")?.addEventListener("input", aplicarFiltrosIncidentes);
+document.getElementById("buscarCodigoIncidenteInput")?.addEventListener("input", aplicarFiltrosIncidentes);
+document.getElementById("buscarCodigoIncidenteInput")?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+        e.preventDefault();
+        aplicarFiltrosIncidentes();
+    }
+});
+document.getElementById("btnBuscarCodigoIncidente")?.addEventListener("click", () => {
+    aplicarFiltrosIncidentes();
+});
 document.getElementById("estadoIncidenteFiltro")?.addEventListener("change", aplicarFiltrosIncidentes);
 document.getElementById("tipoIncidenteFiltro")?.addEventListener("change", aplicarFiltrosIncidentes);
 
 document.getElementById("btnResetFiltrosIncidentes")?.addEventListener("click", () => {
     const buscarInput = document.getElementById("buscarIncidenteInput");
+    const buscarCodigoInput = document.getElementById("buscarCodigoIncidenteInput");
     const tipoFiltro = document.getElementById("tipoIncidenteFiltro");
     const estadoFiltro = document.getElementById("estadoIncidenteFiltro");
     if (buscarInput) buscarInput.value = "";
+    if (buscarCodigoInput) buscarCodigoInput.value = "";
     if (tipoFiltro) tipoFiltro.value = "";
     if (estadoFiltro) estadoFiltro.value = "";
 

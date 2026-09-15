@@ -2207,6 +2207,41 @@ body.tema-claro .btn-filtro-tiempo:hover {
     color: #1677FF !important;
 }
 
+/* Botón Buscar Código de Incidente */
+.btn-buscar-codigo {
+    padding: 6px 12px;
+    background: var(--azul, #1677ff);
+    border: 1px solid var(--azul, #1677ff);
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.btn-buscar-codigo:hover {
+    background: var(--azul-hover, #0f6fef);
+    border-color: var(--azul-hover, #0f6fef);
+    box-shadow: 0 2px 8px rgba(22, 119, 255, 0.35);
+}
+
+body.tema-claro .btn-buscar-codigo {
+    background: #1677FF !important;
+    border-color: #1677FF !important;
+    color: #FFFFFF !important;
+}
+
+body.tema-claro .btn-buscar-codigo:hover {
+    background: #0958D9 !important;
+    border-color: #0958D9 !important;
+}
+
 /* ════════════════════════════════════════════════════════
    TABLA DE INCIDENTES (Secciones 4, 5 y 8 de Observacion.txt)
    ════════════════════════════════════════════════════════ */

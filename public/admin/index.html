@@ -184,7 +184,15 @@
                         <!-- Cuerpo Desplegable de Filtros -->
                         <div class="cuerpo-filtros-desplegable" id="cuerpoFiltrosIncidentes">
                             <div class="user-filter-bar" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 8px;">
-                                <!-- Buscador de texto -->
+                                <!-- Buscador por Código de Incidente -->
+                                <div style="display: flex; gap: 4px; align-items: center; flex: 0 1 270px; min-width: 220px;">
+                                    <input type="text" id="buscarCodigoIncidenteInput" class="filtro-input-control" placeholder="Ej: RO1707260609A0655" title="Escribe el código del incidente">
+                                    <button type="button" id="btnBuscarCodigoIncidente" class="btn-buscar-codigo" title="Buscar por código">
+                                        <i class="bi bi-search"></i> Buscar
+                                    </button>
+                                </div>
+
+                                <!-- Buscador de texto general -->
                                 <div style="flex: 1; min-width: 180px;">
                                     <input type="text" id="buscarIncidenteInput" class="filtro-input-control" placeholder="Buscar por barrio, vereda, usuario o descripción...">
                                 </div>
