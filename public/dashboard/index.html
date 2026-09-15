@@ -481,8 +481,13 @@
                 <!-- Separador 3: Entre Simbología y Acceso Administrativo -->
                 <hr class="sidebar-divider" style="border: 0; border-top: 1px solid var(--borde); margin: 8px 15px 8px 15px; width: calc(100% - 30px); opacity: 0.7;">
 
-                <!-- Botón Integrado de Acceso Administrativo (Sin Emojis) -->
-                <div class="sidebar-footer" style="padding: 0 12px 12px 12px; width: 100%; box-sizing: border-box;">
+                <!-- Controles Inferiores: Selector de Tema + Acceso Administrativo -->
+                <div class="sidebar-footer" style="padding: 0 12px 12px 12px; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px;">
+                    <button id="btnTemaDashboard" class="nav-btn btn-tema-dashboard" style="width: 100%; padding: 7px 10px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--borde); border-radius: 10px; color: var(--texto-suave); cursor: pointer; display: flex; align-items: center; justify-content: flex-start; gap: 8px; box-sizing: border-box; overflow: hidden; transition: all 0.2s ease;" title="Cambiar tema Claro / Oscuro">
+                        <i class="bi bi-sun-fill icono-tema-sol" style="color: #f59e0b; font-size: 0.95rem; flex-shrink: 0; display: none;"></i>
+                        <i class="bi bi-moon-stars-fill icono-tema-luna" style="color: var(--acento); font-size: 0.95rem; flex-shrink: 0;"></i>
+                        <span class="nav-text tema-text" style="color: var(--texto-suave); font-size: 0.75rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Modo claro</span>
+                    </button>
                     <button id="iniciarSesion" class="nav-btn btn-admin-acceso" style="width: 100%; padding: 7px 10px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--borde); border-radius: 10px; color: var(--texto-suave); cursor: pointer; display: flex; align-items: center; justify-content: flex-start; gap: 8px; box-sizing: border-box; overflow: hidden; transition: all 0.2s ease;" title="Acceso Administrativo">
                         <i class="bi bi-shield-lock-fill" style="color: var(--acento); font-size: 0.95rem; flex-shrink: 0;"></i> <span class="nav-text admin-text" style="color: var(--texto-suave); font-size: 0.75rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Acceso administrativo</span>
                     </button>
@@ -500,6 +505,10 @@
                 </div>
             </div>
             <div class="mobile-header-actions">
+                <button id="btnTemaMobile" class="btn-mobile-icon" title="Cambiar tema Claro / Oscuro">
+                    <i class="bi bi-sun-fill icono-tema-sol" style="color: #f59e0b; display: none;"></i>
+                    <i class="bi bi-moon-stars-fill icono-tema-luna" style="color: var(--acento);"></i>
+                </button>
                 <button id="btnFiltrosMobileHeader" class="btn-mobile-icon" title="Buscar y Filtros">
                     <i class="bi bi-search"></i>
                 </button>

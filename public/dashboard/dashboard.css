@@ -4525,4 +4525,621 @@ main.filtros-abiertos .fab-tiempo {
     background: #f1f5f9 !important;
     color: #0284c7 !important;
     border-color: #94a3b8 !important;
-}
+}
+
+/* ============================================================
+   ☀️ TEMA CLARO COMPLETO — DASHBOARD PÚBLICO SIGI
+   Superficies frías, tipografía de alto contraste WCAG AA,
+   bordes sutiles y preservación intacta del modo oscuro existente
+   ============================================================ */
+
+body.tema-claro {
+    --bg-dark:       #f4f6f9;
+    --bg-card:       #ffffff;
+    --bg-panel:      rgba(255, 255, 255, 0.98);
+    --azul:          #1677ff;
+    --azul-hover:    #0f6fef;
+    --acento:        #0284c7;
+    --texto:         #1e293b;
+    --texto-suave:   #64748b;
+    --borde:         #e2e8f0;
+    --bg-hover:      #f1f5f9;
+    --sombra:        0 4px 16px rgba(0, 0, 0, 0.08);
+
+    background: #f4f6f9 !important;
+    color: #1e293b !important;
+}
+
+/* ── 1. Layout Principal y Envolturas ── */
+body.tema-claro .layout-wrapper {
+    background: #f4f6f9 !important;
+}
+
+body.tema-claro .content-wrapper {
+    background: #f4f6f9 !important;
+}
+
+body.tema-claro header {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+body.tema-claro .mobile-app-header {
+    background: #ffffff !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+body.tema-claro .mobile-brand-title {
+    color: #0f172a !important;
+}
+
+body.tema-claro .mobile-brand-subtitle {
+    color: #64748b !important;
+}
+
+body.tema-claro .btn-mobile-icon {
+    background: #f1f5f9 !important;
+    color: #334155 !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+body.tema-claro .btn-mobile-icon:hover {
+    background: #e2e8f0 !important;
+    color: #0f172a !important;
+}
+
+/* ── 2. Sidebar Desktop ── */
+body.tema-claro .sidebar {
+    background: #ffffff !important;
+    border-right: 1px solid #e2e8f0 !important;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.03);
+}
+
+body.tema-claro .sidebar.colapsada:not(.hover-disabled):hover {
+    background: #ffffff !important;
+    box-shadow: 6px 0 25px rgba(0, 0, 0, 0.1), 0 0 15px rgba(2, 132, 199, 0.1) !important;
+    border-right: 1px solid #0284c7 !important;
+}
+
+body.tema-claro .btn-toggle-sidebar {
+    background: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #475569 !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06) !important;
+}
+
+body.tema-claro .btn-toggle-sidebar:hover {
+    background: #0284c7 !important;
+    color: #ffffff !important;
+    border-color: #0284c7 !important;
+}
+
+body.tema-claro .sidebar-logo .logo-title {
+    color: #1e293b !important;
+}
+
+body.tema-claro .sidebar-logo .logo-tag {
+    background: #e0f2fe !important;
+    color: #0369a1 !important;
+}
+
+body.tema-claro .sidebar-divider {
+    border-top-color: #e2e8f0 !important;
+}
+
+body.tema-claro .nav-btn {
+    color: #475569 !important;
+    background: transparent !important;
+}
+
+body.tema-claro .nav-btn:hover {
+    background: #f1f5f9 !important;
+    color: #0284c7 !important;
+}
+
+body.tema-claro .nav-btn.active {
+    background: #e0f2fe !important;
+    color: #0284c7 !important;
+    border-left: 3px solid #0284c7 !important;
+    font-weight: 700 !important;
+}
+
+body.tema-claro .simbologia-card {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: none !important;
+}
+
+body.tema-claro .simbologia-card h4 {
+    color: #64748b !important;
+}
+
+body.tema-claro .simbologia-card .itemLeyenda {
+    color: #334155 !important;
+}
+
+body.tema-claro .simbologia-count-tag {
+    background: #e2e8f0 !important;
+    color: #1e293b !important;
+}
+
+body.tema-claro .btn-tema-dashboard,
+body.tema-claro .btn-admin-acceso {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #475569 !important;
+}
+
+body.tema-claro .btn-tema-dashboard:hover,
+body.tema-claro .btn-admin-acceso:hover {
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+    color: #0284c7 !important;
+}
+
+body.tema-claro .btn-tema-dashboard .tema-text,
+body.tema-claro .btn-admin-acceso .admin-text {
+    color: #334155 !important;
+}
+
+/* ── 3. Vista Inicio (Hero & Tarjetas Informativas) ── */
+body.tema-claro #vistaInicio {
+    background: #f4f6f9 !important;
+}
+
+body.tema-claro .inicio-hero {
+    background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%) !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+body.tema-claro .hero-badge {
+    background: #e0f2fe !important;
+    color: #0369a1 !important;
+    border: 1px solid #bae6fd !important;
+}
+
+body.tema-claro .hero-title {
+    color: #0f172a !important;
+}
+
+body.tema-claro .hero-subtitle {
+    color: #475569 !important;
+}
+
+body.tema-claro .btn-hero-primary {
+    background: #0284c7 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3) !important;
+}
+
+body.tema-claro .btn-hero-primary:hover {
+    background: #0369a1 !important;
+}
+
+body.tema-claro .btn-hero-secondary {
+    background: #ffffff !important;
+    color: #334155 !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+body.tema-claro .btn-hero-secondary:hover {
+    background: #f8fafc !important;
+    color: #0284c7 !important;
+    border-color: #0284c7 !important;
+}
+
+body.tema-claro .inicio-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.tema-claro .inicio-card:hover {
+    border-color: #93c5fd !important;
+    box-shadow: 0 8px 24px rgba(2, 132, 199, 0.08) !important;
+}
+
+body.tema-claro .inicio-card h3 {
+    color: #0f172a !important;
+}
+
+body.tema-claro .inicio-card p {
+    color: #64748b !important;
+}
+
+/* ── 4. Controles Flotantes del Mapa y KPIs ── */
+body.tema-claro .kpi-ribbon {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+}
+
+body.tema-claro .kpi-card {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+body.tema-claro .kpi-label {
+    color: #64748b !important;
+}
+
+body.tema-claro .kpi-valor {
+    color: #0f172a !important;
+}
+
+body.tema-claro .btn-cerrar-kpis,
+body.tema-claro .btn-abrir-kpis {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #475569 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+body.tema-claro .btn-cerrar-kpis:hover,
+body.tema-claro .btn-abrir-kpis:hover {
+    background: #e0f2fe !important;
+    color: #0284c7 !important;
+    border-color: #0284c7 !important;
+}
+
+body.tema-claro .map-actions-group .fab {
+    background: #ffffff !important;
+    color: #334155 !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+body.tema-claro .map-actions-group .fab:hover {
+    background: #f8fafc !important;
+    color: #0284c7 !important;
+    border-color: #0284c7 !important;
+}
+
+body.tema-claro .map-actions-group .fab.activo {
+    background: #0284c7 !important;
+    color: #ffffff !important;
+    border-color: #0284c7 !important;
+}
+
+body.tema-claro #indicador-actualizacion {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #475569 !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08) !important;
+}
+
+body.tema-claro #indicador-actualizacion strong {
+    color: #0f172a !important;
+}
+
+body.tema-claro .leyenda {
+    background: rgba(255, 255, 255, 0.94) !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+    color: #334155 !important;
+}
+
+/* ── 5. Panel de Filtros Lateral (Drawer) ── */
+body.tema-claro #panelFiltros {
+    background: #ffffff !important;
+    border-left: 1px solid #e2e8f0 !important;
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.1) !important;
+}
+
+body.tema-claro #panelFiltros h3,
+body.tema-claro #panelFiltros label {
+    color: #1e293b !important;
+}
+
+body.tema-claro .analisis-rapido {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+body.tema-claro .ar-label {
+    color: #64748b !important;
+}
+
+body.tema-claro .ar-valor {
+    color: #0f172a !important;
+}
+
+body.tema-claro #panelFiltros input[type="text"] {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+body.tema-claro #panelFiltros input[type="text"]:focus {
+    border-color: #0284c7 !important;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
+}
+
+body.tema-claro .tiposIncidente button.incidente {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #334155 !important;
+}
+
+body.tema-claro .tiposIncidente button.incidente:hover {
+    background: #f1f5f9 !important;
+    border-color: #94a3b8 !important;
+}
+
+body.tema-claro .tiposIncidente button.incidente.activo {
+    background: #e0f2fe !important;
+    border-color: #0284c7 !important;
+    color: #0284c7 !important;
+}
+
+body.tema-claro .btnActualizar {
+    background: #0284c7 !important;
+    color: #ffffff !important;
+}
+
+body.tema-claro .btnActualizar:hover {
+    background: #0369a1 !important;
+}
+
+body.tema-claro #sugerencias {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+}
+
+body.tema-claro .sugerencia-item {
+    color: #1e293b !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+body.tema-claro .sugerencia-item:hover {
+    background: #f0f9ff !important;
+    color: #0284c7 !important;
+}
+
+/* ── 6. Vista Tabla de Registros ── */
+body.tema-claro #vistaTabla {
+    background: #f4f6f9 !important;
+}
+
+body.tema-claro .tabla-acciones {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.tema-claro .tabla-busqueda input {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+body.tema-claro .tabla-filtro-select select {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+body.tema-claro .btn-exportar-csv {
+    background: #f0fdf4 !important;
+    border: 1px solid #bbf7d0 !important;
+    color: #166534 !important;
+}
+
+body.tema-claro .btn-exportar-csv:hover {
+    background: #dcfce7 !important;
+}
+
+body.tema-claro .tabla-contenedor {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03) !important;
+}
+
+body.tema-claro .tabla-incidentes-publica thead th {
+    background: #f8fafc !important;
+    color: #334155 !important;
+    border-bottom: 2px solid #cbd5e1 !important;
+}
+
+body.tema-claro .tabla-incidentes-publica tbody tr {
+    background: #ffffff !important;
+    color: #1e293b !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+
+body.tema-claro .tabla-incidentes-publica tbody tr:hover {
+    background: #f0f9ff !important;
+}
+
+body.tema-claro .tabla-paginacion {
+    background: #f8fafc !important;
+    border-top: 1px solid #e2e8f0 !important;
+}
+
+body.tema-claro .paginacion-info {
+    color: #64748b !important;
+}
+
+body.tema-claro .btn-pag {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #334155 !important;
+}
+
+body.tema-claro .btn-pag:hover:not(:disabled) {
+    background: #0284c7 !important;
+    color: #ffffff !important;
+    border-color: #0284c7 !important;
+}
+
+body.tema-claro .btn-pag.activa {
+    background: #0284c7 !important;
+    color: #ffffff !important;
+    border-color: #0284c7 !important;
+}
+
+/* ── 7. Vista Analítica y Estadísticas ── */
+body.tema-claro #estadisticas {
+    background: #f4f6f9 !important;
+}
+
+body.tema-claro .analitica-header {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.tema-claro .analitica-titulo h2 {
+    color: #0f172a !important;
+}
+
+body.tema-claro .analitica-subtitulo {
+    color: #64748b !important;
+}
+
+body.tema-claro .badge-total-kpi {
+    background: #e0f2fe !important;
+    border: 1px solid #bae6fd !important;
+    color: #0369a1 !important;
+}
+
+body.tema-claro .seccion-titulo {
+    color: #64748b !important;
+}
+
+body.tema-claro .cardResumen {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+    color: #1e293b !important;
+}
+
+body.tema-claro .panel-grafico {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.tema-claro .heatmap-grid {
+    background: #ffffff !important;
+}
+
+body.tema-claro .hm-cell {
+    border-color: #f1f5f9 !important;
+}
+
+body.tema-claro .hm-header {
+    color: #64748b !important;
+}
+
+/* ── 8. Modales (Detalle Incidente y Filtro Tiempo) ── */
+body.tema-claro .modal {
+    background: rgba(15, 23, 42, 0.5) !important;
+    backdrop-filter: blur(4px) !important;
+}
+
+body.tema-claro .modal-contenido {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.15) !important;
+    color: #1e293b !important;
+}
+
+body.tema-claro .modal-cabecera {
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+
+body.tema-claro .modal-cabecera h3 {
+    color: #0f172a !important;
+}
+
+body.tema-claro .cerrar-modal-tiempo {
+    color: #64748b !important;
+}
+
+body.tema-claro .cerrar-modal-tiempo:hover {
+    color: #ef4444 !important;
+}
+
+body.tema-claro .detalle-item {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+body.tema-claro .detalle-label {
+    color: #64748b !important;
+}
+
+body.tema-claro .detalle-valor,
+body.tema-claro .detalle-descripcion {
+    color: #0f172a !important;
+}
+
+body.tema-claro .btn-filtro-rapido {
+    background: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #334155 !important;
+}
+
+body.tema-claro .btn-filtro-rapido:hover {
+    background: #e0f2fe !important;
+    color: #0284c7 !important;
+    border-color: #0284c7 !important;
+}
+
+body.tema-claro .btn-filtro-rapido.activo {
+    background: #0284c7 !important;
+    color: #ffffff !important;
+    border-color: #0284c7 !important;
+}
+
+body.tema-claro .campo-modal label {
+    color: #475569 !important;
+}
+
+body.tema-claro .campo-modal input,
+body.tema-claro .campo-modal select {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+body.tema-claro .btn-limpiar-general {
+    border: 1px solid #cbd5e1 !important;
+    color: #64748b !important;
+}
+
+body.tema-claro .btn-limpiar-general:hover {
+    background: #fef2f2 !important;
+    border-color: #ef4444 !important;
+    color: #ef4444 !important;
+}
+
+/* ── 9. Barra Móvil Inferior (Bottom Bar) ── */
+body.tema-claro .mobile-bottom-bar {
+    background: #ffffff !important;
+    border-top: 1px solid #e2e8f0 !important;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05) !important;
+}
+
+body.tema-claro .mobile-nav-tab {
+    color: #64748b !important;
+}
+
+body.tema-claro .mobile-nav-tab:hover {
+    color: #0284c7 !important;
+}
+
+body.tema-claro .mobile-nav-tab.active {
+    color: #0284c7 !important;
+}
+
+/* ── 10. Footer ── */
+body.tema-claro .sigi-footer .footer-copy {
+    color: #64748b !important;
+}
+

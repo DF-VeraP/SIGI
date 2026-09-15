@@ -4,6 +4,93 @@ let tiposId = [];
 let filtroFechaDesde = "";
 let filtroFechaHasta = "";
 
+// ── Control de Tema Claro / Oscuro en Dashboard ──
+function inicializarTemaDashboard() {
+    const temaGuardado = localStorage.getItem("tema_sigi_dashboard") || localStorage.getItem("tema_sigi_admin");
+    if (temaGuardado === "claro") {
+        document.body.classList.add("tema-claro");
+    }
+    actualizarIconosTema();
+}
+
+function actualizarIconosTema() {
+    const esClaro = document.body.classList.contains("tema-claro");
+    
+    // Desktop button icons & text
+    const btnDesktop = document.getElementById("btnTemaDashboard");
+    if (btnDesktop) {
+        const sol = btnDesktop.querySelector(".icono-tema-sol");
+        const luna = btnDesktop.querySelector(".icono-tema-luna");
+        const texto = btnDesktop.querySelector(".tema-text");
+        if (sol) sol.style.display = esClaro ? "inline-block" : "none";
+        if (luna) luna.style.display = esClaro ? "none" : "inline-block";
+        if (texto) texto.textContent = esClaro ? "Modo oscuro" : "Modo claro";
+    }
+
+    // Mobile button icons
+    const btnMobile = document.getElementById("btnTemaMobile");
+    if (btnMobile) {
+        const solMob = btnMobile.querySelector(".icono-tema-sol");
+        const lunaMob = btnMobile.querySelector(".icono-tema-luna");
+        if (solMob) solMob.style.display = esClaro ? "inline-block" : "none";
+        if (lunaMob) lunaMob.style.display = esClaro ? "none" : "inline-block";
+    }
+
+    // Actualizar meta theme-color para navegadores móviles
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) {
+        metaTheme.setAttribute("content", esClaro ? "#f5f7fa" : "#0d1117");
+    }
+}
+
+function alternarTemaDashboard() {
+    document.body.classList.toggle("tema-claro");
+    const esClaro = document.body.classList.contains("tema-claro");
+    localStorage.setItem("tema_sigi_dashboard", esClaro ? "claro" : "oscuro");
+    actualizarIconosTema();
+
+    // Actualizar gráficos de Chart.js si existen para ajustar colores de cuadrícula y etiquetas
+    if (typeof Chart !== 'undefined' && Chart.instances) {
+        Object.values(Chart.instances).forEach(chart => {
+            if (chart && chart.options) {
+                const colorTexto = esClaro ? '#334155' : '#e6edf3';
+                const colorGrid = esClaro ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.08)';
+                if (chart.options.scales) {
+                    if (chart.options.scales.x) {
+                        if (chart.options.scales.x.ticks) chart.options.scales.x.ticks.color = colorTexto;
+                        if (chart.options.scales.x.grid) chart.options.scales.x.grid.color = colorGrid;
+                    }
+                    if (chart.options.scales.y) {
+                        if (chart.options.scales.y.ticks) chart.options.scales.y.ticks.color = colorTexto;
+                        if (chart.options.scales.y.grid) chart.options.scales.y.grid.color = colorGrid;
+                    }
+                }
+                chart.update();
+            }
+        });
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    inicializarTemaDashboard();
+    
+    const btnTemaDesk = document.getElementById("btnTemaDashboard");
+    if (btnTemaDesk) {
+        btnTemaDesk.addEventListener("click", (e) => {
+            e.stopPropagation();
+            alternarTemaDashboard();
+        });
+    }
+
+    const btnTemaMob = document.getElementById("btnTemaMobile");
+    if (btnTemaMob) {
+        btnTemaMob.addEventListener("click", (e) => {
+            e.stopPropagation();
+            alternarTemaDashboard();
+        });
+    }
+});
+
 function formatearFecha(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
