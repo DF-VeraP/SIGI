@@ -101,9 +101,9 @@ Para conectar el servicio con tu cuenta de Cloudinary, se requieren las siguient
 
 ```env
 # CLOUDINARY CONFIG
-CLOUDINARY_CLOUD_NAME=jhstpfiw
-CLOUDINARY_API_KEY=287989477625174
-CLOUDINARY_API_SECRET=S0wJrzPVRXgkJg7HUbCW7FBLI_o
+CLOUDINARY_CLOUD_NAME=tu_cloud_name
+CLOUDINARY_API_KEY=tu_api_key
+CLOUDINARY_API_SECRET=tu_api_secret
 CLOUDINARY_UPLOAD_PRESET=sigi_preset
 ```
 
@@ -131,7 +131,7 @@ CLOUDINARY_UPLOAD_PRESET=sigi_preset
   "incidente": {
     "idincidente": 681,
     "codigoincidente": "RO0109261805A0681",
-    "imagen_url": "https://res.cloudinary.com/jhstpfiw/image/upload/v1788305406/sigi_incidentes/INC-RO0109261805A0681.png"
+    "imagen_url": "https://res.cloudinary.com/demo/image/upload/v1788305406/sigi_incidentes/INC-RO0109261805A0681.png"
   }
 }
 ```

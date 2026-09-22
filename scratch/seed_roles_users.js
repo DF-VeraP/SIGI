@@ -2,7 +2,8 @@ const pool = require('../db');
 const bcrypt = require('bcrypt');
 
 async function main() {
-  const pass = await bcrypt.hash('1234', 10);
+  const defaultPass = process.env.DEV_SEED_PASSWORD || 'CambiarClave123!';
+  const pass = await bcrypt.hash(defaultPass, 10);
 
   // 1. SuperAdmin (Daniel)
   await pool.query(`

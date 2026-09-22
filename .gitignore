@@ -15,3 +15,9 @@ Thumbs.db
 
 # Coverage
 coverage/
+
+# Database dumps & backups
+*.dump
+backup_*.sql
+backup_sigi.sql
+*.tar
