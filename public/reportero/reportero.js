@@ -2,6 +2,61 @@
 let mapMini = null;
 let markerMini = null;
 let usuarioSesion = null;
+let fotoComprimida = null;
+
+/**
+ * Comprime y redimensiona una foto tomada por la cámara móvil directamente en el navegador.
+ * Reduce fotos de 10-15 MB a ~250-400 KB en milisegundos, evitando timeouts y caídas de conexión.
+ */
+function comprimirImagen(file, maxWidth = 1280, maxHeight = 1280, quality = 0.75) {
+    return new Promise((resolve) => {
+        if (!file || !file.type.startsWith('image/') || file.size < 250 * 1024) {
+            return resolve(file);
+        }
+
+        const reader = new FileReader();
+        reader.onerror = () => resolve(file);
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onerror = () => resolve(file);
+            img.onload = () => {
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width = Math.round((width * maxHeight) / height);
+                        height = maxHeight;
+                    }
+                }
+
+                const canvas = document.createElement("canvas");
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob((blob) => {
+                    if (!blob) return resolve(file);
+                    const cleanName = (file.name || "foto.jpg").replace(/\.[^/.]+$/, ".jpg");
+                    const compressedFile = new File([blob], cleanName, {
+                        type: "image/jpeg",
+                        lastModified: Date.now()
+                    });
+                    console.log(`📸 Foto optimizada: ${(file.size / (1024 * 1024)).toFixed(2)} MB -> ${(compressedFile.size / 1024).toFixed(1)} KB`);
+                    resolve(compressedFile);
+                }, "image/jpeg", quality);
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
     // 1. Verificar sesión de usuario
@@ -52,15 +107,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (btnTomarFoto && inputFoto) {
         btnTomarFoto.addEventListener("click", () => inputFoto.click());
-        inputFoto.addEventListener("change", (e) => {
+        inputFoto.addEventListener("change", async (e) => {
             const file = e.target.files[0];
             if (file) {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    imgPreview.src = evt.target.result;
+                const spanBtn = btnTomarFoto.querySelector("span");
+                if (spanBtn) spanBtn.innerText = "Optimizando foto...";
+                try {
+                    fotoComprimida = await comprimirImagen(file);
+                    const reader = new FileReader();
+                    reader.onload = function(evt) {
+                        imgPreview.src = evt.target.result;
+                        previewContainer.style.display = "block";
+                    };
+                    reader.readAsDataURL(fotoComprimida);
+                } catch (optErr) {
+                    console.warn("No se pudo comprimir la foto, usando original:", optErr);
+                    fotoComprimida = file;
+                    imgPreview.src = URL.createObjectURL(file);
                     previewContainer.style.display = "block";
-                };
-                reader.readAsDataURL(file);
+                } finally {
+                    if (spanBtn) spanBtn.innerText = "Cambiar Foto Adjunta";
+                }
             }
         });
     }
@@ -68,8 +135,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (btnQuitarFoto) {
         btnQuitarFoto.addEventListener("click", () => {
             inputFoto.value = "";
+            fotoComprimida = null;
             imgPreview.src = "";
             previewContainer.style.display = "none";
+            const spanBtn = btnTomarFoto?.querySelector("span");
+            if (spanBtn) spanBtn.innerText = "Adjuntar / Tomar Foto de Terreno";
         });
     }
 
@@ -250,9 +320,13 @@ async function enviarReporte(e) {
     formData.append("requiere_ambulancia", document.getElementById("chkAmbulancia")?.checked ?? false);
     formData.append("requiere_bomberos", document.getElementById("chkBomberos")?.checked ?? false);
 
-    const inputFoto = document.getElementById("fotoInput");
-    if (inputFoto && inputFoto.files && inputFoto.files[0]) {
-        formData.append("foto", inputFoto.files[0]);
+    if (fotoComprimida) {
+        formData.append("foto", fotoComprimida);
+    } else {
+        const inputFoto = document.getElementById("fotoInput");
+        if (inputFoto && inputFoto.files && inputFoto.files[0]) {
+            formData.append("foto", inputFoto.files[0]);
+        }
     }
 
     try {
@@ -261,14 +335,22 @@ async function enviarReporte(e) {
             body: formData
         });
 
-        const data = await res.json();
+        let data;
+        try {
+            data = await res.json();
+        } catch (jsonErr) {
+            data = { mensaje: `Respuesta inesperada del servidor (Código ${res.status})` };
+        }
 
         if (res.ok) {
             showAlert(`✅ ${data.mensaje} (Código: ${data.incidente.codigoincidente})`, "success");
             document.getElementById("formReporte").reset();
+            fotoComprimida = null;
             if (document.getElementById("previewContainer")) {
                 document.getElementById("previewContainer").style.display = "none";
             }
+            const spanBtn = btnTomarFoto?.querySelector("span");
+            if (spanBtn) spanBtn.innerText = "Adjuntar / Tomar Foto de Terreno";
 
             // Restablecer fecha y hora
             const hoy = new Date();

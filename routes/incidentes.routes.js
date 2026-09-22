@@ -4,7 +4,10 @@ const incidentesController = require('../controllers/incidentes.controller');
 const { verificarSesion, verificarRol, verificarEstadoActivo } = require('../middleware/auth.middleware');
 const multer = require('multer');
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 25 * 1024 * 1024 }
+});
 
 // Middleware combo para rutas protegidas de incidentes
 const authGuard = [verificarSesion, verificarEstadoActivo];
