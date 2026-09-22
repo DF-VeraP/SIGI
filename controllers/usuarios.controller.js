@@ -104,7 +104,7 @@ const crearUsuario = async (req, res) => {
 
     // 3. Generar contraseña temporal automática segura (no la define el admin)
     const crypto = require('crypto');
-    const passwordTemporal = crypto.randomBytes(6).toString('base64').replace(/[^a-zA-Z0-9]/g, '').slice(0, 10) + '@Sigi1';
+    const passwordTemporal = String(Math.floor(100000 + crypto.randomInt(900000)));
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(passwordTemporal, saltRounds);
 
