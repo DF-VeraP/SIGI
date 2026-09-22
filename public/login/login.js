@@ -108,7 +108,23 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ── 4. Envío del Formulario de Login ──
+    // ── Toggle de Visibilidad en Modal Primer Ingreso ──
+    function setupTogglePwd(btnId, inputId, iconId) {
+        const btn = document.getElementById(btnId);
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (!btn || !input) return;
+        btn.addEventListener("click", () => {
+            const isPassword = input.getAttribute("type") === "password";
+            input.setAttribute("type", isPassword ? "text" : "password");
+            if (icon) icon.className = isPassword ? "bi bi-eye-slash" : "bi bi-eye";
+            input.focus();
+        });
+    }
+    setupTogglePwd("togglePassActual", "passActualPrimerIngreso", "iconTogglePassActual");
+    setupTogglePwd("togglePassNueva", "passNuevaPrimerIngreso", "iconTogglePassNueva");
+    setupTogglePwd("togglePassConfirmar", "passConfirmarPrimerIngreso", "iconTogglePassConfirmar");
+
     if (loginForm) {
         loginForm.addEventListener("submit", async (e) => {
             e.preventDefault();

@@ -237,6 +237,9 @@
                     <div class="input-container">
                         <i class="bi bi-lock input-icon"></i>
                         <input type="password" id="passActualPrimerIngreso" placeholder="••••••••••••" required>
+                        <button type="button" class="btn-toggle-pwd" id="togglePassActual" aria-label="Mostrar u ocultar contraseña temporal">
+                            <i class="bi bi-eye" id="iconTogglePassActual"></i>
+                        </button>
                     </div>
                 </div>
                 <div class="form-group">
@@ -244,6 +247,9 @@
                     <div class="input-container">
                         <i class="bi bi-shield-lock-fill input-icon"></i>
                         <input type="password" id="passNuevaPrimerIngreso" placeholder="Mínimo 6 caracteres" required minlength="6">
+                        <button type="button" class="btn-toggle-pwd" id="togglePassNueva" aria-label="Mostrar u ocultar nueva contraseña">
+                            <i class="bi bi-eye" id="iconTogglePassNueva"></i>
+                        </button>
                     </div>
                 </div>
                 <div class="form-group">
@@ -251,6 +257,9 @@
                     <div class="input-container">
                         <i class="bi bi-check2-circle input-icon"></i>
                         <input type="password" id="passConfirmarPrimerIngreso" placeholder="Repite la nueva contraseña" required minlength="6">
+                        <button type="button" class="btn-toggle-pwd" id="togglePassConfirmar" aria-label="Mostrar u ocultar confirmación de contraseña">
+                            <i class="bi bi-eye" id="iconTogglePassConfirmar"></i>
+                        </button>
                     </div>
                 </div>
                 <div id="alertPrimerIngreso" class="alert-box" style="display: none; margin-top: 10px;">

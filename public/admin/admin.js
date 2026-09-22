@@ -2320,8 +2320,6 @@ function abrirModalCrearUsuario() {
     const modal = document.getElementById("modalNuevoUsuario");
     const form = document.getElementById("formCrearUsuario");
     const title = document.getElementById("modalUsuarioTitle");
-    const passHelpText = document.getElementById("passHelpText");
-    const passInput = document.getElementById("newPassword");
     const editUserId = document.getElementById("editUserId");
 
     if (!modal || !form) {
@@ -2334,8 +2332,6 @@ function abrirModalCrearUsuario() {
     if (modalAlert) modalAlert.style.display = "none";
     if (editUserId) editUserId.value = "";
     if (title) title.innerHTML = "Crear nuevo usuario";
-    if (passHelpText) passHelpText.innerText = "(Requerida para nuevo usuario, mín. 6 caracteres)";
-    if (passInput) passInput.required = true;
 
     modal.classList.add("active");
     modal.style.setProperty("display", "flex", "important");
@@ -2358,8 +2354,6 @@ function abrirModalEditarUsuario(u) {
     console.log("abrirModalEditarUsuario ejecutado para:", u);
     const modal = document.getElementById("modalNuevoUsuario");
     const title = document.getElementById("modalUsuarioTitle");
-    const passHelpText = document.getElementById("passHelpText");
-    const passInput = document.getElementById("newPassword");
 
     if (!modal) {
         console.error("No se encontró el elemento modalNuevoUsuario en el DOM");
@@ -2372,15 +2366,12 @@ function abrirModalEditarUsuario(u) {
     document.getElementById("editUserId").value = u.idusuario;
     document.getElementById("newNombreUsuario").value = u.nombreusuario || "";
     document.getElementById("newEmail").value = u.email || "";
-    document.getElementById("newPassword").value = "";
     document.getElementById("newRol").value = u.rol || "reportero";
     document.getElementById("newEstado").value = u.estado || "activo";
     document.getElementById("newDependencia").value = u.dependencia || u.entidadusuario || "";
     document.getElementById("newTelefono").value = u.telefono || "";
 
     if (title) title.innerHTML = `Editar usuario #${u.idusuario}`;
-    if (passHelpText) passHelpText.innerText = "(Dejar en blanco para mantener la actual)";
-    if (passInput) passInput.required = false;
 
     modal.classList.add("active");
     modal.style.setProperty("display", "flex", "important");
@@ -2451,7 +2442,6 @@ if (formCrearUsuario) {
         const payload = {
             nombreusuario: document.getElementById("newNombreUsuario").value,
             email: document.getElementById("newEmail").value,
-            contrasenia: document.getElementById("newPassword").value,
             rol: document.getElementById("newRol").value,
             estado: document.getElementById("newEstado").value,
             dependencia: document.getElementById("newDependencia").value,

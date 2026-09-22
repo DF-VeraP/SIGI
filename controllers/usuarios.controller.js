@@ -66,7 +66,6 @@ const getUsuarioById = async (req, res) => {
 // Crear nuevo usuario (Solo Superadmin)
 const crearUsuario = async (req, res) => {
   const { nombreusuario, email, rol, estado, dependencia, telefono } = req.body;
-  const contrasenia = req.body.contrasenia || req.body.contraseniausuario;
 
   // 1. Validaciones de obligatoriedad
   if (!nombreusuario || !nombreusuario.trim()) {
@@ -79,10 +78,6 @@ const crearUsuario = async (req, res) => {
 
   if (!EMAIL_REGEX.test(email.trim())) {
     return res.status(400).json({ mensaje: 'Debes ingresar un formato de correo electrónico válido ⚠️' });
-  }
-
-  if (!contrasenia || contrasenia.length < 6) {
-    return res.status(400).json({ mensaje: 'La contraseña temporal es obligatoria y debe tener al menos 6 caracteres ⚠️' });
   }
 
   const cleanNombre = nombreusuario.trim();
@@ -107,10 +102,13 @@ const crearUsuario = async (req, res) => {
       return res.status(400).json({ mensaje: 'El nombre de usuario ya se encuentra registrado ⚠️' });
     }
 
+    // 3. Generar contraseña temporal automática segura (no la define el admin)
+    const crypto = require('crypto');
+    const passwordTemporal = crypto.randomBytes(6).toString('base64').replace(/[^a-zA-Z0-9]/g, '').slice(0, 10) + '@Sigi1';
     const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(contrasenia, saltRounds);
+    const hashedPassword = await bcrypt.hash(passwordTemporal, saltRounds);
 
-    // 3. Insertar nuevo usuario con debe_cambiar_password = true por defecto
+    // 4. Insertar nuevo usuario con debe_cambiar_password = true por defecto
     const result = await pool.query(`
       INSERT INTO usuario (
         nombreusuario, contraseniausuario, entidadusuario, email, rol, estado, dependencia, telefono, created_by, debe_cambiar_password
@@ -130,9 +128,9 @@ const crearUsuario = async (req, res) => {
 
     const nuevoUsuario = result.rows[0];
 
-    // 4. Enviar correo de bienvenida con credenciales y notificación de primer ingreso
+    // 5. Enviar correo de bienvenida con credenciales y notificación de primer ingreso
     try {
-      await enviarEmailBienvenida(cleanEmail, cleanNombre, contrasenia, req);
+      await enviarEmailBienvenida(cleanEmail, cleanNombre, passwordTemporal, req);
     } catch (mailError) {
       console.error('Aviso: No se pudo enviar el correo de bienvenida:', mailError);
     }
@@ -147,7 +145,7 @@ const crearUsuario = async (req, res) => {
     );
 
     res.status(201).json({
-      mensaje: 'Usuario registrado exitosamente. Se ha enviado una notificación a su correo electrónico ✅',
+      mensaje: 'Usuario registrado exitosamente. Se ha enviado el acceso temporal a su correo electrónico ✅',
       usuario: nuevoUsuario
     });
   } catch (error) {
