@@ -4,7 +4,7 @@ El rol **Invitado** representa a los ciudadanos, líderes comunitarios o visitan
 
 ---
 
-## 🗺️ Mapa de Módulos y Dependencias
+## Mapa de Módulos y Dependencias
 
 ```mermaid
 graph LR
@@ -16,7 +16,7 @@ graph LR
 
 ---
 
-## 📚 Índice de Módulos y Diagramas
+## Índice de Módulos y Diagramas
 
 | Módulo | Descripción Técnica | Diagrama Asociado |
 | :--- | :--- | :--- |
@@ -27,7 +27,7 @@ graph LR
 
 ---
 
-## 🔒 Consideraciones de Seguridad para el Rol Invitado
+## Consideraciones de Seguridad para el Rol Invitado
 1. **Privacidad de Datos Personales (Habeas Data):** Las consultas ciudadanas nunca exponen nombres, identificaciones ni datos de contacto de víctimas o denunciantes.
 2. **Filtrado Exclusivo:** La base de datos solo retorna registros con `estado = 'Aprobado'`.
 3. **Protección Perimetral:** Endpoints protegidos mediante `express-rate-limit` para evitar DoS o scraping excesivo.

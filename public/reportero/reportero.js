@@ -3,6 +3,7 @@ let mapMini = null;
 let markerMini = null;
 let usuarioSesion = null;
 let fotoComprimida = null;
+let editFotoComprimida = null;
 
 /**
  * Comprime y redimensiona una foto tomada por la cámara móvil directamente en el navegador.
@@ -59,8 +60,23 @@ function comprimirImagen(file, maxWidth = 1280, maxHeight = 1280, quality = 0.75
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+    // 0. Toggle Tema Claro / Oscuro (Tipo iPhone) — igual que el panel Admin
+    const btnTemaReportero = document.getElementById("btnTemaReportero");
+    if (localStorage.getItem("tema_sigi_reportero") === "claro") {
+        document.body.classList.add("tema-claro");
+    }
+    if (btnTemaReportero) {
+        btnTemaReportero.addEventListener("click", function (e) {
+            e.stopPropagation();
+            document.body.classList.toggle("tema-claro");
+            const esClaro = document.body.classList.contains("tema-claro");
+            localStorage.setItem("tema_sigi_reportero", esClaro ? "claro" : "oscuro");
+        });
+    }
+
     // 1. Verificar sesión de usuario
     await cargarSesion();
+
 
     // 2. Cargar catálogos (tipos, modalidades, etc.)
     await cargarCatalogos();
@@ -200,14 +216,14 @@ async function cargarCatalogos() {
 }
 
 function initMiniMapa() {
-    // Coordenadas iniciales por defecto (Popayán / Colombia)
-    const latDef = 2.4419;
-    const lngDef = -76.6063;
+    // Coordenadas del centro de Florencia, Caquetá — Colombia
+    const latDef = 1.6144;
+    const lngDef = -75.6062;
 
     document.getElementById("lat").value = latDef;
     document.getElementById("lng").value = lngDef;
 
-    mapMini = L.map("mapaMini").setView([latDef, lngDef], 14);
+    mapMini = L.map("mapaMini").setView([latDef, lngDef], 15);
 
     const capaSatelitalReportero = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         attribution: '&copy; Esri'
@@ -279,12 +295,14 @@ function setupTabs() {
     const tabMis = document.getElementById("tabMisReportes");
     const secCrear = document.getElementById("secNuevoReporte");
     const secMis = document.getElementById("secMisReportes");
+    const appContainer = document.querySelector(".app-container");
 
     tabCrear.addEventListener("click", () => {
         tabCrear.classList.add("active");
         tabMis.classList.remove("active");
         secCrear.classList.add("active");
         secMis.classList.remove("active");
+        if (appContainer) appContainer.classList.remove("view-mis-reportes");
         setTimeout(() => mapMini.invalidateSize(), 200);
     });
 
@@ -293,6 +311,7 @@ function setupTabs() {
         tabCrear.classList.remove("active");
         secMis.classList.add("active");
         secCrear.classList.remove("active");
+        if (appContainer) appContainer.classList.add("view-mis-reportes");
         cargarMisReportes();
     });
 }
@@ -394,6 +413,19 @@ async function cargarMisReportes() {
             const colorEstado = r.estado_color || '#6c757d';
             const htmlFoto = r.imagen_url ? `<div style="margin-top: 8px;"><img src="${r.imagen_url}" style="width: 100%; max-height: 140px; object-fit: cover; border-radius: 6px;" alt="Evidencia"></div>` : '';
 
+            // Botones de acción: solo si el reporte está en estado "Reportado" (id_estado = 1)
+            const esPendiente = r.id_estado === 1;
+            const htmlAcciones = esPendiente
+                ? `<div class="report-actions">
+                       <button class="btn-report-edit" onclick="abrirModalEditarReporte(${r.idincidente}, '${r.fechaincidente?.split('T')[0]}', '${r.horaincidente?.slice(0,5)}', ${r.id_gravedad || 3}, '${(r.direccion||'').replace(/'/g,"\\'")}', '${(r.descripcionincidente||'').replace(/'/g,"\\'")}', '${(r.imagen_url||'').replace(/'/g,"\\'")}')">
+                           <i class="bi bi-pencil"></i> Editar
+                       </button>
+                       <button class="btn-report-delete" onclick="confirmarEliminarReporte(${r.idincidente}, '${r.codigoincidente || 'INC-'+r.idincidente}')">
+                           <i class="bi bi-trash3"></i> Eliminar
+                       </button>
+                   </div>`
+                : `<div class="report-actions-locked"><i class="bi bi-lock-fill"></i> En revisión — no editable</div>`;
+
             list.innerHTML += `
                 <div class="report-card">
                     <div class="report-card-head">
@@ -403,12 +435,13 @@ async function cargarMisReportes() {
                         </span>
                     </div>
                     <div class="report-type">${r.tipo_nombre || 'Incidente general'}</div>
-                    <div class="report-desc">${r.descripcionincidente || 'Sin descripción'}</div>
+                    <div class="report-desc">${r.descripcionincidente || '<em style="opacity:0.5">Sin descripción</em>'}</div>
                     ${htmlFoto}
                     <div class="report-meta" style="margin-top: 8px;">
                         <span><i class="bi bi-calendar-event"></i> ${fechaFmt} ${r.horaincidente.slice(0, 5)}</span>
                         <span><i class="bi bi-geo-alt"></i> ${r.barrio_nombre || r.vereda_nombre || 'Sin Zona'}</span>
                     </div>
+                    ${htmlAcciones}
                 </div>
             `;
         });
@@ -430,3 +463,181 @@ function showAlert(mensaje, tipo = "success") {
         cont.innerHTML = "";
     }, 4000);
 }
+
+/* ═══════════════════════════════════════════
+   MODAL EDITAR REPORTE
+   ═══════════════════════════════════════════ */
+function abrirModalEditarReporte(id, fecha, hora, gravedad, direccion, descripcion, imagenUrl) {
+    document.getElementById("editReporteId").value      = id;
+    document.getElementById("editFechaReporte").value   = fecha || '';
+    document.getElementById("editHoraReporte").value    = hora || '';
+    document.getElementById("editGravedadReporte").value = gravedad || 3;
+    document.getElementById("editDireccionReporte").value = direccion || '';
+    document.getElementById("editDescripcionReporte").value = descripcion || '';
+
+    // Limpiar estado de nueva foto
+    editFotoComprimida = null;
+    const inputFoto = document.getElementById("editFotoInput");
+    if (inputFoto) inputFoto.value = "";
+    const containerNueva = document.getElementById("editFotoNuevaContainer");
+    if (containerNueva) containerNueva.style.display = "none";
+    const imgNueva = document.getElementById("editImgNuevaPreview");
+    if (imgNueva) imgNueva.src = "";
+
+    // Foto actual (si tiene imagen registrada en Cloudinary o disco)
+    const containerActual = document.getElementById("editFotoActualContainer");
+    const imgActual = document.getElementById("editImgActual");
+    if (imagenUrl && imagenUrl.trim() !== '') {
+        imgActual.src = imagenUrl;
+        containerActual.style.display = "block";
+    } else {
+        containerActual.style.display = "none";
+        imgActual.src = "";
+    }
+
+    document.getElementById("modalEditarReporte").style.display = 'flex';
+}
+
+function cerrarModalEditarReporte() {
+    document.getElementById("modalEditarReporte").style.display = 'none';
+    editFotoComprimida = null;
+    const inputFoto = document.getElementById("editFotoInput");
+    if (inputFoto) inputFoto.value = "";
+    const containerNueva = document.getElementById("editFotoNuevaContainer");
+    if (containerNueva) containerNueva.style.display = "none";
+}
+
+async function guardarEdicionReporte() {
+    const id      = document.getElementById("editReporteId").value;
+    const btnSave = document.getElementById("btnGuardarEditar");
+
+    if (!id) return;
+
+    btnSave.disabled = true;
+    btnSave.innerHTML = '<i class="bi bi-hourglass-split"></i> Guardando...';
+
+    const formData = new FormData();
+    const fecha = document.getElementById("editFechaReporte").value;
+    const hora = document.getElementById("editHoraReporte").value;
+    const gravedad = document.getElementById("editGravedadReporte").value;
+    const direccion = document.getElementById("editDireccionReporte").value;
+    const descripcion = document.getElementById("editDescripcionReporte").value;
+
+    if (fecha) formData.append("fechaincidente", fecha);
+    if (hora) formData.append("horaincidente", hora);
+    if (gravedad) formData.append("id_gravedad", gravedad);
+    if (direccion) formData.append("direccion", direccion);
+    formData.append("descripcionincidente", descripcion || "");
+
+    // Si seleccionó una nueva foto, adjuntarla para reemplazo
+    if (editFotoComprimida) {
+        formData.append("foto", editFotoComprimida);
+    } else {
+        const inputFoto = document.getElementById("editFotoInput");
+        if (inputFoto && inputFoto.files && inputFoto.files[0]) {
+            formData.append("foto", inputFoto.files[0]);
+        }
+    }
+
+    try {
+        const res = await fetch(`/api/incidentes/${id}`, {
+            method: 'PUT',
+            body: formData
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+            cerrarModalEditarReporte();
+            showAlert('✅ Reporte actualizado correctamente', 'success');
+            cargarMisReportes();
+        } else {
+            showAlert(`❌ ${data.mensaje || 'Error al actualizar'}`, 'error');
+        }
+    } catch (err) {
+        console.error('Error editando reporte:', err);
+        showAlert('❌ Error de conexión', 'error');
+    } finally {
+        btnSave.disabled = false;
+        btnSave.innerHTML = '<i class="bi bi-check2-circle"></i> Guardar Cambios';
+    }
+}
+
+async function confirmarEliminarReporte(id, codigo) {
+    const confirmar = window.confirm(
+        `¿Eliminar el reporte ${codigo}?\n\nEsta acción es permanente y no se puede deshacer.`
+    );
+    if (!confirmar) return;
+
+    try {
+        const res = await fetch(`/api/incidentes/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+
+        if (res.ok) {
+            showAlert('🗑️ Reporte eliminado correctamente', 'success');
+            cargarMisReportes();
+        } else {
+            showAlert(`❌ ${data.mensaje || 'No se pudo eliminar'}`, 'error');
+        }
+    } catch (err) {
+        console.error('Error eliminando reporte:', err);
+        showAlert('❌ Error de conexión', 'error');
+    }
+}
+
+// Eventos del modal al cargar el DOM
+document.addEventListener('DOMContentLoaded', () => {
+    const btnCerrar    = document.getElementById('btnCerrarModalEditar');
+    const btnCancelar  = document.getElementById('btnCancelarEditar');
+    const btnGuardar   = document.getElementById('btnGuardarEditar');
+    const overlay      = document.getElementById('modalEditarReporte');
+
+    if (btnCerrar)   btnCerrar.addEventListener('click', cerrarModalEditarReporte);
+    if (btnCancelar) btnCancelar.addEventListener('click', cerrarModalEditarReporte);
+    if (btnGuardar)  btnGuardar.addEventListener('click', guardarEdicionReporte);
+
+    // Cerrar al hacer clic fuera de la tarjeta
+    if (overlay) {
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) cerrarModalEditarReporte();
+        });
+    }
+
+    // Manejo de la selección de foto para reemplazo en edición
+    const btnEditFoto = document.getElementById('btnEditCambiarFoto');
+    const editFotoInput = document.getElementById('editFotoInput');
+    const editFotoNuevaContainer = document.getElementById('editFotoNuevaContainer');
+    const editImgNuevaPreview = document.getElementById('editImgNuevaPreview');
+    const btnEditQuitarNuevaFoto = document.getElementById('btnEditQuitarNuevaFoto');
+
+    if (btnEditFoto && editFotoInput) {
+        btnEditFoto.addEventListener('click', () => editFotoInput.click());
+        editFotoInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                try {
+                    editFotoComprimida = await comprimirImagen(file);
+                    const reader = new FileReader();
+                    reader.onload = function(evt) {
+                        editImgNuevaPreview.src = evt.target.result;
+                        editFotoNuevaContainer.style.display = 'block';
+                    };
+                    reader.readAsDataURL(editFotoComprimida);
+                } catch (optErr) {
+                    console.warn("No se pudo comprimir la foto nueva, usando original:", optErr);
+                    editFotoComprimida = file;
+                    editImgNuevaPreview.src = URL.createObjectURL(file);
+                    editFotoNuevaContainer.style.display = 'block';
+                }
+            }
+        });
+    }
+
+    if (btnEditQuitarNuevaFoto && editFotoInput) {
+        btnEditQuitarNuevaFoto.addEventListener('click', () => {
+            editFotoInput.value = '';
+            editFotoComprimida = null;
+            editImgNuevaPreview.src = '';
+            editFotoNuevaContainer.style.display = 'none';
+        });
+    }
+});

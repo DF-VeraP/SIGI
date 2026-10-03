@@ -1,14 +1,14 @@
-# 📸 Documentación Técnica: Servicio de Evidencia Fotográfica con Cloudinary
+# Documentación Técnica: Servicio de Evidencia Fotográfica con Cloudinary
 
-**Proyecto:** SIGI - Sistema de Información Geográfica de Incidentes  
-**Módulo:** Gestión e Integración de Evidencia Fotográfica  
-**Fecha:** Septiembre 2026  
+**Proyecto:** SIGI - Sistema de Información Geográfica de Incidentes
+**Módulo:** Gestión e Integración de Evidencia Fotográfica
+**Fecha:** Septiembre 2026
 
 ---
 
-## 📌 1. Introducción y Justificación Técnica
+## 1. Introducción y Justificación Técnica
 
-El módulo de evidencia fotográfica permite a los **Reporteros de Campo** adjuntar capturas fotográficas en tiempo real al registrar incidentes en el territorio. 
+El módulo de evidencia fotográfica permite a los **Reporteros de Campo** adjuntar capturas fotográficas en tiempo real al registrar incidentes en el territorio.
 
 ### ¿Por qué Cloudinary?
 1. **Descarga de Servidor VPS / Local:** Guardar imágenes pesadas en el servidor local de la entidad satura el disco duro y reduce la velocidad del sistema.
@@ -17,7 +17,7 @@ El módulo de evidencia fotográfica permite a los **Reporteros de Campo** adjun
 
 ---
 
-## 🔄 2. Diagrama de Secuencia del Flujo (End-to-End)
+## 2. Diagrama de Secuencia del Flujo (End-to-End)
 
 El siguiente diagrama ilustra el recorrido completo desde la captura en el dispositivo móvil del reportero hasta la visualización en la Mesa de Control del Administrador:
 
@@ -35,7 +35,7 @@ sequenceDiagram
     R->>F: Toma/Adjunta foto & presiona "Registrar Incidente"
     F->>B: Envía POST /api/incidentes (multipart/form-data con foto)
     B->>U: Pasa el Buffer del archivo y el código de incidente
-    
+
     alt Conexión a Nube Exitosa
         U->>C: Sube la imagen usando unsigned_upload ("sigi_preset")
         C-->>U: Retorna URL segura HTTPS (ej: https://res.cloudinary.com/...)
@@ -47,16 +47,16 @@ sequenceDiagram
     B->>DB: INSERT INTO incidente (..., imagen_url)
     DB-->>B: Confirma registro creado
     B-->>F: Responde HTTP 201 (Incidente Registrado con éxito)
-    
+
     Note over A, DB: El Administrador revisa la Mesa de Control
     A->>DB: Consulta la tabla de incidentes
     DB-->>A: Retorna filas incluyendo la columna imagen_url
-    A->>A: Presiona el botón "🖼️ Ver Foto" -> Despliega Modal Lightbox
+    A->>A: Presiona el botón "Ver Foto" -> Despliega Modal Lightbox
 ```
 
 ---
 
-## 🏗️ 3. Diagrama de Arquitectura de Componentes
+## 3. Diagrama de Arquitectura de Componentes
 
 ```mermaid
 graph TD
@@ -84,7 +84,7 @@ graph TD
 
 ---
 
-## 🛡️ 4. Mecanismo de Resiliencia (Tolerancia a Fallos / Fallback Local)
+## 4. Mecanismo de Resiliencia (Tolerancia a Fallos / Fallback Local)
 
 El sistema cuenta con una arquitectura resiliente para garantizar **disponibilidad del 100%**, previniendo la pérdida de reportes si se agota el paquete de datos del móvil o si la API de la nube no responde:
 
@@ -95,7 +95,7 @@ El sistema cuenta con una arquitectura resiliente para garantizar **disponibilid
 
 ---
 
-## ⚙️ 5. Variables de Entorno y Configuración (`.env`)
+## 5. Variables de Entorno y Configuración (`.env`)
 
 Para conectar el servicio con tu cuenta de Cloudinary, se requieren las siguientes variables en el archivo `.env`:
 
@@ -113,7 +113,7 @@ CLOUDINARY_UPLOAD_PRESET=sigi_preset
 
 ---
 
-## 📡 6. Especificación del Endpoint API
+## 6. Especificación del Endpoint API
 
 ### `POST /api/incidentes`
 * **Tipo de Contenido:** `multipart/form-data`
@@ -130,8 +130,8 @@ CLOUDINARY_UPLOAD_PRESET=sigi_preset
   "mensaje": "Incidente registrado exitosamente",
   "incidente": {
     "idincidente": 681,
-    "codigoincidente": "RO0109261805A0681",
-    "imagen_url": "https://res.cloudinary.com/demo/image/upload/v1788305406/sigi_incidentes/INC-RO0109261805A0681.png"
+    "codigoincidente": "INC-834921",
+    "imagen_url": "https://res.cloudinary.com/demo/image/upload/v1788305406/sigi_incidentes/INC-834921.jpg"
   }
 }
 ```

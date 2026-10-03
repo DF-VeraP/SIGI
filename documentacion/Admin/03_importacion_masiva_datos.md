@@ -41,4 +41,4 @@
 
 ## 4. Diagrama de Arquitectura y Flujo
 El diagrama de este módulo se encuentra en:
-👉 [`Admin/diagramas/03_importacion_masiva_datos.drawio`](diagramas/03_importacion_masiva_datos.drawio)
+- [`Admin/diagramas/03_importacion_masiva_datos.drawio`](diagramas/03_importacion_masiva_datos.drawio)

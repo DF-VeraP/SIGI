@@ -76,6 +76,49 @@ async function guardarLocalFallback(fileBuffer, codigoIncidente, originalName) {
   return urlRelativa;
 }
 
+/**
+ * Elimina una imagen de Cloudinary (o localmente en fallback).
+ * Extrae el public_id de la URL de Cloudinary para poder borrarla.
+ * @param {string} imagenUrl URL pública almacenada en la BD
+ * @returns {Promise<boolean>} true si se eliminó, false si hubo error
+ */
+async function eliminarImagenCloudinary(imagenUrl) {
+  if (!imagenUrl) return true;
+
+  // Si es imagen local (fallback), eliminar del disco
+  if (!imagenUrl.includes('cloudinary.com')) {
+    try {
+      const rutaLocal = path.join(__dirname, '..', 'public', imagenUrl.replace(/^\//, ''));
+      if (fs.existsSync(rutaLocal)) {
+        fs.unlinkSync(rutaLocal);
+        console.log('🗑️ Imagen local eliminada:', rutaLocal);
+      }
+      return true;
+    } catch (e) {
+      console.error('Error eliminando imagen local:', e.message);
+      return false;
+    }
+  }
+
+  // Si es Cloudinary: extraer public_id de la URL
+  // Formato: https://res.cloudinary.com/<cloud>/image/upload/v<ver>/<folder>/<public_id>.<ext>
+  try {
+    const match = imagenUrl.match(/\/upload\/(?:v\d+\/)?(.+)\.[a-z]+$/i);
+    if (!match) {
+      console.warn('⚠️ No se pudo extraer public_id de:', imagenUrl);
+      return false;
+    }
+    const publicId = match[1]; // ej: sigi_incidentes/RO2309...
+    const resultado = await cloudinary.uploader.destroy(publicId);
+    console.log('🗑️ Imagen Cloudinary eliminada:', publicId, '→', resultado.result);
+    return resultado.result === 'ok' || resultado.result === 'not found';
+  } catch (e) {
+    console.error('Error eliminando imagen de Cloudinary:', e.message);
+    return false;
+  }
+}
+
 module.exports = {
-  subirImagenCloudinary
+  subirImagenCloudinary,
+  eliminarImagenCloudinary
 };

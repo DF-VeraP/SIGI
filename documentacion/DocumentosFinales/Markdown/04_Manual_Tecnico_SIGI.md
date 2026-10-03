@@ -17,36 +17,36 @@
 
 ## ÍNDICE GENERAL
 
-1. [INTRODUCCIÓN Y ARQUITECTURA GENERAL](#1-introducción-y-arquitectura-general)  
-   1.1 [Propósito del Manual Técnico](#11-propósito-del-manual-técnico)  
-   1.2 [Estructura del Proyecto y Directorios](#12-estructura-del-proyecto-y-directorios)  
-2. [DISEÑO Y ESPECIFICACIÓN DE BASE DE DATOS (POSTGRESQL + POSTGIS)](#2-diseño-y-especificación-de-base-de-datos-postgresql--postgis)  
-   2.1 [Diagrama Entidad-Relación Extendido](#21-diagrama-entidad-relación-extendido)  
-   2.2 [Diccionario Exhaustivo de Tablas](#22-diccionario-exhaustivo-de-tablas)  
-   2.3 [Lógica Geoespacial y Consultas Topológicas (ST_Contains, GiST)](#23-lógica-geoespacial-y-consultas-topológicas-st_contains-gist)  
-   2.4 [Scripts de Inicialización y Migraciones](#24-scripts-de-inicialización-y-migraciones)  
-3. [ARQUITECTURA BACKEND (NODE.JS & EXPRESS 5)](#3-arquitectura-backend-nodejs--express-5)  
-   3.1 [Ciclo de Vida de una Petición y Cadena de Middlewares](#31-ciclo-de-vida-de-una-petición-y-cadena-de-middlewares)  
-   3.2 [Control de Acceso Basado en Roles (RBAC) y Sesiones](#32-control-de-acceso-basado-en-roles-rbac-y-sesiones)  
-   3.3 [Mecanismo de Bloqueo Concurrente (Locking) en la Mesa de Validación](#33-mecanismo-de-bloqueo-concurrente-locking-en-la-mesa-de-validación)  
-   3.4 [Ingesta Masiva CSV con Rollback Atómico](#34-ingesta-masiva-csv-con-rollback-atómico)  
-4. [SERVICIOS AUXILIARES E INTEGRACIONES](#4-servicios-auxiliares-e-integraciones)  
-   4.1 [Integración Multimedia con Cloudinary (Upload Streaming & Fallback)](#41-integración-multimedia-con-cloudinary-upload-streaming--fallback)  
-   4.2 [Servicio Transaccional de Correo (Nodemailer SMTP & Simulador)](#42-servicio-transaccional-de-correo-nodemailer-smtp--simulador)  
-   4.3 [Módulo Centralizado de Auditoría (Logger Forense)](#43-módulo-centralizado-de-auditoría-logger-forense)  
-5. [CATÁLOGO DE ENDPOINTS Y API REST](#5-catálogo-de-endpoints-y-api-rest)  
-   5.1 [Autenticación y Seguridad (`/api/auth`)](#51-autenticación-y-seguridad-apiauth)  
-   5.2 [Geografía y Cartografía (`/api/geografia`)](#52-geografía-y-cartografía-apigeografia)  
-   5.3 [Gestión de Incidentes y Flujo de Validación (`/api/incidentes`)](#53-gestión-de-incidentes-y-flujo-de-validación-apiincidentes)  
-   5.4 [Administración y Gobernanza de Usuarios (`/api/usuarios`)](#54-administración-y-gobernanza-de-usuarios-apiusuarios)  
-   5.5 [Estadísticas y Analítica KPI (`/api/estadisticas`)](#55-estadísticas-y-analítica-kpi-apiestadisticas)  
-6. [GUÍA DE INSTALACIÓN, CONFIGURACIÓN Y DESPLIEGUE](#6-guía-de-instalación-configuración-y-despliegue)  
-   6.1 [Requisitos Previos del Sistema Operativo](#61-requisitos-previos-del-sistema-operativo)  
-   6.2 [Configuración Paso a Paso en Entorno Local](#62-configuración-paso-a-paso-en-entorno-local)  
-   6.3 [Despliegue en Producción (Linux / PM2 / Nginx Reverse Proxy)](#63-despliegue-en-producción-linux--pm2--nginx-reverse-proxy)  
-7. [PLAN DE PRUEBAS AUTOMATIZADAS (JEST & SUPERTEST)](#7-plan-de-pruebas-automatizadas-jest--supertest)  
-   7.1 [Configuración de Pruebas](#71-configuración-de-pruebas)  
-   7.2 [Ejecución de Pruebas y Cobertura de Código](#72-ejecución-de-pruebas-y-cobertura-de-código)  
+1. [INTRODUCCIÓN Y ARQUITECTURA GENERAL](#1-introducción-y-arquitectura-general)
+   1.1 [Propósito del Manual Técnico](#11-propósito-del-manual-técnico)
+   1.2 [Estructura del Proyecto y Directorios](#12-estructura-del-proyecto-y-directorios)
+2. [DISEÑO Y ESPECIFICACIÓN DE BASE DE DATOS (POSTGRESQL + POSTGIS)](#2-diseño-y-especificación-de-base-de-datos-postgresql--postgis)
+   2.1 [Diagrama Entidad-Relación Extendido](#21-diagrama-entidad-relación-extendido)
+   2.2 [Diccionario Exhaustivo de Tablas](#22-diccionario-exhaustivo-de-tablas)
+   2.3 [Lógica Geoespacial y Consultas Topológicas (ST_Contains, GiST)](#23-lógica-geoespacial-y-consultas-topológicas-st_contains-gist)
+   2.4 [Scripts de Inicialización y Migraciones](#24-scripts-de-inicialización-y-migraciones)
+3. [ARQUITECTURA BACKEND (NODE.JS & EXPRESS 5)](#3-arquitectura-backend-nodejs--express-5)
+   3.1 [Ciclo de Vida de una Petición y Cadena de Middlewares](#31-ciclo-de-vida-de-una-petición-y-cadena-de-middlewares)
+   3.2 [Control de Acceso Basado en Roles (RBAC) y Sesiones](#32-control-de-acceso-basado-en-roles-rbac-y-sesiones)
+   3.3 [Mecanismo de Bloqueo Concurrente (Locking) en la Mesa de Validación](#33-mecanismo-de-bloqueo-concurrente-locking-en-la-mesa-de-validación)
+   3.4 [Ingesta Masiva CSV con Rollback Atómico](#34-ingesta-masiva-csv-con-rollback-atómico)
+4. [SERVICIOS AUXILIARES E INTEGRACIONES](#4-servicios-auxiliares-e-integraciones)
+   4.1 [Integración Multimedia con Cloudinary (Upload Streaming & Fallback)](#41-integración-multimedia-con-cloudinary-upload-streaming--fallback)
+   4.2 [Servicio Transaccional de Correo (Nodemailer SMTP & Simulador)](#42-servicio-transaccional-de-correo-nodemailer-smtp--simulador)
+   4.3 [Módulo Centralizado de Auditoría (Logger Forense)](#43-módulo-centralizado-de-auditoría-logger-forense)
+5. [CATÁLOGO DE ENDPOINTS Y API REST](#5-catálogo-de-endpoints-y-api-rest)
+   5.1 [Autenticación y Seguridad (`/api/auth`)](#51-autenticación-y-seguridad-apiauth)
+   5.2 [Geografía y Cartografía (`/api/geografia`)](#52-geografía-y-cartografía-apigeografia)
+   5.3 [Gestión de Incidentes y Flujo de Validación (`/api/incidentes`)](#53-gestión-de-incidentes-y-flujo-de-validación-apiincidentes)
+   5.4 [Administración y Gobernanza de Usuarios (`/api/usuarios`)](#54-administración-y-gobernanza-de-usuarios-apiusuarios)
+   5.5 [Estadísticas y Analítica KPI (`/api/estadisticas`)](#55-estadísticas-y-analítica-kpi-apiestadisticas)
+6. [GUÍA DE INSTALACIÓN, CONFIGURACIÓN Y DESPLIEGUE](#6-guía-de-instalación-configuración-y-despliegue)
+   6.1 [Requisitos Previos del Sistema Operativo](#61-requisitos-previos-del-sistema-operativo)
+   6.2 [Configuración Paso a Paso en Entorno Local](#62-configuración-paso-a-paso-en-entorno-local)
+   6.3 [Despliegue en Producción (Linux / PM2 / Nginx Reverse Proxy)](#63-despliegue-en-producción-linux--pm2--nginx-reverse-proxy)
+7. [PLAN DE PRUEBAS AUTOMATIZADAS (JEST & SUPERTEST)](#7-plan-de-pruebas-automatizadas-jest--supertest)
+   7.1 [Configuración de Pruebas](#71-configuración-de-pruebas)
+   7.2 [Ejecución de Pruebas y Cobertura de Código](#72-ejecución-de-pruebas-y-cobertura-de-código)
 
 ---
 
@@ -64,10 +64,8 @@ SIGI/
 │   └── db.config.js         # Parámetros de conexión PostgreSQL desde .env
 ├── controllers/             # Controladores de lógica de negocio
 │   ├── auth.controller.js
-│   ├── autocompletado.controller.js
 │   ├── catalogos.controller.js
 │   ├── estadisticas.controller.js
-│   ├── filtros.controller.js
 │   ├── geografia.controller.js
 │   ├── incidentes.controller.js
 │   ├── tablas.controller.js
@@ -118,23 +116,21 @@ erDiagram
     USUARIO ||--o{ TOKEN : "genera para recuperación"
     USUARIO ||--o{ LOGS_ACTIVIDAD : "origina acciones"
     USUARIO ||--o{ NOTIFICACIONES : "recibe"
-    
+
     BARRIO ||--o{ INCIDENTE : "contiene espacialmente"
     VEREDA ||--o{ INCIDENTE : "contiene espacialmente"
     CORREGIMIENTO ||--o{ VEREDA : "agrupa políticamente"
-    
+
     TIPO_INCIDENTE ||--o{ INCIDENTE : "clasifica tipo"
     CATEGORIA_INCIDENTE ||--o{ TIPO_INCIDENTE : "categoriza"
     GRAVEDAD_INCIDENTE ||--o{ INCIDENTE : "pondera riesgo"
     ESTADO_INCIDENTE ||--o{ INCIDENTE : "determina ciclo"
     MODALIDAD_INCIDENTE ||--o{ INCIDENTE : "especifica dinámica"
-    
+
     INCIDENTE ||--o{ INCIDENTE_FACTORES : "presenta"
     FACTORES_INCIDENTE ||--o{ INCIDENTE_FACTORES : "asocia"
 ```
 
-> **ESPACIO PARA DIAGRAMA:**  
-> *(Insertar aquí Diagrama Entidad-Relación Detallado de la Base de Datos PostGIS de SIGI)*
 
 ### 2.2 Diccionario Exhaustivo de Tablas
 
@@ -197,13 +193,13 @@ Una de las innovaciones nucleares de SIGI es la **autolocalización topológica*
 
 ```sql
 -- Detección automática del Barrio Urbano en PostGIS:
-SELECT gid FROM barrio 
-WHERE ST_Contains(geom, ST_SetSRID(ST_MakePoint($1, $2), 4326)) 
+SELECT gid FROM barrio
+WHERE ST_Contains(geom, ST_SetSRID(ST_MakePoint($1, $2), 4326))
 LIMIT 1;
 
 -- Detección automática de la Vereda Rural:
-SELECT id FROM vereda 
-WHERE ST_Contains(geom, ST_SetSRID(ST_MakePoint($1, $2), 4326)) 
+SELECT id FROM vereda
+WHERE ST_Contains(geom, ST_SetSRID(ST_MakePoint($1, $2), 4326))
 LIMIT 1;
 ```
 
@@ -223,7 +219,7 @@ CREATE INDEX idx_vereda_geom ON vereda USING GIST (geom);
 Cada petición HTTP entrante recorre una tubería (*pipeline*) de seguridad antes de alcanzar los controladores:
 
 ```
-[Cliente HTTP] 
+[Cliente HTTP]
       │ (Petición)
       ▼
 1. Helmet Middleware (Aplica directivas de cabeceras seguras)
@@ -245,8 +241,6 @@ Cada petición HTTP entrante recorre una tubería (*pipeline*) de seguridad ante
 9. Centralized Error Handler (Captura excepciones y responde JSON controlado)
 ```
 
-> **ESPACIO PARA DIAGRAMA:**  
-> *(Insertar aquí Diagrama de Flujo del Pipeline de Middlewares en Express)*
 
 ---
 
@@ -257,14 +251,14 @@ const verificarSesion = (req, res, next) => {
   if (req.session && req.session.idusuario) {
     return next();
   }
-  return res.status(401).json({ mensaje: "Sesión no válida o expirada. Por favor inicie sesión 🔒" });
+  return res.status(401).json({ mensaje: "Sesión no válida o expirada. Por favor inicie sesión." });
 };
 
 const verificarRol = (...rolesPermitidos) => {
   return (req, res, next) => {
     const rolUsuario = req.session.rol;
     if (!rolUsuario || !rolesPermitidos.includes(rolUsuario)) {
-      return res.status(403).json({ mensaje: "Acceso denegado: Privilegios insuficientes 🚫" });
+      return res.status(403).json({ mensaje: "Acceso denegado: Privilegios insuficientes." });
     }
     next();
   };
@@ -278,9 +272,9 @@ Para evitar que dos administradores revisen, editen o dictaminen sobre el mismo 
 
 1. **Adquisición del Bloqueo (`/api/incidentes/:id/tomar`):**
    ```sql
-   UPDATE incidente 
-   SET locked_by = $1, locked_at = CURRENT_TIMESTAMP 
-   WHERE idincidente = $2 
+   UPDATE incidente
+   SET locked_by = $1, locked_at = CURRENT_TIMESTAMP
+   WHERE idincidente = $2
      AND (locked_by IS NULL OR locked_by = $1 OR locked_at < NOW() - INTERVAL '10 minutes')
    RETURNING idincidente;
    ```
@@ -298,7 +292,7 @@ La importación masiva en `incidentes.controller.js` utiliza la librería `csv-p
 - A todo el bloque importado se le asigna un identificador de lote: `lote_importacion = 'LOTE_' + Date.now()`.
 - **Rollback Inmediato:** Mediante el endpoint `DELETE /api/incidentes/importados/ultimo`, el administrador puede deshacer la última carga masiva sin afectar registros previos:
   ```sql
-  DELETE FROM incidente 
+  DELETE FROM incidente
   WHERE lote_importacion = (SELECT lote_importacion FROM incidente WHERE lote_importacion IS NOT NULL ORDER BY idincidente DESC LIMIT 1);
   ```
 

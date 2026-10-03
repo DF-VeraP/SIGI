@@ -47,4 +47,4 @@
 
 ## 4. Diagrama de Arquitectura y Flujo
 El diagrama de este módulo se encuentra en:
-👉 [`Invitado/diagramas/02_analitica_kpis_ciudadanos.drawio`](diagramas/02_analitica_kpis_ciudadanos.drawio)
+- [`Invitado/diagramas/02_analitica_kpis_ciudadanos.drawio`](diagramas/02_analitica_kpis_ciudadanos.drawio)

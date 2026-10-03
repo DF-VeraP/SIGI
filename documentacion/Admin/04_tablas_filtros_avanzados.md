@@ -50,4 +50,4 @@
 
 ## 4. Diagrama de Arquitectura y Flujo
 El diagrama de este módulo se encuentra en:
-👉 [`Admin/diagramas/04_tablas_filtros_avanzados.drawio`](diagramas/04_tablas_filtros_avanzados.drawio)
+- [`Admin/diagramas/04_tablas_filtros_avanzados.drawio`](diagramas/04_tablas_filtros_avanzados.drawio)

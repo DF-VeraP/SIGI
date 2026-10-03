@@ -2,7 +2,7 @@ const pool = require('../db');
 const csv = require('csv-parser');
 const stream = require('stream');
 const { registrarLogActividad } = require('../utils/logger');
-const { subirImagenCloudinary } = require('../utils/cloudinary');
+const { subirImagenCloudinary, eliminarImagenCloudinary } = require('../utils/cloudinary');
 
 // Registrar un incidente (Abierto a Reportero, Admin y Superadmin)
 const registrarIncidente = async (req, res) => {
@@ -287,6 +287,10 @@ const obtenerMisReportes = async (req, res) => {
         i.horaincidente,
         i.fecharegistro,
         i.imagen_url,
+        i.id_estado,
+        i.id_gravedad,
+        i.id_modalidad,
+        i.direccion,
         ST_Y(i.geom) as lat,
         ST_X(i.geom) as lng,
         ti.nametipoincidente as tipo_nombre,
@@ -430,15 +434,30 @@ const eliminarIncidente = async (req, res) => {
 
   try {
     const incId = parseInt(req.params.id);
-    const checkOwner = await pool.query("SELECT idusuario, id_usuario_creador FROM incidente WHERE idincidente = $1", [incId]);
+    const checkOwner = await pool.query("SELECT idusuario, id_usuario_creador, imagen_url, id_estado FROM incidente WHERE idincidente = $1", [incId]);
     if (checkOwner.rows.length === 0) {
       return res.status(404).json({ mensaje: "Incidente no encontrado ❌" });
     }
 
-    const creadorId = checkOwner.rows[0].id_usuario_creador || checkOwner.rows[0].idusuario;
+    const inc = checkOwner.rows[0];
+    const creadorId = inc.id_usuario_creador || inc.idusuario;
 
     if (userRol !== 'superadmin' && userRol !== 'admin' && creadorId !== idusuarioLogueado) {
       return res.status(403).json({ mensaje: "No tienes permiso para eliminar este incidente 🚫" });
+    }
+
+    // Si es reportero, solo puede eliminar si está en estado Reportado (1)
+    if (userRol === 'reportero' && inc.id_estado !== 1) {
+      return res.status(403).json({ mensaje: "No puedes eliminar un reporte que ya está en proceso de revisión 🚫" });
+    }
+
+    // Si tiene imagen asociada, eliminarla de Cloudinary o del almacenamiento local
+    if (inc.imagen_url) {
+      try {
+        await eliminarImagenCloudinary(inc.imagen_url);
+      } catch (errImg) {
+        console.warn("No se pudo eliminar la imagen asociada:", errImg.message);
+      }
     }
 
     await pool.query("DELETE FROM incidente WHERE idincidente = $1", [incId]);
@@ -506,7 +525,10 @@ const actualizarIncidente = async (req, res) => {
 
   try {
     const incId = parseInt(req.params.id);
-    const checkOwner = await pool.query("SELECT idusuario, id_usuario_creador, id_estado FROM incidente WHERE idincidente = $1", [incId]);
+    const checkOwner = await pool.query(
+      "SELECT idusuario, id_usuario_creador, id_estado, codigoincidente, imagen_url FROM incidente WHERE idincidente = $1",
+      [incId]
+    );
     if (checkOwner.rows.length === 0) {
       return res.status(404).json({ mensaje: "Incidente no encontrado ❌" });
     }
@@ -529,6 +551,29 @@ const actualizarIncidente = async (req, res) => {
     const gravedadVal = id_gravedad ? parseInt(id_gravedad) : null;
     const modalidadVal = id_modalidad ? parseInt(id_modalidad) : null;
 
+    // Gestión de reemplazo de imagen (Cloudinary o local)
+    let nuevaImagenUrl = undefined;
+    if (req.file && req.file.buffer) {
+      // 1. Eliminar la foto anterior de Cloudinary/disco si existía
+      if (inc.imagen_url) {
+        try {
+          await eliminarImagenCloudinary(inc.imagen_url);
+        } catch (errDel) {
+          console.warn("No se pudo eliminar la imagen anterior:", errDel.message);
+        }
+      }
+      // 2. Subir la nueva foto con el código de incidente existente
+      try {
+        nuevaImagenUrl = await subirImagenCloudinary(
+          req.file.buffer,
+          inc.codigoincidente || `INC-${incId}`,
+          req.file.originalname
+        );
+      } catch (errSubir) {
+        console.error("Error al subir nueva imagen:", errSubir.message);
+      }
+    }
+
     await pool.query(`
       UPDATE incidente SET
         fechaincidente = COALESCE($1, fechaincidente),
@@ -537,21 +582,35 @@ const actualizarIncidente = async (req, res) => {
         direccion = COALESCE($4, direccion),
         id_gravedad = COALESCE($5, id_gravedad),
         id_modalidad = COALESCE($6, id_modalidad),
-        id_usuario_editor = $7,
+        imagen_url = COALESCE($7, imagen_url),
+        id_usuario_editor = $8,
         fecha_edicion = CURRENT_TIMESTAMP
-      WHERE idincidente = $8
-    `, [fechaincidente || null, horaincidente || null, descripcionincidente || null, direccion || null, gravedadVal, modalidadVal, idusuarioLogueado, incId]);
+      WHERE idincidente = $9
+    `, [
+      fechaincidente || null,
+      horaincidente || null,
+      descripcionincidente !== undefined ? descripcionincidente : null,
+      direccion || null,
+      gravedadVal,
+      modalidadVal,
+      nuevaImagenUrl !== undefined ? nuevaImagenUrl : null,
+      idusuarioLogueado,
+      incId
+    ]);
 
     await registrarLogActividad(
       idusuarioLogueado,
       'EDITAR_INCIDENTE',
       'incidente',
       incId,
-      `Incidente ID ${incId} editado por ${req.session.usuario}`,
+      `Incidente ID ${incId} editado por ${req.session.usuario}${nuevaImagenUrl ? ' (foto actualizada)' : ''}`,
       req
     );
 
-    res.json({ mensaje: "Incidente actualizado exitosamente ✅" });
+    res.json({ 
+      mensaje: "Incidente actualizado exitosamente ✅",
+      imagen_url: nuevaImagenUrl || inc.imagen_url
+    });
 
   } catch (error) {
     console.error("Error actualizando incidente:", error);

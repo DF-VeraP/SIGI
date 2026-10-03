@@ -798,20 +798,117 @@ html, body {
         height: 140px;
     }
 
-    .hero-features {
-        display: none;
-    }
-
     .form-panel {
         max-width: 440px;
     }
 }
 
-@media (max-width: 540px) {
+/* ── Transición Cinemática Post-Login (Acceso Concedido) ── */
+.radar-acceso-exitoso {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+    width: 100%;
+    animation: fadeScaleIn 0.35s ease forwards;
+}
+
+body.login-acceso-concedido .radar-acceso-exitoso {
+    display: flex !important;
+}
+
+.acceso-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 18px;
+    background: rgba(16, 185, 129, 0.18);
+    border: 1px solid rgba(16, 185, 129, 0.45);
+    border-radius: var(--radius-full);
+    color: #34d399;
+    font-size: 0.84rem;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+.acceso-badge i {
+    font-size: 1.05rem;
+    color: #10b981;
+}
+
+.acceso-telemetria {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    letter-spacing: 0.3px;
+}
+
+body.login-acceso-concedido .radar-scan {
+    animation-duration: 2.2s !important;
+    background: conic-gradient(from 0deg at 50% 50%, rgba(16, 185, 129, 0.4) 0deg, transparent 65deg, transparent 360deg) !important;
+}
+
+body.login-acceso-concedido .radar-core {
+    background: linear-gradient(135deg, #10b981, #06b6d4) !important;
+    box-shadow: 0 0 25px rgba(16, 185, 129, 0.6) !important;
+}
+
+/* En dispositivos móviles: El login se muestra directo y el radar se activa triunfalmente al autenticar */
+@media (max-width: 768px) {
     .hero-panel {
         display: none;
     }
 
+    .form-panel {
+        width: 100%;
+        max-width: 440px;
+        margin: 0 auto;
+    }
+
+    body.login-acceso-concedido .form-panel {
+        display: none !important;
+    }
+
+    body.login-acceso-concedido .hero-panel {
+        display: flex !important;
+        width: 100%;
+        max-width: 440px;
+        margin: 0 auto;
+        animation: radarAccesoEntrada 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    body.login-acceso-concedido .hero-features {
+        display: none !important;
+    }
+
+    @keyframes radarAccesoEntrada {
+        from {
+            opacity: 0;
+            transform: scale(0.92) translateY(18px);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+}
+
+@keyframes fadeScaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@media (max-width: 540px) {
     .glass-card {
         padding: 22px 18px;
         border-radius: var(--radius-md);
@@ -819,6 +916,18 @@ html, body {
 
     .card-title {
         font-size: 1.25rem;
+    }
+
+    .hero-text-block h2 {
+        font-size: 1.15rem;
+    }
+
+    .hero-text-block p {
+        font-size: 0.8rem;
+    }
+
+    .geo-radar-container {
+        height: 155px;
     }
 }
 

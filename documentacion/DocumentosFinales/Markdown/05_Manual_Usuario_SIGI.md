@@ -17,34 +17,34 @@
 
 ## ÍNDICE GENERAL
 
-1. [INTRODUCCIÓN Y GUÍA DE NAVEGACIÓN](#1-introducción-y-guía-de-navegación)  
-   1.1 [Propósito del Manual de Usuario](#11-propósito-del-manual-de-usuario)  
-   1.2 [Estructura Modular por Roles](#12-estructura-modular-por-roles)  
-2. [MÓDULO 1: GUÍA DEL CIUDADANO (ROL INVITADO)](#2-módulo-1-guía-del-ciudadano-rol-invitado)  
-   2.1 [Acceso al Geoportal Público](#21-acceso-al-geoportal-público)  
-   2.2 [Exploración Cartográfica (Capas de Barrios y Veredas)](#22-exploración-cartográfica-capas-de-barrios-y-veredas)  
-   2.3 [Uso del Motor de Filtros Espacio-Temporales](#23-uso-del-motor-de-filtros-espacio-temporales)  
-   2.4 [Consulta de Indicadores y Tableros KPI Ciudadanos](#24-consulta-de-indicadores-y-tableros-kpi-ciudadanos)  
-   2.5 [Proceso de Recuperación de Contraseña Olvidada](#25-proceso-de-recuperación-de-contraseña-olvidada)  
-3. [MÓDULO 2: GUÍA DE OPERACIÓN EN CAMPO (ROL REPORTERO)](#3-módulo-2-guía-de-operación-en-campo-rol-reportero)  
-   3.1 [Inicio de Sesión Móvil y Cambio Obligatorio de Contraseña](#31-inicio-de-sesión-móvil-y-cambio-obligatorio-de-contraseña)  
-   3.2 [Captura de Incidente con Autolocalización GPS](#32-captura-de-incidente-con-autolocalización-gps)  
-   3.3 [Adjuntar Evidencia Fotográfica y Subida a Cloudinary](#33-adjuntar-evidencia-fotográfica-y-subida-a-cloudinary)  
-   3.4 [Seguimiento y Estado de Casos en "Mis Reportes"](#34-seguimiento-y-estado-de-casos-en-mis-reportes)  
-4. [MÓDULO 3: GUÍA DE LA MESA DE VALIDACIÓN (ROL ADMINISTRADOR)](#4-módulo-3-guía-de-la-mesa-de-validación-rol-administrador)  
-   4.1 [Entorno del Panel de Control Administrativo](#41-entorno-del-panel-de-control-administrativo)  
-   4.2 [Operación de la Cola de Validación Compartida](#42-operación-de-la-cola-de-validación-compartida)  
-   4.3 [Toma de Control, Candado Concurrente (Locking) y Liberación](#43-toma-de-control-candado-concurrente-locking-y-liberación)  
-   4.4 [Dictamen Técnico: Aprobación, Desestimación y Resolución](#44-dictamen-técnico-aprobación-desestimación-y-resolución)  
-   4.5 [Importación Masiva de Incidentes mediante Archivo CSV](#45-importación-masiva-de-incidentes-mediante-archivo-csv)  
-   4.6 [Uso del Mecanismo de Rollback de Importaciones](#46-uso-del-mecanismo-de-rollback-de-importaciones)  
-   4.7 [Explorador Tabular Avanzado con Exportación](#47-explorador-tabular-avanzado-con-exportación)  
-5. [MÓDULO 4: GOBERNANZA Y AUDITORÍA (ROL SUPERADMINISTRADOR)](#5-módulo-4-gobernanza-y-auditoría-rol-superadministrador)  
-   5.1 [Creación de Usuarios y Envío Automatizado de Credenciales](#51-creación-de-usuarios-y-envío-automatizado-de-credenciales)  
-   5.2 [Gestión Integral de Cuentas, Modificación de Roles y Estados](#52-gestión-integral-de-cuentas-modificación-de-roles-y-estados)  
-   5.3 [Consola de Auditoría Forense y Monitoreo de Logs](#53-consola-de-auditoría-forense-y-monitoreo-de-logs)  
-   5.4 [Administración de Parámetros Globales y Catálogos](#54-administración-de-parámetros-globales-y-catálogos)  
-6. [PREGUNTAS FRECUENTES Y RESOLUCIÓN DE PROBLEMAS (FAQ)](#6-preguntas-frecuentes-y-resolución-de-problemas-faq)  
+1. [INTRODUCCIÓN Y GUÍA DE NAVEGACIÓN](#1-introducción-y-guía-de-navegación)
+   1.1 [Propósito del Manual de Usuario](#11-propósito-del-manual-de-usuario)
+   1.2 [Estructura Modular por Roles](#12-estructura-modular-por-roles)
+2. [MÓDULO 1: GUÍA DEL CIUDADANO (ROL INVITADO)](#2-módulo-1-guía-del-ciudadano-rol-invitado)
+   2.1 [Acceso al Geoportal Público](#21-acceso-al-geoportal-público)
+   2.2 [Exploración Cartográfica (Capas de Barrios y Veredas)](#22-exploración-cartográfica-capas-de-barrios-y-veredas)
+   2.3 [Uso del Motor de Filtros Espacio-Temporales](#23-uso-del-motor-de-filtros-espacio-temporales)
+   2.4 [Consulta de Indicadores y Tableros KPI Ciudadanos](#24-consulta-de-indicadores-y-tableros-kpi-ciudadanos)
+   2.5 [Proceso de Recuperación de Contraseña Olvidada](#25-proceso-de-recuperación-de-contraseña-olvidada)
+3. [MÓDULO 2: GUÍA DE OPERACIÓN EN CAMPO (ROL REPORTERO)](#3-módulo-2-guía-de-operación-en-campo-rol-reportero)
+   3.1 [Inicio de Sesión Móvil y Cambio Obligatorio de Contraseña](#31-inicio-de-sesión-móvil-y-cambio-obligatorio-de-contraseña)
+   3.2 [Captura de Incidente con Autolocalización GPS](#32-captura-de-incidente-con-autolocalización-gps)
+   3.3 [Adjuntar Evidencia Fotográfica y Subida a Cloudinary](#33-adjuntar-evidencia-fotográfica-y-subida-a-cloudinary)
+   3.4 [Seguimiento y Estado de Casos en "Mis Reportes"](#34-seguimiento-y-estado-de-casos-en-mis-reportes)
+4. [MÓDULO 3: GUÍA DE LA MESA DE VALIDACIÓN (ROL ADMINISTRADOR)](#4-módulo-3-guía-de-la-mesa-de-validación-rol-administrador)
+   4.1 [Entorno del Panel de Control Administrativo](#41-entorno-del-panel-de-control-administrativo)
+   4.2 [Operación de la Cola de Validación Compartida](#42-operación-de-la-cola-de-validación-compartida)
+   4.3 [Toma de Control, Candado Concurrente (Locking) y Liberación](#43-toma-de-control-candado-concurrente-locking-y-liberación)
+   4.4 [Dictamen Técnico: Aprobación, Desestimación y Resolución](#44-dictamen-técnico-aprobación-desestimación-y-resolución)
+   4.5 [Importación Masiva de Incidentes mediante Archivo CSV](#45-importación-masiva-de-incidentes-mediante-archivo-csv)
+   4.6 [Uso del Mecanismo de Rollback de Importaciones](#46-uso-del-mecanismo-de-rollback-de-importaciones)
+   4.7 [Explorador Tabular Avanzado con Exportación](#47-explorador-tabular-avanzado-con-exportación)
+5. [MÓDULO 4: GOBERNANZA Y AUDITORÍA (ROL SUPERADMINISTRADOR)](#5-módulo-4-gobernanza-y-auditoría-rol-superadministrador)
+   5.1 [Creación de Usuarios y Envío Automatizado de Credenciales](#51-creación-de-usuarios-y-envío-automatizado-de-credenciales)
+   5.2 [Gestión Integral de Cuentas, Modificación de Roles y Estados](#52-gestión-integral-de-cuentas-modificación-de-roles-y-estados)
+   5.3 [Consola de Auditoría Forense y Monitoreo de Logs](#53-consola-de-auditoría-forense-y-monitoreo-de-logs)
+   5.4 [Administración de Parámetros Globales y Catálogos](#54-administración-de-parámetros-globales-y-catálogos)
+6. [PREGUNTAS FRECUENTES Y RESOLUCIÓN DE PROBLEMAS (FAQ)](#6-preguntas-frecuentes-y-resolución-de-problemas-faq)
 
 ---
 
@@ -78,8 +78,6 @@ El rol de **Invitado** no requiere registro ni credenciales. Permite el libre ac
 2. Digite la dirección URL del portal (por defecto en entorno local: `http://localhost:3000/dashboard/index.html` o el dominio asignado en producción).
 3. La pantalla principal cargará automáticamente el mapa cartográfico interactivo de Florencia centrado en la zona urbana y rural.
 
-> **ESPACIO PARA DIAGRAMA / CAPTURA:**  
-> *(Insertar aquí Captura de Pantalla: Vista Principal del Geoportal Público SIGI)*
 
 ### 2.2 Exploración Cartográfica (Capas de Barrios y Veredas)
 - **Navegación:** Arrastre con el mouse (o deslice con el dedo en pantallas táctiles) para desplazarse por el municipio. Use la rueda del ratón o los botones `+` y `-` en la esquina superior izquierda para acercar o alejar el zoom.
@@ -88,8 +86,6 @@ El rol de **Invitado** no requiere registro ni credenciales. Permite el libre ac
   - **Veredas Rurales:** Dibuja las delimitaciones del corregimiento y veredas en tono verde bosque.
 - **Información de un Incidente:** Al hacer clic sobre cualquier chincheta o marcador en el mapa, se desplegará una ventana emergente (*popup*) indicando: código del incidente, tipo de delito, fecha, hora, sector y una descripción general de los hechos.
 
-> **ESPACIO PARA DIAGRAMA / CAPTURA:**  
-> *(Insertar aquí Captura de Pantalla: Ventana Emergente Popup con Detalle del Incidente)*
 
 ### 2.3 Uso del Motor de Filtros Espacio-Temporales
 En el panel lateral izquierdo desplegable, puede acotar los datos mostrados:
@@ -98,8 +94,6 @@ En el panel lateral izquierdo desplegable, puede acotar los datos mostrados:
 3. **Filtro por Sector (Barrio o Vereda):** Escriba el nombre del barrio o selecciónelo en la lista desplegable asistida por autocompletado.
 4. **Botón Aplicar Filtros:** Al pulsarlo, el mapa refrescará inmediatamente las chinchetas activas y adaptará la vista (*fitBounds*) al área geográfica resultante.
 
-> **ESPACIO PARA DIAGRAMA / CAPTURA:**  
-> *(Insertar aquí Captura de Pantalla: Panel de Filtros Espacio-Temporales)*
 
 ### 2.4 Consulta de Indicadores y Tableros KPI Ciudadanos
 Haciendo clic en la pestaña superior **"Estadísticas / KPIs"**:
@@ -109,8 +103,6 @@ Haciendo clic en la pestaña superior **"Estadísticas / KPIs"**:
   - *Evolución Temporal:* Gráfico de líneas que expone la tendencia delictiva a lo largo de las semanas o meses.
   - *Top 10 Zonas Críticas:* Gráfico de barras horizontales jerarquizando los barrios con mayor número de reportes.
 
-> **ESPACIO PARA DIAGRAMA / CAPTURA:**  
-> *(Insertar aquí Captura de Pantalla: Tablero de Indicadores y Gráficos Chart.js)*
 
 ### 2.5 Proceso de Recuperación de Contraseña Olvidada
 Para usuarios institucionales que hayan extraviado su clave:
@@ -130,8 +122,6 @@ Este módulo está destinado a cuadrantes policiales, inspectores de tránsito o
 2. **Primer Inicio de Sesión:** Si su cuenta es nueva o su contraseña fue restablecida, el sistema bloqueará automáticamente las demás funciones y le mostrará la pantalla **"Cambio Obligatorio de Contraseña"**.
 3. Ingrese una nueva contraseña que cumpla con los estándares mínimos (al menos 8 caracteres alfanuméricos). Una vez confirmada, será redirigido al panel de reportero móvil (`/reportero/index.html`).
 
-> **ESPACIO PARA DIAGRAMA / CAPTURA:**  
-> *(Insertar aquí Captura de Pantalla: Pantalla de Cambio Obligatorio de Contraseña)*
 
 ### 3.2 Captura de Incidente con Autolocalización GPS
 1. En el panel principal del Reportero, pulse el botón **"Nuevo Reporte de Incidente"**.
@@ -140,8 +130,6 @@ Este módulo está destinado a cuadrantes policiales, inspectores de tránsito o
 4. En el mini-mapa de referencia, aparecerá un marcador arrastrable: si se encuentra a unos metros del punto exacto del hecho, puede arrastrar el marcador para afinar la ubicación.
 5. El sistema asociará automáticamente el barrio o vereda correspondiente por contención topológica.
 
-> **ESPACIO PARA DIAGRAMA / CAPTURA:**  
-> *(Insertar aquí Captura de Pantalla: Formulario Móvil con Botón GPS y Mini-Mapa de Terreno)*
 
 ### 3.3 Adjuntar Evidencia Fotográfica y Subida a Cloudinary
 1. En la sección **"Evidencia Fotográfica"**, pulse el botón **"Tomar Foto / Adjuntar Imagen"**.
@@ -155,8 +143,6 @@ Este módulo está destinado a cuadrantes policiales, inspectores de tránsito o
    - *Afectaciones:* Víctimas, vehículos o si requirió apoyo de ambulancia/policía.
 5. Pulse **"Radicar Incidente"**. La imagen se subirá automáticamente en streaming a la nube optimizada por Cloudinary y se le asignará de inmediato un **Código Radicado Único** (Ej: `INC-2026-8941`).
 
-> **ESPACIO PARA DIAGRAMA / CAPTURA:**  
-> *(Insertar aquí Captura de Pantalla: Previsualización de Foto y Confirmación de Radicado)*
 
 ### 3.4 Seguimiento y Estado de Casos en "Mis Reportes"
 En la pestaña inferior **"Mis Reportes"**, el agente podrá consultar el historial de los eventos que ha radicado:
@@ -178,8 +164,6 @@ Al ingresar con perfil de Administrador (`/admin/index.html`), el sistema despli
 3. **Importación Masiva (CSV).**
 4. **Geoportal Analítico.**
 
-> **ESPACIO PARA DIAGRAMA / CAPTURA:**  
-> *(Insertar aquí Captura de Pantalla: Panel de Control del Administrador)*
 
 ### 4.2 Operación de la Cola de Validación Compartida
 En la pestaña **"Mesa de Validación"**, se listan todas las novedades radicadas por reporteros de campo que esperan dictamen:
@@ -193,8 +177,6 @@ Para evitar que dos analistas editen o aprueben el mismo caso al mismo tiempo:
 3. **Liberación Voluntaria:** Si por alguna razón no puede concluir la revisión del caso, haga clic en el botón **"Liberar Bloqueo"**. El caso volverá a estar disponible de inmediato para los demás analistas.
 4. **Auto-Expiración:** Si transcurren 10 minutos sin emitir un dictamen ni registrar actividad, el candado caduca automáticamente para no congelar la cola de trabajo.
 
-> **ESPACIO PARA DIAGRAMA / CAPTURA:**  
-> *(Insertar aquí Captura de Pantalla: Modal de Validación de Incidente con Candado Activo y Evidencia)*
 
 ### 4.4 Dictamen Técnico: Aprobación, Desestimación y Resolución
 Dentro del modal de evaluación:
@@ -212,8 +194,6 @@ Para cargar registros históricos o reportes externos:
 3. Arrastre su archivo `.csv` al área de carga y pulse **"Iniciar Procesamiento"**.
 4. El sistema validará en streaming fila a fila y desplegará un resumen detallado con la cantidad de filas insertadas con éxito y las filas rechazadas con su motivo específico.
 
-> **ESPACIO PARA DIAGRAMA / CAPTURA:**  
-> *(Insertar aquí Captura de Pantalla: Consola de Importación Masiva CSV con Reporte de Resultados)*
 
 ### 4.6 Uso del Mecanismo de Rollback de Importaciones
 Si tras una carga masiva se detecta que el archivo origen contenía datos corruptos o fechas erróneas:
@@ -243,8 +223,6 @@ El perfil de **Superadministrador** posee la máxima jerarquía técnica del sis
 4. Pulse **"Crear Usuario y Despachar Credenciales"**.
 5. **Proceso Automático del Sistema:** El servidor generará una contraseña temporal de alta seguridad, la almacenará cifrada con Bcrypt, marcará la cuenta con cambio obligatorio de contraseña y enviará un correo electrónico de bienvenida mediante Nodemailer con los datos de acceso y el enlace a la plataforma.
 
-> **ESPACIO PARA DIAGRAMA / CAPTURA:**  
-> *(Insertar aquí Captura de Pantalla: Formulario de Creación de Usuario con Asignación de Roles)*
 
 ### 5.2 Gestión Integral de Cuentas, Modificación de Roles y Estados
 - **Activar / Inactivar Cuentas:** Si un funcionario es trasladado o cesa sus funciones, basta con cambiar su estado a `Inactivo`. El sistema cerrará automáticamente cualquier sesión que dicho usuario mantenga abierta en ese instante.
@@ -257,8 +235,6 @@ En la sección **"Bitácora de Auditoría"**:
 - Columnas visibles: Marca de tiempo precisa (fecha/hora), usuario responsable, acción realizada, tabla afectada, ID del registro, dirección IP del cliente y navegador utilizado (*User-Agent*).
 - **Buscador Forense:** Permite filtrar eventos ocurridos en un rango de fechas para verificar quién aprobó un incidente determinado, quién modificó un rol o cuándo se realizó una importación masiva.
 
-> **ESPACIO PARA DIAGRAMA / CAPTURA:**  
-> *(Insertar aquí Captura de Pantalla: Consola de Auditoría Forense y Trazabilidad de Logs)*
 
 ### 5.4 Administración de Parámetros Globales y Catálogos
 El Superadministrador tiene la potestad de:

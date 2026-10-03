@@ -21,12 +21,10 @@
 
 ## 1. DESCRIPCIÓN GENERAL DEL PRODUCTO
 
-**SIGI** es una solución tecnológica integral tipo **WebGIS** diseñada para la georreferenciación, captura en terreno, validación operativa y análisis estadístico de eventos que afectan la seguridad, convivencia y movilidad en el municipio de **Florencia, Caquetá**. 
+**SIGI** es una solución tecnológica integral tipo **WebGIS** diseñada para la georreferenciación, captura en terreno, validación operativa y análisis estadístico de eventos que afectan la seguridad, convivencia y movilidad en el municipio de **Florencia, Caquetá**.
 
 La plataforma articula el trabajo de agentes de campo, analistas de seguridad y la ciudadanía mediante un entorno interactivo basado en mapas vectoriales, ingesta de evidencia fotográfica en la nube (Cloudinary), control de acceso por roles (RBAC) y un motor de validación con candado concurrente que erradica la duplicidad de dictámenes.
 
-> **ESPACIO PARA DIAGRAMA:**  
-> *(Insertar aquí Captura o Diagrama Representativo de la Vista Principal del Geoportal SIGI)*
 
 ---
 
@@ -61,8 +59,6 @@ El sistema opera bajo un modelo estricto de **Control de Acceso Basado en Roles 
 | **Administrador** *(Analista)* | Privado (Autenticado) | Acceso a la mesa de validación con candado de concurrencia (10 min), aprobación/desestimación de incidentes, edición avanzada, importación masiva de archivos CSV y rollback atómico. |
 | **Superadministrador** *(Gobernanza)*| Privado (Autenticado) | Creación y activación/inactivación de usuarios con despacho de credenciales por email, auditoría forense inmutable de logs, gestión de catálogos y liberación forzosa de bloqueos. |
 
-> **ESPACIO PARA DIAGRAMA:**  
-> *(Insertar aquí Diagrama de Flujo del Ciclo de Vida del Incidente entre Roles)*
 
 ---
 
@@ -120,8 +116,8 @@ El sistema opera bajo un modelo estricto de **Control de Acceso Basado en Roles 
 - **Dictamen Técnico:** Proyecto validado para sustentación y cumplimiento de la fase formativa del SENA.
 - **Alineación Normativa:** Cumplimiento de la Ley 1581 de 2012 (Protección de Datos Personales en Colombia) y estándares OWASP Top 10 para aplicaciones web seguras.
 - **Firma del Responsable del Proyecto:**
-  
-  _____________________________________________  
-  **Daniel Felipe Vera Perdomo**  
-  Desarrollador Principal — Aprendiz ADSO  
+
+  _____________________________________________
+  **Daniel Felipe Vera Perdomo**
+  Desarrollador Principal — Aprendiz ADSO
   Ficha Técnica 3142784 — SENA Regional Caquetá

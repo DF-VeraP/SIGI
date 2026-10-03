@@ -177,7 +177,7 @@
             top: 14px;
             left: 14px;
             z-index: 1010;
-            background: rgba(13, 20, 36, 0.9);
+            background: rgba(13, 20, 36, 0.92);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(56, 189, 248, 0.4);
@@ -186,13 +186,16 @@
             border-radius: 20px;
             font-size: 0.75rem;
             font-weight: 700;
-            display: inline-flex;
+            display: none;
             align-items: center;
             gap: 6px;
             cursor: pointer;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45), 0 0 12px rgba(56, 189, 248, 0.2);
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             animation: fadeInDown 0.3s ease;
+        }
+        .btn-abrir-kpis.visible {
+            display: inline-flex !important;
         }
         .btn-abrir-kpis:hover {
             background: rgba(56, 189, 248, 0.2);
@@ -213,6 +216,10 @@
             margin-bottom: 0 !important;
             border-bottom: none !important;
             overflow: hidden !important;
+        }
+
+        .btn-abrir-kpis.visible ~ #map .leaflet-top.leaflet-left {
+            top: 56px !important;
         }
 
         @keyframes fadeInDown {
@@ -373,10 +380,15 @@
                 margin-left: 4px !important;
             }
             .btn-abrir-kpis {
-                top: 10px !important;
-                left: 10px !important;
-                padding: 5px 12px !important;
+                top: 12px !important;
+                left: 12px !important;
+                padding: 6px 14px !important;
                 font-size: 0.72rem !important;
+                z-index: 1010 !important;
+            }
+            /* Cuando el botón de métricas está visible, los controles de Leaflet descienden para no colisionar */
+            .btn-abrir-kpis.visible ~ #map .leaflet-top.leaflet-left {
+                top: 54px !important;
             }
             #map {
                 flex: 1 1 0% !important;
@@ -627,9 +639,6 @@
                     <div class="sw-slider"></div>
                     <span class="icono-luna"><i class="bi bi-moon-stars-fill"></i></span>
                 </button>
-                <button id="btnFiltrosMobileHeader" class="btn-mobile-icon" title="Buscar y Filtros">
-                    <i class="bi bi-search"></i>
-                </button>
                 <button id="iniciarSesionMobile" class="btn-mobile-icon btn-admin-mobile" title="Acceso Admin">
                     <i class="bi bi-shield-lock-fill"></i>
                 </button>
@@ -638,73 +647,79 @@
 
         <div class="content-wrapper">
 
-        <div id="filtrosOverlay" class="filtros-overlay" aria-hidden="true"></div>
+        <div id="filtrosOverlay" class="filtros-overlay" aria-hidden="true" style="display: none;"></div>
 
-        <div id="panelFiltros" role="dialog" aria-label="Filtros de mapa" aria-hidden="true">
-            <button id="cerrarFiltros" type="button" aria-label="Cerrar filtros">
-                <i class="bi bi-x" aria-hidden="true"></i>
-            </button>
-            <div class="contenedorFiltros">
-                <div class="analisis-rapido">
-                    <h3>Análisis rápido</h3>
-                    <div class="ar-grid">
-                        <div class="ar-item">
-                            <span class="ar-label">Visibles:</span>
-                            <span class="ar-valor" id="ar-visibles">0</span>
+        <!-- VENTANA EMERGENTE / MODAL FILTROS DE MAPA -->
+        <div id="panelFiltros" class="modal" role="dialog" aria-label="Filtros de mapa" aria-hidden="true" style="display: none;">
+            <div class="modal-contenido modal-tiempo modal-filtros-popup">
+                <div class="modal-cabecera">
+                    <h3><i class="bi bi-funnel-fill"></i> Filtros de Mapa</h3>
+                    <span class="cerrar-modal-tiempo" id="cerrarFiltros" title="Cerrar">&times;</span>
+                </div>
+                
+                <div class="modal-cuerpo" style="display: flex; flex-direction: column; gap: 14px; overflow-y: auto;">
+                    <div class="analisis-rapido">
+                        <h3>Análisis rápido</h3>
+                        <div class="ar-grid">
+                            <div class="ar-item">
+                                <span class="ar-label">Visibles:</span>
+                                <span class="ar-valor" id="ar-visibles">0</span>
+                            </div>
+                            <div class="ar-item">
+                                <span class="ar-label">Barrio afectado:</span>
+                                <span class="ar-valor" id="ar-barrio">...</span>
+                            </div>
+                            <div class="ar-item">
+                                <span class="ar-label">Tipo frecuente:</span>
+                                <span class="ar-valor" id="ar-tipo">...</span>
+                            </div>
+                            <div class="ar-item">
+                                <span class="ar-label">Hora crítica:</span>
+                                <span class="ar-valor" id="ar-hora">...</span>
+                            </div>
                         </div>
-                        <div class="ar-item">
-                            <span class="ar-label">Barrio afectado:</span>
-                            <span class="ar-valor" id="ar-barrio">...</span>
+                    </div>
+
+                    <div class="seccion-filtro-modal">
+                        <span class="titulo-seccion-modal">Buscar lugar</span>
+                        <div class="contenedor-buscar-lugar">
+                            <input type="text" id="buscarLugar" placeholder="Ej: Las Malvinas, San Antonio..." autocomplete="off">
+                            <div id="sugerencias"></div>
                         </div>
-                        <div class="ar-item">
-                            <span class="ar-label">Tipo frecuente:</span>
-                            <span class="ar-valor" id="ar-tipo">...</span>
-                        </div>
-                        <div class="ar-item">
-                            <span class="ar-label">Hora crítica:</span>
-                            <span class="ar-valor" id="ar-hora">...</span>
+                    </div>
+
+                    <div class="seccion-filtro-modal" style="border-bottom: none; padding-bottom: 0;">
+                        <span class="titulo-seccion-modal">Tipo de Incidente</span>
+                        <div class="tiposIncidente">
+                            <button class="incidente robo" data-id="1" type="button">
+                                <span></span>
+                                <i class="bi bi-shield-exclamation chip-icon" aria-hidden="true"></i>
+                                Robo
+                            </button>
+                            <button class="incidente agresion" data-id="2" type="button">
+                                <span></span>
+                                <i class="bi bi-exclamation-triangle chip-icon" aria-hidden="true"></i>
+                                Agresiones
+                            </button>
+                            <button class="incidente piques" data-id="3" type="button">
+                                <span></span>
+                                <i class="bi bi-lightning chip-icon" aria-hidden="true"></i>
+                                Piques
+                            </button>
+                            <button class="incidente accidente" data-id="4" type="button">
+                                <span></span>
+                                <i class="bi bi-car-front chip-icon" aria-hidden="true"></i>
+                                Accidentes
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <hr style="border:0; border-top:1px solid var(--borde); margin: 8px 0 16px 0;">
-
-                <h2>
-                    <i class="bi bi-funnel" aria-hidden="true"></i>
-                    Filtros de Mapa
-                </h2>
-                
-                
-                <label for="buscarLugar">Buscar lugar</label>
-                <input type="text" id="buscarLugar" placeholder="Ej: Las Malvinas, San Antonio..." autocomplete="off">
-                <div id="sugerencias"></div>
-                
-                <label>Tipo de Incidente</label>
-                <div class="tiposIncidente">
-                    <button class="incidente robo" data-id="1" type="button">
-                        <span></span>
-                        <i class="bi bi-shield-exclamation chip-icon" aria-hidden="true"></i>
-                        Robo
-                    </button>
-                    <button class="incidente agresion" data-id="2" type="button">
-                        <span></span>
-                        <i class="bi bi-exclamation-triangle chip-icon" aria-hidden="true"></i>
-                        Agresiones
-                    </button>
-                    <button class="incidente piques" data-id="3" type="button">
-                        <span></span>
-                        <i class="bi bi-lightning chip-icon" aria-hidden="true"></i>
-                        Piques
-                    </button>
-                    <button class="incidente accidente" data-id="4" type="button">
-                        <span></span>
-                        <i class="bi bi-car-front chip-icon" aria-hidden="true"></i>
-                        Accidentes
+                <div class="modal-pie" style="padding-top: 10px;">
+                    <button class="btnActualizar btn-verde" type="button" style="width: 100%; padding: 11px; font-size: 0.88rem; font-weight: 700; border-radius: 10px;">
+                        <i class="bi bi-check2-circle"></i> Aplicar Filtros
                     </button>
                 </div>
-                <button class="btnActualizar" type="button">
-                    Actualizar Resultados
-                </button>
             </div>
         </div>
 
@@ -804,43 +819,48 @@
                 <span>Última actualización: <strong id="hora-actualizacion" style="color: #fff;">--:--:--</strong></span>
             </div>
 
-            <!-- Grupo Unificado de Botones de Acción del Mapa -->
-            <div class="map-actions-group">
-                <button id="btnFiltros" type="button" class="fab fab-filtros" aria-label="Abrir filtros">
-                    <span style="margin-left: 5px;">Filtros</span>
-                    <span class="fab-badge" id="badgeFiltros">0</span>
-                </button>
+            <div id="map">
+                <!-- Grupo Unificado de Botones de Acción del Mapa -->
+                <div class="map-actions-group">
+                    <button id="btnFiltros" type="button" class="fab fab-filtros" aria-label="Abrir filtros" title="Filtros del mapa">
+                        <i class="bi bi-funnel icono-desktop" aria-hidden="true"></i>
+                        <i class="bi bi-funnel icono-mobile" aria-hidden="true"></i>
+                        <span class="texto-desktop" style="margin-left: 5px;">Filtros</span>
+                        <span class="fab-badge" id="badgeFiltros">0</span>
+                    </button>
 
-                <button class="restablecer fab fab-reset" type="button" aria-label="Restablecer filtros">
-                    <i class="bi bi-arrow-counterclockwise icono-mobile" aria-hidden="true"></i>
-                    <span class="texto-desktop">Restablecer</span>
-                </button>
+                    <button id="btnAbrirFiltroTiempo" type="button" class="fab fab-tiempo" aria-label="Filtrar por tiempo" title="Filtrar por tiempo">
+                        <i class="bi bi-calendar-event icono-desktop" aria-hidden="true"></i>
+                        <i class="bi bi-calendar-event icono-mobile" aria-hidden="true"></i>
+                        <span class="texto-desktop" style="margin-left: 5px;">Tiempo</span>
+                    </button>
 
-                <button id="btnAbrirFiltroTiempo" type="button" class="fab fab-tiempo" aria-label="Filtrar por tiempo">
-                    <span style="margin-left: 5px;">Tiempo</span>
-                </button>
+                    <button id="btnMiUbicacion" type="button" class="fab fab-location" aria-label="Mi ubicación en tiempo real" title="Centrar en mi ubicación">
+                        <i class="bi bi-crosshair2 icono-mobile" aria-hidden="true"></i>
+                        <i class="bi bi-crosshair2 icono-desktop" aria-hidden="true"></i>
+                        <span class="texto-desktop" style="margin-left: 5px;">Mi ubicación</span>
+                        <span id="badgeUbicacion" class="location-pulse-dot" style="display: none;"></span>
+                    </button>
 
-                <button id="btnMiUbicacion" type="button" class="fab fab-location" aria-label="Mi ubicación en tiempo real" title="Centrar en mi ubicación">
-                    <i class="bi bi-crosshair2 icono-mobile" aria-hidden="true"></i>
-                    <i class="bi bi-crosshair2 icono-desktop" aria-hidden="true"></i>
-                    <span class="texto-desktop" style="margin-left: 5px;">Mi ubicación</span>
-                    <span id="badgeUbicacion" class="location-pulse-dot" style="display: none;"></span>
-                </button>
+                    <button id="btnToggleHeatmap" type="button" class="fab fab-heatmap" aria-label="Alternar mapa de calor" title="Mapa de calor">
+                        <i class="bi bi-fire icono-mobile" aria-hidden="true"></i>
+                        <i class="bi bi-fire icono-desktop" aria-hidden="true"></i>
+                        <span class="texto-desktop" style="margin-left: 5px;">Mapa de calor</span>
+                    </button>
 
-                <button id="btnToggleHeatmap" type="button" class="fab fab-heatmap" aria-label="Alternar mapa de calor">
-                    <i class="bi bi-fire icono-mobile" aria-hidden="true"></i>
-                    <i class="bi bi-fire icono-desktop" aria-hidden="true"></i>
-                    <span class="texto-desktop" style="margin-left: 5px;">Mapa de calor</span>
-                </button>
+                    <!-- Botón Restablecer integrado al dock de filtros -->
+                    <button class="restablecer fab" type="button" aria-label="Restablecer filtros" title="Restablecer mapa">
+                        <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                        <span class="texto-desktop" style="margin-left: 5px;">Restablecer</span>
+                    </button>
+                </div>
             </div>
-            
-            <div id="map"></div>
             
             <div class="leyenda contFlexCent mobile-only" aria-label="Leyenda del mapa">
                 <div class="itemLeyenda"><span class="rojo"></span> Robo</div>
                 <div class="itemLeyenda"><span class="morado"></span> Piques</div>
-                <div class="itemLeyenda"><span class="amarillo"></span> Agresiones/Amenazas</div>
-                <div class="itemLeyenda"><span class="verde"></span> Accidente de tránsito</div>
+                <div class="itemLeyenda"><span class="amarillo"></span> Agresiones</div>
+                <div class="itemLeyenda"><span class="verde"></span> Accidentes</div>
             </div>
         </div>
     </main>
@@ -1037,6 +1057,10 @@
 
     <!-- BARRA DE NAVEGACIÓN INFERIOR NATIVA (MOBILE BOTTOM BAR) -->
     <nav class="mobile-bottom-bar mobile-only" aria-label="Navegación principal móvil">
+        <button type="button" class="mobile-nav-tab" data-view="inicio">
+            <i class="bi bi-house-door-fill" aria-hidden="true"></i>
+            <span>Inicio</span>
+        </button>
         <button type="button" class="mobile-nav-tab active" data-view="mapa" aria-current="page">
             <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
             <span>Mapa</span>
@@ -1048,10 +1072,6 @@
         <button type="button" class="mobile-nav-tab" data-view="estadisticas">
             <i class="bi bi-bar-chart-line-fill" aria-hidden="true"></i>
             <span>Analítica</span>
-        </button>
-        <button type="button" class="mobile-nav-tab" id="navFiltrosMobileTab">
-            <i class="bi bi-funnel-fill" aria-hidden="true"></i>
-            <span>Filtros</span>
         </button>
     </nav>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>

@@ -171,15 +171,24 @@ document.addEventListener("DOMContentLoaded", () => {
                         return;
                     }
 
-                    // Acceso regular
-                    showAlert(data.mensaje || "Autenticación exitosa. Redirigiendo...", "success");
+                    // Acceso regular exitoso: Desplegar transición cinemática de Radar
+                    const textoRol = data.rol === "administrador" ? "Administrador" : "Reportero";
+                    const textoAccesoRol = document.getElementById("textoAccesoRol");
+                    if (textoAccesoRol) {
+                        textoAccesoRol.textContent = `Inicializando entorno SIGI · Rol: ${textoRol}`;
+                    }
+
+                    document.body.classList.add("login-acceso-concedido");
+
+                    const delayRedirect = window.innerWidth <= 768 ? 1400 : 700;
+
                     setTimeout(() => {
                         if (data.rol === "reportero") {
                             window.location.href = "/reportero/index.html";
                         } else {
                             window.location.href = "/admin/index.html";
                         }
-                    }, 650);
+                    }, delayRedirect);
 
                 } else {
                     btnSubmit.classList.remove("loading");

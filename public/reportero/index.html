@@ -2,8 +2,12 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIGI — Captura en Terreno (Reportero)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0d1117">
+    <title>SIGI — Captura en Terreno</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="reportero.css">
@@ -20,6 +24,12 @@
         </div>
         <div class="header-user">
             <span id="userBadge" class="user-badge"><i class="bi bi-person-badge"></i> ...</span>
+            <!-- Toggle Claro / Oscuro Tipo iPhone (mismo diseño que Dashboard y Admin) -->
+            <button id="btnTemaReportero" class="toggle-iphone-header toggle-tema-reportero" title="Cambiar modo Claro / Oscuro">
+                <span class="icono-sol"><i class="bi bi-sun-fill"></i></span>
+                <div class="sw-slider"></div>
+                <span class="icono-luna"><i class="bi bi-moon-stars-fill"></i></span>
+            </button>
             <button id="btnLogout" class="btn-logout" title="Cerrar Sesión">
                 <i class="bi bi-box-arrow-right"></i>
             </button>
@@ -126,14 +136,14 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="descripcion">Descripción detallada del incidente *</label>
-                        <textarea id="descripcion" rows="3" placeholder="Describe brevemente lo ocurrido..." required></textarea>
+                        <label for="descripcion">Descripción del incidente <span style="font-weight:400; color: var(--text-muted);">(Opcional)</span></label>
+                        <textarea id="descripcion" rows="3" placeholder="Describe brevemente lo ocurrido..."></textarea>
                     </div>
 
                     <!-- ASISTENCIAS NECESARIAS -->
                     <div class="form-group">
                         <label>Asistencia requerida en el sitio:</label>
-                        <div class="checkbox-group" style="display: flex; gap: 12px; margin-top: 6px; flex-wrap: wrap;">
+                        <div class="checkbox-group">
                             <label class="chk-label"><input type="checkbox" id="chkPolicia" checked> 👮 Policía</label>
                             <label class="chk-label"><input type="checkbox" id="chkAmbulancia"> 🚑 Ambulancia</label>
                             <label class="chk-label"><input type="checkbox" id="chkBomberos"> 🚒 Bomberos</label>
@@ -144,12 +154,12 @@
                     <div class="form-group">
                         <label><i class="bi bi-camera-fill text-primary"></i> Foto de Evidencia (Opcional)</label>
                         <input type="file" id="fotoInput" accept="image/*" capture="environment" style="display:none">
-                        <button type="button" id="btnTomarFoto" class="btn-foto-upload" style="width: 100%; padding: 10px; background: rgba(59, 130, 246, 0.12); border: 1px dashed rgba(59, 130, 246, 0.4); color: #60a5fa; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <button type="button" id="btnTomarFoto" class="btn-foto-upload">
                             <i class="bi bi-camera"></i> <span>Adjuntar / Tomar Foto de Terreno</span>
                         </button>
-                        <div id="previewContainer" class="preview-container" style="display:none; margin-top: 10px; position: relative;">
-                            <img id="imgPreview" src="" alt="Previsualización de evidencia" style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); object-fit: cover;">
-                            <button type="button" id="btnQuitarFoto" title="Quitar foto" style="position: absolute; top: 5px; right: 5px; background: rgba(239,68,68,0.85); color: white; border: none; border-radius: 50%; width: 26px; height: 26px; cursor: pointer; font-weight: bold;">&times;</button>
+                        <div id="previewContainer" class="preview-container" style="display:none;">
+                            <img id="imgPreview" src="" alt="Previsualización de evidencia">
+                            <button type="button" id="btnQuitarFoto" title="Quitar foto">&times;</button>
                         </div>
                     </div>
 
@@ -175,5 +185,77 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="../js/session-timer.js"></script>
     <script src="reportero.js"></script>
+
+    <!-- MODAL EDITAR REPORTE -->
+    <div id="modalEditarReporte" class="modal-reporte-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="tituloModalEditar">
+        <div class="modal-reporte-card">
+            <div class="modal-reporte-header">
+                <h3 id="tituloModalEditar"><i class="bi bi-pencil-square"></i> Editar Reporte</h3>
+                <button type="button" id="btnCerrarModalEditar" class="modal-reporte-close" aria-label="Cerrar">&times;</button>
+            </div>
+            <p class="modal-reporte-sub">Solo puedes editar reportes en estado <strong>Reportado</strong> (pendiente de revisión).</p>
+            <input type="hidden" id="editReporteId">
+            <div class="modal-reporte-body">
+                <div class="form-group">
+                    <label for="editFechaReporte">Fecha del Hecho</label>
+                    <input type="date" id="editFechaReporte">
+                </div>
+                <div class="form-group">
+                    <label for="editHoraReporte">Hora aproximada</label>
+                    <input type="time" id="editHoraReporte">
+                </div>
+                <div class="form-group">
+                    <label for="editGravedadReporte">Gravedad</label>
+                    <select id="editGravedadReporte">
+                        <option value="1">1 - Muy Baja</option>
+                        <option value="2">2 - Baja</option>
+                        <option value="3">3 - Media</option>
+                        <option value="4">4 - Alta</option>
+                        <option value="5">5 - Crítica</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editDireccionReporte">Dirección / Referencia</label>
+                    <input type="text" id="editDireccionReporte" placeholder="Ej: Calle 15 con Cra 4">
+                </div>
+                <div class="form-group">
+                    <label for="editDescripcionReporte">Descripción <span style="font-weight:400; color: var(--text-muted);">(Opcional)</span></label>
+                    <textarea id="editDescripcionReporte" rows="3" placeholder="Describe lo ocurrido..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Foto de Evidencia <span style="font-weight:400; color: var(--text-muted);">(Opcional)</span></label>
+                    <!-- Vista previa de foto actual si la tiene -->
+                    <div id="editFotoActualContainer" style="display:none; margin-bottom:8px;">
+                        <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:4px;">Foto actual en la nube:</span>
+                        <div style="position:relative; display:inline-block; border-radius:8px; overflow:hidden; border:1px solid var(--border);">
+                            <img id="editImgActual" style="max-width:100%; max-height:130px; display:block; object-fit:cover;" alt="Foto actual">
+                        </div>
+                    </div>
+                    <!-- Botón para seleccionar o tomar nueva foto -->
+                    <input type="file" id="editFotoInput" accept="image/*" style="display:none;">
+                    <button type="button" id="btnEditCambiarFoto" class="btn-foto-upload" style="margin-top:2px;">
+                        <i class="bi bi-camera"></i> <span>Reemplazar / Cambiar Foto</span>
+                    </button>
+                    <!-- Vista previa de la nueva foto seleccionada -->
+                    <div id="editFotoNuevaContainer" style="display:none; margin-top:8px; position:relative;">
+                        <span style="font-size:0.75rem; color:var(--accent); font-weight:600; display:block; margin-bottom:4px;">
+                            <i class="bi bi-arrow-repeat"></i> Nueva foto seleccionada:
+                        </span>
+                        <div style="position:relative; display:inline-block; border-radius:8px; overflow:hidden; border:1.5px solid var(--accent);">
+                            <img id="editImgNuevaPreview" style="max-width:100%; max-height:140px; display:block; object-fit:cover;" alt="Nueva foto">
+                            <button type="button" id="btnEditQuitarNuevaFoto" style="position:absolute; top:4px; right:4px; background:rgba(239,68,68,0.9); color:white; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer; font-weight:bold; font-size:13px; display:flex; align-items:center; justify-content:center;">&times;</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-reporte-actions">
+                <button type="button" id="btnCancelarEditar" class="modal-btn-cancel">Cancelar</button>
+                <button type="button" id="btnGuardarEditar" class="modal-btn-save">
+                    <i class="bi bi-check2-circle"></i> Guardar Cambios
+                </button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

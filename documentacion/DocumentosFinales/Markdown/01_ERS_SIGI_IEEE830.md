@@ -18,36 +18,36 @@
 
 ## ÍNDICE GENERAL
 
-1. [INTRODUCCIÓN](#1-introducción)  
-   1.1 [Propósito del Documento](#11-propósito-del-documento)  
-   1.2 [Alcance del Producto](#12-alcance-del-producto)  
-   1.3 [Personal Involucrado y Audiencia](#13-personal-involucrado-y-audiencia)  
-   1.4 [Definiciones, Acrónimos y Abreviaturas](#14-definiciones-acrónimos-y-abreviaturas)  
-   1.5 [Referencias Normativas y Técnicas](#15-referencias-normativas-y-técnicas)  
-   1.6 [Resumen del Contenido](#16-resumen-del-contenido)  
-2. [DESCRIPCIÓN GENERAL DEL SISTEMA](#2-descripción-general-del-sistema)  
-   2.1 [Perspectiva del Producto](#21-perspectiva-del-producto)  
-   2.2 [Funcionalidades Principales del Sistema](#22-funcionalidades-principales-del-sistema)  
-   2.3 [Perfiles de Usuario y Modelo RBAC](#23-perfiles-de-usuario-y-modelo-rbac)  
-   2.4 [Entorno Operativo y Tecnológico](#24-entorno-operativo-y-tecnológico)  
-   2.5 [Restricciones de Diseño e Implementación](#25-restricciones-de-diseño-e-implementación)  
-   2.6 [Supuestos y Dependencias](#26-supuestos-y-dependencias)  
-3. [REQUISITOS ESPECÍFICOS DEL SISTEMA](#3-requisitos-específicos-del-sistema)  
-   3.1 [Requisitos de Interfaces Externas](#31-requisitos-de-interfaces-externas)  
-   3.2 [Módulo 1: Seguridad, Autenticación y Auditoría (AUTH-SEC)](#32-módulo-1-seguridad-autenticación-y-auditoría-auth-sec)  
-   3.3 [Módulo 2: Georreferenciación y Visor Cartográfico (GIS-MAP)](#33-módulo-2-georreferenciación-y-visor-cartográfico-gis-map)  
-   3.4 [Módulo 3: Captura Móvil en Terreno y Evidencia (REP-CAMPO)](#34-módulo-3-captura-móvil-en-terreno-y-evidencia-rep-campo)  
-   3.5 [Módulo 4: Mesa de Validación y Bloqueo Concurrente (VAL-LOCK)](#35-módulo-4-mesa-de-validación-y-bloqueo-concurrente-val-lock)  
-   3.6 [Módulo 5: Analítica Espacio-Temporal y Tableros KPI (KPI-ANL)](#36-módulo-5-analítica-espacio-temporal-y-tableros-kpi-kpi-anl)  
-   3.7 [Módulo 6: Gestión Masiva de Datos y Rollback (DAT-MAS)](#37-módulo-6-gestión-masiva-de-datos-y-rollback-dat-mas)  
-   3.8 [Módulo 7: Administración y Gobernanza de Usuarios (ADM-GOB)](#38-módulo-7-administración-y-gobernanza-de-usuarios-adm-gob)  
-4. [REQUISITOS NO FUNCIONALES (RNF)](#4-requisitos-no-funcionales-rnf)  
-   4.1 [Rendimiento y Capacidad](#41-rendimiento-y-capacidad)  
-   4.2 [Seguridad y Protección de Datos](#42-seguridad-y-protección-de-datos)  
-   4.3 [Disponibilidad y Concurrencia](#43-disponibilidad-y-concurrencia)  
-   4.4 [Mantenibilidad y Portabilidad](#44-mantenibilidad-y-portabilidad)  
-   4.5 [Usabilidad y Accesibilidad](#45-usabilidad-y-accesibilidad)  
-5. [MATRIZ DE TRAZABILIDAD DE REQUISITOS](#5-matriz-de-trazabilidad-de-requisitos)  
+1. [INTRODUCCIÓN](#1-introducción)
+   1.1 [Propósito del Documento](#11-propósito-del-documento)
+   1.2 [Alcance del Producto](#12-alcance-del-producto)
+   1.3 [Personal Involucrado y Audiencia](#13-personal-involucrado-y-audiencia)
+   1.4 [Definiciones, Acrónimos y Abreviaturas](#14-definiciones-acrónimos-y-abreviaturas)
+   1.5 [Referencias Normativas y Técnicas](#15-referencias-normativas-y-técnicas)
+   1.6 [Resumen del Contenido](#16-resumen-del-contenido)
+2. [DESCRIPCIÓN GENERAL DEL SISTEMA](#2-descripción-general-del-sistema)
+   2.1 [Perspectiva del Producto](#21-perspectiva-del-producto)
+   2.2 [Funcionalidades Principales del Sistema](#22-funcionalidades-principales-del-sistema)
+   2.3 [Perfiles de Usuario y Modelo RBAC](#23-perfiles-de-usuario-y-modelo-rbac)
+   2.4 [Entorno Operativo y Tecnológico](#24-entorno-operativo-y-tecnológico)
+   2.5 [Restricciones de Diseño e Implementación](#25-restricciones-de-diseño-e-implementación)
+   2.6 [Supuestos y Dependencias](#26-supuestos-y-dependencias)
+3. [REQUISITOS ESPECÍFICOS DEL SISTEMA](#3-requisitos-específicos-del-sistema)
+   3.1 [Requisitos de Interfaces Externas](#31-requisitos-de-interfaces-externas)
+   3.2 [Módulo 1: Seguridad, Autenticación y Auditoría (AUTH-SEC)](#32-módulo-1-seguridad-autenticación-y-auditoría-auth-sec)
+   3.3 [Módulo 2: Georreferenciación y Visor Cartográfico (GIS-MAP)](#33-módulo-2-georreferenciación-y-visor-cartográfico-gis-map)
+   3.4 [Módulo 3: Captura Móvil en Terreno y Evidencia (REP-CAMPO)](#34-módulo-3-captura-móvil-en-terreno-y-evidencia-rep-campo)
+   3.5 [Módulo 4: Mesa de Validación y Bloqueo Concurrente (VAL-LOCK)](#35-módulo-4-mesa-de-validación-y-bloqueo-concurrente-val-lock)
+   3.6 [Módulo 5: Analítica Espacio-Temporal y Tableros KPI (KPI-ANL)](#36-módulo-5-analítica-espacio-temporal-y-tableros-kpi-kpi-anl)
+   3.7 [Módulo 6: Gestión Masiva de Datos y Rollback (DAT-MAS)](#37-módulo-6-gestión-masiva-de-datos-y-rollback-dat-mas)
+   3.8 [Módulo 7: Administración y Gobernanza de Usuarios (ADM-GOB)](#38-módulo-7-administración-y-gobernanza-de-usuarios-adm-gob)
+4. [REQUISITOS NO FUNCIONALES (RNF)](#4-requisitos-no-funcionales-rnf)
+   4.1 [Rendimiento y Capacidad](#41-rendimiento-y-capacidad)
+   4.2 [Seguridad y Protección de Datos](#42-seguridad-y-protección-de-datos)
+   4.3 [Disponibilidad y Concurrencia](#43-disponibilidad-y-concurrencia)
+   4.4 [Mantenibilidad y Portabilidad](#44-mantenibilidad-y-portabilidad)
+   4.5 [Usabilidad y Accesibilidad](#45-usabilidad-y-accesibilidad)
+5. [MATRIZ DE TRAZABILIDAD DE REQUISITOS](#5-matriz-de-trazabilidad-de-requisitos)
 
 ---
 
@@ -119,8 +119,6 @@ SIGI es un software autónomo de arquitectura 3 capas (*3-Tier*) que integra tec
 +---------------------------------------+  +------------------------------------+
 ```
 
-> **ESPACIO PARA DIAGRAMA:**  
-> *(Insertar aquí Diagrama de Arquitectura Global de Componentes de SIGI)*
 
 ### 2.2 Funcionalidades Principales del Sistema
 1. **Geovisualización Dinámica:** Carga asíncrona de incidentes según el *bounding box* o filtros de polígonos urbanos y rurales.
@@ -167,8 +165,6 @@ classDiagram
     Administrador <|-- Superadministrador
 ```
 
-> **ESPACIO PARA DIAGRAMA:**  
-> *(Insertar aquí Diagrama Jerárquico de Roles y Permisos RBAC)*
 
 - **Invitado (Ciudadano):** Acceso público sin credenciales. Exploración del mapa, consultas de seguridad ciudadana, métricas globales.
 - **Reportero (Personal de Terreno):** Credencial institucional. Radicación de novedades en campo con captura GPS y foto; consulta de historial de reportes propios.
@@ -212,8 +208,6 @@ classDiagram
 
 ### 3.2 Módulo 1: Seguridad, Autenticación y Auditoría (AUTH-SEC)
 
-> **ESPACIO PARA DIAGRAMA:**  
-> *(Insertar aquí Diagrama de Secuencia: Flujo de Autenticación, Inactividad y Renovación de Contraseña)*
 
 #### RF-AUTH-01: Inicio de Sesión y Verificación de Credenciales
 - **Descripción:** El sistema autenticará a los usuarios mediante nombre de usuario y contraseña cifrada.
@@ -224,7 +218,7 @@ classDiagram
 #### RF-AUTH-02: Forzado de Cambio de Contraseña en Primer Acceso
 - **Descripción:** Cuando un usuario posee la marca `debe_cambiar_password = true`, el sistema bloqueará el acceso al resto de rutas protegidas y exigirá la actualización inmediata de la contraseña.
 - **Entradas:** `password_actual`, `password_nueva`, `password_confirmacion`.
-- **Proceso:** Validar longitud mínima (8 caracteres, números, letras y caracteres especiales). Generar hash Bcrypt, actualizar campo `contraseniausuario`, establecer `debe_cambiar_password = false` y registrar en auditoría.
+- **Proceso:** Validar longitud mínima (8 caracteres, combinando letras mayúsculas, minúsculas y números, con soporte para caracteres especiales). Generar hash Bcrypt, actualizar campo `contraseniausuario`, establecer `debe_cambiar_password = false` y registrar en auditoría.
 - **Salida:** Confirmación exitosa y redirección al panel correspondiente según rol.
 
 #### RF-AUTH-03: Recuperación de Contraseña por Correo
@@ -234,8 +228,8 @@ classDiagram
 - **Salida:** Correo con enlace seguro de restablecimiento; confirmación de cambio en pantalla.
 
 #### RF-AUTH-04: Cierre de Sesión y Control de Inactividad
-- **Descripción:** Destrucción segura de la sesión en el servidor y limpieza de la cookie de sesión del lado cliente por solicitud explícita o por vencimiento tras 30 minutos de inactividad continua.
-- **Entradas:** Solicitud HTTP POST `/api/auth/logout` o trigger de timeout en cliente/servidor.
+- **Descripción:** Destrucción segura de la sesión en el servidor y limpieza de la cookie de sesión del lado cliente por solicitud explícita o por vencimiento tras 40 minutos de inactividad continua con sesión rodante (rolling session).
+- **Entradas:** Solicitud HTTP GET `/logout` o trigger de timeout en cliente/servidor.
 - **Proceso:** Invalidación en almacén de sesiones de Express y descarte de cookies en navegador.
 - **Salida:** Redirección a la vista de inicio de sesión o vista pública.
 
@@ -249,8 +243,6 @@ classDiagram
 
 ### 3.3 Módulo 2: Georreferenciación y Visor Cartográfico (GIS-MAP)
 
-> **ESPACIO PARA DIAGRAMA:**  
-> *(Insertar aquí Diagrama de Flujo: Geovisualización, Carga de Capas y Filtros Espaciales)*
 
 #### RF-GIS-01: Renderizado de Capas Vectoriales Base
 - **Descripción:** El visor público y administrativo debe cargar y proyectar polígonos correspondientes a las comunas, barrios urbanos y veredas rurales de Florencia.
@@ -270,12 +262,22 @@ classDiagram
 - **Proceso:** Construcción dinámica y parametrizada de consulta SQL evitando inyección SQL; recálculo de marcadores y ajuste automático del zoom cartográfico (*fitBounds*).
 - **Salida:** Actualización reactiva del mapa y del contador de incidentes filtrados.
 
+#### RF-GIS-04: Soporte Multicapa y Alternancia de Tema (Modo Claro / Modo Oscuro / Satelital)
+- **Descripción:** Permitir al usuario alternar entre modos visuales (claro, oscuro) y capas base de mapa (vectorial CartoDB vs ortofotografía satelital Esri World Imagery) tanto en el Geoportal Ciudadano como en el panel administrativo.
+- **Entradas:** Selección interactiva del control de capa / tema en la interfaz.
+- **Proceso:** Reemplazo dinámico de los tilesets de Leaflet y alternancia de clases CSS del contenedor cartográfico y elementos UI, persistiendo la preferencia en la sesión del cliente.
+- **Salida:** Mapa adaptado al modo seleccionado con marcadores de alto contraste y legibilidad óptima.
+
+#### RF-GIS-05: Búsqueda Geoespacial con Autocompletado Predictivo
+- **Descripción:** Facilitar la localización rápida de polígonos urbanos y rurales mediante un buscador con sugerencias automáticas en tiempo real.
+- **Entradas:** Cadena de texto digitada por el usuario (mínimo 2 caracteres).
+- **Proceso:** Petición asíncrona a `/buscarBarrios` y `/buscarVeredas`; filtrado insensible a mayúsculas/minúsculas (`ILIKE`) con límite de 10 resultados. Al seleccionar una coincidencia, el mapa ejecuta `fitBounds` centrando el polígono correspondiente.
+- **Salida:** Menú desplegable con sugerencias de barrios y veredas con badges distintivos; desplazamiento automático del mapa al sector seleccionado.
+
 ---
 
 ### 3.4 Módulo 3: Captura Móvil en Terreno y Evidencia (REP-CAMPO)
 
-> **ESPACIO PARA DIAGRAMA:**  
-> *(Insertar aquí Diagrama de Casos de Uso: Registro de Incidente Móvil con Cloudinary)*
 
 #### RF-REP-01: Autolocalización por Hardware Móvil
 - **Descripción:** Permitir al Reportero en terreno capturar su ubicación exacta usando la API de Geolocalización del navegador (HTML5 Geolocation).
@@ -286,13 +288,13 @@ classDiagram
 #### RF-REP-02: Ingesta y Optimización de Evidencia Fotográfica (Cloudinary)
 - **Descripción:** Carga de fotografía del incidente capturada desde la cámara del dispositivo móvil o galería.
 - **Entradas:** Archivo binario de imagen (JPEG, PNG, WEBP), tamaño máximo 10MB.
-- **Proceso:** El middleware Multer recibe la imagen en buffer de memoria; se envía vía SDK seguro a Cloudinary con transformaciones automáticas (compresión WebP, reducción de escala a 1600px máximo, etiquetado con marca de agua o identificador de auditoría). Se obtiene la URL pública HTTPS segura y el `public_id`.
-- **Salida:** URL pública segura almacenada en el campo `evidencia_url` de la tabla `incidente`.
+- **Proceso:** El middleware Multer recibe la imagen en buffer de memoria; se envía vía SDK seguro a Cloudinary con transformaciones automáticas (compresión WebP, reducción de escala a 1600px máximo, etiquetado con marca de agua o identificador de auditoría). Si la nube no está disponible, opera mecanismo de contingencia (*fallback*) guardando la copia local en disco. Se obtiene la URL pública HTTPS segura.
+- **Salida:** URL pública segura almacenada en el campo `imagen_url` de la tabla `incidente`.
 
 #### RF-REP-03: Registro Transaccional de Incidente en Campo
 - **Descripción:** Almacenamiento formal de la novedad reportada por el agente de terreno.
 - **Entradas:** Tipo de incidente, fecha, hora, descripción detallada, gravedad estimada, modalidad, factores concurrentes, barrio/vereda, punto geográfico `ST_SetSRID(ST_Point(lng, lat), 4326)`, URL de evidencia.
-- **Proceso:** Inserción en tabla `incidente` con `id_estado = 1` (Reportado / Pendiente de Validación), `id_usuario_creador` asociado al reportero en sesión. Generación de código único de seguimiento alfanumérico (ej: `INC-2026-XXXX`).
+- **Proceso:** Inserción en tabla `incidente` con `id_estado = 1` (Reportado / Pendiente de Validación), `id_usuario_creador` asociado al reportero en sesión. Generación de código único de seguimiento alfanumérico secuencial (`INC-XXXXXX`, ej: `INC-834921`).
 - **Salida:** Notificación toast de éxito en pantalla, asignación de código radicado y redirección al listado personal.
 
 #### RF-REP-04: Módulo "Mis Reportes"
@@ -301,43 +303,45 @@ classDiagram
 - **Proceso:** Consulta de incidentes asociados a dicho usuario, ordenados cronológicamente, indicando si el incidente sigue Pendiente, si fue Aprobado, Desestimado o Resuelto, con comentarios del validador.
 - **Salida:** Lista estructurada con estados visuales por código de color y opción de consulta de detalles.
 
+#### RF-REP-05: Transición Visual de Autenticación en Dispositivos Móviles
+- **Descripción:** Proporcionar una transición animada inmersiva tipo radar/escaneo durante el proceso de autenticación en clientes móviles antes de desplegar el formulario operativo.
+- **Entradas:** Envío exitoso del formulario de inicio de sesión desde un viewport móvil.
+- **Proceso:** Activación de capa de animación con oscilador de radar concéntrico, verificación de estado de red y carga asíncrona de recursos antes de renderizar la vista de terreno.
+- **Salida:** Feedback visual fluido que confirma el establecimiento seguro del enlace de campo.
+
 ---
 
 ### 3.5 Módulo 4: Mesa de Validación y Bloqueo Concurrente (VAL-LOCK)
 
-> **ESPACIO PARA DIAGRAMA:**  
-> *(Insertar aquí Diagrama de Secuencia: Adquisición de Candado Concurrente y Dictamen de Validación)*
 
 #### RF-VAL-01: Cola de Validación Compartida
 - **Descripción:** Interfaz centralizada para Administradores y Superadministradores donde se encolan los incidentes en estado "Pendiente" radicados por reporteros o importaciones.
 - **Entradas:** Filtro por orden de llegada, gravedad o cuadrante.
-- **Proceso:** Consulta a la tabla `incidente` donde `id_estado` corresponda a fase de evaluación, mostrando metadatos de evidencia, tiempo transcurrido y estado de bloqueo (`locked_by`).
+- **Proceso:** Consulta a la tabla `incidente` donde `id_estado` corresponda a fase de evaluación, mostrando metadatos de evidencia, tiempo transcurrido y estado de bloqueo (`id_admin_revisor`).
 - **Salida:** Grilla reactiva con badges de estado y botones de acción.
 
 #### RF-VAL-02: Mecanismo de Candado Concurrente (Locking)
 - **Descripción:** Prevención de colisiones operativas cuando múltiples analistas acceden a la cola simultáneamente.
-- **Entradas:** `id_incidente`, ID del analista en sesión (`req.session.usuario.idusuario`).
-- **Proceso:** Al hacer clic en "Revisar/Tomar Incidente", el sistema ejecuta una verificación atómica: si el incidente está bloqueado por otro analista y el tiempo de bloqueo no ha expirado (ventana de 10 minutos), rechaza la solicitud indicando quién tiene el control. Si está libre o expirado, actualiza `locked_by = id_usuario` y `locked_at = CURRENT_TIMESTAMP`.
-- **Salida:** Incidente reservado para el analista; en las demás pantallas de administradores se desactiva el botón y se muestra la etiqueta "En revisión por [Nombre]".
+- **Entradas:** `id_incidente`, ID del analista en sesión (`req.session.idusuario`).
+- **Proceso:** Al hacer clic en "Revisar/Tomar Incidente", el sistema ejecuta una verificación atómica en base de datos: si el incidente está tomado por otro analista, rechaza la solicitud (HTTP 409) indicando quién tiene el control. Si está libre, actualiza `id_admin_revisor = id_usuario`, `id_estado = 2` y `fecha_toma_revision = CURRENT_TIMESTAMP`.
+- **Salida:** Incidente reservado para el analista; en las demás pantallas de administradores se desactiva el botón y se muestra la etiqueta de revisión en curso.
 
 #### RF-VAL-03: Dictamen de Validación y Transición de Estados
 - **Descripción:** Emisión del veredicto técnico sobre el incidente evaluado.
 - **Entradas:** Acción elegida (`Aprobar`, `Desestimar/Rechazar`, `Resolver`), comentarios de validación, ajustes a la tipificación o gravedad.
-- **Proceso:** Transacción SQL que actualiza el `id_estado`, registra `id_usuario_editor`, limpia el bloqueo (`locked_by = NULL`, `locked_at = NULL`), actualiza comentarios de cierre y registra el evento en `logs_actividad`. Si es rechazado o desestimado, la evidencia queda oculta de la vista pública pero persistida para auditoría.
+- **Proceso:** Transacción SQL que actualiza el `id_estado` (5 para Aprobado/Resuelto, 6 para Desestimado), registra `id_usuario_editor`, limpia el bloqueo (`id_admin_revisor = NULL`, `fecha_toma_revision = NULL`), actualiza comentarios de cierre y registra el evento en `logs_actividad`. Si es desestimado, queda oculto de la vista pública pero persistido para auditoría.
 - **Salida:** Retorno del incidente a la vista pública (si fue aprobado) o archivo del caso, liberando el elemento de la cola de trabajo.
 
 #### RF-VAL-04: Liberación Forzosa y Voluntaria de Candado
-- **Descripción:** Posibilidad de renunciar al análisis de un caso sin dictamen o liberar candados huérfanos por parte del Superadministrador.
+- **Descripción:** Posibilidad de renunciar al análisis de un caso devolviéndolo a la cola pública (id_estado = 1), o liberar candados retenidos por parte del Superadministrador.
 - **Entradas:** `id_incidente`.
-- **Proceso:** Seteo de `locked_by = NULL` y `locked_at = NULL`.
+- **Proceso:** Seteo de `id_admin_revisor = NULL`, `fecha_toma_revision = NULL` y `id_estado = 1`.
 - **Salida:** Incidente retoma estado disponible de inmediato en la cola compartida.
 
 ---
 
 ### 3.6 Módulo 5: Analítica Espacio-Temporal y Tableros KPI (KPI-ANL)
 
-> **ESPACIO PARA DIAGRAMA:**  
-> *(Insertar aquí Diagrama de Arquitectura de Analítica: Pipelines de Agregación y Visualización Chart.js)*
 
 #### RF-KPI-01: Cálculo de Métricas y Tableros de Mando
 - **Descripción:** Generación de resúmenes estadísticos consolidados para soporte en toma de decisiones policiales y gubernamentales.
@@ -361,8 +365,6 @@ classDiagram
 
 ### 3.7 Módulo 6: Gestión Masiva de Datos y Rollback (DAT-MAS)
 
-> **ESPACIO PARA DIAGRAMA:**  
-> *(Insertar aquí Diagrama de Flujo: Importación de CSV Masivo con Detección de Errores y Rollback)*
 
 #### RF-DAT-01: Carga Masiva de Incidentes mediante CSV
 - **Descripción:** Facilidad para alimentar el sistema mediante ficheros tabulares estructurados procedentes de fuentes externas (Policía Nacional, Fiscalía, Alcaldía).
@@ -380,8 +382,6 @@ classDiagram
 
 ### 3.8 Módulo 7: Administración y Gobernanza de Usuarios (ADM-GOB)
 
-> **ESPACIO PARA DIAGRAMA:**  
-> *(Insertar aquí Diagrama de Flujo: Ciclo de Vida del Usuario y Notificación por Correo)*
 
 #### RF-ADM-01: Creación y Despacho Automatizado de Cuentas
 - **Descripción:** Alta de nuevos colaboradores institucionales (Reporteros, Administradores, Superadministradores).
@@ -442,12 +442,15 @@ classDiagram
 | **RF-GIS-01** | GIS-MAP | Carga de polígonos barrios y veredas | Público e internos | `barrio`, `vereda` | **Alta** |
 | **RF-GIS-02** | GIS-MAP | Marcadores georreferenciados en mapa | Público e internos | `incidente`, `tipo_incidente` | **Alta** |
 | **RF-GIS-03** | GIS-MAP | Filtro espacio-temporal multicriterio | Público e internos | `incidente`, `barrio`, `vereda` | **Alta** |
+| **RF-GIS-04** | GIS-MAP | Alternancia modo claro/oscuro y satelital | Público e internos | N/A (Frontend Leaflet) | **Media** |
+| **RF-GIS-05** | GIS-MAP | Búsqueda predictiva con autocompletado | Público e internos | `barrio`, `vereda` | **Media** |
 | **RF-REP-01** | REP-CAMPO | Captura GPS en terreno | Reportero, Admin, Superadmin | N/A (Frontend API) | **Alta** |
-| **RF-REP-02** | REP-CAMPO | Ingesta y optimización en Cloudinary | Reportero, Admin, Superadmin | `incidente` (campo `evidencia_url`) | **Alta** |
+| **RF-REP-02** | REP-CAMPO | Ingesta y optimización en Cloudinary | Reportero, Admin, Superadmin | `incidente` (campo `imagen_url`) | **Alta** |
 | **RF-REP-03** | REP-CAMPO | Radicación de incidente en campo | Reportero, Admin, Superadmin | `incidente`, `logs_actividad` | **Alta** |
 | **RF-REP-04** | REP-CAMPO | Consulta de historial "Mis Reportes" | Reportero, Admin, Superadmin | `incidente` | **Media** |
+| **RF-REP-05** | REP-CAMPO | Transición visual de autenticación móvil | Reportero, Admin, Superadmin | N/A (Frontend CSS/JS) | **Baja** |
 | **RF-VAL-01** | VAL-LOCK | Vista de cola de validación compartida | Admin, Superadmin | `incidente` | **Alta** |
-| **RF-VAL-02** | VAL-LOCK | Candado concurrente (Locking 10 min) | Admin, Superadmin | `incidente` (campos lock) | **Alta** |
+| **RF-VAL-02** | VAL-LOCK | Candado concurrente (id_admin_revisor) | Admin, Superadmin | `incidente` | **Alta** |
 | **RF-VAL-03** | VAL-LOCK | Dictamen y aprobación de incidentes | Admin, Superadmin | `incidente`, `logs_actividad` | **Alta** |
 | **RF-VAL-04** | VAL-LOCK | Liberación de candado de revisión | Admin, Superadmin | `incidente` | **Media** |
 | **RF-KPI-01** | KPI-ANL | Resúmenes y métricas estadísticas | Público e internos | `incidente`, `tipo_incidente` | **Media** |

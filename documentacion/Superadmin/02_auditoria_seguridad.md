@@ -55,4 +55,4 @@
 
 ## 4. Diagrama de Arquitectura y Flujo
 El diagrama de este módulo se encuentra en:
-👉 [`Superadmin/diagramas/02_auditoria_seguridad.drawio`](diagramas/02_auditoria_seguridad.drawio)
+- [`Superadmin/diagramas/02_auditoria_seguridad.drawio`](diagramas/02_auditoria_seguridad.drawio)

@@ -42,4 +42,4 @@
 
 ## 4. Diagrama de Arquitectura y Flujo
 El diagrama de este módulo se encuentra en:
-👉 [`Reportero/diagramas/02_mis_reportes_seguimiento.drawio`](diagramas/02_mis_reportes_seguimiento.drawio)
+- [`Reportero/diagramas/02_mis_reportes_seguimiento.drawio`](diagramas/02_mis_reportes_seguimiento.drawio)

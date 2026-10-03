@@ -11,13 +11,19 @@ document.querySelectorAll("header nav button:not(.toggle-iphone-header)").forEac
 const btnTemaHeader = document.getElementById("btnTemaHeader");
 if (localStorage.getItem("tema_sigi_admin") === "claro") {
     document.body.classList.add("tema-claro");
+    document.documentElement.classList.add("tema-claro");
 }
 if (btnTemaHeader) {
     btnTemaHeader.addEventListener("click", function (e) {
         e.stopPropagation();
         document.body.classList.toggle("tema-claro");
+        document.documentElement.classList.toggle("tema-claro");
         const esClaro = document.body.classList.contains("tema-claro");
         localStorage.setItem("tema_sigi_admin", esClaro ? "claro" : "oscuro");
+        if (btnVerMapa && !btnVerMapa.classList.contains("activo")) {
+            btnVerMapa.style.background = "";
+            btnVerMapa.style.color = "";
+        }
     });
 }
 
@@ -381,27 +387,47 @@ ubicacionTiempoReal();
 const bolita = document.querySelector(".btnClaroNoche div");
 const btnbolita = document.querySelector(".btnClaroNoche");
 
-btnbolita.addEventListener("click", function () {
-    // Si ya está activo en modo oscuro, volver a satelital
-    if (bolita.classList.contains("colorBolita")) {
-        btnbolita.classList.remove("colorBolita");
-        bolita.classList.remove("colorBolita");
-        bolita.style.transform = "translateX(0)";
-        activarMapaSatelital();
-        console.log("modo satelital activo");
-    } else {
-        // Pasar a modo oscuro
-        btnbolita.classList.add("colorBolita");
-        bolita.classList.add("colorBolita");
-        bolita.style.transform = "translateX(1.5em)";
-        activarMapaOscuro();
-        console.log("modo oscuro activo");
+if (btnbolita) {
+    if (typeof L !== "undefined" && L.DomEvent) {
+        L.DomEvent.disableClickPropagation(btnbolita);
+        L.DomEvent.disableScrollPropagation(btnbolita);
     }
-});
+    btnbolita.addEventListener("click", function (e) {
+        e.stopPropagation();
+        // Si ya está activo en modo oscuro, volver a satelital
+        if (bolita.classList.contains("colorBolita")) {
+            btnbolita.classList.remove("colorBolita");
+            bolita.classList.remove("colorBolita");
+            bolita.style.transform = "translateX(0)";
+            activarMapaSatelital();
+            console.log("modo satelital activo");
+        } else {
+            // Pasar a modo oscuro
+            btnbolita.classList.add("colorBolita");
+            bolita.classList.add("colorBolita");
+            bolita.style.transform = "translateX(1.5em)";
+            activarMapaOscuro();
+            console.log("modo oscuro activo");
+        }
+    });
+}
 
 let marcadorClick = null;
 
 function manejarClickMapa(e) {
+    // Si el clic proviene de elementos de la interfaz dentro del mapa, ignorar
+    if (e.originalEvent && e.originalEvent.target) {
+        if (e.originalEvent.target.closest("#contenedorBusquedaMapa") || e.originalEvent.target.closest(".btnClaroNoche") || e.originalEvent.target.closest(".leaflet-control")) {
+            return;
+        }
+    }
+
+    // Ocultar sugerencias si estuvieran abiertas
+    const sug = document.getElementById("sugerenciasMapa");
+    if (sug) {
+        sug.style.display = "none";
+    }
+
     const lat = e.latlng.lat;
     const lng = e.latlng.lng;
 
@@ -502,15 +528,15 @@ if (btnVerMapa) {
         contMap2.classList.toggle("mostrarMapa");
         const estaMostrandoIncidentes = contMap2.classList.contains("mostrarMapa");
 
+        btnVerMapa.classList.toggle("activo", estaMostrandoIncidentes);
+        btnVerMapa.style.background = "";
+        btnVerMapa.style.color = "";
+
         if (estaMostrandoIncidentes) {
-            btnVerMapa.style.background = "var(--acento)";
-            btnVerMapa.style.color = "#000";
             setTimeout(() => {
                 map2.invalidateSize();
             }, 100);
         } else {
-            btnVerMapa.style.background = "rgba(22, 27, 39, 0.88)";
-            btnVerMapa.style.color = "var(--acento)";
             setTimeout(() => {
                 map.invalidateSize();
             }, 100);
@@ -518,14 +544,43 @@ if (btnVerMapa) {
     });
 }
 
+const contBusquedaMapa = document.getElementById("contenedorBusquedaMapa");
 const inputBusquedaMapa = document.getElementById("inputBusquedaMapa");
 const btnLimpiarBusquedaMapa = document.getElementById("btnLimpiarBusquedaMapa");
 const sugerenciasMapa = document.getElementById("sugerenciasMapa");
 
+// Desactivar propagación de clics y de scroll hacia el mapa de Leaflet
+if (contBusquedaMapa) {
+    if (typeof L !== "undefined" && L.DomEvent) {
+        L.DomEvent.disableClickPropagation(contBusquedaMapa);
+        L.DomEvent.disableScrollPropagation(contBusquedaMapa);
+    }
+
+    // Detener propagación de eventos táctiles, ratón y puntero
+    const detenerPropagacion = (e) => e.stopPropagation();
+    ['click', 'mousedown', 'mouseup', 'pointerdown', 'pointerup', 'touchstart', 'touchend', 'dblclick'].forEach(evt => {
+        contBusquedaMapa.addEventListener(evt, detenerPropagacion);
+    });
+}
+
+if (sugerenciasMapa) {
+    if (typeof L !== "undefined" && L.DomEvent) {
+        L.DomEvent.disableScrollPropagation(sugerenciasMapa);
+    }
+
+    // Detener la propagación de eventos de rueda/scroll para que no hagan zoom al mapa
+    ['wheel', 'mousewheel', 'DOMMouseScroll', 'touchmove'].forEach(evt => {
+        sugerenciasMapa.addEventListener(evt, (e) => {
+            e.stopPropagation();
+        }, { passive: true });
+    });
+}
+
 let timerBusquedaMapa = null;
 
 if (inputBusquedaMapa) {
-    inputBusquedaMapa.addEventListener("input", function () {
+    inputBusquedaMapa.addEventListener("input", function (e) {
+        e.stopPropagation();
         const query = this.value.trim();
 
         if (btnLimpiarBusquedaMapa) {
@@ -546,7 +601,8 @@ if (inputBusquedaMapa) {
         }, 200);
     });
 
-    inputBusquedaMapa.addEventListener("focus", function () {
+    inputBusquedaMapa.addEventListener("focus", function (e) {
+        e.stopPropagation();
         if (this.value.trim().length >= 2 && sugerenciasMapa && sugerenciasMapa.children.length > 0) {
             sugerenciasMapa.style.display = "flex";
         }
@@ -561,7 +617,8 @@ if (inputBusquedaMapa) {
 }
 
 if (btnLimpiarBusquedaMapa) {
-    btnLimpiarBusquedaMapa.addEventListener("click", () => {
+    btnLimpiarBusquedaMapa.addEventListener("click", (e) => {
+        e.stopPropagation();
         if (inputBusquedaMapa) inputBusquedaMapa.value = "";
         btnLimpiarBusquedaMapa.style.display = "none";
         if (sugerenciasMapa) {
@@ -607,7 +664,8 @@ async function ejecutarBusquedaUnificadaMapa(q) {
                 const item = document.createElement("div");
                 item.className = "item-sugerencia-mapa";
                 item.innerHTML = `<i class="bi bi-geo-alt"></i> <span>${b.namebarrio}</span>`;
-                item.addEventListener("click", () => {
+                item.addEventListener("click", (e) => {
+                    e.stopPropagation();
                     seleccionarUbicacionMapa('barrio', b.namebarrio);
                 });
                 sugerenciasMapa.appendChild(item);
@@ -625,7 +683,8 @@ async function ejecutarBusquedaUnificadaMapa(q) {
                 const item = document.createElement("div");
                 item.className = "item-sugerencia-mapa";
                 item.innerHTML = `<i class="bi bi-geo-alt"></i> <span>${v.nombre}</span>`;
-                item.addEventListener("click", () => {
+                item.addEventListener("click", (e) => {
+                    e.stopPropagation();
                     seleccionarUbicacionMapa('vereda', v.nombre);
                 });
                 sugerenciasMapa.appendChild(item);
@@ -1359,6 +1418,15 @@ function verDetalleIncidente(id) {
 function cerrarModalDetalle() {
     const modal = document.getElementById("modalDetalleIncidente");
     if (modal) modal.style.display = "none";
+}
+
+const modalDetalleIncidenteEl = document.getElementById("modalDetalleIncidente");
+if (modalDetalleIncidenteEl) {
+    modalDetalleIncidenteEl.addEventListener("click", (e) => {
+        if (e.target === modalDetalleIncidenteEl) {
+            cerrarModalDetalle();
+        }
+    });
 }
 
 window.verDetalleIncidente = verDetalleIncidente;
@@ -2462,17 +2530,24 @@ if (formCrearUsuario) {
             const modalAlert = document.getElementById("modalUserAlert");
 
             if (res.ok) {
-                if (modalAlert) modalAlert.style.display = "none";
-                mostrarToast(`✅ ${data.mensaje}`, "exito");
+                // Inmediatamente salir del modal y limpiar los campos
                 formCrearUsuario.reset();
-                document.getElementById("modalNuevoUsuario").style.display = "none";
+                if (modalAlert) {
+                    modalAlert.textContent = "";
+                    modalAlert.style.display = "none";
+                }
+                cerrarModalUsuario();
+
+                const toastMsg = isEditing ? "Usuario actualizado" : "Usuario registrado";
+                mostrarToast(toastMsg, "exito");
                 cargarUsuarios();
             } else {
+                // Controlar error sin romper la app: mostrar el mensaje retornado por el backend
                 if (modalAlert) {
-                    modalAlert.textContent = `❌ ${data.mensaje || "Error al procesar usuario"}`;
+                    modalAlert.textContent = data.mensaje || "Error al procesar usuario";
                     modalAlert.style.display = "block";
                 }
-                mostrarToast(`❌ ${data.mensaje || "Error al procesar usuario"}`, "error");
+                mostrarToast(data.mensaje || "Error al procesar usuario", "error");
             }
         } catch (err) {
             console.error("Error al procesar usuario:", err);

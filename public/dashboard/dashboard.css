@@ -319,129 +319,284 @@ main.filtros-abiertos .fab-tiempo {
     visibility: visible;
 }
 
-#panelFiltros {
-    position: fixed;
+#panelFiltros.modal {
+    display: none;
+    position: fixed !important;
+    inset: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    max-height: none !important;
+    background: rgba(0, 0, 0, 0.72) !important;
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+    justify-content: center !important;
+    align-items: center !important;
+    z-index: 99999 !important;
+    transform: none !important;
+    visibility: visible !important;
+    transition: opacity 0.2s ease !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 16px !important;
+    box-sizing: border-box !important;
+}
+
+#panelFiltros.modal.abierto {
+    display: flex !important;
+}
+
+.modal-filtros-popup {
+    width: min(420px, 94vw) !important;
+    max-height: 88vh !important;
+    background: var(--bg-card) !important;
+    border: 1px solid var(--borde) !important;
+    border-radius: 16px !important;
+    padding: 18px 20px !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+    animation: popModalContent 0.22s ease-out !important;
+}
+
+.modal-filtros-popup .analisis-rapido {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.modal-filtros-popup .ar-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.modal-filtros-popup .seccion-filtro-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.modal-filtros-popup .titulo-seccion-modal {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--texto-suave);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.modal-filtros-popup .contenedor-buscar-lugar {
+    position: relative;
+    width: 100%;
+}
+
+.modal-filtros-popup .contenedor-buscar-lugar input {
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--bg-hover, rgba(255, 255, 255, 0.05));
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    color: var(--texto);
+    font-size: 0.88rem;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+.modal-filtros-popup .contenedor-buscar-lugar input:focus {
+    outline: none;
+    border-color: var(--acento);
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+}
+
+.modal-filtros-popup #sugerencias {
+    position: absolute;
+    top: calc(100% + 4px);
     left: 0;
     right: 0;
-    bottom: calc(var(--bottom-nav-h) + var(--safe-bottom));
-    width: 100%;
-    max-height: 90vh;
+    max-height: 200px;
     overflow-y: auto;
-    background: var(--bg-panel);
+    background: var(--bg-card);
     border: 1px solid var(--borde);
-    border-radius: 18px 18px 0 0;
-    z-index: 1002;
-    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    transform: translateY(105%);
-    visibility: hidden;
-    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), visibility 0.35s ease;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    display: none;
 }
 
-#panelFiltros.abierto {
-    transform: translateY(0);
-    visibility: visible;
+.modal-filtros-popup .tiposIncidente {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
 }
 
-#panelFiltros::-webkit-scrollbar { width: 4px; }
-#panelFiltros::-webkit-scrollbar-track { background: transparent; }
-#panelFiltros::-webkit-scrollbar-thumb { background: var(--borde); border-radius: 4px; }
+.modal-filtros-popup .tiposIncidente button.incidente {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    background: var(--bg-hover, rgba(255, 255, 255, 0.05));
+    border: 1px solid var(--borde);
+    color: var(--texto);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.modal-filtros-popup .tiposIncidente button.incidente:hover {
+    border-color: var(--acento);
+    background: rgba(56, 189, 248, 0.1);
+}
+
+.modal-filtros-popup .tiposIncidente button.incidente.activo {
+    border-color: var(--acento);
+    background: rgba(56, 189, 248, 0.2);
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+}
 
 #cerrarFiltros {
     position: absolute;
-    top: 12px;
-    right: 12px;
-    width: 44px;
-    height: 44px;
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
     border: none;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.08);
     color: var(--texto);
-    font-size: 1.6rem;
+    font-size: 1.2rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: background 0.2s, color 0.2s;
-    z-index: 2;
+    z-index: 10;
 }
 
+#cerrarFiltros:hover,
 #cerrarFiltros:active {
     background: rgba(248, 81, 73, 0.25);
     color: var(--rojo);
 }
 
 .contenedorFiltros {
-    padding: 20px 16px 28px;
+    padding: 14px 16px 16px;
     color: var(--texto);
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 0;
+    box-sizing: border-box;
 }
 
 .contenedorFiltros h2 {
-    font-size: 1.1rem;
-    margin-bottom: 8px;
-    padding-right: 48px;
+    font-size: 0.95rem;
+    margin-top: 0;
+    margin-bottom: 4px;
+    padding-right: 0;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     color: var(--acento);
 }
 
 .contenedorFiltros label {
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     color: var(--texto-suave);
     display: block;
-    margin-top: 14px;
-    margin-bottom: 6px;
+    margin-top: 8px;
+    margin-bottom: 4px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     font-weight: 600;
 }
 
-.contenedorFiltros input {
+.contenedor-buscar-lugar {
+    position: relative;
     width: 100%;
-    padding: 14px 14px;
-    border-radius: 12px;
+    z-index: 100;
+}
+
+.contenedorFiltros input,
+.contenedor-buscar-lugar input {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 8px;
     border: 1px solid var(--borde);
     background: rgba(255, 255, 255, 0.05);
     color: var(--texto);
-    font-size: 1rem;
+    font-size: 0.85rem;
+    box-sizing: border-box;
     transition: border-color 0.2s;
 }
 
-.contenedorFiltros input:focus {
+.contenedorFiltros input:focus,
+.contenedor-buscar-lugar input:focus {
     outline: none;
     border-color: var(--azul);
 }
 
-.contenedorFiltros input::placeholder { color: var(--texto-suave); }
+.contenedorFiltros input::placeholder,
+.contenedor-buscar-lugar input::placeholder { color: var(--texto-suave); }
 
+/* ── Sugerencias flotantes que aparecen sobre todos los elementos ── */
 #sugerencias {
-    position: relative;
-    width: 100%;
-    margin-top: 4px;
-    background: var(--bg-card);
-    border: 1px solid var(--borde);
-    border-radius: 0 0 12px 12px;
-    max-height: 140px;
-    overflow-y: auto;
-    box-shadow: var(--sombra);
+    position: absolute !important;
+    top: calc(100% + 4px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    z-index: 1200 !important;
+    max-height: 155px !important;
+    overflow-y: auto !important;
+    background: rgba(13, 17, 23, 0.98) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    border: 1px solid var(--borde) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65) !important;
+    box-sizing: border-box !important;
 }
+
+#sugerencias:empty {
+    display: none !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+#sugerencias::-webkit-scrollbar { width: 4px; }
+#sugerencias::-webkit-scrollbar-track { background: transparent; }
+#sugerencias::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
 
 .itemSugerencia {
-    padding: 12px 14px;
+    padding: 8px 12px;
     cursor: pointer;
-    font-size: 0.95rem;
+    font-size: 0.83rem;
     color: var(--texto);
-    transition: background 0.2s;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.15s ease, color 0.15s ease;
 }
 
+.itemSugerencia:last-child {
+    border-bottom: none;
+}
+
+.itemSugerencia:hover,
 .itemSugerencia:active {
-    background: var(--azul);
-    color: #fff;
+    background: rgba(56, 189, 248, 0.18);
+    color: #38bdf8;
 }
 
 /* Chips de tipo de incidente */
@@ -566,23 +721,39 @@ main.filtros-abiertos .fab-tiempo {
     .leyenda {
         gap: 10px;
         padding: 6px 14px;
-        bottom: 24px;
+        bottom: 20px;
+        flex-wrap: nowrap;
+        white-space: nowrap;
+        overflow-x: auto;
     }
 
     .itemLeyenda {
         font-size: 0.7rem;
+        flex-shrink: 0;
     }
 }
 
 @media (max-width: 480px) {
     .leyenda {
         gap: 8px;
-        padding: 6px 12px;
-        bottom: 20px;
+        padding: 5px 12px;
+        bottom: 14px;
         width: max-content;
-        max-width: calc(100% - 24px);
+        max-width: calc(100% - 16px);
         left: 50%;
         transform: translateX(-50%);
+        flex-wrap: nowrap;
+        white-space: nowrap;
+        scrollbar-width: none;
+    }
+
+    .leyenda::-webkit-scrollbar {
+        display: none;
+    }
+
+    .itemLeyenda {
+        font-size: 0.68rem;
+        flex-shrink: 0;
     }
 }
 
@@ -890,89 +1061,7 @@ main.filtros-abiertos .fab-tiempo {
         display: none !important;
     }
 
-    /* Botones mapa — estilo original PC */
-    #btnFiltros.fab-filtros {
-        position: absolute;
-        top: 12px;
-        left: 5%;
-        bottom: auto;
-        right: auto;
-        width: auto;
-        height: auto;
-        border-radius: var(--radio);
-        padding: 7px 14px;
-        font-size: 0.78rem;
-        font-weight: 700;
-        color: var(--texto-suave);
-        background: var(--bg-card);
-        border: 1px solid var(--borde);
-        box-shadow: var(--sombra);
-    }
 
-    #btnFiltros.fab-filtros:hover {
-        background: var(--azul);
-        color: #fff;
-    }
-
-    #btnFiltros .fab-badge {
-        display: none !important;
-    }
-
-    .restablecer.fab-reset {
-        position: absolute;
-        top: 12px;
-        left: 10%;
-        right: auto;
-        bottom: auto;
-        width: auto;
-        height: auto;
-        border-radius: var(--radio);
-        padding: 7px 14px;
-        font-size: 0.78rem;
-        font-weight: 700;
-        color: var(--texto-suave);
-        background: var(--bg-card);
-        border: 1px solid var(--borde);
-        box-shadow: var(--sombra);
-    }
-
-    .restablecer.fab-reset:hover {
-        background: var(--rojo);
-        color: #fff;
-        border-color: var(--rojo);
-    }
-
-    main.filtros-abiertos .fab-filtros,
-    main.filtros-abiertos .fab-reset,
-    main.filtros-abiertos .fab-tiempo {
-        opacity: 1;
-        pointer-events: auto;
-        transform: none;
-    }
-
-    #btnAbrirFiltroTiempo.fab-tiempo {
-        position: absolute;
-        top: 12px;
-        left: 20%;
-        right: auto;
-        bottom: auto;
-        width: auto;
-        height: auto;
-        border-radius: var(--radio);
-        padding: 7px 14px;
-        font-size: 0.78rem;
-        font-weight: 700;
-        color: var(--texto-suave);
-        background: var(--bg-card);
-        border: 1px solid var(--borde);
-        box-shadow: var(--sombra);
-    }
-
-    #btnAbrirFiltroTiempo.fab-tiempo:hover {
-        background: var(--azul);
-        color: #fff;
-        border-color: var(--azul);
-    }
 
     #vistaMapa {
         display: flex;
@@ -1002,28 +1091,6 @@ main.filtros-abiertos .fab-tiempo {
         max-width: 100%;
     }
 
-    #panelFiltros {
-        flex: 0 0 calc(30% - 6px);
-        max-width: calc(30% - 6px);
-        position: relative;
-        top: 0;
-        left: 0;
-        width: 100%;
-        max-height: 100%;
-        border-radius: 16px;
-        border: 1px solid var(--borde);
-        box-sizing: border-box;
-        transform: none !important;
-        visibility: visible !important;
-        display: flex !important;
-        flex-direction: column;
-        transition: none;
-        overflow: hidden;
-    }
-
-    #panelFiltros.abierto {
-        /* No se usa abierto en desktop porque siempre está visible */
-    }
 
     #cerrarFiltros, #btnFiltros {
         display: flex !important;
@@ -1032,20 +1099,21 @@ main.filtros-abiertos .fab-tiempo {
     #cerrarFiltros:hover { color: var(--texto); }
 
     .contenedorFiltros {
-        padding: 18px 16px 20px;
-        gap: 4px;
+        padding: 14px 16px 16px;
+        gap: 0;
     }
 
     .contenedorFiltros h2 {
-        font-size: 1rem;
-        margin-bottom: 10px;
+        font-size: 0.95rem;
+        margin-top: 0;
+        margin-bottom: 4px;
         padding-right: 0;
     }
 
     .contenedorFiltros label {
-        font-size: 0.75rem;
-        margin-top: 12px;
-        margin-bottom: 4px;
+        font-size: 0.68rem;
+        margin-top: 8px;
+        margin-bottom: 3px;
     }
 
     .contenedorFiltros input {
@@ -1086,10 +1154,10 @@ main.filtros-abiertos .fab-tiempo {
     .accidente span:not(.chip-icon){ background: var(--verde); }
 
     .btnActualizar {
-        padding: 9px;
-        font-size: 0.84rem;
-        margin-top: 18px;
-        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 0.86rem;
+        margin-top: 12px;
+        border-radius: 9px;
     }
 
 
@@ -1499,74 +1567,7 @@ main.filtros-abiertos .fab-tiempo {
     color: var(--texto-suave);
 }
 
-@media (min-width: 769px) {
-    .restablecer.fab-reset {
-        position: absolute;
-        top: 95px;
-        left: 10%;
-        right: auto;
-        bottom: auto;
-        width: auto;
-        height: auto;
-        border-radius: var(--radio);
-        padding: 7px 14px;
-        font-size: 0.78rem;
-        font-weight: 700;
-        color: var(--texto-suave);
-        background: var(--bg-card);
-        border: 1px solid var(--borde);
-        box-shadow: var(--sombra);
-    }
-    .restablecer.fab-reset:hover {
-        background: var(--rojo);
-        color: #fff;
-        border-color: var(--rojo);
-    }
-    #btnAbrirFiltroTiempo.fab-tiempo {
-        position: absolute;
-        top: 95px;
-        left: 20%;
-        right: auto;
-        bottom: auto;
-        width: auto;
-        height: auto;
-        border-radius: var(--radio);
-        padding: 7px 14px;
-        font-size: 0.78rem;
-        font-weight: 700;
-        color: var(--texto-suave);
-        background: var(--bg-card);
-        border: 1px solid var(--borde);
-        box-shadow: var(--sombra);
-    }
-    #btnAbrirFiltroTiempo.fab-tiempo:hover {
-        background: var(--azul);
-        color: #fff;
-        border-color: var(--azul);
-    }
-    #btnToggleHeatmap.fab-heatmap {
-        position: absolute;
-        top: 95px;
-        left: 30%;
-        right: auto;
-        bottom: auto;
-        width: auto;
-        height: auto;
-        border-radius: var(--radio);
-        padding: 7px 14px;
-        font-size: 0.78rem;
-        font-weight: 700;
-        color: var(--naranja, #f39c12);
-        background: var(--bg-card);
-        border: 1px solid rgba(243, 156, 18, 0.4);
-        box-shadow: var(--sombra);
-    }
-    #btnToggleHeatmap.fab-heatmap:hover, #btnToggleHeatmap.fab-heatmap.activo {
-        background: var(--naranja, #f39c12);
-        color: #000;
-        border-color: var(--naranja, #f39c12);
-    }
-}
+
 
 /* ====================================================
    RECUPERACIÓN DE LAYOUT (Fase 2 - Flexbox)
@@ -1798,28 +1799,28 @@ main.filtros-abiertos .fab-tiempo {
 .analisis-rapido {
     background: linear-gradient(145deg, rgba(31, 111, 235, 0.08), rgba(31, 111, 235, 0.02));
     border: 1px solid rgba(31, 111, 235, 0.2);
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 16px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
 }
 
 .analisis-rapido h3 {
-    font-size: 0.95rem;
+    font-size: 0.8rem;
     color: var(--azul);
     margin-top: 0;
-    margin-bottom: 14px;
+    margin-bottom: 6px;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     font-weight: 700;
 }
 
 .ar-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 4px 10px;
 }
 
 .ar-item {
@@ -1828,17 +1829,20 @@ main.filtros-abiertos .fab-tiempo {
 }
 
 .ar-label {
-    font-size: 0.65rem;
+    font-size: 0.62rem;
     color: var(--texto-suave);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 4px;
+    letter-spacing: 0.04em;
+    margin-bottom: 1px;
 }
 
 .ar-valor {
-    font-size: 0.95rem;
+    font-size: 0.86rem;
     font-weight: 700;
     color: var(--texto);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #ar-visibles {
@@ -1980,6 +1984,82 @@ main.filtros-abiertos .fab-tiempo {
     box-shadow: 0 4px 16px rgba(31, 111, 235, 0.4);
     border-color: var(--azul);
     transform: translateY(-2px);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   ESTILOS DE MAP-ACTIONS-GROUP DENTRO DE LA TABLA DE INCIDENTES
+   ══════════════════════════════════════════════════════════════════ */
+.tabla-acciones {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.map-actions-group.en-tabla,
+.tabla-acciones .map-actions-group,
+#contenedorAccionesTabla .map-actions-group {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    -webkit-transform: none !important;
+    width: auto !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    z-index: auto !important;
+    pointer-events: auto !important;
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+.map-actions-group.en-tabla #btnMiUbicacion,
+.map-actions-group.en-tabla #btnToggleHeatmap,
+.tabla-acciones .map-actions-group #btnMiUbicacion,
+.tabla-acciones .map-actions-group #btnToggleHeatmap,
+#contenedorAccionesTabla .map-actions-group #btnMiUbicacion,
+#contenedorAccionesTabla .map-actions-group #btnToggleHeatmap {
+    display: none !important;
+}
+
+.map-actions-group.en-tabla .fab,
+.tabla-acciones .map-actions-group .fab,
+#contenedorAccionesTabla .map-actions-group .fab {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    -webkit-transform: none !important;
+    margin: 0 !important;
+    height: 38px !important;
+    padding: 0 16px !important;
+    border-radius: 20px !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    pointer-events: auto !important;
+}
+
+.map-actions-group.en-tabla .fab:hover,
+.tabla-acciones .map-actions-group .fab:hover,
+#contenedorAccionesTabla .map-actions-group .fab:hover {
+    transform: translateY(-2px) !important;
+}
+
+.map-actions-group.en-tabla .fab .texto-desktop,
+.tabla-acciones .map-actions-group .fab .texto-desktop,
+#contenedorAccionesTabla .map-actions-group .fab .texto-desktop {
+    display: inline !important;
 }
 
 .table-responsive {
@@ -2178,48 +2258,27 @@ main.filtros-abiertos .fab-tiempo {
         min-height: 400px !important; /* Altura mínima para que se vea */
     }
 
-    /* Modal Filtros */
-    #panelFiltros {
-        position: fixed !important;
-        top: 50% !important;
-        left: 50% !important;
-        bottom: auto !important;
-        right: auto !important;
-        width: min(380px, 92vw) !important;
-        max-height: 90vh !important;
-        border-radius: 14px !important;
-        border: 1px solid var(--borde) !important;
-        transform: translate(-50%, -50%) scale(0.95) !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
-        display: flex !important;
-        flex-direction: column !important;
-        transition: transform 0.25s ease, opacity 0.25s ease, visibility 0.25s ease !important;
-        box-shadow: var(--sombra) !important;
-    }
-
-    #panelFiltros.abierto {
-        transform: translate(-50%, -50%) scale(1) !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-    }
 
     .filtros-overlay {
         display: block !important;
     }
 
-    /* Botones Agrupados bajo KPI */
+    /* Botones Agrupados flotantes en parte superior del Mapa */
     .map-actions-group {
         position: absolute;
-        top: 110px;
-        left: 0;
-        right: 0;
+        top: 14px;
+        left: 50%;
+        transform: translateX(-50%);
+        right: auto;
+        width: max-content;
+        max-width: calc(100% - 140px);
         display: flex;
         justify-content: center;
         align-items: center;
         gap: 12px;
         z-index: 1000;
         pointer-events: none;
+        transition: top 0.25s ease;
     }
     .map-actions-group .fab {
         position: relative !important;
@@ -2228,17 +2287,33 @@ main.filtros-abiertos .fab-tiempo {
         right: auto !important;
         bottom: auto !important;
         pointer-events: auto !important;
+        height: 36px !important;
+        padding: 0 14px !important;
+        border-radius: 20px !important;
+        font-size: 0.85rem !important;
+        gap: 6px !important;
+    }
+
+    .map-actions-group .fab .texto-desktop {
+        display: inline !important;
     }
 
     /* Adaptación cuando la barra de filtros se ubica en la Tabla */
-    .tabla-acciones .map-actions-group {
+    .tabla-acciones .map-actions-group,
+    .map-actions-group.en-tabla {
         position: static !important;
         top: auto !important;
         left: auto !important;
         right: auto !important;
+        bottom: auto !important;
+        transform: none !important;
+        -webkit-transform: none !important;
+        width: auto !important;
+        max-width: none !important;
+        margin: 0 !important;
         z-index: auto !important;
         pointer-events: auto !important;
-        display: flex !important;
+        display: inline-flex !important;
         align-items: center !important;
         gap: 10px !important;
     }
@@ -2688,60 +2763,251 @@ main.filtros-abiertos .fab-tiempo {
     
 .sidebar-footer { width: 100%; margin-top: auto; padding-bottom: 20px; }
 
-/* Modal Detalle Incidente */
+/* Modal Detalle Incidente - Rediseño Ejecutivo & Moderno */
 .modal-detalle {
-    width: min(500px, 94vw) !important;
+    width: min(480px, 94vw) !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border-radius: 20px !important;
+    background: var(--bg-card) !important;
+    border: 1px solid var(--borde) !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6) !important;
 }
 
-.detalle-grid {
+.modal-detalle .modal-cabecera {
+    padding: 16px 20px 14px 20px;
+    border-bottom: 1px solid var(--borde);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.modal-detalle .modal-cuerpo {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-height: calc(85vh - 70px);
+    overflow-y: auto;
+}
+
+/* Hero Header dentro del detalle */
+.detalle-hero {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--borde);
+    position: relative;
+    overflow: hidden;
+}
+
+.detalle-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--acento);
+}
+
+.detalle-hero.hero-robo::before { background: #ef4444; }
+.detalle-hero.hero-agresion::before { background: #f59e0b; }
+.detalle-hero.hero-pique::before { background: #a855f7; }
+.detalle-hero.hero-accidente::before { background: #10b981; }
+
+.detalle-hero-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+}
+
+.detalle-hero-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    flex: 1;
+}
+
+.detalle-hero-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.detalle-hero-tipo {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 3px 9px;
+    border-radius: 6px;
+}
+
+.detalle-hero-codigo {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+    font-size: 0.73rem;
+    color: var(--texto-suave);
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.06);
+    padding: 2px 7px;
+    border-radius: 5px;
+}
+
+.detalle-hero-zona {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--texto);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Grid de Tarjetas de Información */
+.detalle-cards-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
-    padding-top: 6px;
 }
 
-@media (max-width: 580px) {
-    .detalle-grid {
+@media (max-width: 440px) {
+    .detalle-cards-grid {
         grid-template-columns: 1fr;
     }
 }
 
-.detalle-item {
+.detalle-card-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--borde);
+    transition: all 0.2s ease;
+}
+
+.detalle-card-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(56, 189, 248, 0.1);
+    color: var(--acento);
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+
+.detalle-card-body {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    background: var(--bg-hover, rgba(255, 255, 255, 0.03));
-    padding: 10px 14px;
-    border-radius: 10px;
+    gap: 2px;
+    min-width: 0;
+}
+
+.dcb-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    color: var(--texto-suave);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.dcb-val {
+    font-size: 0.86rem;
+    color: var(--texto);
+    font-weight: 600;
+    word-break: break-word;
+}
+
+/* Caja de Descripción */
+.detalle-desc-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02);
     border: 1px solid var(--borde);
 }
 
-.detalle-item.full-width {
-    grid-column: 1 / -1;
-}
-
-.detalle-label {
-    font-size: 0.78rem;
-    color: var(--texto-suave);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+.ddb-header {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 7px;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    color: var(--texto-suave);
+    font-weight: 700;
+    letter-spacing: 0.5px;
 }
 
-.detalle-valor {
-    font-size: 0.95rem;
+.ddb-text {
+    font-size: 0.88rem;
     color: var(--texto);
-}
-
-.detalle-descripcion {
-    font-size: 0.9rem;
-    color: var(--texto);
-    margin: 4px 0 0 0;
-    line-height: 1.45;
+    line-height: 1.5;
+    margin: 0;
     white-space: pre-wrap;
     word-break: break-word;
+}
+
+/* Botones de Acción del Modal */
+.detalle-modal-acciones {
+    display: flex;
+    gap: 10px;
+    padding-top: 4px;
+}
+
+.btn-detalle-centrar {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 16px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #0284c7, #0369a1);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.86rem;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+    transition: all 0.2s ease;
+}
+
+.btn-detalle-centrar:hover {
+    background: linear-gradient(135deg, #0369a1, #075985);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(2, 132, 199, 0.45);
+}
+
+.btn-detalle-cerrar {
+    padding: 11px 18px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--borde);
+    color: var(--texto);
+    font-weight: 600;
+    font-size: 0.86rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-detalle-cerrar:hover {
+    background: rgba(255, 255, 255, 0.12);
 }
 
 #tbodyIncidentesPublica tr {
@@ -3520,7 +3786,7 @@ main.filtros-abiertos .fab-tiempo {
 
 .custom-popup-container .leaflet-popup-content {
     margin: 0 !important;
-    width: 275px !important;
+    width: 295px !important;
 }
 
 .custom-popup-container a.leaflet-popup-close-button {
@@ -3547,17 +3813,26 @@ main.filtros-abiertos .fab-tiempo {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
     padding-bottom: 10px;
+    padding-right: 22px; /* Margen para no chocar ni solaparse con el botón cerrar (x) */
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .popup-badge {
-    padding: 4px 10px;
+    padding: 4px 8px;
     border-radius: 20px;
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     font-weight: 800;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
     text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 110px;
+    flex-shrink: 1;
+    display: inline-block;
+    vertical-align: middle;
 }
 
 .popup-badge.tipo-robo { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
@@ -3567,7 +3842,7 @@ main.filtros-abiertos .fab-tiempo {
 .popup-badge.tipo-default { background: rgba(0, 210, 255, 0.2); color: #38bdf8; border: 1px solid rgba(0, 210, 255, 0.4); }
 
 .popup-code {
-    font-size: 0.68rem;
+    font-size: 0.72rem;
     font-family: 'Courier New', monospace;
     font-weight: 700;
     color: #94a3b8;
@@ -3575,6 +3850,11 @@ main.filtros-abiertos .fab-tiempo {
     padding: 3px 8px;
     border-radius: 6px;
     border: 1px solid rgba(255, 255, 255, 0.08);
+    white-space: nowrap;
+    letter-spacing: 0.03em;
+    flex-shrink: 0;
+    min-width: 115px;
+    text-align: center;
 }
 
 .popup-location-box {
@@ -3660,6 +3940,174 @@ main.filtros-abiertos .fab-tiempo {
 .sev-media { background: rgba(245, 158, 11, 0.15); color: #fde047; }
 .sev-alta { background: rgba(239, 68, 68, 0.15); color: #fca5a5; }
 .sev-critica { background: rgba(220, 38, 38, 0.25); color: #f87171; border: 1px solid rgba(220, 38, 38, 0.5); }
+
+/* Coordenadas en el popup del incidente */
+.popup-coords-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.76rem;
+    color: #94a3b8;
+}
+
+.popup-coords-box span strong {
+    color: #38bdf8;
+    margin-right: 3px;
+}
+
+body.tema-claro .popup-coords-box {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+}
+
+body.tema-claro .popup-coords-box span strong {
+    color: #0284c7;
+}
+
+/* Tooltips para polígonos de barrios y veredas */
+.tooltip-barrio, .tooltip-vereda {
+    background: rgba(13, 17, 23, 0.94) !important;
+    border: 1px solid rgba(56, 189, 248, 0.4) !important;
+    color: #e6edf3 !important;
+    font-family: 'Outfit', system-ui, sans-serif !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
+    padding: 4px 8px !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45) !important;
+    backdrop-filter: blur(8px) !important;
+}
+
+.tooltip-barrio::before, .tooltip-vereda::before {
+    border-top-color: rgba(13, 17, 23, 0.94) !important;
+}
+
+body.tema-claro .tooltip-barrio, body.tema-claro .tooltip-vereda {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #1e293b !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Card de coordenadas al hacer clic en cualquier parte del mapa */
+.popup-coord-card {
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+}
+
+.popup-coord-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #38bdf8;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.popup-coord-footer {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 0.78rem;
+    color: #e2e8f0;
+}
+
+.popup-coord-footer i {
+    color: #00d2ff;
+    font-size: 1rem;
+    margin-top: 1px;
+    flex-shrink: 0;
+}
+
+.popup-coord-zona-text {
+    line-height: 1.35;
+    flex: 1;
+}
+
+/* Soporte Tema Claro para popups */
+body.tema-claro .custom-popup-container .leaflet-popup-content-wrapper {
+    background: rgba(255, 255, 255, 0.98) !important;
+    border: 1px solid rgba(2, 132, 199, 0.25) !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15), 0 0 20px rgba(2, 132, 199, 0.1) !important;
+    color: #1e293b !important;
+}
+
+body.tema-claro .custom-popup-container .leaflet-popup-tip {
+    background: rgba(255, 255, 255, 0.98) !important;
+    border: 1px solid rgba(2, 132, 199, 0.25) !important;
+}
+
+body.tema-claro .custom-popup-container a.leaflet-popup-close-button {
+    color: #64748b !important;
+}
+
+body.tema-claro .custom-popup-container a.leaflet-popup-close-button:hover {
+    color: #0f172a !important;
+}
+
+body.tema-claro .popup-loc-name {
+    color: #0f172a;
+}
+
+body.tema-claro .popup-location-box {
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+body.tema-claro .popup-grid-2x2 {
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+body.tema-claro .pg-val {
+    color: #0f172a;
+}
+
+body.tema-claro .popup-code {
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: #475569;
+}
+
+body.tema-claro .popup-coord-header {
+    color: #0284c7;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+body.tema-claro .popup-coord-footer {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #1e293b;
+}
+
+body.tema-claro .popup-coord-footer i {
+    color: #0284c7;
+}
+
+body.tema-claro .popup-user-coords {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+body.tema-claro .popup-coord-val {
+    color: #0f172a;
+}
 
 /* ════════════════════════════════════════════════════════════════
    SIGI MOBILE NATIVE APP CSS SYSTEM (DISPOSITIVOS MÓVILES)
@@ -3952,13 +4400,15 @@ main.filtros-abiertos .fab-tiempo {
 }
 
 .mic-code {
-    font-family: 'Courier New', monospace;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, monospace;
     font-size: 0.72rem;
     color: #64748b;
     font-weight: 700;
+    letter-spacing: 0.3px;
     background: rgba(255, 255, 255, 0.04);
     padding: 3px 8px;
     border-radius: 6px;
+    white-space: nowrap;
 }
 
 .mic-grid {
@@ -4198,7 +4648,7 @@ main.filtros-abiertos .fab-tiempo {
         top: 10px !important;
         left: 10px !important;
         z-index: 1010 !important;
-        background: rgba(13, 20, 36, 0.9) !important;
+        background: rgba(13, 20, 36, 0.92) !important;
         backdrop-filter: blur(12px) !important;
         -webkit-backdrop-filter: blur(12px) !important;
         border: 1px solid rgba(56, 189, 248, 0.4) !important;
@@ -4207,13 +4657,16 @@ main.filtros-abiertos .fab-tiempo {
         border-radius: 20px !important;
         font-size: 0.72rem !important;
         font-weight: 700 !important;
-        display: inline-flex !important;
+        display: none !important;
         align-items: center !important;
         gap: 6px !important;
         cursor: pointer !important;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45), 0 0 12px rgba(56, 189, 248, 0.2) !important;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
         animation: fadeInDown 0.3s ease !important;
+    }
+    .btn-abrir-kpis.visible {
+        display: inline-flex !important;
     }
 
     .btn-abrir-kpis:hover, .btn-abrir-kpis:active {
@@ -4243,19 +4696,168 @@ main.filtros-abiertos .fab-tiempo {
         border-radius: 17px !important;
     }
 
-    /* Posicionar herramientas de mapa y leyenda justo sobre el borde inferior */
-    .gis-tools-group, .map-actions-group {
-        bottom: 12px !important;
-        z-index: 1050 !important;
+    /* DOCK VERTICAL COMPACTO GIS EN MÓVIL (Derecha del mapa) */
+    .map-actions-group {
+        position: absolute !important;
+        top: 85px !important;
+        right: 12px !important;
+        left: auto !important;
+        bottom: auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 10px !important;
+        width: auto !important;
+        z-index: 1000 !important;
+        pointer-events: none !important;
+        transition: top 0.3s ease !important;
     }
 
+    /* Cuando las métricas están ocultas, sube el dock un poco para aprovechar el espacio superior */
+    .kpi-ribbon.kpi-oculto ~ .map-actions-group,
+    .kpi-ribbon.kpi-oculto ~ #map .map-actions-group {
+        top: 20px !important;
+    }
+
+    /* En móvil, los botones de acción se agrupan ordenados */
+    .map-actions-group.en-tabla {
+        position: static !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        transform: none !important;
+        -webkit-transform: none !important;
+        flex-direction: row !important;
+        width: 100% !important;
+        pointer-events: auto !important;
+    }
+
+    /* Botones circulares compactos con efecto Glassmorphism premium */
+    .map-actions-group .fab {
+        width: 38px !important;
+        height: 38px !important;
+        border-radius: 50% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-size: 1.15rem !important;
+        background: rgba(13, 20, 36, 0.88) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.14) !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        pointer-events: auto !important;
+        transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+    }
+
+    .map-actions-group .fab:hover,
+    .map-actions-group .fab:active {
+        transform: scale(1.08) !important;
+    }
+
+    .map-actions-group .fab .texto-desktop {
+        display: none !important;
+    }
+
+    /* Botón Filtros en móvil */
+    .map-actions-group #btnFiltros {
+        order: 1 !important;
+        color: #e2e8f0 !important;
+        border-color: rgba(226, 232, 240, 0.3) !important;
+    }
+    .map-actions-group #btnFiltros:active {
+        color: #38bdf8 !important;
+        border-color: #38bdf8 !important;
+    }
+
+    /* Botón Tiempo en móvil */
+    .map-actions-group #btnAbrirFiltroTiempo {
+        order: 2 !important;
+        color: #a78bfa !important;
+        border-color: rgba(167, 139, 250, 0.35) !important;
+    }
+    .map-actions-group #btnAbrirFiltroTiempo:active {
+        background: #a78bfa !important;
+        color: #0d1117 !important;
+        box-shadow: 0 0 16px rgba(167, 139, 250, 0.6) !important;
+    }
+
+    /* Botón Calor */
+    .map-actions-group #btnToggleHeatmap {
+        order: 3 !important;
+        color: #f39c12 !important;
+        border-color: rgba(243, 156, 18, 0.35) !important;
+    }
+
+    .map-actions-group #btnToggleHeatmap.activo {
+        background: #f39c12 !important;
+        color: #0d1117 !important;
+        box-shadow: 0 0 16px rgba(243, 156, 18, 0.6) !important;
+        border-color: #f39c12 !important;
+    }
+
+    /* Botón Mi Ubicación */
+    .map-actions-group #btnMiUbicacion {
+        order: 4 !important;
+        color: #38bdf8 !important;
+        border-color: rgba(56, 189, 248, 0.35) !important;
+    }
+
+    .map-actions-group #btnMiUbicacion.activo {
+        background: #38bdf8 !important;
+        color: #0d1117 !important;
+        box-shadow: 0 0 16px rgba(56, 189, 248, 0.6) !important;
+    }
+
+    /* Botón Restablecer dentro del dock de filtros */
+    .map-actions-group .restablecer {
+        order: 5 !important;
+        color: #ef4444 !important;
+        border-color: rgba(239, 68, 68, 0.35) !important;
+    }
+
+    .map-actions-group .restablecer:hover,
+    .map-actions-group .restablecer:active {
+        background: rgba(239, 68, 68, 0.18) !important;
+        color: #ef4444 !important;
+        border-color: rgba(239, 68, 68, 0.6) !important;
+        box-shadow: 0 0 14px rgba(239, 68, 68, 0.35) !important;
+    }
+
+
+
+
+    /* Leyenda inferior centrada flotante con efecto translúcido */
     .leyenda {
-        bottom: 10px !important;
-        z-index: 1040 !important;
+        bottom: 12px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: max-content !important;
+        max-width: calc(100% - 28px) !important;
+        padding: 5px 12px !important;
+        font-size: 0.68rem !important;
+        gap: 8px !important;
+        background: rgba(13, 20, 36, 0.82) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 20px !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+        z-index: 1000 !important;
+        pointer-events: none !important;
     }
 
+    .leyenda .itemLeyenda {
+        font-size: 0.68rem !important;
+        gap: 5px !important;
+    }
+
+    /* Indicador de última actualización sutil en móvil */
     #indicador-actualizacion {
-        bottom: 10px !important;
+        display: none !important;
     }
 
     /* SCROLL HABILITADO EN CONTENEDOR DE INCIDENTES */
@@ -4411,11 +5013,97 @@ main.filtros-abiertos .fab-tiempo {
         -webkit-overflow-scrolling: touch !important;
         height: 100% !important;
     }
+
+    /* En móvil, los controles de zoom/capas de Leaflet bajan a 52px para dar espacio libre al botón de 'Métricas' */
+    #map .leaflet-top.leaflet-left {
+        top: 52px !important;
+        left: 12px !important;
+    }
 }
 
 /* ══════════════════════════════════════════════════════════════════
    PERSONALIZACIONES SOLICITADAS: CONTEOS, PULSO Y ZOOM ADAPTABLE
    ══════════════════════════════════════════════════════════════════ */
+
+/* ─── Estilos base del dock de botones flotantes (map-actions-group) ─── */
+/* Se aplican en todos los breakpoints; los media queries sólo ajustan
+   posición y tamaño sin necesidad de redefinir fondo/borde. */
+.map-actions-group {
+    position: absolute;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.map-actions-group .fab {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(13, 20, 36, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: #e6edf3;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+    transition: transform 0.2s ease, background 0.2s ease,
+                border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+    white-space: nowrap;
+    text-decoration: none;
+    outline: none;
+}
+
+.map-actions-group .fab:hover {
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55);
+}
+
+.map-actions-group .fab:active {
+    transform: scale(0.96);
+}
+
+/* Badge numérico sobre el botón de Filtros */
+.map-actions-group .fab-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 0.62rem;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+    line-height: 1;
+    border: 1.5px solid rgba(13, 20, 36, 0.9);
+}
+
+/* Modo claro: override para los fab */
+body.tema-claro .map-actions-group .fab {
+    background: rgba(255, 255, 255, 0.92) !important;
+    border-color: rgba(0, 0, 0, 0.12) !important;
+    color: #1e293b !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.14) !important;
+}
+
+body.tema-claro .map-actions-group .fab:hover {
+    background: #f1f5f9 !important;
+    border-color: #94a3b8 !important;
+    color: #0284c7 !important;
+}
+
 
 /* 1. Tag de Conteo en la Simbología de la Sidebar */
 .simbologia-count-tag {
@@ -4461,24 +5149,154 @@ main.filtros-abiertos .fab-tiempo {
     }
 }
 
-/* 3. Posicionamiento del Control de Capas Debajo del Zoom (Top-Left) */
+/* 3. Posicionamiento del Control de Capas y Zoom (Top-Left) */
 .leaflet-top.leaflet-left {
     top: 14px;
     left: 14px;
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     gap: 6px;
 }
 
+/* ── Dimensiones fijas e inmutables del Control de Zoom (+ / -) ─────────
+   Evita cualquier deformación o cambio de tamaño según estado o dispositivo */
+.leaflet-control-zoom.leaflet-bar {
+    width: 36px !important;
+    border: none !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+}
+
+.leaflet-control-zoom.leaflet-bar a {
+    width: 36px !important;
+    height: 36px !important;
+    line-height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+    box-shadow: none !important;
+}
+
+/* ── Control de Capas (Tipos de Mapa): Colapsado y Expandido al Hover ───────── */
 .leaflet-top.leaflet-left .leaflet-control-layers {
-    margin-top: 4px;
-    margin-left: 0;
+    position: relative !important;
+    margin: 0 !important;
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    z-index: 700;
+}
+
+/* Botón accionador (ícono de capas colapsado) */
+.leaflet-top.leaflet-left .leaflet-control-layers:not(.leaflet-control-layers-expanded) .leaflet-control-layers-toggle {
+    display: block !important;
+    width: 36px !important;
+    height: 36px !important;
+    background-size: 20px 20px !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    border-radius: 10px !important;
+    border: none !important;
+}
+
+/* Lista oculta mientras está colapsado */
+.leaflet-top.leaflet-left .leaflet-control-layers:not(.leaflet-control-layers-expanded) .leaflet-control-layers-list {
+    display: none !important;
+}
+
+/* ── Al poner el cursor sobre el botón (EXPANDIDO): ────────────────────────
+   1. El botón accionador se ESCONDE (.leaflet-control-layers-toggle -> display: none)
+   2. El contenedor se expande mostrando directamente las opciones de mapa
+   3. Apenas el cursor sale del contenedor, vuelve al estado colapsado y el botón reaparece */
+.leaflet-top.leaflet-left .leaflet-control-layers-expanded {
+    width: auto !important;
+    min-width: 165px !important;
+    height: auto !important;
+    max-height: none !important;
+    padding: 8px 12px !important;
+    border-radius: 12px !important;
+    overflow: visible !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Esconder el botón que acciona el contenedor al expandir */
+.leaflet-top.leaflet-left .leaflet-control-layers-expanded .leaflet-control-layers-toggle {
+    display: none !important;
+}
+
+/* Mostrar la lista de tipos de mapa con animación suave */
+.leaflet-top.leaflet-left .leaflet-control-layers-expanded .leaflet-control-layers-list {
+    display: block !important;
+    position: static !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    animation: layersFadeIn 0.16s ease forwards;
+}
+
+@keyframes layersFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Estilos de las opciones del panel (radio buttons y etiquetas) */
+.leaflet-top.leaflet-left .leaflet-control-layers-base label {
+    display: block !important;
+    margin: 0 !important;
+    padding: 4px 2px !important;
+    cursor: pointer !important;
+}
+
+.leaflet-top.leaflet-left .leaflet-control-layers-base label > div {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.leaflet-top.leaflet-left .leaflet-control-layers-base span {
+    font-size: 0.85rem !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 500 !important;
+    white-space: nowrap !important;
+    cursor: pointer !important;
+    transition: color 0.15s ease !important;
+}
+
+.leaflet-top.leaflet-left .leaflet-control-layers-base input[type="radio"] {
+    margin: 0 !important;
+    cursor: pointer !important;
+    accent-color: #38bdf8 !important;
 }
 
 /* 4. Estilos Dinámicos de los Botones de Zoom y Capas según la Vista del Mapa */
 
-/* Tema 1: Modo Oscuro (Dark Matter) */
-.map-theme-dark .leaflet-bar a,
+/* Separador sutil entre + y – */
+.leaflet-bar a {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+.leaflet-bar a:last-child {
+    border-bottom: none !important;
+}
+
+/* ── Tema 1: Modo Oscuro (Dark Matter) ── */
+.map-theme-dark .leaflet-bar,
 .map-theme-dark .leaflet-control-layers {
     background: rgba(13, 17, 23, 0.88) !important;
     backdrop-filter: blur(12px) !important;
@@ -4488,14 +5306,32 @@ main.filtros-abiertos .fab-tiempo {
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
 }
 
+.map-theme-dark .leaflet-bar a {
+    background: transparent !important;
+    color: #e6edf3 !important;
+    border: none !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: none !important;
+}
+.map-theme-dark .leaflet-bar a:last-child {
+    border-bottom: none !important;
+}
+
 .map-theme-dark .leaflet-bar a:hover {
     background: rgba(30, 41, 59, 0.95) !important;
     color: #38bdf8 !important;
-    border-color: rgba(56, 189, 248, 0.4) !important;
 }
 
-/* Tema 2: Satelital (Esri Satellite) */
-.map-theme-sat .leaflet-bar a,
+.map-theme-dark .leaflet-control-layers-toggle {
+    filter: brightness(0) invert(0.92);
+}
+
+.map-theme-dark .leaflet-control-layers-base label:hover span {
+    color: #38bdf8 !important;
+}
+
+/* ── Tema 2: Satelital (Esri Satellite) ── */
+.map-theme-sat .leaflet-bar,
 .map-theme-sat .leaflet-control-layers {
     background: rgba(15, 23, 42, 0.82) !important;
     backdrop-filter: blur(14px) !important;
@@ -4505,26 +5341,171 @@ main.filtros-abiertos .fab-tiempo {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55) !important;
 }
 
+.map-theme-sat .leaflet-bar a {
+    background: transparent !important;
+    color: #38bdf8 !important;
+    border: none !important;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.2) !important;
+    box-shadow: none !important;
+}
+.map-theme-sat .leaflet-bar a:last-child {
+    border-bottom: none !important;
+}
+
 .map-theme-sat .leaflet-bar a:hover {
     background: rgba(14, 165, 233, 0.25) !important;
     color: #ffffff !important;
-    border-color: #38bdf8 !important;
-    box-shadow: 0 0 10px rgba(56, 189, 248, 0.5) !important;
 }
 
-/* Tema 3: Calles (Normal / OSM) */
-.map-theme-streets .leaflet-bar a,
+.map-theme-sat .leaflet-control-layers-toggle {
+    filter: brightness(0) invert(0.92);
+}
+
+.map-theme-sat .leaflet-control-layers-base label:hover span {
+    color: #38bdf8 !important;
+}
+
+/* ── Tema 3: Calles (Normal / OSM) ── */
+.map-theme-streets .leaflet-bar,
 .map-theme-streets .leaflet-control-layers {
     background: #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
     border: 1px solid #cbd5e1 !important;
     color: #1e293b !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
 }
 
+.map-theme-streets .leaflet-bar a {
+    background: transparent !important;
+    color: #1e293b !important;
+    border: none !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+}
+.map-theme-streets .leaflet-bar a:last-child {
+    border-bottom: none !important;
+}
+
 .map-theme-streets .leaflet-bar a:hover {
     background: #f1f5f9 !important;
     color: #0284c7 !important;
-    border-color: #94a3b8 !important;
+}
+
+.map-theme-streets .leaflet-control-layers-toggle {
+    filter: none;
+}
+
+.map-theme-streets .leaflet-control-layers-base span {
+    color: #1e293b !important;
+}
+
+.map-theme-streets .leaflet-control-layers-base label:hover span {
+    color: #0284c7 !important;
+}
+
+/* 5. Estilo del Botón de Restablecer ubicado debajo del selector de capas */
+.restablecer-control-wrapper .restablecer.fab-reset {
+    /* ─ Reset de position: anular .fab { position:absolute } y .fab-reset { bottom/right } ─ */
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    width: auto !important;
+    /* ─ Estilos visuales ─ */
+    margin: 0 !important;
+    border-radius: 8px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    text-decoration: none !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+    transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease !important;
+}
+
+@media (min-width: 769px) {
+    .restablecer-control-wrapper .restablecer.fab-reset {
+        height: 32px !important;
+        padding: 0 10px !important;
+        font-size: 0.76rem !important;
+        font-weight: 600 !important;
+        gap: 6px !important;
+    }
+    .restablecer-control-wrapper .restablecer.fab-reset .texto-desktop {
+        display: inline !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .restablecer-control-wrapper .restablecer.fab-reset {
+        width: 34px !important;
+        height: 34px !important;
+        padding: 0 !important;
+        font-size: 1.1rem !important;
+    }
+    .restablecer-control-wrapper .restablecer.fab-reset .texto-desktop {
+        display: none !important;
+    }
+}
+
+/* Temas dinámicos del botón Restablecer según la vista del mapa */
+.map-theme-dark .restablecer-control-wrapper .restablecer.fab-reset {
+    background: rgba(13, 17, 23, 0.88) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    color: #e6edf3 !important;
+}
+
+.map-theme-dark .restablecer-control-wrapper .restablecer.fab-reset:hover {
+    background: rgba(239, 68, 68, 0.2) !important;
+    color: #ef4444 !important;
+    border-color: rgba(239, 68, 68, 0.5) !important;
+    transform: scale(1.04) !important;
+}
+
+.map-theme-sat .restablecer-control-wrapper .restablecer.fab-reset {
+    background: rgba(15, 23, 42, 0.82) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    border: 1px solid rgba(56, 189, 248, 0.35) !important;
+    color: #38bdf8 !important;
+}
+
+.map-theme-sat .restablecer-control-wrapper .restablecer.fab-reset:hover {
+    background: rgba(14, 165, 233, 0.25) !important;
+    color: #ffffff !important;
+    border-color: #38bdf8 !important;
+    transform: scale(1.04) !important;
+}
+
+.map-theme-streets .restablecer-control-wrapper .restablecer.fab-reset {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #1e293b !important;
+}
+
+.map-theme-streets .restablecer-control-wrapper .restablecer.fab-reset:hover {
+    background: #fee2e2 !important;
+    color: #ef4444 !important;
+    border-color: #ef4444 !important;
+    transform: scale(1.04) !important;
+}
+
+body.tema-claro .restablecer-control-wrapper .restablecer.fab-reset {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #1e293b !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
+}
+
+body.tema-claro .restablecer-control-wrapper .restablecer.fab-reset:hover {
+    background: #fee2e2 !important;
+    color: #dc2626 !important;
+    border-color: #dc2626 !important;
 }
 
 /* ============================================================
@@ -4544,6 +5525,10 @@ body.tema-claro {
     --texto-suave:   #64748b;
     --borde:         #e2e8f0;
     --bg-hover:      #f1f5f9;
+    --rojo:          #dc2626;
+    --amarillo:      #d97706;
+    --magenta:       #9333ea;
+    --verde:         #16a34a;
     --sombra:        0 4px 16px rgba(0, 0, 0, 0.08);
 
     background: #f4f6f9 !important;
@@ -4642,7 +5627,8 @@ body.tema-claro .nav-btn:hover {
 body.tema-claro .nav-btn.active {
     background: #e0f2fe !important;
     color: #0284c7 !important;
-    border-left: 3px solid #0284c7 !important;
+    border: 1px solid rgba(2, 132, 199, 0.35) !important;
+    border-left: none !important;
     font-weight: 700 !important;
 }
 
@@ -4702,7 +5688,12 @@ body.tema-claro .hero-badge {
 }
 
 body.tema-claro .hero-title {
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+    -webkit-text-fill-color: #0f172a !important;
     color: #0f172a !important;
+    font-weight: 800 !important;
 }
 
 body.tema-claro .hero-subtitle {
@@ -4747,6 +5738,21 @@ body.tema-claro .inicio-card h3 {
 }
 
 body.tema-claro .inicio-card p {
+    color: #64748b !important;
+}
+
+body.tema-claro .inicio-info-footer {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.tema-claro .info-footer-label {
+    color: #0284c7 !important;
+    font-weight: 700 !important;
+}
+
+body.tema-claro .info-footer-sub {
     color: #64748b !important;
 }
 
@@ -4822,57 +5828,83 @@ body.tema-claro .leyenda {
     color: #334155 !important;
 }
 
-/* ── 5. Panel de Filtros Lateral (Drawer) ── */
-body.tema-claro #panelFiltros {
-    background: #ffffff !important;
-    border-left: 1px solid #e2e8f0 !important;
-    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.1) !important;
+/* ── 5. Modal de Filtros de Mapa (Popup) ── */
+body.tema-claro #panelFiltros.modal {
+    background: rgba(15, 23, 42, 0.5) !important;
+    backdrop-filter: blur(4px) !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
-body.tema-claro #panelFiltros h3,
-body.tema-claro #panelFiltros label {
+body.tema-claro .modal-filtros-popup {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.18) !important;
     color: #1e293b !important;
 }
 
-body.tema-claro .analisis-rapido {
+body.tema-claro .modal-filtros-popup .modal-cabecera {
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+
+body.tema-claro .modal-filtros-popup .modal-cabecera h3 {
+    color: #0f172a !important;
+}
+
+body.tema-claro .modal-filtros-popup .modal-cabecera h3 i {
+    color: #0284c7 !important;
+}
+
+body.tema-claro .modal-filtros-popup .analisis-rapido {
     background: #f8fafc !important;
     border: 1px solid #e2e8f0 !important;
 }
 
-body.tema-claro .ar-label {
+body.tema-claro .modal-filtros-popup .ar-label {
     color: #64748b !important;
 }
 
-body.tema-claro .ar-valor {
+body.tema-claro .modal-filtros-popup .ar-valor {
     color: #0f172a !important;
 }
 
-body.tema-claro #panelFiltros input[type="text"] {
+body.tema-claro .modal-filtros-popup .titulo-seccion-modal {
+    color: #475569 !important;
+}
+
+body.tema-claro .modal-filtros-popup .contenedor-buscar-lugar input {
     background: #ffffff !important;
     border: 1px solid #cbd5e1 !important;
     color: #0f172a !important;
 }
 
-body.tema-claro #panelFiltros input[type="text"]:focus {
+body.tema-claro .modal-filtros-popup .contenedor-buscar-lugar input:focus {
     border-color: #0284c7 !important;
     box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
 }
 
-body.tema-claro .tiposIncidente button.incidente {
+body.tema-claro .modal-filtros-popup #sugerencias {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+body.tema-claro .modal-filtros-popup .tiposIncidente button.incidente {
     background: #ffffff !important;
     border: 1px solid #cbd5e1 !important;
     color: #334155 !important;
 }
 
-body.tema-claro .tiposIncidente button.incidente:hover {
-    background: #f1f5f9 !important;
-    border-color: #94a3b8 !important;
-}
-
-body.tema-claro .tiposIncidente button.incidente.activo {
-    background: #e0f2fe !important;
+body.tema-claro .modal-filtros-popup .tiposIncidente button.incidente:hover {
+    background: #f0f9ff !important;
     border-color: #0284c7 !important;
     color: #0284c7 !important;
+}
+
+body.tema-claro .modal-filtros-popup .tiposIncidente button.incidente.activo {
+    background: #e0f2fe !important;
+    border-color: #0284c7 !important;
+    color: #0369a1 !important;
 }
 
 body.tema-claro .btnActualizar {
@@ -4890,73 +5922,166 @@ body.tema-claro #sugerencias {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
 }
 
+body.tema-claro .itemSugerencia,
 body.tema-claro .sugerencia-item {
     color: #1e293b !important;
     border-bottom: 1px solid #f1f5f9 !important;
 }
 
+body.tema-claro .itemSugerencia:hover,
 body.tema-claro .sugerencia-item:hover {
     background: #f0f9ff !important;
     color: #0284c7 !important;
 }
 
-/* ── 6. Vista Tabla de Registros ── */
-body.tema-claro #vistaTabla {
-    background: #f4f6f9 !important;
+/* Chips de incidentes: eliminar border-left tradicional y usar bordes limpios */
+body.tema-claro .tpincidentes p {
+    border-left: none !important;
+    border: 1px solid currentColor !important;
+    border-radius: 12px !important;
 }
 
-body.tema-claro .tabla-acciones {
-    background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+body.tema-claro .tpincidentes .robo {
+    color: #dc2626 !important;
+    background: #fef2f2 !important;
+    border-color: #fecaca !important;
 }
-
-body.tema-claro .tabla-busqueda input {
-    background: #ffffff !important;
-    border: 1px solid #cbd5e1 !important;
-    color: #0f172a !important;
-}
-
-body.tema-claro .tabla-filtro-select select {
-    background: #ffffff !important;
-    border: 1px solid #cbd5e1 !important;
-    color: #0f172a !important;
-}
-
-body.tema-claro .btn-exportar-csv {
+body.tema-claro .tpincidentes .accidente {
+    color: #16a34a !important;
     background: #f0fdf4 !important;
-    border: 1px solid #bbf7d0 !important;
-    color: #166534 !important;
+    border-color: #bbf7d0 !important;
+}
+body.tema-claro .tpincidentes .pique {
+    color: #9333ea !important;
+    background: #faf5ff !important;
+    border-color: #e9d5ff !important;
+}
+body.tema-claro .tpincidentes .agresion {
+    color: #d97706 !important;
+    background: #fffbeb !important;
+    border-color: #fde68a !important;
 }
 
-body.tema-claro .btn-exportar-csv:hover {
-    background: #dcfce7 !important;
-}
-
-body.tema-claro .tabla-contenedor {
+/* Control de zoom y capas de Leaflet en modo claro */
+body.tema-claro .leaflet-bar,
+body.tema-claro .leaflet-control-layers {
     background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03) !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #1e293b !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
 }
 
-body.tema-claro .tabla-incidentes-publica thead th {
-    background: #f8fafc !important;
-    color: #334155 !important;
-    border-bottom: 2px solid #cbd5e1 !important;
-}
-
-body.tema-claro .tabla-incidentes-publica tbody tr {
-    background: #ffffff !important;
+body.tema-claro .leaflet-bar a {
+    background: transparent !important;
     color: #1e293b !important;
     border-bottom: 1px solid #e2e8f0 !important;
 }
 
-body.tema-claro .tabla-incidentes-publica tbody tr:hover {
+body.tema-claro .leaflet-bar a:hover {
+    background: #f1f5f9 !important;
+    color: #0284c7 !important;
+}
+
+body.tema-claro .leaflet-control-layers-base label {
+    color: #1e293b !important;
+}
+
+body.tema-claro .leaflet-control-layers-toggle {
+    filter: none !important;
+}
+
+body.tema-claro .map-actions-group .fab-badge {
+    border-color: #ffffff !important;
+    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.4) !important;
+}
+
+/* ── 6. Vista Tabla de Registros en Modo Claro ── */
+body.tema-claro #vistaTabla {
+    background: #f8fafc !important;
+}
+
+body.tema-claro .tabla-container {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+    color: #0f172a !important;
+}
+
+body.tema-claro .tabla-header h2 {
+    color: #0f172a !important;
+}
+
+body.tema-claro .tabla-header h2 i {
+    color: #0284c7 !important;
+}
+
+/* El contenedor que agrupa los filtros en la tabla DEBE ser transparente */
+body.tema-claro .tabla-acciones,
+body.tema-claro #contenedorAccionesTabla,
+body.tema-claro .map-actions-group.en-tabla,
+body.tema-claro .tabla-acciones .map-actions-group {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+body.tema-claro .btn-export {
     background: #f0f9ff !important;
+    border: 1px solid #bae6fd !important;
+    color: #0284c7 !important;
+}
+
+body.tema-claro .btn-export:hover {
+    background: #0284c7 !important;
+    color: #ffffff !important;
+    border-color: #0284c7 !important;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25) !important;
+}
+
+body.tema-claro .table-responsive {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+body.tema-claro .table-responsive::-webkit-scrollbar-track {
+    background: #f1f5f9 !important;
+}
+
+body.tema-claro .table-responsive::-webkit-scrollbar-thumb {
+    background: #cbd5e1 !important;
+    border: 2px solid #f1f5f9 !important;
+}
+
+body.tema-claro .tabla-moderna th {
+    background: #f8fafc !important;
+    color: #475569 !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+    font-weight: 700 !important;
+}
+
+body.tema-claro .tabla-moderna td {
+    background: transparent !important;
+    color: #1e293b !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+body.tema-claro .tabla-moderna tbody tr {
+    background: #ffffff !important;
+    color: #1e293b !important;
+}
+
+body.tema-claro .tabla-moderna tbody tr:nth-child(even) {
+    background: #f8fafc !important;
+}
+
+body.tema-claro .tabla-moderna tbody tr:hover {
+    background: #f0f9ff !important;
+    cursor: pointer;
 }
 
 body.tema-claro .tabla-paginacion {
-    background: #f8fafc !important;
+    background: #ffffff !important;
     border-top: 1px solid #e2e8f0 !important;
 }
 
@@ -4971,8 +6096,8 @@ body.tema-claro .btn-pag {
 }
 
 body.tema-claro .btn-pag:hover:not(:disabled) {
-    background: #0284c7 !important;
-    color: #ffffff !important;
+    background: #f1f5f9 !important;
+    color: #0284c7 !important;
     border-color: #0284c7 !important;
 }
 
@@ -4982,9 +6107,114 @@ body.tema-claro .btn-pag.activa {
     border-color: #0284c7 !important;
 }
 
-/* ── 7. Vista Analítica y Estadísticas ── */
+/* Badges de Tipo de Incidente en Modo Claro (Contraste alto y definido) */
+body.tema-claro .badge-default { background: #f1f5f9 !important; color: #475569 !important; border: 1px solid #cbd5e1 !important; }
+body.tema-claro .badge-robo { background: #fef2f2 !important; color: #b91c1c !important; border: 1px solid #fecaca !important; }
+body.tema-claro .badge-agresion { background: #fffbeb !important; color: #b45309 !important; border: 1px solid #fde68a !important; }
+body.tema-claro .badge-pique { background: #faf5ff !important; color: #7e22ce !important; border: 1px solid #e9d5ff !important; }
+body.tema-claro .badge-accidente { background: #f0fdf4 !important; color: #15803d !important; border: 1px solid #bbf7d0 !important; }
+
+/* Botones flotantes de acciones / filtros cuando están dentro de la tabla */
+body.tema-claro .map-actions-group.en-tabla .fab,
+body.tema-claro .tabla-acciones .map-actions-group .fab,
+body.tema-claro #contenedorAccionesTabla .map-actions-group .fab {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #334155 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+body.tema-claro .map-actions-group.en-tabla .fab:hover,
+body.tema-claro .tabla-acciones .map-actions-group .fab:hover,
+body.tema-claro #contenedorAccionesTabla .map-actions-group .fab:hover {
+    background: #f0f9ff !important;
+    border-color: #0284c7 !important;
+    color: #0284c7 !important;
+}
+
+/* Feed móvil de incidentes */
+body.tema-claro .mobile-incident-feed {
+    background: #f8fafc !important;
+}
+
+body.tema-claro .mobile-incident-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+    color: #1e293b !important;
+}
+
+body.tema-claro .mobile-feed-search input {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+body.tema-claro .mobile-feed-search input:focus {
+    border-color: #0284c7 !important;
+    box-shadow: 0 0 12px rgba(2, 132, 199, 0.2) !important;
+}
+
+body.tema-claro .mic-type-badge span {
+    color: #0f172a !important;
+}
+
+body.tema-claro .mic-code {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+body.tema-claro .mic-grid {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+body.tema-claro .mic-label {
+    color: #64748b !important;
+}
+
+body.tema-claro .mic-val {
+    color: #0f172a !important;
+}
+
+body.tema-claro .btn-mic-view {
+    background: #f0f9ff !important;
+    border: 1px solid #bae6fd !important;
+    color: #0284c7 !important;
+}
+
+body.tema-claro .btn-mic-view:hover {
+    background: #0284c7 !important;
+    color: #ffffff !important;
+}
+
+body.tema-claro .mobile-feed-title {
+    color: #0f172a !important;
+}
+
+body.tema-claro .mobile-feed-title h2 {
+    color: #0f172a !important;
+    font-weight: 800 !important;
+}
+
+body.tema-claro .mobile-feed-title i {
+    color: #0284c7 !important;
+}
+
+body.tema-claro .mobile-feed-header h2 {
+    color: #0f172a !important;
+}
+
+body.tema-claro .mobile-feed-badge {
+    background: #e0f2fe !important;
+    color: #0284c7 !important;
+    border: 1px solid #bae6fd !important;
+}
+
+/* ── 7. Vista Analítica y Estadísticas en Modo Claro ── */
 body.tema-claro #estadisticas {
-    background: #f4f6f9 !important;
+    background: #f8fafc !important;
 }
 
 body.tema-claro .analitica-header {
@@ -4997,8 +6227,14 @@ body.tema-claro .analitica-titulo h2 {
     color: #0f172a !important;
 }
 
-body.tema-claro .analitica-subtitulo {
-    color: #64748b !important;
+body.tema-claro .analitica-titulo p {
+    color: #475569 !important;
+}
+
+body.tema-claro .analitica-badge {
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #475569 !important;
 }
 
 body.tema-claro .badge-total-kpi {
@@ -5008,14 +6244,69 @@ body.tema-claro .badge-total-kpi {
 }
 
 body.tema-claro .seccion-titulo {
-    color: #64748b !important;
+    color: #0f172a !important;
+    font-weight: 700 !important;
 }
 
 body.tema-claro .cardResumen {
     background: #ffffff !important;
     border: 1px solid #e2e8f0 !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
-    color: #1e293b !important;
+    color: #0f172a !important;
+}
+
+body.tema-claro .cardResumen:hover {
+    border-color: #93c5fd !important;
+    box-shadow: 0 8px 20px rgba(2, 132, 199, 0.08) !important;
+}
+
+body.tema-claro .cardResumen span,
+body.tema-claro .card-content span {
+    color: #64748b !important;
+    font-weight: 600 !important;
+}
+
+body.tema-claro .cardResumen h2,
+body.tema-claro .card-content h2 {
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+    -webkit-text-fill-color: #0f172a !important;
+    color: #0f172a !important;
+    font-weight: 800 !important;
+}
+
+body.tema-claro .cardResumen.totalResumen h2 {
+    -webkit-text-fill-color: #0284c7 !important;
+    color: #0284c7 !important;
+}
+
+body.tema-claro .cardResumen.roboResumen h2 {
+    -webkit-text-fill-color: #dc2626 !important;
+    color: #dc2626 !important;
+}
+
+body.tema-claro .cardResumen.accidenteResumen h2 {
+    -webkit-text-fill-color: #d97706 !important;
+    color: #d97706 !important;
+}
+
+body.tema-claro .cardResumen.piqueResumen h2 {
+    -webkit-text-fill-color: #9333ea !important;
+    color: #9333ea !important;
+}
+
+body.tema-claro .cardResumen.agresionResumen h2 {
+    -webkit-text-fill-color: #db2777 !important;
+    color: #db2777 !important;
+}
+
+body.tema-claro .cardResumen.topBarrio h2,
+body.tema-claro .cardResumen.topVereda h2,
+body.tema-claro .topBarrio h2,
+body.tema-claro .topVereda h2 {
+    -webkit-text-fill-color: #0f172a !important;
+    color: #0f172a !important;
 }
 
 body.tema-claro .panel-grafico {
@@ -5024,16 +6315,51 @@ body.tema-claro .panel-grafico {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
 }
 
+/* Top 10 Zonas Críticas en Modo Claro */
+body.tema-claro .top-zona-item {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+body.tema-claro .top-zona-item:hover {
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+}
+
+body.tema-claro .zona-rank {
+    background: #e2e8f0 !important;
+    color: #475569 !important;
+}
+
+body.tema-claro .zona-name {
+    color: #0f172a !important;
+    font-weight: 600 !important;
+}
+
+body.tema-claro .zona-count {
+    color: #dc2626 !important;
+    background: rgba(239, 68, 68, 0.08) !important;
+    border: 1px solid rgba(239, 68, 68, 0.25) !important;
+}
+
+body.tema-claro .zona-bar-bg {
+    background: #e2e8f0 !important;
+}
+
+/* Matriz Día x Hora en Modo Claro */
 body.tema-claro .heatmap-grid {
     background: #ffffff !important;
 }
 
 body.tema-claro .hm-cell {
-    border-color: #f1f5f9 !important;
+    background: #f1f5f9 !important;
+    border-color: #e2e8f0 !important;
 }
 
+body.tema-claro .hm-label-x,
+body.tema-claro .hm-label-y,
 body.tema-claro .hm-header {
-    color: #64748b !important;
+    color: #475569 !important;
 }
 
 /* ── 8. Modales (Detalle Incidente y Filtro Tiempo) ── */
@@ -5079,18 +6405,25 @@ body.tema-claro .detalle-descripcion {
     color: #0f172a !important;
 }
 
+body.tema-claro .titulo-seccion-modal {
+    color: #64748b !important;
+}
+
+body.tema-claro .btn-rapido-modal,
 body.tema-claro .btn-filtro-rapido {
     background: #f1f5f9 !important;
     border: 1px solid #cbd5e1 !important;
     color: #334155 !important;
 }
 
+body.tema-claro .btn-rapido-modal:hover,
 body.tema-claro .btn-filtro-rapido:hover {
     background: #e0f2fe !important;
     color: #0284c7 !important;
     border-color: #0284c7 !important;
 }
 
+body.tema-claro .btn-rapido-modal.activo,
 body.tema-claro .btn-filtro-rapido.activo {
     background: #0284c7 !important;
     color: #ffffff !important;
@@ -5118,6 +6451,19 @@ body.tema-claro .btn-limpiar-general:hover {
     border-color: #ef4444 !important;
     color: #ef4444 !important;
 }
+
+/* Badges y etiquetas del Popup de Leaflet en Modo Claro */
+body.tema-claro .popup-badge.tipo-robo { background: #fef2f2 !important; color: #b91c1c !important; border-color: #fecaca !important; }
+body.tema-claro .popup-badge.tipo-agresion { background: #fffbeb !important; color: #b45309 !important; border-color: #fde68a !important; }
+body.tema-claro .popup-badge.tipo-pique { background: #faf5ff !important; color: #7e22ce !important; border-color: #e9d5ff !important; }
+body.tema-claro .popup-badge.tipo-accidente { background: #f0fdf4 !important; color: #15803d !important; border-color: #bbf7d0 !important; }
+body.tema-claro .popup-status-tag.est-investigacion { background: #fffbeb !important; color: #b45309 !important; border-color: #fde68a !important; }
+body.tema-claro .popup-status-tag.est-resuelto { background: #f0fdf4 !important; color: #15803d !important; border-color: #bbf7d0 !important; }
+body.tema-claro .popup-status-tag.est-cerrado { background: #f1f5f9 !important; color: #475569 !important; border-color: #cbd5e1 !important; }
+body.tema-claro .popup-sev-tag.sev-baja { background: #f0fdf4 !important; color: #15803d !important; border-color: #bbf7d0 !important; }
+body.tema-claro .popup-sev-tag.sev-media { background: #fffbeb !important; color: #b45309 !important; border-color: #fde68a !important; }
+body.tema-claro .popup-sev-tag.sev-alta { background: #fef2f2 !important; color: #b91c1c !important; border-color: #fecaca !important; }
+body.tema-claro .popup-sev-tag.sev-critica { background: #fef2f2 !important; color: #991b1b !important; border-color: #fca5a5 !important; }
 
 /* ── 9. Barra Móvil Inferior (Bottom Bar) ── */
 body.tema-claro .mobile-bottom-bar {

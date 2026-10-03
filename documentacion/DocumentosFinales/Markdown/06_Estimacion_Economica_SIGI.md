@@ -19,38 +19,38 @@
 
 ## ÍNDICE GENERAL
 
-1. [INTRODUCCIÓN Y MARCO METODOLÓGICO REAL](#1-introducción-y-marco-metodológico-real)  
-   1.1 [Propósito del Estudio Económico](#11-propósito-del-estudio-económico)  
-   1.2 [Enfoque Práctico y Condiciones Reales de Ejecución](#12-enfoque-práctico-y-condiciones-reales-de-ejecución)  
-2. [ESTRUCTURA DE COSTOS DIRECTOS (MANO DE OBRA Y DESARROLLO)](#2-estructura-de-costos-directos-mano-de-obra-y-desarrollo)  
-   2.1 [Definición de la Tarifa Horaria ($15.000 COP/Hora)](#21-definición-de-la-tarifa-horaria-15000-cophora)  
-   2.2 [Desglose Realista de Horas por Fases y Módulos](#22-desglose-realista-de-horas-por-fases-y-módulos)  
-   2.3 [Consolidado del Costo Directo de Mano de Obra](#23-consolidado-del-costo-directo-de-mano-de-obra)  
-3. [COSTOS INDIRECTOS DE DESARROLLO (EQUIPOS Y SERVICIOS)](#3-costos-indirectos-de-desarrollo-equipos-y-servicios)  
-   3.1 [Depreciación Proporcional de Equipo de Cómputo Propio](#31-depreciación-proporcional-de-equipo-de-cómputo-propio)  
-   3.2 [Conectividad y Energía Eléctrica Residencial](#32-conectividad-y-energía-eléctrica-residencial)  
-4. [COSTOS REALES DE INFRAESTRUCTURA Y SERVICIOS ACTIVOS (OPEX)](#4-costos-reales-de-infraestructura-y-servicios-activos-opex)  
-   4.1 [Servidor VPS en la Nube (Hostinger / DigitalOcean)](#41-servidor-vps-en-la-nube-hostinger--digitalocean)  
-   4.2 [Dominio Web (.online / .xyz en Promoción Inicial)](#42-dominio-web-online--xyz-en-promoción-inicial)  
-   4.3 [Cloudinary (Plan Gratuito Permanente / Free Tier)](#43-cloudinary-plan-gratuito-permanente--free-tier)  
-   4.4 [Servicio SMTP de Notificaciones (Gmail App Password Gratuito)](#44-servicio-smtp-de-notificaciones-gmail-app-password-gratuito)  
-   4.5 [Certificados SSL/TLS (Let's Encrypt Gratuito)](#45-certificados-ssltls-lets-encrypt-gratuito)  
-   4.6 [Consolidado Real de Infraestructura (Mensual y Anual)](#46-consolidado-real-de-infraestructura-mensual-y-anual)  
-5. [DETERMINACIÓN DEL VALOR COMERCIAL Y PRECIO DE VENTA](#5-determinación-del-valor-comercial-y-precio-de-venta)  
-   5.1 [Estructura del Precio de Venta (Margen y Contingencia)](#51-estructura-del-precio-de-venta-margen-y-contingencia)  
-   5.2 [Modelos de Comercialización Accesibles (Venta Directa vs. Mensualidad)](#52-modelos-de-comercialización-accesibles-venta-directa-vs-mensualidad)  
-   5.3 [Póliza de Soporte Técnico y Mantenimiento Preventivo](#53-póliza-de-soporte-técnico-y-mantenimiento-preventivo)  
-6. [EVALUACIÓN FINANCIERA, RETORNO DE INVERSIÓN (ROI) Y VIABILIDAD](#6-evaluación-financiera-retorno-de-inversión-roi-y-viabilidad)  
-   6.1 [Ahorro Tangible Frente al Proceso Manual Anterior](#61-ahorro-tangible-frente-al-proceso-manual-anterior)  
-   6.2 [Punto de Equilibrio Financiero](#62-punto-de-equilibrio-financiero)  
-   6.3 [Conclusión y Dictamen de Viabilidad](#63-conclusión-y-dictamen-de-viabilidad)  
+1. [INTRODUCCIÓN Y MARCO METODOLÓGICO REAL](#1-introducción-y-marco-metodológico-real)
+   1.1 [Propósito del Estudio Económico](#11-propósito-del-estudio-económico)
+   1.2 [Enfoque Práctico y Condiciones Reales de Ejecución](#12-enfoque-práctico-y-condiciones-reales-de-ejecución)
+2. [ESTRUCTURA DE COSTOS DIRECTOS (MANO DE OBRA Y DESARROLLO)](#2-estructura-de-costos-directos-mano-de-obra-y-desarrollo)
+   2.1 [Definición de la Tarifa Horaria ($15.000 COP/Hora)](#21-definición-de-la-tarifa-horaria-15000-cophora)
+   2.2 [Desglose Realista de Horas por Fases y Módulos](#22-desglose-realista-de-horas-por-fases-y-módulos)
+   2.3 [Consolidado del Costo Directo de Mano de Obra](#23-consolidado-del-costo-directo-de-mano-de-obra)
+3. [COSTOS INDIRECTOS DE DESARROLLO (EQUIPOS Y SERVICIOS)](#3-costos-indirectos-de-desarrollo-equipos-y-servicios)
+   3.1 [Depreciación Proporcional de Equipo de Cómputo Propio](#31-depreciación-proporcional-de-equipo-de-cómputo-propio)
+   3.2 [Conectividad y Energía Eléctrica Residencial](#32-conectividad-y-energía-eléctrica-residencial)
+4. [COSTOS REALES DE INFRAESTRUCTURA Y SERVICIOS ACTIVOS (OPEX)](#4-costos-reales-de-infraestructura-y-servicios-activos-opex)
+   4.1 [Servidor VPS en la Nube (Hostinger / DigitalOcean)](#41-servidor-vps-en-la-nube-hostinger--digitalocean)
+   4.2 [Dominio Web (.online / .xyz en Promoción Inicial)](#42-dominio-web-online--xyz-en-promoción-inicial)
+   4.3 [Cloudinary (Plan Gratuito Permanente / Free Tier)](#43-cloudinary-plan-gratuito-permanente--free-tier)
+   4.4 [Servicio SMTP de Notificaciones (Gmail App Password Gratuito)](#44-servicio-smtp-de-notificaciones-gmail-app-password-gratuito)
+   4.5 [Certificados SSL/TLS (Let's Encrypt Gratuito)](#45-certificados-ssltls-lets-encrypt-gratuito)
+   4.6 [Consolidado Real de Infraestructura (Mensual y Anual)](#46-consolidado-real-de-infraestructura-mensual-y-anual)
+5. [DETERMINACIÓN DEL VALOR COMERCIAL Y PRECIO DE VENTA](#5-determinación-del-valor-comercial-y-precio-de-venta)
+   5.1 [Estructura del Precio de Venta (Margen y Contingencia)](#51-estructura-del-precio-de-venta-margen-y-contingencia)
+   5.2 [Modelos de Comercialización Accesibles (Venta Directa vs. Mensualidad)](#52-modelos-de-comercialización-accesibles-venta-directa-vs-mensualidad)
+   5.3 [Póliza de Soporte Técnico y Mantenimiento Preventivo](#53-póliza-de-soporte-técnico-y-mantenimiento-preventivo)
+6. [EVALUACIÓN FINANCIERA, RETORNO DE INVERSIÓN (ROI) Y VIABILIDAD](#6-evaluación-financiera-retorno-de-inversión-roi-y-viabilidad)
+   6.1 [Ahorro Tangible Frente al Proceso Manual Anterior](#61-ahorro-tangible-frente-al-proceso-manual-anterior)
+   6.2 [Punto de Equilibrio Financiero](#62-punto-de-equilibrio-financiero)
+   6.3 [Conclusión y Dictamen de Viabilidad](#63-conclusión-y-dictamen-de-viabilidad)
 
 ---
 
 ## 1. INTRODUCCIÓN Y MARCO METODOLÓGICO REAL
 
 ### 1.1 Propósito del Estudio Económico
-Este documento presenta la estimación económica ajustada estrictamente a la **realidad operativa y financiera** en la que se está ejecutando el proyecto **SIGI**. 
+Este documento presenta la estimación económica ajustada estrictamente a la **realidad operativa y financiera** en la que se está ejecutando el proyecto **SIGI**.
 
 A diferencia de estimaciones teóricas sobredimensionadas, aquí se reflejan las decisiones inteligentes de ingeniería y arquitectura adoptadas en el proyecto: uso de **planes gratuitos (Free Tier)** para servicios de alta tecnología (Cloudinary y SMTP de Gmail), adquisición de un **servidor VPS optimizado** donde coexisten la base de datos PostgreSQL/PostGIS y el backend Node.js, y el aprovechamiento de un **dominio web promocional** de bajo costo.
 
@@ -63,8 +63,6 @@ A diferencia de estimaciones teóricas sobredimensionadas, aquí se reflejan las
 
 ## 2. ESTRUCTURA DE COSTOS DIRECTOS (MANO DE OBRA Y DESARROLLO)
 
-> **ESPACIO PARA DIAGRAMA:**  
-> *(Insertar aquí Gráfico Circular: Distribución de Horas y Costos por Módulos del Sistema)*
 
 ### 2.1 Definición de la Tarifa Horaria ($15.000 COP/Hora)
 Para el contexto de Florencia, Caquetá y como proyecto de titulación técnica/tecnológica ADSO, se fija una tarifa de **\$15.000 COP por hora de desarrollo efectivo**:
@@ -113,8 +111,6 @@ Corresponden a los gastos operativos asumidos por el desarrollador durante el pe
 
 Aquí se describe el esquema **real y optimizado** que soporta la operación del sistema actualmente:
 
-> **ESPACIO PARA DIAGRAMA:**  
-> *(Insertar aquí Diagrama de Arquitectura de Costos de Infraestructura y Servicios Gratuitos/Pagos)*
 
 ### 4.1 Servidor VPS en la Nube (Hostinger / DigitalOcean)
 - **Costo Real:** **$80.000 COP / mes**.
@@ -197,8 +193,6 @@ Para la Opción A (Venta Propietaria), se ofrece una póliza de mantenimiento me
 
 ## 6. EVALUACIÓN FINANCIERA, RETORNO DE INVERSIÓN (ROI) Y VIABILIDAD
 
-> **ESPACIO PARA DIAGRAMA:**  
-> *(Insertar aquí Gráfico de Punto de Equilibrio y Retorno de Inversión)*
 
 ### 6.1 Ahorro Tangible Frente al Proceso Manual Anterior
 Antes de la implementación de SIGI, la recepción de novedades en Florencia demandaba minutas físicas de papel, transcripciones manuales en hojas de cálculo y llamadas telefónicas desorganizadas:
@@ -208,9 +202,9 @@ Antes de la implementación de SIGI, la recepción de novedades en Florencia dem
 
 ### 6.2 Punto de Equilibrio Financiero
 Si una entidad municipal adquiere el sistema bajo la modalidad de **Venta Directa ($4.800.000 COP)** y asume los costos operativos del VPS ($80.000 COP/mes):
-- **Ahorro Neto Mensual Generado:**  
+- **Ahorro Neto Mensual Generado:**
   $$\text{Ahorro Neto} = \$780.000 - \$80.000 = \$700.000 \text{ COP / mes}$$
-- **Tiempo de Retorno de Inversión (Payback Period):**  
+- **Tiempo de Retorno de Inversión (Payback Period):**
   $$\text{Período de Recuperación} = \frac{\$4.800.000}{\$700.000} \approx \mathbf{6.8 \text{ meses}}$$
 
 El cliente recupera el 100% del dinero invertido en **menos de 7 meses**, convirtiendo al software en una inversión de altísima rentabilidad social y financiera.

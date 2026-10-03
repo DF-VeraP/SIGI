@@ -4,7 +4,7 @@ El rol **Reportero** está diseñado para funcionarios de seguridad, patrulleros
 
 ---
 
-## 📱 Flujo Operativo y Dependencias
+## Flujo Operativo y Dependencias
 
 ```mermaid
 graph TD
@@ -16,7 +16,7 @@ graph TD
 
 ---
 
-## 📚 Índice de Módulos y Diagramas
+## Índice de Módulos y Diagramas
 
 | Módulo | Descripción Técnica | Diagrama Asociado |
 | :--- | :--- | :--- |
@@ -26,6 +26,6 @@ graph TD
 
 ---
 
-## 🛡️ Controles de Acceso y Aislamiento
+## Controles de Acceso y Aislamiento
 - **RBAC:** El reportero solo tiene permiso sobre `/reportero`, `/api/incidentes` (POST) y `/api/incidentes/mis-reportes` (GET).
 - **Prohibición de Acceso Administrativo:** Si un reportero intenta navegar a `/admin` o invocar endpoints de validación o usuarios, el middleware `verificarRol` emite de inmediato un código HTTP `403 Forbidden`.

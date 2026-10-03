@@ -40,4 +40,4 @@
 
 ## 4. Diagrama de Arquitectura y Flujo
 El diagrama de este módulo se encuentra en:
-👉 [`Reportero/diagramas/03_sesion_seguridad_movil.drawio`](diagramas/03_sesion_seguridad_movil.drawio)
+- [`Reportero/diagramas/03_sesion_seguridad_movil.drawio`](diagramas/03_sesion_seguridad_movil.drawio)

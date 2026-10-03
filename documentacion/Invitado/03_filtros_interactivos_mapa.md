@@ -40,4 +40,4 @@
 
 ## 4. Diagrama de Arquitectura y Flujo
 El diagrama de este módulo se encuentra en:
-👉 [`Invitado/diagramas/03_filtros_interactivos_mapa.drawio`](diagramas/03_filtros_interactivos_mapa.drawio)
+- [`Invitado/diagramas/03_filtros_interactivos_mapa.drawio`](diagramas/03_filtros_interactivos_mapa.drawio)

@@ -33,11 +33,16 @@ function alternarTemaDashboard() {
     if (typeof Chart !== 'undefined' && Chart.instances) {
         Object.values(Chart.instances).forEach(chart => {
             if (chart && chart.options) {
-                const colorTexto = esClaro ? '#334155' : '#e6edf3';
-                const colorGrid = esClaro ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.08)';
+                const colorTexto = esClaro ? '#0f172a' : '#e6edf3';
+                const colorSecundario = esClaro ? '#475569' : '#8b949e';
+                const colorGrid = esClaro ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.06)';
+                
+                if (chart.options.plugins && chart.options.plugins.legend && chart.options.plugins.legend.labels) {
+                    chart.options.plugins.legend.labels.color = colorTexto;
+                }
                 if (chart.options.scales) {
                     if (chart.options.scales.x) {
-                        if (chart.options.scales.x.ticks) chart.options.scales.x.ticks.color = colorTexto;
+                        if (chart.options.scales.x.ticks) chart.options.scales.x.ticks.color = colorSecundario;
                         if (chart.options.scales.x.grid) chart.options.scales.x.grid.color = colorGrid;
                     }
                     if (chart.options.scales.y) {
@@ -45,9 +50,22 @@ function alternarTemaDashboard() {
                         if (chart.options.scales.y.grid) chart.options.scales.y.grid.color = colorGrid;
                     }
                 }
+                if (chart.data && chart.data.datasets) {
+                    chart.data.datasets.forEach(ds => {
+                        if (chart.config && chart.config.type === 'doughnut') {
+                            ds.borderColor = esClaro ? '#ffffff' : '#0d1117';
+                        }
+                        if (chart.config && chart.config.type === 'line') {
+                            ds.pointBorderColor = esClaro ? '#ffffff' : '#0d1117';
+                        }
+                    });
+                }
                 chart.update();
             }
         });
+    }
+    if (typeof cargarIncidentesBarra === 'function') {
+        cargarIncidentesBarra();
     }
 }
 
@@ -144,8 +162,12 @@ function cambiarVista(vistaId) {
             if (btnMiUbicacion) btnMiUbicacion.style.display = "none";
             if (btnToggleHeatmap) btnToggleHeatmap.style.display = "none";
         } else {
-            if (mapEl && mapEl.parentElement) {
-                mapEl.parentElement.insertBefore(actionsGroup, mapEl);
+            if (mapEl) {
+                mapEl.appendChild(actionsGroup);
+                if (typeof L !== "undefined" && L.DomEvent) {
+                    L.DomEvent.disableClickPropagation(actionsGroup);
+                    L.DomEvent.disableScrollPropagation(actionsGroup);
+                }
             }
             actionsGroup.classList.remove("en-tabla");
             if (btnMiUbicacion) btnMiUbicacion.style.display = "";
@@ -426,42 +448,125 @@ function mostrarDetalleIncidente(inc) {
         year: "numeric"
     }) : "N/A";
     const hora = inc.horaincidente ? inc.horaincidente.slice(0, 5) : "N/A";
-    const zona = inc.namebarrio || inc.nombrevereda || 'Sin zona';
+    const zona = inc.namebarrio || inc.nombrevereda || 'Sin zona asignada';
 
     let badgeClass = "badge-default";
-    if (inc.idtipoincidente === 1) badgeClass = "badge-robo";
-    if (inc.idtipoincidente === 2) badgeClass = "badge-agresion";
-    if (inc.idtipoincidente === 3) badgeClass = "badge-pique";
-    if (inc.idtipoincidente === 4) badgeClass = "badge-accidente";
+    let iconClass = "bi-shield-exclamation";
+    let heroClass = "hero-robo";
+    let iconBg = "rgba(239, 68, 68, 0.15)";
+    let iconColor = "#ef4444";
+
+    if (inc.idtipoincidente === 1) {
+        badgeClass = "badge-robo";
+        iconClass = "bi-shield-shaded";
+        heroClass = "hero-robo";
+        iconBg = "rgba(239, 68, 68, 0.15)";
+        iconColor = "#ef4444";
+    } else if (inc.idtipoincidente === 2) {
+        badgeClass = "badge-agresion";
+        iconClass = "bi-exclamation-triangle-fill";
+        heroClass = "hero-agresion";
+        iconBg = "rgba(245, 158, 11, 0.15)";
+        iconColor = "#f59e0b";
+    } else if (inc.idtipoincidente === 3) {
+        badgeClass = "badge-pique";
+        iconClass = "bi-lightning-charge-fill";
+        heroClass = "hero-pique";
+        iconBg = "rgba(168, 85, 247, 0.15)";
+        iconColor = "#a855f7";
+    } else if (inc.idtipoincidente === 4) {
+        badgeClass = "badge-accidente";
+        iconClass = "bi-car-front-fill";
+        heroClass = "hero-accidente";
+        iconBg = "rgba(16, 185, 129, 0.15)";
+        iconColor = "#10b981";
+    }
+
+    const hasCoords = inc.lat && inc.lng && !isNaN(Number(inc.lat)) && !isNaN(Number(inc.lng));
+    const coordsStr = hasCoords ? `${Number(inc.lat).toFixed(4)}, ${Number(inc.lng).toFixed(4)}` : '';
 
     cuerpo.innerHTML = `
-        <div class="detalle-grid">
-            <div class="detalle-item">
-                <span class="detalle-label"><i class="bi bi-hash"></i> Código</span>
-                <span class="detalle-valor"><strong>${inc.codigoincidente || 'N/A'}</strong></span>
+        <div class="detalle-hero ${heroClass}">
+            <div class="detalle-hero-icon" style="background: ${iconBg}; color: ${iconColor};">
+                <i class="bi ${iconClass}"></i>
             </div>
-            <div class="detalle-item">
-                <span class="detalle-label"><i class="bi bi-tag"></i> Tipo</span>
-                <span class="detalle-valor"><span class="badge-tipo ${badgeClass}">${inc.nametipoincidente || 'N/A'}</span></span>
-            </div>
-            <div class="detalle-item">
-                <span class="detalle-label"><i class="bi bi-geo-alt"></i> Zona / Ubicación</span>
-                <span class="detalle-valor">${zona}</span>
-            </div>
-            <div class="detalle-item">
-                <span class="detalle-label"><i class="bi bi-calendar3"></i> Fecha</span>
-                <span class="detalle-valor">${fecha}</span>
-            </div>
-            <div class="detalle-item">
-                <span class="detalle-label"><i class="bi bi-clock"></i> Hora del Incidente</span>
-                <span class="detalle-valor">${hora}</span>
-            </div>
-            <div class="detalle-item full-width">
-                <span class="detalle-label"><i class="bi bi-card-text"></i> Descripción</span>
-                <p class="detalle-descripcion">${inc.descripcionincidente || 'Sin descripción detallada.'}</p>
+            <div class="detalle-hero-info">
+                <div class="detalle-hero-top">
+                    <span class="detalle-hero-tipo ${badgeClass}">${inc.nametipoincidente || 'Incidente'}</span>
+                    <span class="detalle-hero-codigo">${inc.codigoincidente || 'N/A'}</span>
+                </div>
+                <h4 class="detalle-hero-zona" title="${zona}">${zona}</h4>
             </div>
         </div>
+
+        <div class="detalle-cards-grid">
+            <div class="detalle-card-item">
+                <div class="detalle-card-icon"><i class="bi bi-calendar-event"></i></div>
+                <div class="detalle-card-body">
+                    <span class="dcb-label">Fecha y Hora</span>
+                    <span class="dcb-val">${fecha}</span>
+                    <span class="dcb-val" style="font-size: 0.78rem; opacity: 0.85;">${hora !== 'N/A' ? hora + ' hrs' : 'Sin hora'}</span>
+                </div>
+            </div>
+
+            <div class="detalle-card-item">
+                <div class="detalle-card-icon"><i class="bi bi-geo-alt-fill"></i></div>
+                <div class="detalle-card-body">
+                    <span class="dcb-label">Ubicación</span>
+                    <span class="dcb-val">${zona}</span>
+                    ${hasCoords ? `<span class="dcb-val" style="font-size: 0.74rem; opacity: 0.8; font-family: monospace;">${coordsStr}</span>` : ''}
+                </div>
+            </div>
+        </div>
+
+        <div class="detalle-desc-box">
+            <div class="ddb-header">
+                <i class="bi bi-card-text"></i> Descripción del Reporte
+            </div>
+            <p class="ddb-text">${inc.descripcionincidente || 'Sin observaciones o descripción detallada registrada para este reporte.'}</p>
+        </div>
+
+        <div class="detalle-modal-acciones">
+            ${hasCoords ? `
+            <button type="button" class="btn-detalle-centrar" id="btnCentrarIncidenteMapa">
+                <i class="bi bi-geo-alt-fill"></i> Ver en el mapa
+            </button>
+            ` : ''}
+            <button type="button" class="btn-detalle-cerrar" id="btnCerrarDetalleModal">
+                Cerrar
+            </button>
+        </div>
     `;
+
+    const btnCentrar = cuerpo.querySelector("#btnCentrarIncidenteMapa");
+    if (btnCentrar && hasCoords) {
+        btnCentrar.addEventListener("click", () => {
+            modal.style.display = "none";
+            cambiarVista("mapa");
+            setTimeout(() => {
+                if (map) {
+                    map.setView([Number(inc.lat), Number(inc.lng)], 16, { animate: true });
+                    if (capaIncidentes) {
+                        capaIncidentes.eachLayer(layer => {
+                            if (layer.getLatLng) {
+                                const lPos = layer.getLatLng();
+                                if (Math.abs(lPos.lat - Number(inc.lat)) < 0.0001 && Math.abs(lPos.lng - Number(inc.lng)) < 0.0001) {
+                                    layer.openPopup();
+                                }
+                            }
+                        });
+                    }
+                }
+            }, 300);
+        });
+    }
+
+    const btnCerrar = cuerpo.querySelector("#btnCerrarDetalleModal");
+    if (btnCerrar) {
+        btnCerrar.addEventListener("click", () => {
+            modal.style.display = "none";
+        });
+    }
 
     modal.style.display = "flex";
 }
@@ -821,7 +926,7 @@ function cargarResumen() {
                         '#a855f7',
                         '#ec4899'
                     ],
-                    borderColor: '#0d1117',
+                    borderColor: document.body.classList.contains("tema-claro") ? '#ffffff' : '#0d1117',
                     borderWidth: 3,
                     hoverOffset: 8
                 }]
@@ -833,7 +938,7 @@ function cargarResumen() {
                     legend: {
                         position: 'bottom',
                         labels: {
-                            color: '#c9d1d9',
+                            color: document.body.classList.contains("tema-claro") ? '#0f172a' : '#c9d1d9',
                             font: { size: 12, family: "'Outfit', sans-serif" },
                             padding: 14,
                             usePointStyle: true,
@@ -894,7 +999,7 @@ function cargarResumen() {
                 backgroundColor: 'rgba(56, 139, 253, 0.1)',
                 borderWidth: 3,
                 pointBackgroundColor: colorAcento,
-                pointBorderColor: '#0d1117',
+                pointBorderColor: document.body.classList.contains("tema-claro") ? '#ffffff' : '#0d1117',
                 pointBorderWidth: 2,
                 pointRadius: 5,
                 pointHoverRadius: 7,
@@ -925,17 +1030,17 @@ function cargarResumen() {
                         display: false
                     },
                     ticks: {
-                        color: '#8b949e',
+                        color: document.body.classList.contains("tema-claro") ? '#475569' : '#8b949e',
                         font: { size: 11 }
                     },
                     border: { display: false }
                 },
                 y: {
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.05)'
+                        color: document.body.classList.contains("tema-claro") ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.05)'
                     },
                     ticks: {
-                        color: '#8b949e',
+                        color: document.body.classList.contains("tema-claro") ? '#475569' : '#8b949e',
                         font: { size: 11 },
                         stepSize: 1
                     },
@@ -994,12 +1099,12 @@ function cargarResumen() {
             scales: {
                 x: {
                     grid: { display: false },
-                    ticks: { color: '#8b949e', font: { size: 10 } },
+                    ticks: { color: document.body.classList.contains("tema-claro") ? '#475569' : '#8b949e', font: { size: 10 } },
                     border: { display: false }
                 },
                 y: {
-                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                    ticks: { color: '#8b949e', font: { size: 11 }, stepSize: 1 },
+                    grid: { color: document.body.classList.contains("tema-claro") ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.05)' },
+                    ticks: { color: document.body.classList.contains("tema-claro") ? '#475569' : '#8b949e', font: { size: 11 }, stepSize: 1 },
                     beginAtZero: true,
                     border: { display: false }
                 }
@@ -1076,31 +1181,21 @@ function actualizarBadgeFiltros() {
     badgeFiltros.classList.toggle("visible", count > 0);
 }
 
-function abrirPanelFiltros(desdeNav = false) {
+function abrirPanelFiltros() {
     if (panelFiltros) {
+        panelFiltros.style.display = "flex";
         panelFiltros.classList.add("abierto");
         panelFiltros.setAttribute("aria-hidden", "false");
     }
-    if (panelMap) {
-        panelMap.classList.add("filtros-abiertos");
-    }
-    if (filtrosOverlay) {
-        filtrosOverlay.classList.add("visible");
-        filtrosOverlay.setAttribute("aria-hidden", "false");
-    }
-
-    if (esMobile() && desdeNav) {
-        setBottomNavActive("filtros");
-    }
 }
 
-function cerrarPanelFiltros(actualizarNav = true) {
-    /* El foco debe salir del panel antes de marcarlo como aria-hidden */
+function cerrarPanelFiltros() {
     if (panelFiltros && panelFiltros.contains(document.activeElement) && btnFiltros) {
         btnFiltros.focus();
     }
 
     if (panelFiltros) {
+        panelFiltros.style.display = "none";
         panelFiltros.classList.remove("abierto");
         panelFiltros.setAttribute("aria-hidden", "true");
     }
@@ -1108,23 +1203,52 @@ function cerrarPanelFiltros(actualizarNav = true) {
         panelMap.classList.remove("filtros-abiertos");
     }
     if (filtrosOverlay) {
+        filtrosOverlay.style.display = "none";
         filtrosOverlay.classList.remove("visible");
         filtrosOverlay.setAttribute("aria-hidden", "true");
     }
     if (btnFiltros) {
         btnFiltros.style.display = "";
     }
-
-    if (actualizarNav && esMobile() && vistaActual === "mapa") {
-        setBottomNavActive("mapa");
-    }
 }
 
-btnFiltros.addEventListener("click", abrirPanelFiltros);
-cerrarFiltros.addEventListener("click", () => cerrarPanelFiltros());
-filtrosOverlay.addEventListener("click", () => cerrarPanelFiltros());
+if (btnFiltros) {
+    btnFiltros.addEventListener("click", (e) => {
+        if (e) e.stopPropagation();
+        if (map) map.closePopup();
+        abrirPanelFiltros();
+    });
+}
+if (cerrarFiltros) {
+    cerrarFiltros.addEventListener("click", () => cerrarPanelFiltros());
+}
+if (filtrosOverlay) {
+    filtrosOverlay.addEventListener("click", () => cerrarPanelFiltros());
+}
+if (panelFiltros) {
+    panelFiltros.addEventListener("click", (e) => {
+        if (e.target === panelFiltros) {
+            cerrarPanelFiltros();
+        }
+    });
+}
 
 const map = L.map("map").setView([1.615, -75.606], 14);
+
+// Prevenir que los clics en elementos de interfaz flotantes sobre el mapa se propaguen a Leaflet
+[
+    document.querySelector(".map-actions-group"),
+    document.getElementById("panelFiltros"),
+    document.getElementById("filtrosOverlay"),
+    document.getElementById("modalFiltroTiempo"),
+    document.getElementById("overlayFiltroTiempo"),
+    document.querySelector(".btn-abrir-kpis")
+].forEach(el => {
+    if (el) {
+        L.DomEvent.disableClickPropagation(el);
+        L.DomEvent.disableScrollPropagation(el);
+    }
+});
 
 // Crear paneles personalizados para controlar el z-index (quién se dibuja sobre quién)
 map.createPane('poligonosPane');
@@ -1156,6 +1280,7 @@ const baseMaps = {
 
 // Control de capas ubicado debajo de los controles de zoom (topleft)
 L.control.layers(baseMaps, null, { position: 'topleft' }).addTo(map);
+
 
 // Cambio dinámico de clases según la vista activa para estilizar los botones de zoom y capas
 const mapContainerEl = document.getElementById("map");
@@ -1191,6 +1316,84 @@ let heatLayer = L.heatLayer([], {
 
 let capaBarrio = L.layerGroup().addTo(map);
 let capaVereda = L.layerGroup().addTo(map);
+
+/* ═════════════════════════════════════════════════════════════════════════
+   POPUP DE COORDENADAS GLOBAL — Muestra Lat/Lng en cualquier punto del mapa
+   ═════════════════════════════════════════════════════════════════════════ */
+let popupUbicacion = L.popup({
+    className: 'custom-popup-container',
+    minWidth: 290,
+    autoPanPaddingTopLeft: L.point(20, 90),
+    autoPanPaddingBottomRight: L.point(20, 20)
+});
+
+function mostrarCoordenadasMapa(latlng, infoDirecta = null) {
+    if (!latlng || typeof latlng.lat !== 'number' || typeof latlng.lng !== 'number') return;
+    const lat = latlng.lat;
+    const lng = latlng.lng;
+
+    let textoZonaInicial = "<em>Identificando zona territorial...</em>";
+    if (infoDirecta) {
+        if (infoDirecta.barrio) {
+            textoZonaInicial = `<b>Barrio:</b> ${infoDirecta.barrio}`;
+        } else if (infoDirecta.vereda) {
+            textoZonaInicial = `<b>Vereda:</b> ${infoDirecta.vereda}${infoDirecta.corregimiento ? ` (${infoDirecta.corregimiento})` : ''}`;
+        }
+    }
+
+    const renderPopupHtml = (textoZona) => `
+        <div class="popup-coord-card">
+            <div class="popup-coord-header">
+                <i class="bi bi-geo-alt-fill"></i> Coordenada seleccionada
+            </div>
+            <div class="popup-user-coords">
+                <div class="popup-coord-item">
+                    <span class="popup-coord-label">Latitud</span>
+                    <span class="popup-coord-val">${lat.toFixed(5)}</span>
+                </div>
+                <div class="popup-coord-item">
+                    <span class="popup-coord-label">Longitud</span>
+                    <span class="popup-coord-val">${lng.toFixed(5)}</span>
+                </div>
+            </div>
+            <div class="popup-coord-footer">
+                <i class="bi bi-compass"></i>
+                <div class="popup-coord-zona-text">${textoZona}</div>
+            </div>
+        </div>
+    `;
+
+    popupUbicacion
+        .setLatLng(latlng)
+        .setContent(renderPopupHtml(textoZonaInicial))
+        .openOn(map);
+
+    fetch(`/buscarBarrioPorCoordenada?lat=${lat}&lng=${lng}`)
+        .then(res => res.json())
+        .then(data => {
+            let texto = "";
+            if (data.barrio && data.vereda) {
+                texto = `<b>Barrio:</b> ${data.barrio}<br><b>Vereda:</b> ${data.vereda}`;
+            } else if (data.barrio) {
+                texto = `<b>Barrio:</b> ${data.barrio}`;
+            } else if (data.vereda) {
+                texto = `<b>Vereda:</b> ${data.vereda}`;
+            } else if (infoDirecta && (infoDirecta.barrio || infoDirecta.vereda)) {
+                texto = textoZonaInicial;
+            } else {
+                texto = "<em>Fuera del perímetro urbano/rural registrado</em>";
+            }
+            popupUbicacion.setContent(renderPopupHtml(texto));
+        })
+        .catch(err => {
+            console.error("Error obteniendo ubicación:", err);
+            if (infoDirecta && (infoDirecta.barrio || infoDirecta.vereda)) {
+                popupUbicacion.setContent(renderPopupHtml(textoZonaInicial));
+            } else {
+                popupUbicacion.setContent(renderPopupHtml("<span style='color:#ef4444;'>No se pudo obtener información de zona</span>"));
+            }
+        });
+}
 
 let incidentesData = [];
 let modoCalor = false;
@@ -1276,106 +1479,117 @@ function renderizarIncidentes() {
                 fillOpacity: 0.7
             }).addTo(capaIncidentes);
 
-            marker.on("mouseover", function () {
-                if (incidente.codigoincidente) {
-                    marker.bindTooltip(incidente.codigoincidente, {
-                        permanent: false,
-                        direction: "top",
-                        offset: [0, -10]
-                    }).openTooltip();
-                }
-            });
-
-            marker.on("mouseout", function () {
-                marker.closeTooltip();
-            });
-
-            marker.on("click", function () {
-                const hora = incidente.horaincidente ? incidente.horaincidente.slice(0, 5) : "N/A";
-                const fechaObj = new Date(incidente.fechaincidente);
-                const fecha = isNaN(fechaObj) ? "N/A" : fechaObj.toLocaleDateString("es-CO", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric"
+            if (incidente.codigoincidente) {
+                marker.bindTooltip(incidente.codigoincidente, {
+                    permanent: false,
+                    direction: "top",
+                    offset: [0, -10]
                 });
-                
-                let iconClass = "bi-exclamation-circle";
-                let tipoClase = "tipo-default";
-                let severidad = "Baja";
-                let severidadClase = "sev-baja";
+            }
 
-                if (incidente.idtipoincidente === 1) { 
-                    iconClass = "bi-shield-exclamation"; tipoClase = "tipo-robo"; 
-                    severidad = "Alta"; severidadClase = "sev-alta";
-                }
-                if (incidente.idtipoincidente === 2) { 
-                    iconClass = "bi-exclamation-triangle"; tipoClase = "tipo-agresion"; 
-                    severidad = "Alta"; severidadClase = "sev-alta";
-                }
-                if (incidente.idtipoincidente === 3) { 
-                    iconClass = "bi-lightning"; tipoClase = "tipo-pique"; 
-                    severidad = "Media"; severidadClase = "sev-media";
-                }
-                if (incidente.idtipoincidente === 4) { 
-                    iconClass = "bi-car-front"; tipoClase = "tipo-accidente"; 
-                    severidad = "Crítica"; severidadClase = "sev-critica";
-                }
+            const hora = incidente.horaincidente ? incidente.horaincidente.slice(0, 5) : "N/A";
+            const fechaObj = new Date(incidente.fechaincidente);
+            const fecha = isNaN(fechaObj) ? "N/A" : fechaObj.toLocaleDateString("es-CO", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric"
+            });
+            
+            let iconClass = "bi-shield-exclamation";
+            let tipoClase = "tipo-default";
+            let severidad = "Baja";
+            let severidadClase = "sev-baja";
 
-                // Lógica de Estado simulado
-                let estado = "Nuevo";
-                let estadoClase = "est-nuevo";
-                if (!isNaN(fechaObj)) {
-                    const dias = Math.floor((new Date() - fechaObj) / (1000 * 60 * 60 * 24));
-                    if (dias > 30) {
-                        estado = "Cerrado";
-                        estadoClase = "est-cerrado";
-                    } else if (dias > 3) {
-                        estado = "Investigación";
-                        estadoClase = "est-investigacion";
-                    }
+            if (incidente.idtipoincidente === 1) { 
+                iconClass = "bi-shield-exclamation"; tipoClase = "tipo-robo"; 
+                severidad = "Alta"; severidadClase = "sev-alta";
+            }
+            if (incidente.idtipoincidente === 2) { 
+                iconClass = "bi-exclamation-triangle"; tipoClase = "tipo-agresion"; 
+                severidad = "Alta"; severidadClase = "sev-alta";
+            }
+            if (incidente.idtipoincidente === 3) { 
+                iconClass = "bi-lightning"; tipoClase = "tipo-pique"; 
+                severidad = "Media"; severidadClase = "sev-media";
+            }
+            if (incidente.idtipoincidente === 4) { 
+                iconClass = "bi-car-front"; tipoClase = "tipo-accidente"; 
+                severidad = "Crítica"; severidadClase = "sev-critica";
+            }
+
+            // Lógica de Estado simulado
+            let estado = "Nuevo";
+            let estadoClase = "est-nuevo";
+            if (!isNaN(fechaObj)) {
+                const dias = Math.floor((new Date() - fechaObj) / (1000 * 60 * 60 * 24));
+                if (dias > 30) {
+                    estado = "Cerrado";
+                    estadoClase = "est-cerrado";
+                } else if (dias > 3) {
+                    estado = "Investigación";
+                    estadoClase = "est-investigacion";
                 }
+            }
 
-                const contenido = `
-                    <div class="popup-card">
-                        <div class="popup-card-header">
-                            <span class="popup-badge ${tipoClase}">${incidente.nametipoincidente || 'Incidente'}</span>
-                            <span class="popup-code">${incidente.codigoincidente || 'N/A'}</span>
-                        </div>
-                        
-                        <div class="popup-location-box">
-                            <i class="bi bi-geo-alt-fill popup-loc-icon"></i>
-                            <div class="popup-loc-text">
-                                <span class="popup-loc-label">Zona / Barrio</span>
-                                <strong class="popup-loc-name">${incidente.namebarrio || incidente.nombrevereda || 'Sin zona asignada'}</strong>
-                            </div>
-                        </div>
+            const latNum = Number(incidente.lat);
+            const lngNum = Number(incidente.lng);
+            const latStr = !isNaN(latNum) ? latNum.toFixed(5) : incidente.lat;
+            const lngStr = !isNaN(lngNum) ? lngNum.toFixed(5) : incidente.lng;
 
-                        <div class="popup-grid-2x2">
-                            <div class="popup-grid-item">
-                                <span class="pg-label"><i class="bi bi-calendar3"></i> Fecha</span>
-                                <span class="pg-val">${fecha}</span>
-                            </div>
-                            <div class="popup-grid-item">
-                                <span class="pg-label"><i class="bi bi-clock"></i> Hora</span>
-                                <span class="pg-val">${hora}</span>
-                            </div>
-                            <div class="popup-grid-item">
-                                <span class="pg-label">Estado</span>
-                                <span class="popup-status-tag ${estadoClase}">${estado}</span>
-                            </div>
-                            <div class="popup-grid-item">
-                                <span class="pg-label">Severidad</span>
-                                <span class="popup-sev-tag ${severidadClase}">${severidad}</span>
-                            </div>
+            const contenido = `
+                <div class="popup-card">
+                    <div class="popup-card-header">
+                        <span class="popup-badge ${tipoClase}" title="${incidente.nametipoincidente || 'Incidente'}">${incidente.nametipoincidente || 'Incidente'}</span>
+                        <span class="popup-code" title="${incidente.codigoincidente || 'N/A'}">${incidente.codigoincidente || 'N/A'}</span>
+                    </div>
+                    
+                    <div class="popup-location-box">
+                        <i class="bi bi-geo-alt-fill popup-loc-icon"></i>
+                        <div class="popup-loc-text">
+                            <span class="popup-loc-label">Zona / Barrio</span>
+                            <strong class="popup-loc-name">${incidente.namebarrio || incidente.nombrevereda || 'Sin zona asignada'}</strong>
                         </div>
                     </div>
-                `;
-                marker.bindPopup(contenido, {
-                    className: 'custom-popup-container',
-                    minWidth: 260,
-                    autoPanPaddingTopLeft: L.point(20, 90),
-                    autoPanPaddingBottomRight: L.point(20, 20)
-                }).openPopup();
+
+                    <div class="popup-coords-box">
+                        <span><strong>Lat:</strong> ${latStr}</span>
+                        <span><strong>Lng:</strong> ${lngStr}</span>
+                    </div>
+
+                    <div class="popup-grid-2x2">
+                        <div class="popup-grid-item">
+                            <span class="pg-label"><i class="bi bi-calendar3"></i> Fecha</span>
+                            <span class="pg-val">${fecha}</span>
+                        </div>
+                        <div class="popup-grid-item">
+                            <span class="pg-label"><i class="bi bi-clock"></i> Hora</span>
+                            <span class="pg-val">${hora}</span>
+                        </div>
+                        <div class="popup-grid-item">
+                            <span class="pg-label">Estado</span>
+                            <span class="popup-status-tag ${estadoClase}">${estado}</span>
+                        </div>
+                        <div class="popup-grid-item">
+                            <span class="pg-label">Severidad</span>
+                            <span class="popup-sev-tag ${severidadClase}">${severidad}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Vincular el popup de inmediato para que se abra al PRIMER clic sin requerir doble clic
+            marker.bindPopup(contenido, {
+                className: 'custom-popup-container',
+                minWidth: 290,
+                autoPanPaddingTopLeft: L.point(20, 90),
+                autoPanPaddingBottomRight: L.point(20, 20)
+            });
+
+            marker.on("click", function (e) {
+                if (e && e.originalEvent) {
+                    L.DomEvent.stopPropagation(e);
+                }
+                marker.openPopup();
             });
         });
     }
@@ -1413,7 +1627,9 @@ function cargarIncidentes() {
 
 const btnToggleHeatmap = document.getElementById("btnToggleHeatmap");
 if(btnToggleHeatmap) {
-    btnToggleHeatmap.addEventListener("click", () => {
+    btnToggleHeatmap.addEventListener("click", (e) => {
+        if (e) e.stopPropagation();
+        if (map) map.closePopup();
         modoCalor = !modoCalor;
         if(modoCalor) {
             btnToggleHeatmap.classList.add("activo");
@@ -1432,7 +1648,9 @@ let miUbicacionCircle = null;
 
 const btnMiUbicacion = document.getElementById("btnMiUbicacion");
 if (btnMiUbicacion) {
-    btnMiUbicacion.addEventListener("click", () => {
+    btnMiUbicacion.addEventListener("click", (e) => {
+        if (e) e.stopPropagation();
+        if (map) map.closePopup();
         if (!navigator.geolocation) {
             alert("Tu navegador no soporta geolocalización en tiempo real.");
             return;
@@ -1691,7 +1909,16 @@ function cargarBarrio() {
                     fillOpacity: 0.4
                 },
                 onEachFeature(feature, layer) {
-                    layer.bindPopup(feature.properties.namebarrio);
+                    layer.bindTooltip(feature.properties.namebarrio, {
+                        sticky: true,
+                        className: 'tooltip-barrio'
+                    });
+                    layer.on("click", function (e) {
+                        if (e && e.originalEvent) {
+                            L.DomEvent.stopPropagation(e);
+                        }
+                        mostrarCoordenadasMapa(e.latlng, { barrio: feature.properties.namebarrio });
+                    });
                 }
             });
             data.forEach(barrio => {
@@ -1730,8 +1957,20 @@ function cargarVeredas() {
                 },
                 onEachFeature(feature, layer) {
                     const desc = "Vereda: " + feature.properties.nombre +
-                        "<br>Corregimiento: " + feature.properties.corregimiento;
-                    layer.bindPopup(desc);
+                        (feature.properties.corregimiento ? ("<br>Corregimiento: " + feature.properties.corregimiento) : "");
+                    layer.bindTooltip(desc, {
+                        sticky: true,
+                        className: 'tooltip-vereda'
+                    });
+                    layer.on("click", function (e) {
+                        if (e && e.originalEvent) {
+                            L.DomEvent.stopPropagation(e);
+                        }
+                        mostrarCoordenadasMapa(e.latlng, {
+                            vereda: feature.properties.nombre,
+                            corregimiento: feature.properties.corregimiento
+                        });
+                    });
                 }
             });
             data.forEach(vereda => {
@@ -1756,7 +1995,9 @@ function resetMapa() {
     map.setView([1.615, -75.606], 14);
 }
 
-document.querySelector(".btnActualizar").addEventListener("click", function () {
+document.querySelector(".btnActualizar").addEventListener("click", function (e) {
+    if (e) e.stopPropagation();
+    if (map) map.closePopup();
     actualizarBadgeFiltros();
     cargarBarrio();
     cargarIncidentes();
@@ -1764,7 +2005,9 @@ document.querySelector(".btnActualizar").addEventListener("click", function () {
     cerrarPanelFiltros();
 });
 
-document.querySelector(".restablecer").addEventListener("click", function () {
+document.querySelector(".restablecer").addEventListener("click", function (e) {
+    if (e) e.stopPropagation();
+    if (map) map.closePopup();
     capaIncidentes.clearLayers();
     heatLayer.setLatLngs([]);
     capaBarrio.clearLayers();
@@ -1940,9 +2183,9 @@ async function cargarIncidentesBarra() {
             },
             scales: {
                 x: {
-                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                    grid: { color: document.body.classList.contains("tema-claro") ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.05)' },
                     ticks: {
-                        color: '#8b949e',
+                        color: document.body.classList.contains("tema-claro") ? '#475569' : '#8b949e',
                         font: { size: 11, family: "'Outfit', sans-serif" },
                         stepSize: 1
                     },
@@ -1952,7 +2195,7 @@ async function cargarIncidentesBarra() {
                 y: {
                     grid: { display: false },
                     ticks: {
-                        color: '#ffffff',
+                        color: document.body.classList.contains("tema-claro") ? '#0f172a' : '#ffffff',
                         font: { size: 12, family: "'Outfit', sans-serif", weight: '600' }
                     },
                     border: { display: false }
@@ -1972,46 +2215,31 @@ window.addEventListener("resize", () => {
 /* ══════════════════════════════════════
    CLICK EN EL MAPA — Obtener Coordenadas
 ══════════════════════════════════════ */
-let popupUbicacion = L.popup();
-
 map.on("click", function (e) {
-    const lat = e.latlng.lat;
-    const lng = e.latlng.lng;
+    // Si el clic ocurrió sobre algún botón, control, dock de filtros, modal o panel, NO abrir popup de coordenadas
+    const target = e.originalEvent && e.originalEvent.target;
+    if (target) {
+        if (
+            target.closest('.map-actions-group') ||
+            target.closest('#panelFiltros') ||
+            target.closest('#filtrosOverlay') ||
+            target.closest('.modal-tiempo') ||
+            target.closest('#modalFiltroTiempo') ||
+            target.closest('#overlayFiltroTiempo') ||
+            target.closest('.leaflet-control') ||
+            target.closest('.btn-abrir-kpis') ||
+            target.closest('button') ||
+            target.closest('input') ||
+            target.closest('select') ||
+            target.closest('.fab') ||
+            target.closest('.leaflet-marker-icon') ||
+            target.closest('.leaflet-popup')
+        ) {
+            return;
+        }
+    }
 
-    popupUbicacion
-        .setLatLng(e.latlng)
-        .setContent("<div style='text-align:center;'>Cargando ubicación...</div>")
-        .openOn(map);
-
-    fetch(`/buscarBarrioPorCoordenada?lat=${lat}&lng=${lng}`)
-        .then(res => res.json())
-        .then(data => {
-            let texto = "";
-            if (data.barrio && data.vereda) {
-                texto = `<b>Barrio:</b> ${data.barrio}<br><b>Vereda:</b> ${data.vereda}`;
-            } else if (data.barrio) {
-                texto = `<b>Barrio:</b> ${data.barrio}`;
-            } else if (data.vereda) {
-                texto = `<b>Vereda:</b> ${data.vereda}`;
-            } else {
-                texto = "Sin información de zona";
-            }
-
-            const contenido = `
-                <div style="text-align: center; font-family: sans-serif; min-width: 150px;">
-                    <div style="font-size: 13px; color: #555; margin-bottom: 5px;">📍 Coordenada seleccionada</div>
-                    <b>Lat:</b> ${lat.toFixed(5)}<br>
-                    <b>Lng:</b> ${lng.toFixed(5)}
-                    <hr style="margin: 8px 0; border: 0; border-top: 1px solid #ddd;">
-                    ${texto}
-                </div>
-            `;
-            popupUbicacion.setContent(contenido);
-        })
-        .catch(err => {
-            console.error("Error obteniendo ubicación:", err);
-            popupUbicacion.setContent("<div style='text-align:center; color:red;'>Error al obtener ubicación</div>");
-        });
+    mostrarCoordenadasMapa(e.latlng);
 });
 
 cambiarVista("mapa");
@@ -2080,7 +2308,9 @@ if (anioFiltroModal) {
 }
 
 if (btnAbrirFiltroTiempo) {
-    btnAbrirFiltroTiempo.addEventListener("click", () => {
+    btnAbrirFiltroTiempo.addEventListener("click", (e) => {
+        if (e) e.stopPropagation();
+        if (map) map.closePopup();
         modalFiltroTiempo.style.display = "flex";
     });
 }
@@ -2392,7 +2622,8 @@ document.addEventListener("DOMContentLoaded", () => {
         btnCerrarKpis.addEventListener("click", (e) => {
             e.stopPropagation();
             ribbonKpis.classList.add("kpi-oculto");
-            btnAbrirKpis.style.display = "inline-flex";
+            btnAbrirKpis.classList.add("visible");
+            btnAbrirKpis.style.setProperty("display", "inline-flex", "important");
             setTimeout(() => {
                 if (typeof map !== "undefined" && map) {
                     map.invalidateSize();
@@ -2402,7 +2633,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         btnAbrirKpis.addEventListener("click", (e) => {
             e.stopPropagation();
-            btnAbrirKpis.style.display = "none";
+            btnAbrirKpis.classList.remove("visible");
+            btnAbrirKpis.style.setProperty("display", "none", "important");
             ribbonKpis.classList.remove("kpi-oculto");
             setTimeout(() => {
                 if (typeof map !== "undefined" && map) {

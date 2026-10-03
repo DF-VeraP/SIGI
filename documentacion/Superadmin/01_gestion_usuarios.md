@@ -55,4 +55,4 @@
 
 ## 4. Diagrama de Arquitectura y Flujo
 El diagrama de este módulo se encuentra en:
-👉 [`Superadmin/diagramas/01_gestion_usuarios.drawio`](diagramas/01_gestion_usuarios.drawio)
+- [`Superadmin/diagramas/01_gestion_usuarios.drawio`](diagramas/01_gestion_usuarios.drawio)

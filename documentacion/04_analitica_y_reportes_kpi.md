@@ -1,66 +1,77 @@
-# 📊 Módulo 04: Analítica, Indicadores KPI & Importación Masiva CSV
+# Modulo 04: Analitica, Indicadores KPI e Importacion Masiva CSV
 
-[⬅️ Volver al Índice General de Documentación](./README.md)
-
----
-
-## 📌 1. Descripción del Módulo
-
-El Módulo de Analítica transforma la información espacial y temporal de la base de datos en información estratégica para la toma de decisiones. Ofrece un panel de control con **Indicadores Clave de Rendimiento (KPIs)**, rankings de **Top 10 Zonas Críticas** y un motor de **Importación Masiva de CSV** con capacidad de reversión en lote (*Undo*).
+[Volver al Indice General de Documentacion](./README.md)
 
 ---
 
-## 📈 2. Tarjetas KPI Contextuales (Variación Mensual)
+## 1. Descripcion del Modulo
 
-El dashboard cuenta con indicadores KPI de alto impacto visual diseñados para ofrecer contexto inmediato:
-
-1. **Total de Incidentes (Periodo Actual):** Conteo dinámico según los filtros aplicados.
-2. **Variación Mensual Contextual (vs. Mes Anterior):** 
-   * Compara el volumen de incidentes del mes en curso contra el mes inmediatamente anterior.
-   * Muestra la flecha de dirección e indicador de cambio procentual:
-     * 📈 **↑ +12.5% vs. mes anterior** (Si incrementaron los casos - Alerta).
-     * 📉 **↓ -8.3% vs. mes anterior** (Si se redujeron los casos - Positivo).
-3. **Tasa de Atención y Verificación:** Porcentaje de incidentes atendidos exitosamente.
+El Modulo de Analitica transforma la informacion espacial y temporal persistida en la base de datos en informacion estrategica para la toma de decisiones institucionales. Provee tableros de control con **Indicadores Clave de Desempeno (KPIs)**, distribucion por tipologias, rankings de **Top Zonas Criticas** y un motor transaccional de **Importacion Masiva CSV** con capacidad de reversión atómica de lotes (*Undo*).
 
 ---
 
-## 🏆 3. Ranking de Top 10 Zonas Críticas
+## 2. Tarjetas KPI y Metricas de Contexto
 
-Permite identificar rápidamente los 10 barrios o veredas con mayor concentración de criminalidad o emergencias:
+El panel analitico calcula dinamicamente las siguientes metricas operativas y ciudadanas:
+
+1. **Total de Incidentes Registrados:** Conteo consolidado segun filtros espacio-temporales aplicados.
+2. **Variacion Mensual Comparativa:**
+   - Compara el volumen de incidentes del mes seleccionado frente al mes inmediatamente anterior.
+   - Genera el diferencial porcentual para detectar patrones de incremento o reduccion:
+     - Formula: `((Incidentes_Mes_Actual - Incidentes_Mes_Anterior) / Incidentes_Mes_Anterior) * 100`
+3. **Distribucion por Gravedad y Tipologia:** Segmentacion por niveles de afectacion comunitaria y modalidades delictivas o accidentales.
+4. **Ultima Fecha de Actualizacion:** Marca temporal del ultimo evento radicado o validado en la plataforma.
+
+---
+
+## 3. Zonas Criticas y Distribucion Espacial
+
+Permite identificar los sectores urbanos (barrios) y rurales (veredas) con mayor frecuencia de eventos para focalizar recursos de vigilancia y prevencion:
 
 ```mermaid
 graph LR
-    DB[(PostgreSQL)] -->|GROUP BY idbarrio/idvereda| SQL[Consulta SQL Aggregation]
-    SQL --> API[GET /api/estadisticas/top-barrios]
-    API --> UI[Gráfico de Barras Horizontal Chart.js]
-    UI -->|Clic en Barra| MAP[Filtra el Mapa al Barrio Seleccionado]
+    DB[(PostgreSQL PostGIS)] -->|GROUP BY idbarrio/idvereda| SQL[Consulta de Agregacion SQL]
+    SQL --> API[GET /top-zonas]
+    API --> UI[Grafico de Barras Chart.js]
+    UI -->|Interaccion con Barra| MAP[Leaflet centra el mapa en la zona seleccionada]
 ```
 
 ---
 
-## 📥 4. Motor de Importación Masiva CSV & Función Deshacer (Undo)
+## 4. Motor de Importacion Masiva CSV y Reversion (Undo)
 
-Para procesar historiales masivos o datos provenientes de la Policía Nacional o Gestión del Riesgo, el sistema permite cargar archivos CSV masivos con trazabilidad de lotes (*Batch Import*).
+Para integrar historiales consolidados o fuentes externas (Policia Nacional, Defensa Civil, Bomberos), el sistema provee ingesta masiva en streaming:
 
-### Proceso de Importación Masiva:
-1. El usuario sube un archivo CSV con las columnas: `tipo_incidente, fecha, hora, latitud, longitud, direccion, descripcion`.
-2. El servidor asigna un identificador de lote único: `id_lote_importacion = UUID()`.
-3. Procesa el lote en una sola transacción SQL para garantizar integridad.
+### Estructura Requerida del Archivo CSV:
+* Encabezados obligatorios: `tipo, fecha, hora, latitud, longitud, descripcion`
+* Campos opcionales: `direccion, gravedad, modalidad, victimas, vehiculos, perdidas`
 
-### Mecanismo de Reversión en Lote (Undo Import):
-Si el usuario cargó un archivo incorrecto por error:
+### Protocolo Transaccional por Lotes:
+1. Al iniciar la carga via `POST /importar-incidentes`, se calcula un identificador secuencial de lote (`id_lote`).
+2. Las coordenadas geograficas se parsean y se validan en el rango de Florencia (WGS84).
+3. PostGIS autocalcula la pertenencia a barrios y veredas mediante `ST_Contains`.
+4. Los incidentes se insertan con `origen = 'masivo'` y `id_lote`.
+5. Se consigna el resultado en `logs_actividad` detallando exitos y descartes.
+
+### Mecanismo de Reversion Atomica (Deshacer Importacion):
+Si un analista detecta inconsistencias en el fichero subido:
 ```sql
--- Eliminar todo el lote importado con un solo clic
-DELETE FROM incidente WHERE id_lote_importacion = $1;
+-- Elimina los incidentes pertenecientes exclusivamente al ultimo lote masivo
+DELETE FROM public.incidente 
+WHERE origen = 'masivo' AND id_lote = $1;
 ```
 
 ---
 
-## 📡 5. Endpoints de la API Analítica
+## 5. Endpoints de la API Analitica e Importacion
 
-| Método | Ruta | Descripción |
-| :--- | :--- | :--- |
-| `GET` | `/api/estadisticas/kpis` | Retorna los totales del periodo y la variación comparativa mensual (%) |
-| `GET` | `/api/estadisticas/top-barrios` | Retorna el listado ordenado de los 10 barrios con más incidentes |
-| `POST` | `/api/incidentes/importar-csv` | Carga un archivo CSV y genera el identificador de lote |
-| `DELETE` | `/api/incidentes/deshacer-importacion/:idLote` | Revierte y elimina todos los registros creados por ese lote |
+| Metodo | Ruta | Descripcion | Perfiles Autorizados |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/resumen` | Retorna totales consolidados de incidentes, tipos y zonas | Publico (`invitado`, `reportero`, `admin`, `superadmin`) |
+| `GET` | `/conteoIncidente` | Total de incidentes aprobados registrados en el sistema | Publico |
+| `GET` | `/conteoPorTipo` | Agrupacion de incidentes clasificados por tipo (`nametipoincidente`) | Publico |
+| `GET` | `/top-zonas` | Ranking de las 10 zonas urbanas y rurales con mayor concentracion de eventos | Publico |
+| `GET` | `/top-incidentes` | Ranking de las tipologias de incidentes con mayor recurrencia | Publico |
+| `GET` | `/ultima-actualizacion` | Retorna la fecha y hora del reporte mas reciente procesado | Publico |
+| `POST` | `/importar-incidentes` | Carga de archivo CSV (`multipart/form-data`) con ingesta por lote | `admin`, `superadmin` |
+| `DELETE` | `/importados/ultimo` | Revierte la totalidad de registros del ultimo lote importado | `admin`, `superadmin` |

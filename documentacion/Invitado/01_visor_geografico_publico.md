@@ -3,7 +3,7 @@
 ## 1. Identificación y Propósito
 - **Rol:** Invitado (Ciudadanía en general / Usuario no autenticado)
 - **Ruta Frontend:** `/dashboard` o `/`
-- **Archivos Clave:** 
+- **Archivos Clave:**
   - `public/dashboard/index.html`
   - `public/dashboard/dashboard.js`
   - `public/dashboard/dashboard.css`
@@ -47,4 +47,4 @@
 
 ## 4. Diagrama de Arquitectura y Flujo
 El diagrama de este módulo se encuentra en:
-👉 [`Invitado/diagramas/01_visor_geografico_publico.drawio`](diagramas/01_visor_geografico_publico.drawio)
+- [`Invitado/diagramas/01_visor_geografico_publico.drawio`](diagramas/01_visor_geografico_publico.drawio)

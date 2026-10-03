@@ -2,7 +2,7 @@
 
 Sistema web para el registro, geolocalización y análisis estadístico de incidentes de seguridad ciudadana. Permite a los usuarios reportar eventos, visualizarlos en un mapa interactivo y consultar estadísticas por zona, tipo y período.
 
-## 🏗️ Arquitectura
+ Arquitectura
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -37,7 +37,7 @@ Sistema web para el registro, geolocalización y análisis estadístico de incid
 └──────────────────────────────────────────────────────┘
 ```
 
-## 📋 Requisitos previos
+ Requisitos previos
 
 | Herramienta | Versión mínima |
 |-------------|---------------|
@@ -46,7 +46,7 @@ Sistema web para el registro, geolocalización y análisis estadístico de incid
 | PostGIS     | 3.4           |
 | Docker *(opcional)* | 20+   |
 
-## ⚙️ Variables de entorno
+ Variables de entorno
 
 Copie `.env.example` a `.env` y complete los valores:
 
@@ -60,7 +60,7 @@ PORT=             # Puerto del servidor Express (por defecto: 3000)
 SESSION_SECRET=   # Secreto para firmar cookies de sesión
 ```
 
-## 🚀 Instalación y ejecución
+ Instalación y ejecución
 
 ### Desarrollo local
 
@@ -95,7 +95,7 @@ docker compose up -d
 docker compose logs -f app
 ```
 
-## 📁 Estructura del proyecto
+ Estructura del proyecto
 
 ```
 SIGI/
@@ -143,7 +143,7 @@ SIGI/
 └── server.js                  # Punto de entrada de la aplicación
 ```
 
-## 🔌 API Endpoints
+ API Endpoints
 
 ### Autenticación
 
@@ -197,7 +197,7 @@ SIGI/
 | `GET` | `/incidentesTabla` | Listado completo para tabla admin |
 | `GET` | `/incidentesFiltroAdmin` | Listado filtrado por tipo/fecha |
 
-## 🧪 Pruebas
+ Pruebas
 
 ```bash
 # Ejecutar todas las pruebas
@@ -207,7 +207,7 @@ npm test
 npm test -- --coverage
 ```
 
-## 🐳 Despliegue con Docker
+ Despliegue con Docker
 
 ```bash
 # Construir y levantar
@@ -220,12 +220,12 @@ docker compose up -d --build
 docker compose ps
 ```
 
-## 🔒 Seguridad
+ Seguridad
 
 - Las contraseñas se almacenan hasheadas con **bcrypt** (salt rounds: 10).
 - Las sesiones se manejan con `express-session` y cookie firmada.
 - Las variables sensibles se gestionan mediante archivo `.env` (no versionado).
 
-## 📄 Licencia
+ Licencia
 
 ISC

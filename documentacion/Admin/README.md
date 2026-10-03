@@ -4,7 +4,7 @@ El rol **Admin** comprende a los analistas de seguridad, operadores del centro d
 
 ---
 
-## 🏛️ Flujo Operativo y Dependencias
+## Flujo Operativo y Dependencias
 
 ```mermaid
 graph TD
@@ -19,7 +19,7 @@ graph TD
 
 ---
 
-## 📚 Índice de Módulos y Diagramas
+## Índice de Módulos y Diagramas
 
 | Módulo | Descripción Técnica | Diagrama Asociado |
 | :--- | :--- | :--- |
@@ -30,6 +30,6 @@ graph TD
 
 ---
 
-## 🔐 Matriz de Permisos RBAC
+## Matriz de Permisos RBAC
 - **Autorizado:** `/admin`, `/api/incidentes/pendientes`, `/api/incidentes/:id/tomar`, `/api/incidentes/:id/liberar`, `/api/incidentes/:id/resolver`, `/importar-incidentes`, `/importados/ultimo`.
 - **Restringido:** No tiene acceso al Módulo de Usuarios (`/api/usuarios`) ni a los Logs de Auditoría (`/api/usuarios/auditoria/logs`), los cuales están reservados exclusivamente para el **Superadmin**.

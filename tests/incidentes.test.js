@@ -221,7 +221,7 @@ describe('Incidentes Controller', () => {
 
     it('debería eliminar un incidente correctamente', async () => {
       pool.query
-        .mockResolvedValueOnce({ rows: [{ idusuario: 1, id_usuario_creador: 1 }] }) // check ownership
+        .mockResolvedValueOnce({ rows: [{ idusuario: 1, id_usuario_creador: 1, id_estado: 1 }] }) // check ownership
         .mockResolvedValueOnce({ rowCount: 1 }) // DELETE query
         .mockResolvedValueOnce({ rows: [] }); // log auditoria
 
@@ -231,7 +231,7 @@ describe('Incidentes Controller', () => {
     });
 
     it('debería retornar 403 si el incidente no pertenece al usuario', async () => {
-      pool.query.mockResolvedValueOnce({ rows: [{ idusuario: 99, id_usuario_creador: 99 }] });
+      pool.query.mockResolvedValueOnce({ rows: [{ idusuario: 99, id_usuario_creador: 99, id_estado: 1 }] });
 
       const res = await request(app).delete('/incidente/5');
 
@@ -240,7 +240,7 @@ describe('Incidentes Controller', () => {
 
     it('debería retornar 500 si la eliminación falla', async () => {
       pool.query
-        .mockResolvedValueOnce({ rows: [{ idusuario: 1, id_usuario_creador: 1 }] })
+        .mockResolvedValueOnce({ rows: [{ idusuario: 1, id_usuario_creador: 1, id_estado: 1 }] })
         .mockRejectedValueOnce(new Error('DB Error'));
 
       const res = await request(app).delete('/incidente/999');

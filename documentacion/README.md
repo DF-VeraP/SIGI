@@ -4,7 +4,7 @@ Bienvenido a la documentación oficial del sistema **SIGI**, estructurada por pe
 
 ---
 
-## 🧭 Matriz de Navegación por Rol
+## Matriz de Navegación por Rol
 
 ```
 documentacion/
@@ -38,27 +38,27 @@ documentacion/
 
 ---
 
-## 👥 Matriz de Roles y Permisos (RBAC)
+## Matriz de Roles y Permisos (RBAC)
 
 | Módulo / Funcionalidad | Invitado | Reportero | Admin | Superadmin |
 | :--- | :---: | :---: | :---: | :---: |
-| **Visor Geográfico Público** | ✅ Lectura | ✅ Lectura | ✅ Lectura | ✅ Lectura |
-| **Tableros Analíticos y KPIs** | ✅ Lectura | ✅ Lectura | ✅ Lectura | ✅ Lectura |
-| **Motor de Filtros Espacio-Temporal** | ✅ Activo | ✅ Activo | ✅ Activo | ✅ Activo |
-| **Autenticación y Recuperación** | ✅ Autoservicio | ✅ Autoservicio | ✅ Autoservicio | ✅ Autoservicio |
-| **Captura en Terreno (GPS + Cloudinary)** | ❌ | ✅ Completo | ✅ Completo | ✅ Completo |
-| **Mis Reportes y Seguimiento** | ❌ | ✅ Propios | ✅ Propios | ✅ Propios |
-| **Mesa de Validación (Cola Compartida / Lock)** | ❌ | ❌ | ✅ Completo | ✅ Completo |
-| **Registro y Edición Administrativa** | ❌ | ❌ | ✅ Completo | ✅ Completo |
-| **Importación Masiva y Rollback** | ❌ | ❌ | ✅ Completo | ✅ Completo |
-| **Explorador Tabular y Filtros Admin** | ❌ | ❌ | ✅ Completo | ✅ Completo |
-| **Gestión de Usuarios (CRUD + Correos)** | ❌ | ❌ | ❌ | ✅ Exclusivo |
-| **Bitácora de Auditoría y Trazabilidad** | ❌ | ❌ | ❌ | ✅ Exclusivo |
-| **Gobernanza y Políticas Globales** | ❌ | ❌ | ❌ | ✅ Exclusivo |
+| **Visor Geográfico Público** | [Si] Lectura | [Si] Lectura | [Si] Lectura | [Si] Lectura |
+| **Tableros Analíticos y KPIs** | [Si] Lectura | [Si] Lectura | [Si] Lectura | [Si] Lectura |
+| **Motor de Filtros Espacio-Temporal** | [Si] Activo | [Si] Activo | [Si] Activo | [Si] Activo |
+| **Autenticación y Recuperación** | [Si] Autoservicio | [Si] Autoservicio | [Si] Autoservicio | [Si] Autoservicio |
+| **Captura en Terreno (GPS + Cloudinary)** | [No] | [Si] Completo | [Si] Completo | [Si] Completo |
+| **Mis Reportes y Seguimiento** | [No] | [Si] Propios | [Si] Propios | [Si] Propios |
+| **Mesa de Validación (Cola Compartida / Lock)** | [No] | [No] | [Si] Completo | [Si] Completo |
+| **Registro y Edición Administrativa** | [No] | [No] | [Si] Completo | [Si] Completo |
+| **Importación Masiva y Rollback** | [No] | [No] | [Si] Completo | [Si] Completo |
+| **Explorador Tabular y Filtros Admin** | [No] | [No] | [Si] Completo | [Si] Completo |
+| **Gestión de Usuarios (CRUD + Correos)** | [No] | [No] | [No] | [Si] Exclusivo |
+| **Bitácora de Auditoría y Trazabilidad** | [No] | [No] | [No] | [Si] Exclusivo |
+| **Gobernanza y Políticas Globales** | [No] | [No] | [No] | [Si] Exclusivo |
 
 ---
 
-## 🔄 Flujo de Información Transversal entre Roles
+## Flujo de Información Transversal entre Roles
 
 ```mermaid
 sequenceDiagram
@@ -79,7 +79,7 @@ sequenceDiagram
 
 ---
 
-## 📊 Diagramas de Arquitectura y Flujo (.drawio)
+## Diagramas de Arquitectura y Flujo (.drawio)
 
 Todos los diagramas han sido generados en formato XML estándar de **[Diagrams.net (Draw.io)](https://app.diagrams.net/)** y pueden abrirse directamente con la extensión de Draw.io en VS Code o en la herramienta web:
 

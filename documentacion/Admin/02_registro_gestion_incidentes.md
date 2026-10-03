@@ -48,4 +48,4 @@
 
 ## 4. Diagrama de Arquitectura y Flujo
 El diagrama de este módulo se encuentra en:
-👉 [`Admin/diagramas/02_registro_gestion_incidentes.drawio`](diagramas/02_registro_gestion_incidentes.drawio)
+- [`Admin/diagramas/02_registro_gestion_incidentes.drawio`](diagramas/02_registro_gestion_incidentes.drawio)

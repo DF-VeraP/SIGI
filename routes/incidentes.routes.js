@@ -37,8 +37,8 @@ router.post('/api/incidentes/:id/cerrar', ...authGuard, verificarRol('superadmin
 // Detalle, actualización y eliminación de incidente por ID
 router.get('/incidente/:id', authGuard, incidentesController.obtenerIncidente);
 router.get('/api/incidentes/:id', authGuard, incidentesController.obtenerIncidente);
-router.put('/incidente/:id', authGuard, incidentesController.actualizarIncidente);
-router.put('/api/incidentes/:id', authGuard, incidentesController.actualizarIncidente);
+router.put('/incidente/:id', authGuard, upload.single('foto'), incidentesController.actualizarIncidente);
+router.put('/api/incidentes/:id', authGuard, upload.single('foto'), incidentesController.actualizarIncidente);
 router.delete('/incidente/:id', authGuard, incidentesController.eliminarIncidente);
 router.delete('/api/incidentes/:id', authGuard, incidentesController.eliminarIncidente);
 

@@ -53,4 +53,4 @@
 
 ## 4. Diagrama de Arquitectura y Flujo
 El diagrama de este módulo se encuentra en:
-👉 [`Superadmin/diagramas/03_gobernanza_sistema.drawio`](diagramas/03_gobernanza_sistema.drawio)
+- [`Superadmin/diagramas/03_gobernanza_sistema.drawio`](diagramas/03_gobernanza_sistema.drawio)

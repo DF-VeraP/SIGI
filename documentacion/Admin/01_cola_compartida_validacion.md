@@ -50,4 +50,4 @@
 
 ## 4. Diagrama de Arquitectura y Flujo
 El diagrama de este módulo se encuentra en:
-👉 [`Admin/diagramas/01_cola_compartida_validacion.drawio`](diagramas/01_cola_compartida_validacion.drawio)
+- [`Admin/diagramas/01_cola_compartida_validacion.drawio`](diagramas/01_cola_compartida_validacion.drawio)

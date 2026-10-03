@@ -60,4 +60,4 @@ Este módulo alimenta directamente la tabla de auditoría para el Superadmin:
 
 ## 4. Diagrama de Arquitectura y Flujo
 El diagrama de este módulo se encuentra en:
-👉 [`Invitado/diagramas/04_autenticacion_recuperacion_clave.drawio`](diagramas/04_autenticacion_recuperacion_clave.drawio)
+- [`Invitado/diagramas/04_autenticacion_recuperacion_clave.drawio`](diagramas/04_autenticacion_recuperacion_clave.drawio)

@@ -18,34 +18,34 @@
 
 ## ÍNDICE GENERAL
 
-1. [INTRODUCCIÓN Y OBJETIVOS TÉCNICOS](#1-introducción-y-objetivos-técnicos)  
-   1.1 [Propósito](#11-propósito)  
-   1.2 [Alcance de las Especificaciones](#12-alcance-de-las-especificaciones)  
-2. [ARQUITECTURA GENERAL DEL SISTEMA](#2-arquitectura-general-del-sistema)  
-   2.1 [Estilo Arquitectónico y Desacoplamiento (3-Tier)](#21-estilo-arquitectónico-y-desacoplamiento-3-tier)  
-   2.2 [Topología de Despliegue Físico y Lógico](#22-topología-de-despliegue-físico-y-lógico)  
-   2.3 [Interacción de Componentes y Protocolos de Comunicación](#23-interacción-de-componentes-y-protocolos-de-comunicación)  
-3. [STACK TECNOLÓGICO DETALLADO](#3-stack-tecnológico-detallado)  
-   3.1 [Capa de Presentación (Frontend)](#31-capa-de-presentación-frontend)  
-   3.2 [Capa de Lógica de Negocio y API (Backend)](#32-capa-de-lógica-de-negocio-y-api-backend)  
-   3.3 [Capa de Datos Espaciales y Persistencia (Database)](#33-capa-de-datos-espaciales-y-persistencia-database)  
-   3.4 [Servicios Externos y Cloud Integrados](#34-servicios-externos-y-cloud-integrados)  
-4. [ESPECIFICACIONES DE INFRAESTRUCTURA Y HARDWARE](#4-especificaciones-de-infraestructura-y-hardware)  
-   4.1 [Requerimientos del Servidor de Producción](#41-requerimientos-del-servidor-de-producción)  
-   4.2 [Requerimientos para Estaciones de Trabajo Administrativas](#42-requerimientos-para-estaciones-de-trabajo-administrativas)  
-   4.3 [Requerimientos para Dispositivos Móviles de Campo (Reportero)](#43-requerimientos-para-dispositivos-móviles-de-campo-reportero)  
-   4.4 [Requerimientos de Red y Conectividad](#44-requerimientos-de-red-y-conectividad)  
-5. [ARQUITECTURA DE SEGURIDAD Y PROTECCIÓN](#5-arquitectura-de-seguridad-y-protección)  
-   5.1 [Seguridad en Transporte y Cabeceras HTTP](#51-seguridad-en-transporte-y-cabeceras-http)  
-   5.2 [Modelo Criptográfico y Gestión de Sesiones](#52-modelo-criptográfico-y-gestión-de-sesiones)  
-   5.3 [Control de Acceso Basado en Roles (RBAC) y Guards](#53-control-de-acceso-basado-en-roles-rbac-y-guards)  
-   5.4 [Estrategia de Mitigación de Ataques (DDoS, Brute Force, Injection)](#54-estrategia-de-mitigación-de-ataques-ddos-brute-force-injection)  
-6. [ESPECIFICACIONES DE CONFIGURACIÓN Y VARIABLES DE ENTORNO](#6-especificaciones-de-configuración-y-variables-de-entorno)  
-   6.1 [Diccionario de Variables de Entorno (.env)](#61-diccionario-de-variables-de-entorno-env)  
-   6.2 [Gestión de Secretos y Fallbacks de Desarrollo](#62-gestión-de-secretos-y-fallbacks-de-desarrollo)  
-7. [ESTÁNDARES DE CALIDAD, PRUEBAS Y MANTENIMIENTO](#7-estándares-de-calidad-pruebas-y-mantenimiento)  
-   7.1 [Estrategia de Pruebas Automatizadas (Jest & Supertest)](#71-estrategia-de-pruebas-automatizadas-jest--supertest)  
-   7.2 [Políticas de Respaldo y Recuperación de la Base de Datos](#72-políticas-de-respaldo-y-recuperación-de-la-base-de-datos)  
+1. [INTRODUCCIÓN Y OBJETIVOS TÉCNICOS](#1-introducción-y-objetivos-técnicos)
+   1.1 [Propósito](#11-propósito)
+   1.2 [Alcance de las Especificaciones](#12-alcance-de-las-especificaciones)
+2. [ARQUITECTURA GENERAL DEL SISTEMA](#2-arquitectura-general-del-sistema)
+   2.1 [Estilo Arquitectónico y Desacoplamiento (3-Tier)](#21-estilo-arquitectónico-y-desacoplamiento-3-tier)
+   2.2 [Topología de Despliegue Físico y Lógico](#22-topología-de-despliegue-físico-y-lógico)
+   2.3 [Interacción de Componentes y Protocolos de Comunicación](#23-interacción-de-componentes-y-protocolos-de-comunicación)
+3. [STACK TECNOLÓGICO DETALLADO](#3-stack-tecnológico-detallado)
+   3.1 [Capa de Presentación (Frontend)](#31-capa-de-presentación-frontend)
+   3.2 [Capa de Lógica de Negocio y API (Backend)](#32-capa-de-lógica-de-negocio-y-api-backend)
+   3.3 [Capa de Datos Espaciales y Persistencia (Database)](#33-capa-de-datos-espaciales-y-persistencia-database)
+   3.4 [Servicios Externos y Cloud Integrados](#34-servicios-externos-y-cloud-integrados)
+4. [ESPECIFICACIONES DE INFRAESTRUCTURA Y HARDWARE](#4-especificaciones-de-infraestructura-y-hardware)
+   4.1 [Requerimientos del Servidor de Producción](#41-requerimientos-del-servidor-de-producción)
+   4.2 [Requerimientos para Estaciones de Trabajo Administrativas](#42-requerimientos-para-estaciones-de-trabajo-administrativas)
+   4.3 [Requerimientos para Dispositivos Móviles de Campo (Reportero)](#43-requerimientos-para-dispositivos-móviles-de-campo-reportero)
+   4.4 [Requerimientos de Red y Conectividad](#44-requerimientos-de-red-y-conectividad)
+5. [ARQUITECTURA DE SEGURIDAD Y PROTECCIÓN](#5-arquitectura-de-seguridad-y-protección)
+   5.1 [Seguridad en Transporte y Cabeceras HTTP](#51-seguridad-en-transporte-y-cabeceras-http)
+   5.2 [Modelo Criptográfico y Gestión de Sesiones](#52-modelo-criptográfico-y-gestión-de-sesiones)
+   5.3 [Control de Acceso Basado en Roles (RBAC) y Guards](#53-control-de-acceso-basado-en-roles-rbac-y-guards)
+   5.4 [Estrategia de Mitigación de Ataques (DDoS, Brute Force, Injection)](#54-estrategia-de-mitigación-de-ataques-ddos-brute-force-injection)
+6. [ESPECIFICACIONES DE CONFIGURACIÓN Y VARIABLES DE ENTORNO](#6-especificaciones-de-configuración-y-variables-de-entorno)
+   6.1 [Diccionario de Variables de Entorno (.env)](#61-diccionario-de-variables-de-entorno-env)
+   6.2 [Gestión de Secretos y Fallbacks de Desarrollo](#62-gestión-de-secretos-y-fallbacks-de-desarrollo)
+7. [ESTÁNDARES DE CALIDAD, PRUEBAS Y MANTENIMIENTO](#7-estándares-de-calidad-pruebas-y-mantenimiento)
+   7.1 [Estrategia de Pruebas Automatizadas (Jest & Supertest)](#71-estrategia-de-pruebas-automatizadas-jest--supertest)
+   7.2 [Políticas de Respaldo y Recuperación de la Base de Datos](#72-políticas-de-respaldo-y-recuperación-de-la-base-de-datos)
 
 ---
 
@@ -69,11 +69,11 @@ Comprende la totalidad del ciclo de vida técnico del sistema:
 ### 2.1 Estilo Arquitectónico y Desacoplamiento (3-Tier)
 SIGI implementa una arquitectura desacoplada en tres capas (*3-Tier Architecture*):
 
-1. **Capa 1: Presentación / Cliente (Frontend):**  
+1. **Capa 1: Presentación / Cliente (Frontend):**
    Aplicación de página web enriquecida construida sobre HTML5 semántico, CSS3 modular y JavaScript nativo asíncrono (Vanilla ES6+). Se comunica con el backend exclusivamente mediante peticiones asíncronas seguras (Fetch API / JSON / Multipart Form-Data).
-2. **Capa 2: Aplicación y Servicios (Backend API REST):**  
+2. **Capa 2: Aplicación y Servicios (Backend API REST):**
    Servidor de alto rendimiento construido sobre **Node.js (v20+)** y el framework **Express (v5.x)**. Implementa enrutamiento modular, control de sesiones, mediación de subida de archivos en memoria (`multer.memoryStorage`), despacho de correos asíncronos y filtros de autorización RBAC.
-3. **Capa 3: Datos y Cómputo Espacial (Database):**  
+3. **Capa 3: Datos y Cómputo Espacial (Database):**
    Motor relacional **PostgreSQL 15+** potenciado por la extensión geoespacial **PostGIS 3.3+**. Gestiona relaciones transaccionales ACID y cálculo de topologías vectoriales (intersecciones de geometrías, cálculo de distancias, contención espacial en barrios y veredas).
 
 ```
@@ -111,8 +111,6 @@ SIGI implementa una arquitectura desacoplada en tres capas (*3-Tier Architecture
 +---------------------------------------+
 ```
 
-> **ESPACIO PARA DIAGRAMA:**  
-> *(Insertar aquí Diagrama de Arquitectura de 3 Capas de SIGI)*
 
 ### 2.2 Topología de Despliegue Físico y Lógico
 El sistema está diseñado para operar bajo dos escenarios de despliegue:
@@ -123,8 +121,6 @@ El sistema está diseñado para operar bajo dos escenarios de despliegue:
   - Almacenamiento de Evidencias: Cloudinary Media Storage con CDN global.
   - Pasarela de Correo: SendGrid / Gmail Workspace SMTP.
 
-> **ESPACIO PARA DIAGRAMA:**  
-> *(Insertar aquí Diagrama de Despliegue Físico y Topología de Red de SIGI)*
 
 ### 2.3 Interacción de Componentes y Protocolos de Comunicación
 - **Frontend <-> Backend:** Protocolo **HTTPS/1.1 o HTTP/2**. Intercambio de datos formateados en `application/json` y cargas binarias bajo `multipart/form-data`.
@@ -213,8 +209,6 @@ El sistema está diseñado para operar bajo dos escenarios de despliegue:
 
 ## 5. ARQUITECTURA DE SEGURIDAD Y PROTECCIÓN
 
-> **ESPACIO PARA DIAGRAMA:**  
-> *(Insertar aquí Diagrama de Seguridad en Capas: Hardening, Middlewares y Encriptación)*
 
 ### 5.1 Seguridad en Transporte y Cabeceras HTTP
 La seguridad de borde y de transporte se implementa mediante la integración de **Helmet**:
@@ -224,12 +218,12 @@ La seguridad de borde y de transporte se implementa mediante la integración de 
 - Ocultación activa del encabezado `X-Powered-By: Express` para dificultar el reconocimiento y escaneo de vulnerabilidades específicas.
 
 ### 5.2 Modelo Criptográfico y Gestión de Sesiones
-1. **Hash de Contraseñas:**  
+1. **Hash de Contraseñas:**
    Se aplica la función criptográfica `bcrypt.hash(password, 10)` generando una sal de 16 bytes que mitiga ataques de tablas arcoíris (*rainbow tables*).
-2. **Gestión de Sesión:**  
+2. **Gestión de Sesión:**
    Manejada por `express-session` con cookie identificadora firmada criptográficamente por la clave `SESSION_SECRET`.
    - Atributos de Cookie: `httpOnly: true` (inmune a robo por XSS), `sameSite: 'lax'` (protección contra CSRF), `maxAge: 2400000` (40 minutos de caducidad por inactividad), `rolling: true` (renovación en peticiones legítimas activas).
-3. **Tokens Criptográficos de Seguridad:**  
+3. **Tokens Criptográficos de Seguridad:**
    Los tokens para restablecimiento de clave o invitación se generan mediante generadores pseudoaleatorios criptográficamente fuertes (`crypto.randomBytes(32).toString('hex')`), almacenados en la tabla `token` con vigencia temporal estricta de 60 minutos.
 
 ### 5.3 Control de Acceso Basado en Roles (RBAC) y Guards

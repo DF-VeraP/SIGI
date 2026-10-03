@@ -38,7 +38,7 @@
         <div class="login-layout">
             
             <!-- Panel Izquierdo: Hero Tecnológico & Geoespacial -->
-            <aside class="hero-panel" aria-label="Información del Sistema SIGI">
+            <aside class="hero-panel" id="heroPanel" aria-label="Información del Sistema SIGI">
                 <div class="hero-content">
 
                     <!-- Gráfico Geo / Radar Holográfico -->
@@ -99,11 +99,23 @@
                         </div>
                     </div>
 
+                    <!-- Indicador de Acceso Autorizado Post-Login -->
+                    <div id="radarAccesoExitoso" class="radar-acceso-exitoso" style="display: none;">
+                        <div class="acceso-badge">
+                            <i class="bi bi-shield-check"></i>
+                            <span>Credenciales Verificadas</span>
+                        </div>
+                        <div class="acceso-telemetria">
+                            <span class="pulse-dot"></span>
+                            <span id="textoAccesoRol">Inicializando entorno seguro SIGI...</span>
+                        </div>
+                    </div>
+
                 </div>
             </aside>
 
             <!-- Panel Derecho: Formulario Glassmorphism -->
-            <main class="form-panel">
+            <main class="form-panel" id="formPanel">
                 <div class="glass-card">
                     
                     <!-- Header del Formulario con Logo -->

@@ -4,7 +4,7 @@ El rol **Superadmin** posee la máxima jerarquía técnica y operativa en SIGI. 
 
 ---
 
-## 👑 Flujo de Gobierno y Dependencias
+## Flujo de Gobierno y Dependencias
 
 ```mermaid
 graph TD
@@ -18,7 +18,7 @@ graph TD
 
 ---
 
-## 📚 Índice de Módulos y Diagramas
+## Índice de Módulos y Diagramas
 
 | Módulo | Descripción Técnica | Diagrama Asociado |
 | :--- | :--- | :--- |
@@ -28,7 +28,7 @@ graph TD
 
 ---
 
-## 🌟 Herencia Funcional
+## Herencia Funcional
 El **Superadmin** cuenta con autorización universal en el middleware `verificarRol`:
 ```javascript
 if (rolUsuario === 'superadmin' || rolesPermitidos.includes(rolUsuario)) {
