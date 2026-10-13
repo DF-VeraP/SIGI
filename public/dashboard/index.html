@@ -4,24 +4,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#161b22">
+    <meta name="theme-color" content="#0b0f19">
     <title>SIGI — Mapeo de incidentes</title>
+    <link rel="icon" type="image/png" href="../assets/img/logo_sigi.png">
+    
+    <!-- Google Fonts: Plus Jakarta Sans (Minimalist & Contemporary Civic Typography) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="../css/sigi-ai.css?v=2.1">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
     <style>
-        .map-wrapper {
-            flex: 1;
-            height: 100%;
-            position: relative;
-            overflow: hidden;
-            width: 100%;
+        /* ══════════════════════════════════════════════════════════════
+           ESTRUCTURA DE CONTENCIÓN (Cero scrolls externos innecesarios)
+           ══════════════════════════════════════════════════════════════ */
+        .layout-wrapper {
             display: flex;
-            flex-direction: column;
+            height: 100vh !important;
+            max-height: 100vh !important;
+            overflow: hidden !important;
+            width: 100vw;
+            box-sizing: border-box;
+            background: var(--bg-dark);
         }
-        
+
         .content-wrapper {
             flex: 1 1 0% !important;
             display: flex;
@@ -30,16 +41,27 @@
             max-height: 100vh !important;
             overflow: hidden !important;
             box-sizing: border-box;
+            min-width: 0;
+            position: relative;
         }
 
         #vistaMapa { 
-            position: relative; 
+            position: relative !important; 
             flex: 1 1 0% !important;
             height: 0 !important;
             min-height: 0 !important;
-            margin: 12px 12px 4px 12px;
-            box-sizing: border-box;
+            width: auto !important;
+            max-width: calc(100% - 36px) !important;
+            margin: 10px 20px 12px 16px !important;
+            box-sizing: border-box !important;
             overflow: hidden !important;
+            border-radius: 14px !important;
+            border: none !important;
+            box-shadow: none !important;
+            background: var(--bg-card);
+        }
+        #vistaMapa.vista-mapa-kpi-oculto {
+            margin-top: 12px !important;
         }
 
         .map-wrapper {
@@ -58,6 +80,53 @@
             height: 100% !important;
             min-height: 0 !important;
             width: 100%;
+        }
+
+        /* ── Vista Tabla Contenida en Desktop ── */
+        #vistaTabla {
+            flex: 1 1 0% !important;
+            height: 0 !important;
+            min-height: 0 !important;
+            margin: 10px 12px 4px 12px;
+            overflow: hidden !important;
+            box-sizing: border-box;
+        }
+
+        .tabla-container {
+            flex: 1 1 0% !important;
+            height: 100% !important;
+            min-height: 0 !important;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden !important;
+            background: var(--bg-card);
+            border: 1px solid var(--borde);
+            border-radius: 14px;
+            padding: 14px 18px 10px 18px;
+            box-sizing: border-box;
+        }
+
+        .tabla-container .table-responsive {
+            flex: 1 1 0% !important;
+            min-height: 0 !important;
+            overflow-y: auto !important;
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid var(--borde);
+            margin: 8px 0;
+        }
+
+        /* ── Vistas Desplazables Internamente (Sin desborde global) ── */
+        .vista-inicio,
+        #estadisticas,
+        #vistaIA {
+            flex: 1 1 0% !important;
+            min-height: 0 !important;
+            height: 100% !important;
+            overflow-y: auto !important;
+            overflow-x: hidden;
+            box-sizing: border-box;
+            padding: 16px 20px 24px 20px;
         }
 
         .sigi-footer {
@@ -76,363 +145,991 @@
             z-index: 10 !important;
             width: auto !important;
             transform: none !important;
-            left: auto !important;
-            bottom: auto !important;
             box-shadow: none !important;
             border: none !important;
         }
 
         .sigi-footer .footer-copy {
             font-size: 0.72rem !important;
-            color: var(--texto-suave, #8b949e) !important;
+            color: var(--texto-suave, #94a3b8) !important;
             margin: 0 !important;
             text-align: center !important;
             white-space: nowrap !important;
             line-height: 24px !important;
+            font-weight: 500;
         }
 
-        .main-content {
-            overflow: hidden !important;
-            height: 100% !important;
-            max-height: 100% !important;
-        }
-        
-        #map {
-            flex: 1;
-            width: 100%;
-            height: 100%;
-        }
-
-        .leyenda {
-            left: 0 !important;
-            right: 0 !important;
-            margin: 0 auto !important;
-            transform: none !important;
-            width: max-content !important;
-        }
-
-        /* ════════════════════════════════
-           KPI RIBBON (Fase 1 - Obj 3)
-        ════════════════════════════════ */
+        /* ══════════════════════════════════════════════════════════════
+           KPI RIBBON DEL MAPA (Elegante, Separación por Cards, Arriba del Mapa)
+           ══════════════════════════════════════════════════════════════ */
         .kpi-ribbon {
-            position: absolute;
-            top: 16px;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 0 20px;
-            pointer-events: none;
-            flex-wrap: nowrap;
-            transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, transform 0.35s ease;
-            max-height: 120px;
-            overflow: visible;
+            position: relative !important;
+            top: 0 !important;
+            left: 0 !important;
+            transform: none !important;
+            z-index: 1000 !important;
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 12px !important;
+            padding: 8px 16px !important;
+            margin: 10px auto 8px auto !important;
+            width: calc(100% - 28px) !important;
+            max-width: calc(100% - 28px) !important;
+            pointer-events: auto !important;
+            flex-wrap: nowrap !important;
+            background: var(--bg-card) !important;
+            border: 1px solid var(--borde) !important;
+            border-radius: 14px !important;
+            box-shadow: none !important;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            box-sizing: border-box !important;
+            flex-shrink: 0 !important;
+        }
+
+        body.tema-claro .kpi-ribbon {
+            background: #ffffff !important;
+            border: 1px solid rgba(0, 0, 0, 0.08) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
         }
 
         .kpi-cards-scroll {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            pointer-events: auto;
-            flex: 0 1 auto;
-            overflow-x: auto;
-            scrollbar-width: none;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 14px !important;
+            pointer-events: auto !important;
+            flex: 1 1 auto !important;
+            min-width: 0 !important;
+            overflow-x: auto !important;
+            scrollbar-width: none !important;
+            margin: 0 auto !important;
         }
-        .kpi-cards-scroll::-webkit-scrollbar {
-            display: none;
+        .kpi-cards-scroll::-webkit-scrollbar { display: none !important; }
+
+        .kpi-cerrar-slot {
+            flex: 0 0 auto !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            margin-left: 12px !important;
+            padding-left: 10px !important;
+            border-left: 1px solid var(--borde) !important;
+            align-self: stretch !important;
+        }
+
+        body.tema-claro .kpi-cerrar-slot {
+            border-left-color: rgba(0, 0, 0, 0.1) !important;
+        }
+
+        /* Cada KPI como un sub-contenedor distintivo tipo píldora / card */
+        .kpi-card {
+            background: rgba(255, 255, 255, 0.04) !important;
+            border: 1px solid var(--borde) !important;
+            border-radius: 12px !important;
+            padding: 6px 14px !important;
+            display: inline-flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center !important;
+            gap: 9px !important;
+            pointer-events: auto !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+            flex: 1 1 auto !important;
+            min-width: max-content !important;
+            max-width: none !important;
+            white-space: nowrap !important;
+            box-sizing: border-box !important;
+            transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease !important;
+        }
+
+        .kpi-card:hover {
+            background: rgba(255, 255, 255, 0.07) !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            transform: translateY(-1px) !important;
+        }
+
+        body.tema-claro .kpi-card {
+            background: rgba(241, 245, 249, 0.85) !important;
+            border-color: var(--borde) !important;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+        }
+
+        body.tema-claro .kpi-card:hover {
+            background: #ffffff !important;
+            border-color: var(--borde-acento) !important;
+        }
+
+        .kpi-label {
+            font-size: 0.68rem !important;
+            color: var(--texto-suave) !important;
+            text-transform: uppercase !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.05em !important;
+            white-space: nowrap !important;
+            text-align: center !important;
+        }
+
+        .kpi-valor {
+            font-size: 0.94rem !important;
+            font-weight: 700 !important;
+            color: var(--texto) !important;
+            white-space: nowrap !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center !important;
+            gap: 4px !important;
+        }
+
+        #kpi-zona {
+            font-size: 0.86rem !important;
+            font-weight: 600 !important;
+            max-width: 280px !important;
+            white-space: nowrap !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 4px !important;
+            line-height: 1.25 !important;
+        }
+
+        #kpi-zona .kpi-zona-nombre {
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            white-space: nowrap !important;
+            max-width: 220px !important;
+            display: inline-block !important;
+        }
+
+        #kpi-zona .kpi-zona-conteo {
+            font-size: 0.74rem !important;
+            font-weight: normal !important;
+            color: var(--texto-suave) !important;
+            flex-shrink: 0 !important;
+            white-space: nowrap !important;
+        }
+
+        #kpi-tipo {
+            white-space: nowrap !important;
+            display: inline-flex !important;
+            align-items: center !important;
         }
 
         .btn-cerrar-kpis {
-            background: rgba(13, 17, 23, 0.75);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            color: var(--texto-suave, #94a3b8);
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.72rem;
-            cursor: pointer;
-            pointer-events: auto;
-            flex-shrink: 0;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+            position: static !important;
+            top: auto !important;
+            right: auto !important;
+            transform: none !important;
+            background: rgba(255, 255, 255, 0.06) !important;
+            border: 1px solid var(--borde) !important;
+            color: var(--texto-suave) !important;
+            width: 28px !important;
+            height: 28px !important;
+            border-radius: 50% !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 0.74rem !important;
+            cursor: pointer !important;
+            pointer-events: auto !important;
+            flex-shrink: 0 !important;
+            transition: all 0.2s ease !important;
+            padding: 0 !important;
+            line-height: 0 !important;
+            margin: 0 !important;
         }
         .btn-cerrar-kpis:hover {
-            background: rgba(239, 68, 68, 0.3);
-            border-color: #ef4444;
-            color: #ffffff;
-            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.14) !important;
+            border-color: var(--borde-acento) !important;
+            color: var(--texto) !important;
+            transform: none !important;
+            box-shadow: none !important;
         }
 
+        body.tema-claro .btn-cerrar-kpis {
+            background: rgba(0, 0, 0, 0.05) !important;
+            border-color: rgba(0, 0, 0, 0.12) !important;
+            color: #475569 !important;
+        }
+
+        body.tema-claro .btn-cerrar-kpis:hover {
+            background: rgba(0, 0, 0, 0.10) !important;
+            color: #0f172a !important;
+        }
+
+        /* ── Centrado micrométrico exacto de todas las 'X' ── */
+        #cerrarFiltros,
+        .cerrar-modal-tiempo,
+        #btnCerrarFiltroTiempo,
+        #btnCerrarDetalleIncidente,
+        #btnCerrarModalMatriz,
+        .btn-cerrar-kpis,
+        #btnCerrarKpis {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            line-height: 0 !important;
+            padding: 0 !important;
+            box-sizing: border-box !important;
+        }
+
+        #cerrarFiltros i,
+        .cerrar-modal-tiempo i,
+        #btnCerrarFiltroTiempo i,
+        #btnCerrarDetalleIncidente i,
+        #btnCerrarModalMatriz i,
+        .btn-cerrar-kpis i,
+        #btnCerrarKpis i {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            line-height: 1 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: auto !important;
+            height: auto !important;
+        }
+
+        #cerrarFiltros i::before,
+        .cerrar-modal-tiempo i::before,
+        #btnCerrarFiltroTiempo i::before,
+        #btnCerrarDetalleIncidente i::before,
+        #btnCerrarModalMatriz i::before,
+        .btn-cerrar-kpis i::before,
+        #btnCerrarKpis i::before {
+            display: block !important;
+            vertical-align: 0 !important;
+            line-height: 1 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            transform: translateY(-0.5px) !important;
+        }
+
+        /* Botón de Métricas cuando se ocultan los KPIs: Perfectamente alineado con el toolbar de filtros a top: 12px */
         .btn-abrir-kpis {
-            position: absolute;
-            top: 14px;
-            left: 14px;
-            z-index: 1010;
-            background: rgba(13, 20, 36, 0.92);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(56, 189, 248, 0.4);
-            color: #38bdf8;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 700;
+            position: absolute !important;
+            top: 12px !important;
+            right: 16px !important;
+            left: auto !important;
+            z-index: 1050 !important;
+            background: var(--bg-glass-float) !important;
+            backdrop-filter: blur(14px) !important;
+            -webkit-backdrop-filter: blur(14px) !important;
+            border: 1px solid var(--borde) !important;
+            color: var(--texto-suave) !important;
+            height: 32px !important;
+            padding: 0 14px !important;
+            border-radius: 20px !important;
+            font-size: 0.76rem !important;
+            font-weight: 600 !important;
             display: none;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45), 0 0 12px rgba(56, 189, 248, 0.2);
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            animation: fadeInDown 0.3s ease;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 6px !important;
+            cursor: pointer !important;
+            white-space: nowrap !important;
+            box-sizing: border-box !important;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28) !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
         }
         .btn-abrir-kpis.visible {
             display: inline-flex !important;
         }
         .btn-abrir-kpis:hover {
-            background: rgba(56, 189, 248, 0.2);
-            border-color: #38bdf8;
-            color: #ffffff;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.35);
+            color: var(--texto) !important;
+            background: var(--bg-surface) !important;
+            border-color: rgba(255, 255, 255, 0.18) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35) !important;
+        }
+        body.tema-claro .btn-abrir-kpis {
+            background: rgba(255, 255, 255, 0.88) !important;
+            border: 1px solid var(--borde) !important;
+            color: var(--texto-suave) !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08) !important;
+        }
+        body.tema-claro .btn-abrir-kpis:hover {
+            color: var(--texto) !important;
+            background: #ffffff !important;
+            border-color: rgba(0, 0, 0, 0.15) !important;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
         }
 
-        .kpi-ribbon.kpi-oculto {
+        .kpi-ribbon.esconder,
+        .kpi-ribbon.kpi-oculto,
+        .kpi-ribbon[style*="display: none"],
+        .kpi-ribbon[hidden] {
             opacity: 0 !important;
             pointer-events: none !important;
-            transform: translateY(-20px) !important;
             max-height: 0 !important;
-            padding-top: 0 !important;
-            padding-bottom: 0 !important;
-            margin-top: 0 !important;
-            margin-bottom: 0 !important;
-            border-bottom: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            border: none !important;
             overflow: hidden !important;
-        }
-
-        .btn-abrir-kpis.visible ~ #map .leaflet-top.leaflet-left {
-            top: 56px !important;
-        }
-
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .kpi-card {
-            background: rgba(13, 17, 23, 0.65);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 8px 12px;
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            gap: 10px;
-            pointer-events: auto;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            min-width: 0;
-            flex: 1 1 0;
-            max-width: 250px;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .kpi-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .kpi-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--secundario);
-            font-size: 1.1rem;
-            flex-shrink: 0;
-        }
-
-        .kpi-content {
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            width: 100%;
-        }
-
-        .kpi-label {
-            font-size: 0.65rem;
-            color: var(--texto-suave);
-            text-transform: uppercase;
-            letter-spacing: 0.02em;
-            margin-bottom: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .kpi-valor {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--texto);
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            display: none !important;
         }
 
         .kpi-variacion-positiva { color: var(--verde) !important; }
         .kpi-variacion-negativa { color: var(--rojo) !important; }
 
+        /* ══════════════════════════════════════════════════════════════
+           TOOLBAR DE ACCIONES DEL MAPA (Text-Only, Sin Íconos)
+           Ubicado a 12px del borde superior de su contenedor (#map)
+           ══════════════════════════════════════════════════════════════ */
+        .map-actions-group {
+            position: absolute !important;
+            top: 12px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            z-index: 999 !important;
+            pointer-events: auto !important;
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            border: none !important;
+            border-radius: 0 !important;
+            padding: 6px 8px !important;
+            box-shadow: none !important;
+            max-width: calc(100% - 80px) !important;
+            overflow-x: auto !important;
+            overflow-y: visible !important;
+            scrollbar-width: none !important;
+            transition: top 0.25s ease !important;
+        }
+        .map-actions-group::-webkit-scrollbar { display: none; }
+
+        body.tema-claro .map-actions-group {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .kpi-ribbon.kpi-oculto ~ .map-actions-group,
+        .kpi-ribbon.kpi-oculto ~ #map .map-actions-group {
+            top: 12px !important;
+        }
+
+        .map-actions-group .fab {
+            position: relative !important;
+            background: var(--bg-glass-float) !important;
+            backdrop-filter: blur(14px) !important;
+            -webkit-backdrop-filter: blur(14px) !important;
+            border: 1px solid var(--borde) !important;
+            border-radius: 20px !important;
+            color: var(--texto-suave) !important;
+            padding: 6px 14px !important;
+            height: 32px !important;
+            font-size: 0.76rem !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+            white-space: nowrap !important;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28) !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+        }
+
+        .map-actions-group .fab:hover {
+            color: var(--texto) !important;
+            background: var(--bg-surface) !important;
+            border-color: rgba(255, 255, 255, 0.18) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35) !important;
+        }
+
+        .map-actions-group .fab.activo {
+            background: var(--acento) !important;
+            color: #ffffff !important;
+            border-color: var(--acento) !important;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35) !important;
+        }
+
+        body.tema-claro .map-actions-group .fab {
+            background: rgba(255, 255, 255, 0.88) !important;
+            border: 1px solid var(--borde) !important;
+            color: var(--texto-suave) !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08) !important;
+        }
+
+        body.tema-claro .map-actions-group .fab:hover {
+            color: var(--texto) !important;
+            background: #ffffff !important;
+            border-color: rgba(0, 0, 0, 0.15) !important;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        body.tema-claro .map-actions-group .fab.activo {
+            background: var(--acento) !important;
+            color: #ffffff !important;
+            border-color: var(--acento) !important;
+        }
+
+        .map-actions-group .fab-badge {
+            font-size: 0.60rem !important;
+            background: var(--rojo) !important;
+            color: #ffffff !important;
+            padding: 1px 5px !important;
+            border-radius: 10px !important;
+            min-width: 14px !important;
+            height: 14px !important;
+            line-height: 1 !important;
+            font-weight: 700 !important;
+        }
+
+        .map-actions-group .location-pulse-dot {
+            width: 7px !important;
+            height: 7px !important;
+            background: var(--verde) !important;
+            border-radius: 50% !important;
+            position: static !important;
+            display: inline-block !important;
+            margin-left: 6px !important;
+            flex-shrink: 0 !important;
+            box-shadow: 0 0 6px rgba(5, 150, 105, 0.6) !important;
+            animation: locationDotPulse 1.5s infinite ease-in-out !important;
+        }
+
+        /* ── Toolbar de acciones en Vista Tabla y Analítica: Cero recortes al hacer hover ── */
+        .map-actions-group.en-tabla,
+        .map-actions-group.en-analitica,
+        .tabla-acciones .map-actions-group,
+        .analitica-acciones .map-actions-group,
+        #contenedorAccionesTabla .map-actions-group,
+        #contenedorAccionesAnalitica .map-actions-group {
+            position: static !important;
+            top: auto !important;
+            left: auto !important;
+            transform: none !important;
+            max-width: none !important;
+            overflow: visible !important;
+            overflow-x: visible !important;
+            overflow-y: visible !important;
+            padding: 8px 6px !important;
+            margin: 0 !important;
+            z-index: 10 !important;
+        }
+
+        .tabla-acciones,
+        .analitica-acciones,
+        #contenedorAccionesTabla,
+        #contenedorAccionesAnalitica {
+            overflow: visible !important;
+            padding: 4px 2px !important;
+        }
+
+        .map-actions-group.en-tabla .fab,
+        .map-actions-group.en-analitica .fab {
+            margin: 0 !important;
+            transform: none !important;
+        }
+
+        .map-actions-group.en-tabla .fab:hover,
+        .map-actions-group.en-analitica .fab:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35) !important;
+        }
+
+        /* ══════════════════════════════════════════════════════════════
+           TARJETAS DE ANALÍTICA (Grid limpio, Sin Desbordes, Sin Recortes)
+           ══════════════════════════════════════════════════════════════ */
+        .resumen {
+            overflow: visible !important;
+            margin-bottom: 14px !important;
+        }
+
+        .contResumen {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important;
+            gap: 10px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: visible !important;
+        }
+
+        .cardResumen {
+            background: var(--bg-card) !important;
+            border: 1px solid var(--borde) !important;
+            border-radius: 8px !important;
+            padding: 8px 12px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            min-height: 54px !important;
+            box-shadow: none !important;
+            transition: border-color 0.15s ease, background 0.15s ease !important;
+        }
+
+        .cardResumen:hover {
+            border-color: var(--borde-acento) !important;
+            background: var(--bg-surface) !important;
+            transform: none !important;
+        }
+
+        .cardResumen .card-kpi-label {
+            font-size: 0.65rem !important;
+            font-weight: 600 !important;
+            color: var(--texto-suave) !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.04em !important;
+            margin-bottom: 2px !important;
+            display: block !important;
+        }
+
+        .cardResumen h2 {
+            font-size: 1.30rem !important;
+            font-weight: 700 !important;
+            color: var(--texto) !important;
+            line-height: 1.1 !important;
+            margin: 0 !important;
+            background: none !important;
+            -webkit-background-clip: unset !important;
+            -webkit-text-fill-color: var(--texto) !important;
+        }
+
+        .cardResumen {
+            border: 1px solid var(--borde) !important;
+            border-left: 1px solid var(--borde) !important;
+        }
+
+        .card-kpi-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+            margin-right: 6px;
+        }
+        .cardResumen.totalResumen .card-kpi-dot { background: var(--acento); }
+        .cardResumen.roboResumen .card-kpi-dot { background: var(--rojo); }
+        .cardResumen.accidenteResumen .card-kpi-dot { background: var(--verde); }
+        .cardResumen.piqueResumen .card-kpi-dot { background: var(--magenta); }
+        .cardResumen.agresionResumen .card-kpi-dot { background: var(--amarillo); }
+        .cardResumen.topBarrio .card-kpi-dot { background: var(--acento); }
+        .cardResumen.topVereda .card-kpi-dot { background: var(--texto-suave); }
+
+        .cardResumen.topBarrio h2,
+        .cardResumen.topVereda h2 {
+            font-size: 0.85rem !important;
+            font-weight: 600 !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+        }
+
+        header.mobile-app-header,
+        .mobile-app-header {
+            display: none !important;
+        }
+
+        /* ── Adaptabilidad Móvil ── */
         @media (max-width: 768px) {
-            #vistaMapa {
-                margin: 0 !important;
-                padding: 4px 10px 10px 10px !important;
-                box-sizing: border-box !important;
-                height: 100% !important;
-                max-height: 100% !important;
-                width: 100% !important;
-                display: none;
-                flex-direction: column !important;
-                position: relative !important;
-                overflow: hidden !important;
-                flex: 1 1 0% !important;
-                gap: 8px !important;
-            }
-            #vistaMapa.vista-activa {
-                display: flex !important;
-            }
-            .map-wrapper {
-                flex: 1 1 0% !important;
-                height: 100% !important;
-                width: 100% !important;
-                display: flex !important;
-                flex-direction: column !important;
-                position: relative !important;
-                overflow: hidden !important;
-                border-radius: 18px !important;
-                border: 1px solid rgba(56, 189, 248, 0.25) !important;
-                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45) !important;
-            }
-            .kpi-ribbon {
-                position: relative !important;
+            /* Cabecera Móvil Nativa: Ocupa todo el ancho de la pantalla de extremo a extremo */
+            header.mobile-app-header,
+            .mobile-app-header {
+                position: fixed !important;
                 top: 0 !important;
                 left: 0 !important;
                 right: 0 !important;
-                width: 100% !important;
-                box-sizing: border-box !important;
-                flex: 0 0 auto !important;
-                z-index: 1000 !important;
-                background: rgba(13, 20, 36, 0.96) !important;
-                backdrop-filter: blur(14px) !important;
-                -webkit-backdrop-filter: blur(14px) !important;
-                border-bottom: 1px solid rgba(56, 189, 248, 0.18) !important;
-                padding: 6px 8px !important;
+                width: 100vw !important;
+                max-width: 100vw !important;
+                height: var(--mobile-header-h, 58px) !important;
                 margin: 0 !important;
+                padding: 0 16px !important;
+                border-radius: 0 !important;
+                box-sizing: border-box !important;
+                z-index: 2500 !important;
                 display: flex !important;
-                flex-wrap: nowrap !important;
                 align-items: center !important;
                 justify-content: space-between !important;
-                gap: 6px !important;
-                pointer-events: auto !important;
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
-                border-radius: 17px 17px 0 0 !important;
+                background: var(--bg-card) !important;
+                border-bottom: 1px solid var(--borde) !important;
+                color: var(--texto) !important;
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
             }
-            .kpi-cards-scroll {
-                display: flex !important;
-                flex-wrap: nowrap !important;
-                justify-content: flex-start !important;
-                gap: 8px !important;
-                overflow-x: auto !important;
-                -webkit-overflow-scrolling: touch !important;
-                flex: 1 !important;
-                min-width: 0 !important;
+
+            body.tema-claro header.mobile-app-header,
+            body.tema-claro .mobile-app-header {
+                background: var(--bg-card) !important;
+                border-bottom: 1px solid var(--borde) !important;
+                color: var(--texto) !important;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
             }
-            .kpi-card {
-                flex: 0 0 auto !important;
-                min-width: 125px !important;
-                max-width: 155px !important;
-                padding: 5px 9px !important;
-                border-radius: 10px !important;
-                background: rgba(22, 32, 54, 0.85) !important;
-                border: 1px solid rgba(255, 255, 255, 0.08) !important;
+
+            .layout-wrapper {
+                position: fixed !important;
+                top: calc(var(--mobile-header-h, 58px) + 12px) !important;
+                bottom: calc(var(--mobile-bottom-bar-h, 66px) + env(safe-area-inset-bottom, 0px)) !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100vw !important;
+                height: auto !important;
+                max-height: calc(100vh - var(--mobile-header-h, 58px) - 12px - var(--mobile-bottom-bar-h, 66px) - env(safe-area-inset-bottom, 0px)) !important;
+                overflow: hidden !important;
             }
-            .kpi-label {
-                font-size: 0.58rem !important;
+
+            .content-wrapper {
+                height: 100% !important;
+                max-height: 100% !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: hidden !important;
+                flex: 1 1 auto !important;
             }
-            .kpi-valor {
-                font-size: 0.90rem !important;
+
+            /* 1. Contenedor del mapa perfectamente centrado y full-width en móvil */
+            #vistaMapa {
+                margin: 0 !important;
+                padding: 0 !important;
+                height: 100% !important;
+                max-height: 100% !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                border-radius: 0 !important;
+                border: none !important;
+                box-sizing: border-box !important;
+                overflow: hidden !important;
+                flex: 1 1 0% !important;
             }
-            .btn-cerrar-kpis {
-                width: 26px !important;
-                height: 26px !important;
-                margin-left: 4px !important;
-            }
-            .btn-abrir-kpis {
-                top: 12px !important;
-                left: 12px !important;
-                padding: 6px 14px !important;
-                font-size: 0.72rem !important;
-                z-index: 1010 !important;
-            }
-            /* Cuando el botón de métricas está visible, los controles de Leaflet descienden para no colisionar */
-            .btn-abrir-kpis.visible ~ #map .leaflet-top.leaflet-left {
-                top: 54px !important;
+            .map-wrapper {
+                width: 100% !important;
+                max-width: 100% !important;
+                height: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border-radius: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+                overflow: hidden !important;
             }
             #map {
-                flex: 1 1 0% !important;
                 width: 100% !important;
+                max-width: 100% !important;
                 height: 100% !important;
-                min-height: 0 !important;
-                position: relative !important;
-                border-radius: 0 0 17px 17px !important;
-                overflow: hidden !important;
+                border-radius: 0 !important;
             }
             #map .leaflet-container {
-                border-radius: 0 0 17px 17px !important;
-                overflow: hidden !important;
+                border-radius: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
             }
-        }
 
-        #vistaMapa, #vistaMapaCompleto, #vistaTabla {
-            flex: 1;
-        }
+            /* Contenedor de KPIs en Móvil: Ancho completo de pantalla, scroll en X deslizable, espacio dedicado para [X] */
+            .kpi-ribbon {
+                position: relative !important;
+                top: 0 !important;
+                transform: none !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                border-radius: 0 !important;
+                padding: 6px 10px !important;
+                height: 50px !important;
+                min-height: 50px !important;
+                max-height: 50px !important;
+                box-sizing: border-box !important;
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                gap: 8px !important;
+                overflow: hidden !important;
+                flex-shrink: 0 !important;
+                border: none !important;
+                border-bottom: 1px solid var(--borde) !important;
+                background: var(--bg-card) !important;
+            }
 
-        @media (min-width: 900px) {
+            .kpi-ribbon.esconder,
+            .kpi-ribbon.kpi-oculto,
+            .kpi-ribbon[style*="display: none"],
+            .kpi-ribbon[hidden] {
+                display: none !important;
+            }
+
+            .kpi-cards-scroll {
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                align-items: center !important;
+                justify-content: flex-start !important;
+                gap: 8px !important;
+                padding: 2px 2px !important;
+                flex: 1 1 auto !important;
+                min-width: 0 !important;
+                width: auto !important;
+                max-width: 100% !important;
+                overflow-x: auto !important;
+                overflow-y: hidden !important;
+                -webkit-overflow-scrolling: touch !important;
+                scrollbar-width: none !important;
+                -ms-overflow-style: none !important;
+                touch-action: pan-x !important;
+                cursor: grab !important;
+                user-select: none !important;
+                -webkit-user-select: none !important;
+            }
+            .kpi-cards-scroll.kpi-dragging {
+                cursor: grabbing !important;
+                user-select: none !important;
+            }
+            .kpi-cards-scroll::-webkit-scrollbar {
+                display: none !important;
+                width: 0 !important;
+                height: 0 !important;
+            }
+            body.tema-claro .kpi-cards-scroll {
+                scrollbar-width: none !important;
+            }
+            body.tema-claro .kpi-cards-scroll::-webkit-scrollbar {
+                display: none !important;
+            }
+
+            .kpi-cerrar-slot {
+                flex: 0 0 auto !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                padding-left: 8px !important;
+                padding-right: 2px !important;
+                border-left: 1px solid var(--borde) !important;
+                margin-left: 4px !important;
+                align-self: stretch !important;
+            }
+
+            .btn-cerrar-kpis {
+                position: static !important;
+                top: auto !important;
+                right: auto !important;
+                transform: none !important;
+                flex: 0 0 28px !important;
+                width: 28px !important;
+                height: 28px !important;
+                border-radius: 50% !important;
+                background: rgba(255, 255, 255, 0.08) !important;
+                border: 1px solid var(--borde) !important;
+                color: var(--texto-suave) !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 0.72rem !important;
+                padding: 0 !important;
+                cursor: pointer !important;
+            }
+
+            .kpi-card {
+                flex: 0 0 auto !important;
+                width: auto !important;
+                min-width: max-content !important;
+                max-width: none !important;
+                white-space: nowrap !important;
+                height: 36px !important;
+                min-height: 36px !important;
+                max-height: 36px !important;
+                padding: 4px 12px !important;
+                border-radius: 8px !important;
+                display: inline-flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 7px !important;
+                box-sizing: border-box !important;
+                flex-shrink: 0 !important;
+                background: var(--bg-surface) !important;
+                border: 1px solid var(--borde) !important;
+                box-shadow: none !important;
+            }
+
+            body.tema-claro .kpi-card {
+                background: var(--bg-surface) !important;
+                border-color: var(--borde) !important;
+                color: var(--texto) !important;
+            }
+
+            .kpi-label {
+                font-size: 0.66rem !important;
+                color: var(--texto-suave) !important;
+                white-space: nowrap !important;
+            }
+
+            .kpi-valor {
+                font-size: 0.92rem !important;
+                color: var(--texto) !important;
+                white-space: nowrap !important;
+            }
+
+            .map-actions-group {
+                top: 8px !important;
+                left: 8px !important;
+                right: 8px !important;
+                transform: none !important;
+                max-width: calc(100% - 16px) !important;
+                width: auto !important;
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                align-items: center !important;
+                justify-content: flex-start !important;
+                gap: 6px !important;
+                overflow-x: auto !important;
+                overflow-y: visible !important;
+                -webkit-overflow-scrolling: touch !important;
+                scrollbar-width: none !important;
+                padding: 4px 2px !important;
+            }
+            .map-actions-group::-webkit-scrollbar { display: none !important; }
+
+            /* Botón de reapertura de Métricas ubicado debajo del dock de filtros para no estorbarlo */
+            .btn-abrir-kpis {
+                position: absolute !important;
+                top: 50px !important;
+                right: 12px !important;
+                left: auto !important;
+                z-index: 1050 !important;
+                height: 32px !important;
+                padding: 0 14px !important;
+                border-radius: 20px !important;
+                font-size: 0.74rem !important;
+                box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+            }
+
+            /* Leyenda flotante elevada para nunca tapar el tag de Leaflet / Esri */
             .leyenda {
-                bottom: 30px !important; /* Vuelve a su posición normal */
+                bottom: 28px !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                width: max-content !important;
+                max-width: calc(100% - 24px) !important;
+                padding: 5px 12px !important;
+                font-size: 0.68rem !important;
+                gap: 8px !important;
+                border-radius: 20px !important;
+                z-index: 1000 !important;
+                pointer-events: none !important;
+            }
+
+            .leaflet-bottom.leaflet-right .leaflet-control-attribution {
+                margin: 0 6px 2px 0 !important;
+                font-size: 0.58rem !important;
+                background: rgba(15, 23, 42, 0.75) !important;
+                backdrop-filter: blur(4px) !important;
+                border-radius: 4px !important;
+                padding: 1px 5px !important;
+                line-height: 1.2 !important;
+            }
+
+            /* 2. Scroll fluido y desbloqueado en el Panel de Incidentes */
+            #vistaTabla {
+                flex: 1 1 0% !important;
+                height: 100% !important;
+                max-height: 100% !important;
+                min-height: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+                -webkit-overflow-scrolling: touch !important;
+                box-sizing: border-box !important;
+            }
+            .mobile-incident-container {
+                width: 100% !important;
+                box-sizing: border-box !important;
+                padding: 12px 14px 44px 14px !important;
+                height: auto !important;
+                min-height: 100% !important;
+                overflow-y: visible !important;
+                flex: 1 0 auto !important;
+            }
+
+            /* 3. Márgenes de seguridad inferior para evitar superposición con la barra de navegación */
+            .vista-inicio,
+            #vistaInicio,
+            #estadisticas,
+            #vistaIA,
+            .vista-ai-container {
+                padding: 12px 14px 44px 14px !important;
+                box-sizing: border-box !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+            }
+
+            .contResumen {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+
+            /* 4. Modal Matriz de Concentración: Scroll horizontal y vertical completo en móvil */
+            #modalMatrizDetalle .modal-contenido,
+            #modalMatrizDetalle .modal-contenido.modal-matriz-box {
+                width: 95% !important;
+                max-width: 95vw !important;
+                max-height: 90vh !important;
+                padding: 0 !important;
+                border-radius: 14px !important;
+            }
+            #modalMatrizDetalle .modal-cabecera {
+                padding: 12px 14px !important;
+            }
+            #modalMatrizDetalle .modal-cabecera h3 {
+                font-size: 0.95rem !important;
+            }
+            #modalMatrizDetalle .modal-cuerpo {
+                padding: 10px 12px 14px 12px !important;
+                max-height: calc(90vh - 54px) !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+            }
+            .modal-matriz-table-wrap {
+                width: 100% !important;
+                overflow-x: auto !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                max-height: 48vh !important;
+                border: 1px solid var(--borde) !important;
+                border-radius: 8px !important;
+                margin: 4px 0 !important;
+            }
+            #tablaMatrizIncidentes {
+                min-width: 580px !important;
+                width: 100% !important;
+            }
+            #tablaMatrizIncidentes th,
+            #tablaMatrizIncidentes td {
+                padding: 7px 10px !important;
+                font-size: 0.78rem !important;
+            }
+            .modal-matriz-paginacion {
+                flex-direction: column !important;
+                align-items: center !important;
+                gap: 8px !important;
+                padding: 8px 0 2px 0 !important;
             }
         }
 
         /* ═══════════════════════════════════════════════════
-           SWITCH TIPO IPHONE (DASHBOARD & MOBILE)
-        ═══════════════════════════════════════════════════ */
+           SWITCH TEMA (Elegante y Sutil)
+           ═══════════════════════════════════════════════════ */
         button.toggle-iphone-header,
         .toggle-iphone-header {
-            padding: 0 6px !important;
+            padding: 0 5px !important;
             border-radius: 20px !important;
-            background: #253248 !important;
-            border: 1px solid #283449 !important;
+            background: var(--bg-surface) !important;
+            border: 1px solid var(--borde) !important;
             box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25) !important;
-            height: 26px !important;
-            width: 52px !important;
+            height: 24px !important;
+            width: 48px !important;
             display: inline-flex !important;
             align-items: center !important;
             justify-content: space-between !important;
             position: relative !important;
             cursor: pointer !important;
-            margin: 0 !important;
             outline: none !important;
             flex-shrink: 0 !important;
             transition: background 0.25s ease, border-color 0.25s ease;
@@ -440,72 +1137,51 @@
 
         button.toggle-iphone-header:hover,
         .toggle-iphone-header:hover {
-            background: #2e3d57 !important;
-            color: inherit !important;
+            background: rgba(59, 130, 246, 0.18) !important;
+            border-color: var(--borde-acento) !important;
         }
 
         body.tema-claro button.toggle-iphone-header,
         body.tema-claro .toggle-iphone-header {
-            background: #E4EAF2 !important;
-            border: 1px solid #DCE3EC !important;
+            background: #e2e8f0 !important;
+            border: 1px solid #cbd5e1 !important;
             box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06) !important;
-        }
-
-        body.tema-claro button.toggle-iphone-header:hover,
-        body.tema-claro .toggle-iphone-header:hover {
-            background: #d8e1ec !important;
         }
 
         .toggle-iphone-header .sw-slider {
             position: absolute;
             top: 2px;
             left: 2px;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
-            background: #1B74D1;
+            background: var(--azul, #2563eb);
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), background 0.25s ease;
             z-index: 2;
         }
 
         body.tema-claro .toggle-iphone-header .sw-slider {
-            transform: translateX(26px);
-            background: #FFFFFF;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.18);
+            transform: translateX(24px);
+            background: #ffffff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
         }
 
         .toggle-iphone-header .icono-sol,
         .toggle-iphone-header .icono-luna {
-            font-size: 0.72rem;
+            font-size: 0.68rem;
             z-index: 1;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: opacity 0.2s ease, color 0.2s ease;
         }
 
-        .toggle-iphone-header .icono-sol {
-            color: #64748B;
-            opacity: 0.35;
-        }
+        .toggle-iphone-header .icono-sol { color: #64748b; opacity: 0.4; }
+        .toggle-iphone-header .icono-luna { color: #93c5fd; opacity: 1; }
+        body.tema-claro .toggle-iphone-header .icono-sol { color: #d97706; opacity: 1; }
+        body.tema-claro .toggle-iphone-header .icono-luna { color: #94a3b8; opacity: 0.4; }
 
-        .toggle-iphone-header .icono-luna {
-            color: #8CB8FF;
-            opacity: 1;
-        }
-
-        body.tema-claro .toggle-iphone-header .icono-sol {
-            color: #D58A16;
-            opacity: 1;
-        }
-
-        body.tema-claro .toggle-iphone-header .icono-luna {
-            color: #9AA5B5;
-            opacity: 0.35;
-        }
-
-        /* ── Ajustes de contención de Sidebar para evitar desborde vertical ── */
+        /* ── Sidebar Desktop Contenida ── */
         .sidebar {
             height: 100vh !important;
             max-height: 100vh !important;
@@ -517,7 +1193,6 @@
         .sidebar::-webkit-scrollbar {
             display: none !important;
         }
-
         .sidebar.colapsada .sidebar-tema-fila {
             justify-content: center !important;
             padding: 2px 0 !important;
@@ -526,76 +1201,133 @@
             display: none !important;
         }
         .sidebar.colapsada .sidebar-tema-fila .toggle-iphone-header {
-            transform: scale(0.9);
+            transform: scale(0.88);
+        }
+        /* En sidebar colapsada: Ocultar texto, mostrar iconos centrados */
+        .sidebar.colapsada .nav-btn span,
+        .sidebar.colapsada .btn-admin-acceso span {
+            display: none !important;
+        }
+        .sidebar.colapsada .nav-btn i,
+        .sidebar.colapsada .btn-admin-acceso i {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 1.25rem !important;
+            margin: 0 auto !important;
+        }
+
+        /* En sidebar expandida ("Grande"): Ocultar iconos, mostrar únicamente palabras */
+        .sidebar:not(.colapsada) .nav-btn i,
+        .sidebar:not(.colapsada) .btn-admin-acceso i {
+            display: none !important;
+        }
+        .sidebar:not(.colapsada) .nav-btn {
+            justify-content: flex-start !important;
+            text-align: left !important;
+            padding: 9px 16px !important;
+        }
+        .sidebar:not(.colapsada) .btn-admin-acceso {
+            justify-content: flex-start !important;
+            text-align: left !important;
+            padding: 8px 14px !important;
         }
     </style>
 </head>
 
 <body>
+    <!-- Cabecera Móvil Nativa (Mobile App Bar) -->
+    <header class="mobile-app-header mobile-only">
+        <div class="mobile-app-brand">
+            <img src="../assets/img/logo_sigi.png" alt="Logo SIGI" class="mobile-brand-logo" width="38" height="38">
+            <div class="mobile-brand-info">
+                <span class="mobile-brand-title">SIGI Mobile</span>
+                <span class="mobile-brand-subtitle"><span class="pulse-green-dot"></span> Florencia · En vivo</span>
+            </div>
+        </div>
+        <div class="mobile-header-actions">
+            <button id="btnTemaHeaderMobile" class="toggle-iphone-header" title="Cambiar modo Claro / Oscuro" aria-label="Cambiar tema claro u oscuro">
+                <span class="icono-sol"><i class="bi bi-sun-fill" aria-hidden="true"></i></span>
+                <div class="sw-slider"></div>
+                <span class="icono-luna"><i class="bi bi-moon-stars-fill" aria-hidden="true"></i></span>
+            </button>
+            <button id="iniciarSesionMobile" class="btn-mobile-icon btn-admin-mobile" title="Acceso Admin" aria-label="Acceso administrativo móvil">
+                <i class="bi bi-shield-lock-fill" aria-hidden="true"></i>
+            </button>
+        </div>
+    </header>
+
     <div class="layout-wrapper">
         <aside class="sidebar desktop-only">
-            <button id="btnToggleSidebar" class="btn-toggle-sidebar" title="Colapsar / Expandir menú">
-                <i class="bi bi-chevron-left"></i>
+            <button id="btnToggleSidebar" class="btn-toggle-sidebar" title="Colapsar / Expandir menú" aria-label="Colapsar o expandir menú lateral">
+                <i class="bi bi-chevron-left" aria-hidden="true"></i>
             </button>
-            <div class="sidebar-logo" style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 8px; padding: 0 8px; width: 100%; box-sizing: border-box;">
-                <img src="../assets/img/logo_sigi.png" alt="Logo SIGI" style="width: 52px; max-width: 52px; height: auto; margin-bottom: 6px; border-radius: 10px; box-shadow: 0 0 12px rgba(70, 214, 247, 0.35);">
-                <span class="logo-title" style="font-size: 0.75rem; font-weight: bold; color: #e6edf3; letter-spacing: 0.02em; line-height: 1.25; white-space: normal; text-align: center; display: block; width: 100%;">Sistema de Información Geográfica de Incidentes — Consulta Pública</span>
-                <span class="logo-tag" style="font-size: 0.62rem; color: var(--acento); background: rgba(56, 139, 253, 0.15); padding: 2px 8px; border-radius: 12px; margin-top: 4px; display: inline-block;">v2.0 Beta</span>
+            <div class="sidebar-logo">
+                <img src="../assets/img/logo_sigi.png" alt="Logo SIGI" class="sidebar-logo-img">
+                <span class="logo-tag">v2.0 Beta</span>
             </div>
 
             <!-- Separador 1: Entre Logo y Menú de Navegación -->
-            <hr class="sidebar-divider" style="border: 0; border-top: 1px solid var(--borde); margin: 4px 15px 6px 15px; width: calc(100% - 30px); opacity: 0.7;">
+            <hr class="sidebar-divider" style="border: 0; border-top: 1px solid var(--borde); margin: 2px 15px; width: calc(100% - 30px); opacity: 0.7;">
 
-            <nav class="sidebar-nav" style="display: flex; flex-direction: column; gap: 3px; width: 100%;">
+            <nav class="sidebar-nav" style="display: flex; flex-direction: column; gap: 2px; width: 100%;">
                 <button class="nav-btn active" data-view="inicio" title="Inicio / Panel Informativo">
-                    <i class="bi bi-house"></i> <span class="nav-text">Inicio</span>
+                    <i class="bi bi-house-door" aria-hidden="true"></i>
+                    <span class="nav-text">Inicio</span>
                 </button>
                 <button class="nav-btn" data-view="mapa" title="Mapa Principal">
-                    <i class="bi bi-map"></i> <span class="nav-text">Mapa Principal</span>
+                    <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                    <span class="nav-text">Mapa Principal</span>
                 </button>
                 <button class="nav-btn" data-view="tabla" title="Tabla de Registros de Incidentes">
-                    <i class="bi bi-list-task"></i> <span class="nav-text">Incidentes</span>
+                    <i class="bi bi-table" aria-hidden="true"></i>
+                    <span class="nav-text">Incidentes</span>
                 </button>
                 <button class="nav-btn" data-view="estadisticas" title="Estadísticas">
-                    <i class="bi bi-bar-chart"></i> <span class="nav-text">Analítica</span>
+                    <i class="bi bi-bar-chart-line" aria-hidden="true"></i>
+                    <span class="nav-text">Analítica</span>
+                </button>
+                <button class="nav-btn" data-view="ia-hub" title="Centro de Inteligencia Artificial y Machine Learning">
+                    <i class="bi bi-cpu" aria-hidden="true"></i>
+                    <span class="nav-text">AI Lab</span>
                 </button>
             </nav>
             
             <div style="margin-top: auto; width: 100%; display: flex; flex-direction: column;">
                 <!-- Separador 2: Entre Menú y Simbología -->
-                <hr class="sidebar-divider" style="border: 0; border-top: 1px solid var(--borde); margin: 4px 15px 4px 15px; width: calc(100% - 30px); opacity: 0.7;">
+                <hr class="sidebar-divider" style="border: 0; border-top: 1px solid var(--borde); margin: 3px 15px; width: calc(100% - 30px); opacity: 0.7;">
 
                 <!-- Simbología con Conteo Dinámico -->
                 <div class="leyenda-sidebar desktop-only" style="padding: 0 10px; width: 100%; box-sizing: border-box; display: flex; flex-direction: column;">
-                    <div class="simbologia-card" style="padding: 6px 10px !important;">
-                        <h4 style="font-size: 0.70rem; color: var(--texto-suave); margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; display: flex; align-items: center; gap: 6px;">
-                            <i class="bi bi-palette-fill" style="font-size: 0.78rem; color: var(--acento);"></i> <span class="simbologia-title-text">Simbología</span>
+                    <div class="simbologia-card" style="padding: 5px 10px !important;">
+                        <h4 style="font-size: 0.70rem; color: var(--texto-suave); margin: 0 0 3px 0; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700;">
+                            <span class="simbologia-title-text">Simbología</span>
                         </h4>
-                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <div style="display: flex; flex-direction: column; gap: 3px;">
                             <div class="itemLeyenda" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 0.73rem; color: var(--texto);" title="Robo">
                                 <div style="display: flex; align-items: center; gap: 7px;">
-                                    <span class="dot-leyenda dot-rojo" style="width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); flex-shrink: 0;"></span>
+                                    <span class="dot-leyenda dot-rojo" style="width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: var(--rojo); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); flex-shrink: 0;"></span>
                                     <span class="simbologia-item-text">Robo</span>
                                 </div>
                                 <span id="sidebarCountRobo" class="simbologia-count-tag" style="font-weight: 700; color: var(--texto-suave); font-size: 0.72rem;">0</span>
                             </div>
                             <div class="itemLeyenda" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 0.73rem; color: var(--texto);" title="Piques">
                                 <div style="display: flex; align-items: center; gap: 7px;">
-                                    <span class="dot-leyenda dot-morado" style="width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: #a855f7; box-shadow: 0 0 8px rgba(168, 85, 247, 0.6); flex-shrink: 0;"></span>
+                                    <span class="dot-leyenda dot-morado" style="width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: var(--magenta); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); flex-shrink: 0;"></span>
                                     <span class="simbologia-item-text">Piques</span>
                                 </div>
                                 <span id="sidebarCountPiques" class="simbologia-count-tag" style="font-weight: 700; color: var(--texto-suave); font-size: 0.72rem;">0</span>
                             </div>
                             <div class="itemLeyenda" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 0.73rem; color: var(--texto);" title="Agresiones">
                                 <div style="display: flex; align-items: center; gap: 7px;">
-                                    <span class="dot-leyenda dot-amarillo" style="width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.6); flex-shrink: 0;"></span>
+                                    <span class="dot-leyenda dot-amarillo" style="width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: var(--amarillo); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); flex-shrink: 0;"></span>
                                     <span class="simbologia-item-text">Agresiones</span>
                                 </div>
                                 <span id="sidebarCountAgresiones" class="simbologia-count-tag" style="font-weight: 700; color: var(--texto-suave); font-size: 0.72rem;">0</span>
                             </div>
                             <div class="itemLeyenda" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 0.73rem; color: var(--texto);" title="Accidente">
                                 <div style="display: flex; align-items: center; gap: 7px;">
-                                    <span class="dot-leyenda dot-verde" style="width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: #10b981; box-shadow: 0 0 8px rgba(168, 85, 247, 0.6); flex-shrink: 0;"></span>
+                                    <span class="dot-leyenda dot-verde" style="width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: var(--verde); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); flex-shrink: 0;"></span>
                                     <span class="simbologia-item-text">Accidente</span>
                                 </div>
                                 <span id="sidebarCountAccidente" class="simbologia-count-tag" style="font-weight: 700; color: var(--texto-suave); font-size: 0.72rem;">0</span>
@@ -605,45 +1337,25 @@
                 </div>
 
                 <!-- Separador 3: Entre Simbología y Acceso Administrativo -->
-                <hr class="sidebar-divider" style="border: 0; border-top: 1px solid var(--borde); margin: 4px 15px 4px 15px; width: calc(100% - 30px); opacity: 0.7;">
+                <hr class="sidebar-divider" style="border: 0; border-top: 1px solid var(--borde); margin: 3px 15px; width: calc(100% - 30px); opacity: 0.7;">
 
                 <!-- Controles Inferiores: Switch iPhone de Tema + Acceso Administrativo -->
-                <div class="sidebar-footer" style="padding: 0 10px 8px 10px; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px; align-items: center;">
+                <div class="sidebar-footer" style="padding: 0 10px 8px 10px; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 4px; align-items: center; margin-bottom: 2px;">
                     <div class="sidebar-tema-fila" style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 2px 4px;">
                         <span class="nav-text tema-label-text" style="font-size: 0.73rem; font-weight: 600; color: var(--texto-suave);">Tema</span>
-                        <button id="btnTemaHeaderDashboard" class="toggle-iphone-header" title="Cambiar modo Claro / Oscuro para comodidad visual">
-                            <span class="icono-sol"><i class="bi bi-sun-fill"></i></span>
+                        <button id="btnTemaHeaderDashboard" class="toggle-iphone-header" title="Cambiar modo Claro / Oscuro para comodidad visual" aria-label="Cambiar tema claro u oscuro">
+                            <span class="icono-sol"><i class="bi bi-sun-fill" aria-hidden="true"></i></span>
                             <div class="sw-slider"></div>
-                            <span class="icono-luna"><i class="bi bi-moon-stars-fill"></i></span>
+                            <span class="icono-luna"><i class="bi bi-moon-stars-fill" aria-hidden="true"></i></span>
                         </button>
                     </div>
-                    <button id="iniciarSesion" class="nav-btn btn-admin-acceso" style="width: 100%; padding: 5px 10px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--borde); border-radius: 10px; color: var(--texto-suave); cursor: pointer; display: flex; align-items: center; justify-content: flex-start; gap: 8px; box-sizing: border-box; overflow: hidden; transition: all 0.2s ease;" title="Acceso Administrativo">
-                        <i class="bi bi-shield-lock-fill" style="color: var(--acento); font-size: 0.90rem; flex-shrink: 0;"></i> <span class="nav-text admin-text" style="color: var(--texto-suave); font-size: 0.74rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Acceso administrativo</span>
+                    <button id="iniciarSesion" class="nav-btn btn-admin-acceso" style="width: 100%; padding: 6px 10px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--borde); border-radius: 8px; color: var(--texto-suave); cursor: pointer; display: flex; align-items: center; justify-content: flex-start; gap: 8px; box-sizing: border-box; overflow: hidden; transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;" title="Acceso Administrativo" aria-label="Acceso administrativo al sistema">
+                        <i class="bi bi-shield-lock" aria-hidden="true" style="font-size: 0.95rem; flex-shrink: 0;"></i>
+                        <span class="nav-text admin-text" style="color: var(--texto-suave); font-size: 0.74rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Acceso administrativo</span>
                     </button>
                 </div>
             </div>
         </aside>
-
-        <!-- Cabecera Móvil Nativa (Mobile App Bar) -->
-        <header class="mobile-app-header mobile-only">
-            <div class="mobile-app-brand">
-                <img src="../assets/img/logo_sigi.png" alt="Logo SIGI" class="mobile-brand-logo" style="border-radius: 6px;">
-                <div class="mobile-brand-info">
-                    <span class="mobile-brand-title">SIGI Mobile</span>
-                    <span class="mobile-brand-subtitle"><span class="pulse-green-dot"></span> Florencia · En vivo</span>
-                </div>
-            </div>
-            <div class="mobile-header-actions">
-                <button id="btnTemaHeaderMobile" class="toggle-iphone-header" title="Cambiar modo Claro / Oscuro">
-                    <span class="icono-sol"><i class="bi bi-sun-fill"></i></span>
-                    <div class="sw-slider"></div>
-                    <span class="icono-luna"><i class="bi bi-moon-stars-fill"></i></span>
-                </button>
-                <button id="iniciarSesionMobile" class="btn-mobile-icon btn-admin-mobile" title="Acceso Admin">
-                    <i class="bi bi-shield-lock-fill"></i>
-                </button>
-            </div>
-        </header>
 
         <div class="content-wrapper">
 
@@ -653,8 +1365,8 @@
         <div id="panelFiltros" class="modal" role="dialog" aria-label="Filtros de mapa" aria-hidden="true" style="display: none;">
             <div class="modal-contenido modal-tiempo modal-filtros-popup">
                 <div class="modal-cabecera">
-                    <h3><i class="bi bi-funnel-fill"></i> Filtros de Mapa</h3>
-                    <span class="cerrar-modal-tiempo" id="cerrarFiltros" title="Cerrar">&times;</span>
+                    <h3>Filtros de Mapa</h3>
+                    <button type="button" class="cerrar-modal-tiempo" id="cerrarFiltros" title="Cerrar" aria-label="Cerrar filtros"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
                 </div>
                 
                 <div class="modal-cuerpo" style="display: flex; flex-direction: column; gap: 14px; overflow-y: auto;">
@@ -667,15 +1379,15 @@
                             </div>
                             <div class="ar-item">
                                 <span class="ar-label">Barrio afectado:</span>
-                                <span class="ar-valor" id="ar-barrio">...</span>
+                                <span class="ar-valor" id="ar-barrio">…</span>
                             </div>
                             <div class="ar-item">
                                 <span class="ar-label">Tipo frecuente:</span>
-                                <span class="ar-valor" id="ar-tipo">...</span>
+                                <span class="ar-valor" id="ar-tipo">…</span>
                             </div>
                             <div class="ar-item">
                                 <span class="ar-label">Hora crítica:</span>
-                                <span class="ar-valor" id="ar-hora">...</span>
+                                <span class="ar-valor" id="ar-hora">…</span>
                             </div>
                         </div>
                     </div>
@@ -683,7 +1395,7 @@
                     <div class="seccion-filtro-modal">
                         <span class="titulo-seccion-modal">Buscar lugar</span>
                         <div class="contenedor-buscar-lugar">
-                            <input type="text" id="buscarLugar" placeholder="Ej: Las Malvinas, San Antonio..." autocomplete="off">
+                            <input type="text" id="buscarLugar" placeholder="Ej: Las Malvinas, San Antonio…" autocomplete="off">
                             <div id="sugerencias"></div>
                         </div>
                     </div>
@@ -716,7 +1428,7 @@
                 </div>
 
                 <div class="modal-pie" style="padding-top: 10px;">
-                    <button class="btnActualizar btn-verde" type="button" style="width: 100%; padding: 11px; font-size: 0.88rem; font-weight: 700; border-radius: 10px;">
+                    <button class="btnActualizar btn-primario-modal" type="button" style="width: 100%; padding: 11px; font-size: 0.88rem; font-weight: 700; border-radius: 10px;">
                         <i class="bi bi-check2-circle"></i> Aplicar Filtros
                     </button>
                 </div>
@@ -773,87 +1485,82 @@
                     <span class="info-footer-sub">Florencia, Caquetá · Zonas Urbana y Rural</span>
                 </div>
             </div>
+
+            <!-- Footer oficial ubicado exclusivamente en la vista de Inicio -->
+            <footer class="sigi-footer">
+                <div class="footer-contenido">
+                    <p class="footer-copy">© 2026 SIGI · SENA</p>
+                </div>
+            </footer>
+        </div>
+
+        <!-- KPI Ribbon: Contenedor de KPIs ARRIBA del contenedor del mapa (#vistaMapa) -->
+        <div class="kpi-ribbon esconder" id="kpiRibbon">
+            <div class="kpi-cards-scroll">
+                <div class="kpi-card">
+                    <span class="kpi-label">Total</span>
+                    <span class="kpi-valor" id="kpi-total">0</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">Variación mensual</span>
+                    <span class="kpi-valor" id="kpi-variacion">0%</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">Zona crítica</span>
+                    <span class="kpi-valor" id="kpi-zona">---</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">Predominante</span>
+                    <span class="kpi-valor" id="kpi-tipo">---</span>
+                </div>
+            </div>
+            <div class="kpi-cerrar-slot">
+                <button type="button" id="btnCerrarKpis" class="btn-cerrar-kpis" title="Ocultar métricas" aria-label="Ocultar métricas"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+            </div>
         </div>
 
         <main id="vistaMapa" class="esconder">
             <div class="map-wrapper">
-            <div class="kpi-ribbon" id="kpiRibbon">
-                <div class="kpi-cards-scroll">
-                    <div class="kpi-card">
-                        <div class="kpi-content">
-                            <span class="kpi-label">Total incidentes</span>
-                            <span class="kpi-valor" id="kpi-total">0</span>
-                        </div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-content">
-                            <span class="kpi-label">Variación mensual</span>
-                            <span class="kpi-valor" id="kpi-variacion">0%</span>
-                        </div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-content">
-                            <span class="kpi-label">Zona más afectada</span>
-                            <span class="kpi-valor" id="kpi-zona">---</span>
-                        </div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-content">
-                            <span class="kpi-label">Tipo predominante</span>
-                            <span class="kpi-valor" id="kpi-tipo">---</span>
-                        </div>
-                    </div>
+                <div id="indicador-actualizacion" class="indicador-actualizacion" style="position: absolute; bottom: 25px; right: 15px; z-index: 999; background: var(--bg-glass-float); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 6px 14px; border-radius: 20px; border: 1px solid var(--borde); font-size: 0.7rem; color: var(--texto-suave); pointer-events: none; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.25);">
+                    <span class="pulse-dot-indicador"></span>
+                    <span>Última actualización: <strong id="hora-actualizacion" style="color: var(--texto);">--:--:--</strong></span>
                 </div>
-                <button type="button" id="btnCerrarKpis" class="btn-cerrar-kpis" title="Ocultar métricas" aria-label="Ocultar métricas">
-                    <i class="bi bi-x-lg"></i>
-                </button>
-            </div>
 
-            <!-- Botón flotante para reabrir métricas cuando se hayan ocultado -->
-            <button type="button" id="btnAbrirKpis" class="btn-abrir-kpis" style="display: none;" title="Mostrar métricas de incidentes" aria-label="Mostrar métricas">
-                <i class="bi bi-speedometer2"></i>
-                <span>Métricas</span>
-            </button>
-            <div id="indicador-actualizacion" style="position: absolute; bottom: 25px; right: 15px; z-index: 999; background: rgba(13, 17, 23, 0.75); backdrop-filter: blur(8px); padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); font-size: 0.7rem; color: #c9d1d9; pointer-events: none; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
-                <span class="pulse-dot-indicador"></span>
-                <span>Última actualización: <strong id="hora-actualizacion" style="color: #fff;">--:--:--</strong></span>
-            </div>
-
-            <div id="map">
+                <div id="map">
                 <!-- Grupo Unificado de Botones de Acción del Mapa -->
                 <div class="map-actions-group">
                     <button id="btnFiltros" type="button" class="fab fab-filtros" aria-label="Abrir filtros" title="Filtros del mapa">
-                        <i class="bi bi-funnel icono-desktop" aria-hidden="true"></i>
-                        <i class="bi bi-funnel icono-mobile" aria-hidden="true"></i>
-                        <span class="texto-desktop" style="margin-left: 5px;">Filtros</span>
+                        <span class="btn-label">Filtros</span>
                         <span class="fab-badge" id="badgeFiltros">0</span>
                     </button>
 
                     <button id="btnAbrirFiltroTiempo" type="button" class="fab fab-tiempo" aria-label="Filtrar por tiempo" title="Filtrar por tiempo">
-                        <i class="bi bi-calendar-event icono-desktop" aria-hidden="true"></i>
-                        <i class="bi bi-calendar-event icono-mobile" aria-hidden="true"></i>
-                        <span class="texto-desktop" style="margin-left: 5px;">Tiempo</span>
+                        <span class="btn-label">Tiempo</span>
                     </button>
 
                     <button id="btnMiUbicacion" type="button" class="fab fab-location" aria-label="Mi ubicación en tiempo real" title="Centrar en mi ubicación">
-                        <i class="bi bi-crosshair2 icono-mobile" aria-hidden="true"></i>
-                        <i class="bi bi-crosshair2 icono-desktop" aria-hidden="true"></i>
-                        <span class="texto-desktop" style="margin-left: 5px;">Mi ubicación</span>
+                        <span class="btn-label">Mi ubicación</span>
                         <span id="badgeUbicacion" class="location-pulse-dot" style="display: none;"></span>
                     </button>
 
                     <button id="btnToggleHeatmap" type="button" class="fab fab-heatmap" aria-label="Alternar mapa de calor" title="Mapa de calor">
-                        <i class="bi bi-fire icono-mobile" aria-hidden="true"></i>
-                        <i class="bi bi-fire icono-desktop" aria-hidden="true"></i>
-                        <span class="texto-desktop" style="margin-left: 5px;">Mapa de calor</span>
+                        <span class="btn-label">Mapa de calor</span>
                     </button>
 
-                    <!-- Botón Restablecer integrado al dock de filtros -->
+                    <button id="btnToggleDBSCAN" type="button" class="fab fab-dbscan" aria-label="Alternar Zonas Críticas DBSCAN Machine Learning" title="Zonas Críticas ML (DBSCAN)">
+                        <span class="btn-label">Hotspots ML</span>
+                    </button>
+
                     <button class="restablecer fab" type="button" aria-label="Restablecer filtros" title="Restablecer mapa">
-                        <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
-                        <span class="texto-desktop" style="margin-left: 5px;">Restablecer</span>
+                        <span class="btn-label">Restablecer</span>
                     </button>
                 </div>
+
+                <!-- Botón flotante para reabrir métricas cuando se hayan ocultado -->
+                <button type="button" id="btnAbrirKpis" class="btn-abrir-kpis" style="display: none;" title="Mostrar métricas de incidentes" aria-label="Mostrar métricas">
+                    <i class="bi bi-bar-chart-line" aria-hidden="true" style="font-size: 0.85rem;"></i>
+                    <span>Métricas</span>
+                </button>
             </div>
             
             <div class="leyenda contFlexCent mobile-only" aria-label="Leyenda del mapa">
@@ -873,9 +1580,9 @@
         <!-- Vista Desktop: Tabla Tradicional -->
         <div class="tabla-container desktop-only">
             <div class="tabla-header">
-                <h2><i class="bi bi-table"></i> Incidentes Registrados</h2>
+                <h2>Incidentes Registrados</h2>
                 <div class="tabla-acciones" id="contenedorAccionesTabla" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-                    <button id="btnExportarCsv" class="btn-export">Exportar CSV</button>
+                    <button id="btnExportarCsv" class="btn-export" title="Exportar reporte de incidentes a Excel">Exportar CSV</button>
                 </div>
             </div>
             <div class="table-responsive">
@@ -896,9 +1603,17 @@
                 </table>
             </div>
 
-            <div class="tabla-paginacion" id="paginacionTabla">
-                <span class="paginacion-info" id="infoPaginacionTabla">Mostrando 0 - 0 de 0 incidentes</span>
-                <div class="paginacion-botones" id="botonesPaginacionTabla"></div>
+            <div class="user-pagination-bar" id="paginacionTabla">
+                <span id="infoPaginacionTabla">Mostrando 0 de 0 incidentes</span>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button type="button" id="btnPagAntTabla" class="btn-pag-incidente">
+                        Anterior
+                    </button>
+                    <span id="labelPaginaTabla">Página 1 de 1</span>
+                    <button type="button" id="btnPagSigTabla" class="btn-pag-incidente">
+                        Siguiente
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -914,8 +1629,8 @@
 
             <!-- Buscador rápido táctil -->
             <div class="mobile-feed-search">
-                <i class="bi bi-search"></i>
-                <input type="text" id="buscarIncidenteMobile" placeholder="Buscar por barrio, tipo o código...">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input type="text" id="buscarIncidenteMobile" placeholder="Buscar por barrio, tipo o código…">
             </div>
 
             <!-- Contenedor dinámico de tarjetas móviles -->
@@ -933,59 +1648,42 @@
         <!-- Banner Header Analítica -->
         <div class="analitica-header">
             <div class="analitica-titulo">
-                <h2><i class="bi bi-bar-chart-line-fill"></i> Panel de Analítica & Estadísticas</h2>
-                <p>Visualización avanzada de patrones espacio-temporales y resumen ejecutivo en tiempo real.</p>
+                <h2>Panel de Analítica</h2>
+                <p>Monitoreo estadístico y patrones temporales de incidentes en Florencia.</p>
             </div>
-            <div class="analitica-badge">
-                <span class="pulse-indicator"></span>
-                <span>Analizando datos en tiempo real</span>
-            </div>
+            <div class="analitica-acciones" id="contenedorAccionesAnalitica"></div>
         </div>
 
         <!-- Tarjetas KPI Resumen -->
         <div class="resumen">
             <div class="contResumen">
                 <div class="cardResumen totalResumen">
-                    <div class="card-content">
-                        <span>Total Registros</span>
-                        <h2 id="total">0</h2>
-                    </div>
+                    <span class="card-kpi-label"><span class="card-kpi-dot"></span> Total Registros</span>
+                    <h2 id="total">0</h2>
                 </div>
                 <div class="cardResumen roboResumen">
-                    <div class="card-content">
-                        <span>Robos</span>
-                        <h2 id="robos">0</h2>
-                    </div>
+                    <span class="card-kpi-label"><span class="card-kpi-dot"></span> Robos</span>
+                    <h2 id="robos">0</h2>
                 </div>
                 <div class="cardResumen accidenteResumen">
-                    <div class="card-content">
-                        <span>Accidentes</span>
-                        <h2 id="accidentes">0</h2>
-                    </div>
+                    <span class="card-kpi-label"><span class="card-kpi-dot"></span> Accidentes</span>
+                    <h2 id="accidentes">0</h2>
                 </div>
                 <div class="cardResumen piqueResumen">
-                    <div class="card-content">
-                        <span>Piques</span>
-                        <h2 id="piques">0</h2>
-                    </div>
+                    <span class="card-kpi-label"><span class="card-kpi-dot"></span> Piques</span>
+                    <h2 id="piques">0</h2>
                 </div>
                 <div class="cardResumen agresionResumen">
-                    <div class="card-content">
-                        <span>Agresiones</span>
-                        <h2 id="agresiones">0</h2>
-                    </div>
+                    <span class="card-kpi-label"><span class="card-kpi-dot"></span> Agresiones</span>
+                    <h2 id="agresiones">0</h2>
                 </div>
                 <div class="cardResumen topBarrio">
-                    <div class="card-content">
-                        <span>Barrio Crítico</span>
-                        <h2 id="topBarrio">...</h2>
-                    </div>
+                    <span class="card-kpi-label"><span class="card-kpi-dot"></span> Barrio Crítico</span>
+                    <h2 id="topBarrio">…</h2>
                 </div>
                 <div class="cardResumen topVereda">
-                    <div class="card-content">
-                        <span>Vereda Crítica</span>
-                        <h2 id="topVereda">...</h2>
-                    </div>
+                    <span class="card-kpi-label"><span class="card-kpi-dot"></span> Vereda Crítica</span>
+                    <h2 id="topVereda">…</h2>
                 </div>
             </div>
         </div>
@@ -994,9 +1692,7 @@
         <div class="estadisticas-grid">
             <!-- Ranking Top 10 Zonas Críticas -->
             <div class="grafico-scroll" id="topZonasContainer">
-                <h3 class="seccion-titulo">
-                    <i class="bi bi-exclamation-triangle-fill" style="color: var(--rojo);"></i> Ranking Top 10 Zonas Críticas
-                </h3>
+                <h3 class="seccion-titulo">Ranking Top 10 Zonas Críticas</h3>
                 <div id="panelTopZonas" class="panel-grafico" style="padding: 16px;">
                     <ul class="top-zonas-list" id="topZonasList">
                         <!-- Renderizado dinámico por JS -->
@@ -1006,7 +1702,7 @@
 
             <!-- Gráfico de Dona: Distribución Porcentual -->
             <div class="grafico-scroll">
-                <h3 class="seccion-titulo"><i class="bi bi-pie-chart-fill"></i> Proporción por Tipo de Incidente</h3>
+                <h3 class="seccion-titulo">Proporción por Tipo de Incidente</h3>
                 <div id="panelDona" class="panel-grafico">
                     <canvas id="graficoDona"></canvas>
                 </div>
@@ -1014,7 +1710,7 @@
 
             <!-- Gráfico de Tendencia Temporal -->
             <div class="grafico-scroll">
-                <h3 class="seccion-titulo"><i class="bi bi-graph-up"></i> Evolución de Incidentes (Tendencia)</h3>
+                <h3 class="seccion-titulo">Evolución de Incidentes (Tendencia)</h3>
                 <div id="panelTendencia" class="panel-grafico">
                     <canvas id="graficoTendencia"></canvas>
                 </div>
@@ -1022,7 +1718,7 @@
 
             <!-- Gráfico por Hora -->
             <div class="grafico-scroll">
-                <h3 class="seccion-titulo"><i class="bi bi-clock-history"></i> Distribución por Hora del Día</h3>
+                <h3 class="seccion-titulo">Distribución por Hora del Día</h3>
                 <div id="panelHoras" class="panel-grafico">
                     <canvas id="graficoHoras"></canvas>
                 </div>
@@ -1030,7 +1726,7 @@
 
             <!-- Gráfico de barras verticales -->
             <div class="grafico-scroll">
-                <h3 class="seccion-titulo"><i class="bi bi-bar-chart-fill"></i> Comparativo por Categoría</h3>
+                <h3 class="seccion-titulo">Comparativo por Categoría</h3>
                 <div id="panelIncidentes" class="panel-grafico">
                     <canvas id="graficoBarras"></canvas>
                 </div>
@@ -1038,7 +1734,7 @@
 
             <!-- Matriz de Concentración -->
             <div class="grafico-scroll grid-full-width">
-                <h3 class="seccion-titulo"><i class="bi bi-grid-3x3-gap-fill"></i> Matriz de Concentración (Día × Hora)</h3>
+                <h3 class="seccion-titulo">Matriz de Concentración (Día × Hora)</h3>
                 <div id="panelMatriz" class="panel-grafico" style="padding: 16px; overflow-x: auto;">
                     <div id="matrizDiaHora" class="heatmap-grid"></div>
                 </div>
@@ -1046,11 +1742,228 @@
         </div>
     </div> <!-- Cierra estadisticas -->
 
-    <footer class="sigi-footer desktop-only">
-        <div class="footer-contenido">
-            <p class="footer-copy">© 2026 SIGI · SENA</p>
+    <!-- ═══════════════════════════════════════════════════════════════
+         VISTA IA LAB: CENTRO DE MACHINE LEARNING Y ANALÍTICA PREDICTIVA
+         ═══════════════════════════════════════════════════════════════ -->
+    <section id="vistaIA" class="esconder vista-ai-container" style="flex: 1; overflow-y: auto;">
+        <!-- Header -->
+        <div class="ai-lab-header">
+            <div class="ai-header-left">
+                <div class="ai-icon-pulse">
+                    <i class="bi bi-cpu-fill"></i>
+                </div>
+                <div class="ai-title-wrap">
+                    <h2>SIGI AI Lab & Machine Learning Hub</h2>
+                    <p>Modelos supervisados (NLP), agrupamiento espacial no supervisado (DBSCAN) y pronóstico temporal.</p>
+                </div>
+            </div>
+            <div class="ai-header-badge">
+                <span class="ai-dot-online"></span>
+                <span>Motores ML Activos (v2.0)</span>
+            </div>
         </div>
-    </footer>
+
+        <!-- Pestañas de Navegación del Lab -->
+        <div class="ai-nav-tabs">
+            <button type="button" class="ai-tab-btn active" data-tab="tabSimuladorNLP">
+                1. Simulador NLP en Tiempo Real
+            </button>
+            <button type="button" class="ai-tab-btn" data-tab="tabDBSCAN">
+                2. Zonas Críticas DBSCAN (Hotspots)
+            </button>
+            <button type="button" class="ai-tab-btn" data-tab="tabForecast">
+                3. Pronóstico Temporal (Forecasting)
+            </button>
+        </div>
+
+        <!-- TAB 1: SIMULADOR NLP -->
+        <div id="tabSimuladorNLP" class="ai-tab-content">
+            <div class="ai-nlp-grid">
+                <!-- Tarjeta Izquierda: Entrada de Texto y Escenarios Rápidos -->
+                <div class="ai-card">
+                    <div class="ai-card-title">
+                        Laboratorio de Clasificación de Texto
+                    </div>
+                    <p style="font-size:0.8rem; color:var(--texto-suave); margin-bottom:12px;">
+                        Escribe cualquier relato o selecciona un escenario de prueba para observar cómo el clasificador probabilístico analiza palabras clave, contexto y disparadores críticos:
+                    </p>
+                    
+                    <div class="ai-quick-scenarios">
+                        <span class="ai-chip-scenario" data-example="robo">Asalto armado</span>
+                        <span class="ai-chip-scenario" data-example="pelea">Riña violenta</span>
+                        <span class="ai-chip-scenario" data-example="piques">Piques ilegales</span>
+                        <span class="ai-chip-scenario" data-example="accidente">Choque vehicular</span>
+                    </div>
+
+                    <textarea id="aiSimuladorInput" class="ai-textarea-lab" rows="5" placeholder="Escribe aquí un reporte descriptivo…"></textarea>
+                    
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                        <span style="font-size:0.75rem; color:var(--texto-suave);">El modelo analiza el texto en vivo a medida que escribes.</span>
+                        <button type="button" class="btn-open-ailab" onclick="ejecutarPrediccionNLP(document.getElementById('aiSimuladorInput').value)">
+                            Analizar ahora
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tarjeta Derecha: Resultados y Diagnóstico de IA -->
+                <div class="ai-card ai-result-panel">
+                    <div class="ai-card-header-row">
+                        <div class="ai-card-title" style="margin-bottom:0;">
+                            Diagnóstico Predictivo del Modelo
+                        </div>
+                        <span class="ai-live-badge"><span class="ai-live-dot"></span> Inferencia en Vivo</span>
+                    </div>
+
+                    <!-- Predicción Principal (Hero) -->
+                    <div class="ai-prediccion-hero">
+                        <div>
+                            <span class="ai-pred-hero-eyebrow">Tipología Identificada</span>
+                            <div id="aiPredTipoNombre" class="ai-pred-tipo-nombre">Robo / Hurto</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <span class="ai-pred-hero-eyebrow" style="text-align:right;">Certeza (Softmax)</span>
+                            <div class="ai-pred-confidence-pill">
+                                <span id="aiPredConfianzaVal" class="ai-pred-confianza-badge">94.2%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Barras de Distribución de Probabilidad -->
+                    <div class="ai-distribution-section">
+                        <div class="ai-distribution-header">
+                            <span class="ai-section-subtitle">Distribución Probabilística por Categoría</span>
+                            <span class="ai-softmax-hint">Multiclase ponderada</span>
+                        </div>
+                        <div id="aiProbabilidadesBarras" class="ai-prob-list"></div>
+                    </div>
+
+                    <!-- Gravedad y Auxilio Sugerido -->
+                    <div class="ai-gravity-box">
+                        <div id="aiGravScore" class="ai-gravity-score" style="background:#ef4444;">4</div>
+                        <div class="ai-gravity-details">
+                            <div id="aiGravTitulo" class="ai-gravity-title">Gravedad Nivel 4 — Alta Prioridad</div>
+                            <p id="aiGravDesc" class="ai-gravity-desc">Tiempo de respuesta táctico: 30-60 minutos</p>
+                            <div id="aiTriggersList" class="ai-triggers-list"></div>
+                        </div>
+                    </div>
+
+                    <!-- Recursos de Emergencia Recomendados -->
+                    <div class="ai-dispatch-box">
+                        <span class="ai-dispatch-label">Auxilio Operativo Inmediato Recomendado</span>
+                        <div id="aiAsistenciasRecomendadas" class="ai-dispatch-pills-wrap"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: DBSCAN SPATIAL CLUSTERING & RANKING -->
+        <div id="tabDBSCAN" class="ai-tab-content" style="display:none;">
+            <!-- Controles de Hiperparámetros -->
+            <div class="ai-card" style="margin-bottom:20px;">
+                <div class="ai-card-title">
+                    Ajuste de Hiperparámetros del Algoritmo DBSCAN
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:20px; align-items:center;">
+                    <div style="display:flex; flex-direction:column; gap:6px;">
+                        <label style="font-size:0.78rem; font-weight:600; color:var(--texto-suave);">Radio de Vecindad ε (Epsilon):</label>
+                        <select id="dbscanParamEps" style="background:var(--bg-card); color:var(--texto); border:1px solid var(--borde); padding:6px 12px; border-radius:8px; font-weight:600;">
+                            <option value="200">200 metros (Micro-clusters densos)</option>
+                            <option value="350">350 metros (Zonas barriales)</option>
+                            <option value="450" selected>450 metros (Óptimo comunal)</option>
+                            <option value="700">700 metros (Macro-sectores)</option>
+                            <option value="1000">1000 metros (1 km)</option>
+                        </select>
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; gap:6px;">
+                        <label style="font-size:0.78rem; font-weight:600; color:var(--texto-suave);">Mínimo de Incidentes (minPts):</label>
+                        <select id="dbscanParamMinPts" style="background:var(--bg-card); color:var(--texto); border:1px solid var(--borde); padding:6px 12px; border-radius:8px; font-weight:600;">
+                            <option value="2">2 casos (Sensibilidad alta)</option>
+                            <option value="3" selected>3 casos (Recomendado estándar)</option>
+                            <option value="5">5 casos (Zonas de alta recurrencia)</option>
+                            <option value="8">8 casos (Puntos neurálgicos críticos)</option>
+                        </select>
+                    </div>
+
+                    <button type="button" class="btn-open-ailab" id="btnEjecutarAjusteDBSCAN" style="margin-top:20px;">
+                        Recalcular Clusters en Vivo
+                    </button>
+                </div>
+            </div>
+
+            <!-- KPIs de Concentración Espacial -->
+            <div class="ai-forecast-kpis">
+                <div class="ai-forecast-kpi-card">
+                    <span class="ai-forecast-kpi-label">Clusters / Puntos Calientes</span>
+                    <div id="aiKpiTotalClusters" class="ai-forecast-kpi-val" style="color:var(--acento);">--</div>
+                </div>
+                <div class="ai-forecast-kpi-card">
+                    <span class="ai-forecast-kpi-label">Incidentes en Zonas Críticas</span>
+                    <div id="aiKpiPuntosAgrupados" class="ai-forecast-kpi-val" style="color:#f59e0b;">--</div>
+                </div>
+                <div class="ai-forecast-kpi-card">
+                    <span class="ai-forecast-kpi-label">Incidentes Aislados (Ruido)</span>
+                    <div id="aiKpiRuido" class="ai-forecast-kpi-val" style="color:#94a3b8;">--</div>
+                </div>
+            </div>
+
+            <!-- Tabla de Ranking de Zonas Críticas -->
+            <div class="ai-card">
+                <div class="ai-card-title">
+                    Ranking de Zonas Críticas Detectadas por DBSCAN
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="ai-clusters-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 70px;">Posición</th>
+                                <th>Zona / Sector</th>
+                                <th>Nivel de Riesgo</th>
+                                <th>Volumen de Casos</th>
+                                <th>Gravedad Media</th>
+                                <th>Acción Espacial</th>
+                            </tr>
+                        </thead>
+                        <tbody id="aiTablaClustersBody">
+                            <!-- Llenado dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: FORECASTING & TENDENCIAS TEMPORALES -->
+        <div id="tabForecast" class="ai-tab-content" style="display:none;">
+            <!-- KPIs de Forecasting -->
+            <div class="ai-forecast-kpis">
+                <div class="ai-forecast-kpi-card">
+                    <span class="ai-forecast-kpi-label">Diagnóstico de Tendencia</span>
+                    <div id="aiForecastTendenciaVal" class="ai-forecast-kpi-val" style="font-size:1.15rem; color:var(--acento);">Analizando…</div>
+                </div>
+                <div class="ai-forecast-kpi-card">
+                    <span class="ai-forecast-kpi-label">Proyección Mes Siguiente</span>
+                    <div id="aiForecastProximoMes" class="ai-forecast-kpi-val" style="color:#a855f7;">--</div>
+                </div>
+                <div class="ai-forecast-kpi-card">
+                    <span class="ai-forecast-kpi-label">Tasa de Variación Proyectada</span>
+                    <div id="aiForecastCambioPct" class="ai-forecast-kpi-val">--%</div>
+                </div>
+            </div>
+
+            <!-- Gráfico de Tendencia y Forecast -->
+            <div class="ai-card">
+                <div class="ai-card-title">
+                    Curva Predictiva con Intervalos de Confianza (Próximos 3 Meses)
+                </div>
+                <p style="font-size:0.8rem; color:var(--texto-suave); margin-bottom:16px;">
+                    El modelo combina regresión de mínimos cuadrados ordinarios (OLS) con suavizado exponencial para anticipar el volumen de incidentes y alertar de forma temprana a cuadrantes policiales.
+                </p>
+                <div style="height:320px; width:100%; position:relative;">
+                    <canvas id="chartForecastCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
 
     </div> <!-- Cierra content-wrapper -->
     </div> <!-- Cierra layout-wrapper -->
@@ -1073,6 +1986,10 @@
             <i class="bi bi-bar-chart-line-fill" aria-hidden="true"></i>
             <span>Analítica</span>
         </button>
+        <button type="button" class="mobile-nav-tab" data-view="ia-hub">
+            <i class="bi bi-cpu-fill" aria-hidden="true" style="color:var(--acento);"></i>
+            <span>AI Lab</span>
+        </button>
     </nav>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
@@ -1083,7 +2000,7 @@
         <div class="modal-contenido modal-tiempo">
             <div class="modal-cabecera">
                 <h3><i class="bi bi-calendar-event"></i> Filtrar por tiempo</h3>
-                <span class="cerrar-modal-tiempo" id="btnCerrarFiltroTiempo" title="Cerrar">&times;</span>
+                <button type="button" class="cerrar-modal-tiempo" id="btnCerrarFiltroTiempo" title="Cerrar" aria-label="Cerrar filtro de tiempo"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
             </div>
             
             <div class="modal-cuerpo">
@@ -1115,8 +2032,8 @@
                             </div>
                         </div>
                         <div class="botones-rango-modal">
-                            <button type="button" id="btnAplicarRangoModal" class="btn-verde">Aplicar</button>
-                            <button type="button" id="btnLimpiarRangoModal" class="btn-rojo">Limpiar</button>
+                            <button type="button" id="btnAplicarRangoModal" class="btn-primario-modal">Aplicar</button>
+                            <button type="button" id="btnLimpiarRangoModal" class="btn-secundario-modal">Limpiar</button>
                         </div>
                     </div>
                 </div>
@@ -1127,7 +2044,7 @@
                         <label for="mesFiltroModal">Por Mes</label>
                         <div class="input-con-boton">
                             <input type="month" id="mesFiltroModal" class="input-modal-month">
-                            <button type="button" id="btnFiltrarMesModal" class="btn-verde btn-icono" title="Filtrar mes"><i class="bi bi-funnel-fill"></i></button>
+                            <button type="button" id="btnFiltrarMesModal" class="btn-acento-modal" title="Filtrar mes">Filtrar</button>
                         </div>
                     </div>
                     <div class="campo-modal">
@@ -1136,7 +2053,7 @@
                             <select id="anioFiltroModal" class="input-modal-fecha">
                                 <option value="">---</option>
                             </select>
-                            <button type="button" id="btnFiltrarAnioModal" class="btn-verde btn-icono" title="Filtrar año"><i class="bi bi-funnel-fill"></i></button>
+                            <button type="button" id="btnFiltrarAnioModal" class="btn-acento-modal" title="Filtrar año">Filtrar</button>
                         </div>
                     </div>
                 </div>
@@ -1145,22 +2062,18 @@
             <!-- FOOTER CON LIMPIEZA GENERAL -->
             <div class="modal-pie">
                 <button type="button" id="btnLimpiarTodoModal" class="btn-limpiar-general">
-                    <i class="bi bi-arrow-counterclockwise"></i> Restablecer filtros
+                    Restablecer filtros
                 </button>
             </div>
         </div>
     </div>
 
-    
-    
-
-
     <!-- Modal Detalle de Incidente -->
     <div id="modalDetalleIncidente" class="modal" aria-hidden="true" style="display: none;">
         <div class="modal-contenido modal-detalle">
             <div class="modal-cabecera">
-                <h3 id="modalDetalleTitulo"><i class="bi bi-info-circle"></i> Detalle del Incidente</h3>
-                <span class="cerrar-modal-tiempo" id="btnCerrarDetalleIncidente">&times;</span>
+                <h3 id="modalDetalleTitulo">Detalle del Incidente</h3>
+                <button type="button" class="cerrar-modal-tiempo" id="btnCerrarDetalleIncidente" title="Cerrar"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
             </div>
             <div class="modal-cuerpo" id="cuerpoDetalleIncidente">
                 <!-- Se llena dinámicamente -->
@@ -1168,7 +2081,54 @@
         </div>
     </div>
 
+    <!-- Modal Incidentes Matriz Concentración (Día × Hora) -->
+    <div id="modalMatrizDetalle" class="modal" aria-hidden="true" style="display: none;">
+        <div class="modal-contenido modal-matriz-box">
+            <div class="modal-cabecera">
+                <h3 id="modalMatrizTitulo">Incidentes Registrados</h3>
+                <button type="button" class="cerrar-modal-tiempo" id="btnCerrarModalMatriz" title="Cerrar ventana"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+            </div>
+            <div class="modal-cuerpo">
+                <p id="modalMatrizSubtitulo" style="font-size: 0.88rem; color: var(--texto-suave); margin-top: 0; margin-bottom: 12px;"></p>
+                <div class="table-responsive modal-matriz-table-wrap">
+                    <table class="tabla-moderna" id="tablaMatrizIncidentes">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px; text-align: center;">Num</th>
+                                <th style="width: 125px;">Código</th>
+                                <th style="width: 145px; text-align: center;">Tipo</th>
+                                <th>Barrio</th>
+                                <th style="width: 110px; text-align: center;">Fecha</th>
+                                <th style="width: 90px; text-align: center;">Hora</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpoTablaMatrizIncidentes">
+                            <!-- Se llena dinámicamente con 7 registros por página -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginación de la Matriz (7 incidentes por página) -->
+                <div class="modal-matriz-paginacion" id="paginacionMatrizContenedor">
+                    <span id="infoPaginacionMatriz" class="paginacion-info-texto">Mostrando 0 de 0 incidentes</span>
+                    <div class="paginacion-botones-wrap">
+                        <button type="button" id="btnPagAntMatriz" class="btn-pag-matriz" disabled>
+                            <i class="bi bi-chevron-left"></i> Anterior
+                        </button>
+                        <span id="labelPaginaMatriz" class="paginacion-pagina-texto">Página 1 de 1</span>
+                        <button type="button" id="btnPagSigMatriz" class="btn-pag-matriz" disabled>
+                            Siguiente <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="../js/sigi-realtime.js"></script>
+    <script src="../js/sigi-ai-dashboard.js?v=2.1"></script>
     <script src="dashboard.js"></script>
 </body>
 

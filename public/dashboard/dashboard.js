@@ -64,8 +64,14 @@ function alternarTemaDashboard() {
             }
         });
     }
+    if (typeof cargarResumen === 'function') {
+        cargarResumen();
+    }
     if (typeof cargarIncidentesBarra === 'function') {
         cargarIncidentesBarra();
+    }
+    if (typeof window.actualizarForecastTema === 'function') {
+        window.actualizarForecastTema();
     }
 }
 
@@ -143,13 +149,22 @@ function cambiarVista(vistaId) {
     panelEst.classList.add("esconder");
     panelEst.classList.remove("vista-activa");
 
+    const vistaIA = document.getElementById("vistaIA");
+    if (vistaIA) {
+        vistaIA.classList.add("esconder");
+        vistaIA.classList.remove("vista-activa");
+    }
+
     // Reubicación dinámica de la barra de filtros y acciones
     const actionsGroup = document.querySelector(".map-actions-group");
     const contenedorTabla = document.getElementById("contenedorAccionesTabla");
+    const contenedorAnalitica = document.getElementById("contenedorAccionesAnalitica");
     const btnExportarCsv = document.getElementById("btnExportarCsv");
     const mapEl = document.getElementById("map");
     const btnMiUbicacion = document.getElementById("btnMiUbicacion");
     const btnToggleHeatmap = document.getElementById("btnToggleHeatmap");
+    const btnToggleDBSCAN = document.getElementById("btnToggleDBSCAN");
+    const quickDbscanDock = document.getElementById("mapDbscanQuickDock");
 
     if (actionsGroup) {
         if (vistaId === "tabla" && contenedorTabla) {
@@ -159,8 +174,19 @@ function cambiarVista(vistaId) {
                 contenedorTabla.appendChild(actionsGroup);
             }
             actionsGroup.classList.add("en-tabla");
+            actionsGroup.classList.remove("en-analitica");
             if (btnMiUbicacion) btnMiUbicacion.style.display = "none";
             if (btnToggleHeatmap) btnToggleHeatmap.style.display = "none";
+            if (btnToggleDBSCAN) btnToggleDBSCAN.style.display = "none";
+            if (quickDbscanDock) quickDbscanDock.style.display = "none";
+        } else if (vistaId === "estadisticas" && contenedorAnalitica) {
+            contenedorAnalitica.appendChild(actionsGroup);
+            actionsGroup.classList.add("en-analitica");
+            actionsGroup.classList.remove("en-tabla");
+            if (btnMiUbicacion) btnMiUbicacion.style.display = "none";
+            if (btnToggleHeatmap) btnToggleHeatmap.style.display = "none";
+            if (btnToggleDBSCAN) btnToggleDBSCAN.style.display = "none";
+            if (quickDbscanDock) quickDbscanDock.style.display = "none";
         } else {
             if (mapEl) {
                 mapEl.appendChild(actionsGroup);
@@ -170,8 +196,11 @@ function cambiarVista(vistaId) {
                 }
             }
             actionsGroup.classList.remove("en-tabla");
+            actionsGroup.classList.remove("en-analitica");
             if (btnMiUbicacion) btnMiUbicacion.style.display = "";
             if (btnToggleHeatmap) btnToggleHeatmap.style.display = "";
+            if (btnToggleDBSCAN) btnToggleDBSCAN.style.display = (vistaId === "mapa" || vistaId === "mapa-completo") ? "" : "none";
+            if (quickDbscanDock && vistaId !== "mapa" && vistaId !== "mapa-completo") quickDbscanDock.style.display = "none";
         }
     }
 
@@ -207,6 +236,50 @@ function cambiarVista(vistaId) {
         panelEst.classList.remove("esconder");
         panelEst.classList.add("vista-activa");
         cargarResumen();
+        cargarIncidentesBarra();
+    } else if (vistaId === "ia-hub") {
+        const vistaIA = document.getElementById("vistaIA");
+        if (vistaIA) {
+            vistaIA.classList.remove("esconder");
+            vistaIA.classList.add("vista-activa");
+            if (typeof inicializarAILab === 'function') {
+                inicializarAILab();
+            }
+        }
+    }
+
+    // Control de visibilidad del contenedor de KPIs (solo activo en vistas de mapa)
+    const ribbonKpisEl = document.getElementById("kpiRibbon");
+    const btnAbrirKpisEl = document.getElementById("btnAbrirKpis");
+    const vistaMapaEl = document.getElementById("vistaMapa");
+    if (ribbonKpisEl) {
+        if (vistaId === "mapa" || vistaId === "mapa-completo") {
+            if (!ribbonKpisEl.classList.contains("kpi-oculto")) {
+                ribbonKpisEl.classList.remove("esconder");
+                ribbonKpisEl.style.removeProperty("display");
+                ribbonKpisEl.style.setProperty("display", "flex", "important");
+                if (btnAbrirKpisEl) {
+                    btnAbrirKpisEl.classList.remove("visible");
+                    btnAbrirKpisEl.style.setProperty("display", "none", "important");
+                }
+                vistaMapaEl?.classList.remove("vista-mapa-kpi-oculto");
+            } else {
+                ribbonKpisEl.classList.add("esconder");
+                ribbonKpisEl.style.setProperty("display", "none", "important");
+                if (btnAbrirKpisEl) {
+                    btnAbrirKpisEl.classList.add("visible");
+                    btnAbrirKpisEl.style.setProperty("display", "inline-flex", "important");
+                }
+                vistaMapaEl?.classList.add("vista-mapa-kpi-oculto");
+            }
+        } else {
+            ribbonKpisEl.classList.add("esconder");
+            ribbonKpisEl.style.setProperty("display", "none", "important");
+            if (btnAbrirKpisEl) {
+                btnAbrirKpisEl.classList.remove("visible");
+                btnAbrirKpisEl.style.setProperty("display", "none", "important");
+            }
+        }
     }
 
     // Actualizar botones de navegación móviles y desktop
@@ -228,7 +301,9 @@ function llenarTablaIncidentes(resetPagina = false) {
 
     const tbody = document.getElementById("tbodyIncidentesPublica");
     const infoPaginacion = document.getElementById("infoPaginacionTabla");
-    const botonesPaginacion = document.getElementById("botonesPaginacionTabla");
+    const labelPagina = document.getElementById("labelPaginaTabla");
+    const btnAnt = document.getElementById("btnPagAntTabla");
+    const btnSig = document.getElementById("btnPagSigTabla");
 
     // Llenar Feed Nativo Móvil si aplica
     renderizarFeedIncidentesMobile();
@@ -238,8 +313,10 @@ function llenarTablaIncidentes(resetPagina = false) {
 
     if (!incidentesData || incidentesData.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" style="text-align: center;">No hay incidentes para mostrar.</td></tr>`;
-        if (infoPaginacion) infoPaginacion.textContent = "Mostrando 0 - 0 de 0 incidentes";
-        if (botonesPaginacion) botonesPaginacion.innerHTML = "";
+        if (infoPaginacion) infoPaginacion.innerText = "Mostrando 0 de 0 incidentes";
+        if (labelPagina) labelPagina.innerText = "Página 1 de 1";
+        if (btnAnt) btnAnt.disabled = true;
+        if (btnSig) btnSig.disabled = true;
         return;
     }
 
@@ -253,7 +330,10 @@ function llenarTablaIncidentes(resetPagina = false) {
     });
 
     const totalRegistros = incidentesOrdenados.length;
-    const totalPaginas = Math.ceil(totalRegistros / REGISTROS_POR_PAGINA);
+    const totalPaginas = Math.ceil(totalRegistros / REGISTROS_POR_PAGINA) || 1;
+    if (paginaActualTabla > totalPaginas) paginaActualTabla = totalPaginas;
+    if (paginaActualTabla < 1) paginaActualTabla = 1;
+
     const inicio = (paginaActualTabla - 1) * REGISTROS_POR_PAGINA;
     const fin = Math.min(inicio + REGISTROS_POR_PAGINA, totalRegistros);
     const incidentesPagina = incidentesOrdenados.slice(inicio, fin);
@@ -284,31 +364,25 @@ function llenarTablaIncidentes(resetPagina = false) {
         tbody.appendChild(tr);
     });
 
-    // Actualizar info de paginación
+    // Actualizar controles de paginación estilo Admin/Superadmin
     if (infoPaginacion) {
-        infoPaginacion.textContent = `Mostrando ${totalRegistros > 0 ? inicio + 1 : 0} - ${fin} de ${totalRegistros} incidentes`;
+        infoPaginacion.innerText = totalRegistros > 0
+            ? `Mostrando ${inicio + 1} a ${fin} de ${totalRegistros} incidentes`
+            : "Mostrando 0 de 0 incidentes";
     }
 
-    // Renderizar botones de paginación
-    if (botonesPaginacion) {
-        let htmlBotones = '';
+    if (labelPagina) {
+        labelPagina.innerText = `Página ${paginaActualTabla} de ${totalPaginas}`;
+    }
 
-        // Botón Anterior
-        htmlBotones += `<button class="btn-pag" ${paginaActualTabla === 1 ? 'disabled' : ''} onclick="cambiarPaginaTabla(${paginaActualTabla - 1})"><i class="bi bi-chevron-left"></i> Anterior</button>`;
+    if (btnAnt) {
+        btnAnt.disabled = paginaActualTabla <= 1;
+        btnAnt.onclick = () => cambiarPaginaTabla(paginaActualTabla - 1);
+    }
 
-        // Botones numéricos
-        for (let i = 1; i <= totalPaginas; i++) {
-            if (i === 1 || i === totalPaginas || (i >= paginaActualTabla - 1 && i <= paginaActualTabla + 1)) {
-                htmlBotones += `<button class="btn-pag ${i === paginaActualTabla ? 'activa' : ''}" onclick="cambiarPaginaTabla(${i})">${i}</button>`;
-            } else if (i === paginaActualTabla - 2 || i === paginaActualTabla + 2) {
-                htmlBotones += `<span class="pag-dots">...</span>`;
-            }
-        }
-
-        // Botón Siguiente
-        htmlBotones += `<button class="btn-pag" ${paginaActualTabla === totalPaginas ? 'disabled' : ''} onclick="cambiarPaginaTabla(${paginaActualTabla + 1})">Siguiente <i class="bi bi-chevron-right"></i></button>`;
-
-        botonesPaginacion.innerHTML = htmlBotones;
+    if (btnSig) {
+        btnSig.disabled = paginaActualTabla >= totalPaginas;
+        btnSig.onclick = () => cambiarPaginaTabla(paginaActualTabla + 1);
     }
 }
 
@@ -358,26 +432,17 @@ function renderizarFeedIncidentesMobile(datos = incidentesData) {
         const zona = inc.namebarrio || inc.nombrevereda || 'Sin zona';
         const tipoName = inc.nametipoincidente || 'Incidente';
 
-        let iconClass = "bi-exclamation-triangle-fill";
-        let colorClass = "#38bdf8";
-        let badgeBg = "rgba(56, 189, 248, 0.15)";
+        let colorClass = "var(--acento)";
 
-        if (inc.idtipoincidente === 1) { // Robo
-            iconClass = "bi-shield-exclamation";
-            colorClass = "#ff4d4d";
-            badgeBg = "rgba(255, 77, 77, 0.15)";
-        } else if (inc.idtipoincidente === 2) { // Agresión
-            iconClass = "bi-person-badge-fill";
-            colorClass = "#f59e0b";
-            badgeBg = "rgba(245, 158, 11, 0.15)";
-        } else if (inc.idtipoincidente === 3) { // Pique
-            iconClass = "bi-lightning-charge-fill";
-            colorClass = "#a855f7";
-            badgeBg = "rgba(168, 85, 247, 0.15)";
-        } else if (inc.idtipoincidente === 4) { // Accidente
-            iconClass = "bi-car-front-fill";
-            colorClass = "#10b981";
-            badgeBg = "rgba(16, 185, 129, 0.15)";
+        const tipoLower = String(tipoName).toLowerCase();
+        if (inc.idtipoincidente === 1 || tipoLower.includes("robo")) {
+            colorClass = "var(--rojo)";
+        } else if (inc.idtipoincidente === 2 || tipoLower.includes("agresi")) {
+            colorClass = "var(--amarillo)";
+        } else if (inc.idtipoincidente === 3 || tipoLower.includes("pique")) {
+            colorClass = "var(--magenta)";
+        } else if (inc.idtipoincidente === 4 || tipoLower.includes("accidente")) {
+            colorClass = "var(--verde)";
         }
 
         const card = document.createElement("div");
@@ -385,10 +450,7 @@ function renderizarFeedIncidentesMobile(datos = incidentesData) {
         card.innerHTML = `
             <div class="mic-header">
                 <div class="mic-type-badge">
-                    <div class="mic-icon-box" style="background: ${badgeBg}; color: ${colorClass};">
-                        <i class="bi ${iconClass}"></i>
-                    </div>
-                    <span>${tipoName}</span>
+                    <span class="mic-type-text" data-tipo="${tipoLower}" style="color: ${colorClass} !important;">${tipoName}</span>
                 </div>
                 <span class="mic-code">${inc.codigoincidente || 'N/A'}</span>
             </div>
@@ -487,9 +549,6 @@ function mostrarDetalleIncidente(inc) {
 
     cuerpo.innerHTML = `
         <div class="detalle-hero ${heroClass}">
-            <div class="detalle-hero-icon" style="background: ${iconBg}; color: ${iconColor};">
-                <i class="bi ${iconClass}"></i>
-            </div>
             <div class="detalle-hero-info">
                 <div class="detalle-hero-top">
                     <span class="detalle-hero-tipo ${badgeClass}">${inc.nametipoincidente || 'Incidente'}</span>
@@ -501,7 +560,6 @@ function mostrarDetalleIncidente(inc) {
 
         <div class="detalle-cards-grid">
             <div class="detalle-card-item">
-                <div class="detalle-card-icon"><i class="bi bi-calendar-event"></i></div>
                 <div class="detalle-card-body">
                     <span class="dcb-label">Fecha y Hora</span>
                     <span class="dcb-val">${fecha}</span>
@@ -510,7 +568,6 @@ function mostrarDetalleIncidente(inc) {
             </div>
 
             <div class="detalle-card-item">
-                <div class="detalle-card-icon"><i class="bi bi-geo-alt-fill"></i></div>
                 <div class="detalle-card-body">
                     <span class="dcb-label">Ubicación</span>
                     <span class="dcb-val">${zona}</span>
@@ -545,17 +602,52 @@ function mostrarDetalleIncidente(inc) {
             cambiarVista("mapa");
             setTimeout(() => {
                 if (map) {
-                    map.setView([Number(inc.lat), Number(inc.lng)], 16, { animate: true });
+                    const targetLat = Number(inc.lat);
+                    const targetLng = Number(inc.lng);
+                    map.setView([targetLat, targetLng], 17, { animate: true });
+
                     if (capaIncidentes) {
                         capaIncidentes.eachLayer(layer => {
                             if (layer.getLatLng) {
                                 const lPos = layer.getLatLng();
-                                if (Math.abs(lPos.lat - Number(inc.lat)) < 0.0001 && Math.abs(lPos.lng - Number(inc.lng)) < 0.0001) {
-                                    layer.openPopup();
+                                if (Math.abs(lPos.lat - targetLat) < 0.0001 && Math.abs(lPos.lng - targetLng) < 0.0001) {
+                                    if (typeof capaIncidentes.zoomToShowLayer === "function") {
+                                        capaIncidentes.zoomToShowLayer(layer, () => {
+                                            layer.openPopup();
+                                        });
+                                    } else {
+                                        layer.openPopup();
+                                    }
                                 }
                             }
                         });
                     }
+
+                    // Efecto de palpitación visual (radar/beacon) durante 3 segundos
+                    const beaconIcon = L.divIcon({
+                        className: 'beacon-pin-container',
+                        html: `
+                            <div class="beacon-pulse-wrapper">
+                                <div class="beacon-ripple ring-1"></div>
+                                <div class="beacon-ripple ring-2"></div>
+                                <div class="beacon-core"></div>
+                            </div>
+                        `,
+                        iconSize: [40, 40],
+                        iconAnchor: [20, 20]
+                    });
+
+                    const beaconMarker = L.marker([targetLat, targetLng], {
+                        icon: beaconIcon,
+                        zIndexOffset: 10000,
+                        interactive: false
+                    }).addTo(map);
+
+                    setTimeout(() => {
+                        if (map && map.hasLayer(beaconMarker)) {
+                            map.removeLayer(beaconMarker);
+                        }
+                    }, 3000);
                 }
             }, 300);
         });
@@ -607,15 +699,6 @@ if (btnToggleSidebar && sidebar) {
         }
     };
 
-    sidebar.addEventListener("mouseleave", () => {
-        sidebar.classList.remove("hover-disabled");
-        setTimeout(reajustarMapaSeguro, 350);
-    });
-
-    sidebar.addEventListener("mouseenter", () => {
-        setTimeout(reajustarMapaSeguro, 350);
-    });
-
     sidebar.addEventListener("transitionend", (e) => {
         if (e.target === sidebar) {
             reajustarMapaSeguro();
@@ -631,10 +714,8 @@ if (btnToggleSidebar && sidebar) {
         if (icono) {
             if (estaColapsada) {
                 icono.classList.replace("bi-chevron-left", "bi-chevron-right");
-                sidebar.classList.add("hover-disabled");
             } else {
                 icono.classList.replace("bi-chevron-right", "bi-chevron-left");
-                sidebar.classList.remove("hover-disabled");
             }
         }
 
@@ -644,7 +725,10 @@ if (btnToggleSidebar && sidebar) {
 
 // Listeners Desktop
 document.querySelectorAll(".nav-btn[data-view]").forEach(btn => {
-    btn.addEventListener("click", () => cambiarVista(btn.dataset.view));
+    btn.addEventListener("click", () => {
+        btn.blur();
+        cambiarVista(btn.dataset.view);
+    });
 });
 document.getElementById("iniciarSesion")?.addEventListener("click", irLogin);
 document.getElementById("iniciarSesionMobile")?.addEventListener("click", irLogin);
@@ -664,22 +748,117 @@ document.querySelectorAll(".bottom-nav-item[data-view]").forEach(btn => {
     });
 });
 
-// Listener Exportar CSV
+// Listener Exportar Datos (Excel / CSV estructurado con diseño SIGI)
 document.getElementById("btnExportarCsv")?.addEventListener("click", () => {
-    if(!incidentesData || incidentesData.length === 0) return alert("No hay datos para exportar.");
-    let csv = "Código,Tipo,Zona,Fecha,Hora\n";
-    incidentesData.forEach(inc => {
-        const fecha = new Date(inc.fechaincidente).toLocaleDateString("es-CO");
+    if (!incidentesData || incidentesData.length === 0) {
+        return alert("No hay datos para exportar.");
+    }
+
+    const fechaExport = new Date().toLocaleDateString("es-CO", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+    });
+    const horaExport = new Date().toLocaleTimeString("es-CO", {
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+
+    let filasHtml = "";
+    incidentesData.forEach((inc, idx) => {
+        const fecha = inc.fechaincidente ? new Date(inc.fechaincidente).toLocaleDateString("es-CO") : "N/A";
         const hora = inc.horaincidente ? inc.horaincidente.slice(0, 5) : "N/A";
         const zona = inc.namebarrio || inc.nombrevereda || "Sin zona";
-        csv += `${inc.codigoincidente || 'N/A'},${inc.nametipoincidente || 'N/A'},${zona},${fecha},${hora}\n`;
+        const tipo = inc.nametipoincidente || "Sin tipo";
+        const codigo = inc.codigoincidente || `INC-${idx + 1}`;
+
+        let estiloTipo = "background-color: #f1f5f9; color: #334155;";
+        if (inc.idtipoincidente === 1) estiloTipo = "background-color: #fee2e2; color: #991b1b; font-weight: bold;";
+        else if (inc.idtipoincidente === 2) estiloTipo = "background-color: #fef9c3; color: #854d0e; font-weight: bold;";
+        else if (inc.idtipoincidente === 3) estiloTipo = "background-color: #f3e8ff; color: #6b21a8; font-weight: bold;";
+        else if (inc.idtipoincidente === 4) estiloTipo = "background-color: #dcfce7; color: #166534; font-weight: bold;";
+
+        const bgFila = idx % 2 === 0 ? "#ffffff" : "#f8fafc";
+
+        filasHtml += `
+            <tr style="background-color: ${bgFila};">
+                <td style="padding: 8px 10px; border: 1px solid #cbd5e1; text-align: center; color: #64748b; font-weight: 600;">${idx + 1}</td>
+                <td style="padding: 8px 10px; border: 1px solid #cbd5e1; font-weight: 700; color: #0b192c;">${codigo}</td>
+                <td style="padding: 8px 10px; border: 1px solid #cbd5e1; ${estiloTipo} text-align: center;">${tipo}</td>
+                <td style="padding: 8px 10px; border: 1px solid #cbd5e1; color: #1e293b;">${zona}</td>
+                <td style="padding: 8px 10px; border: 1px solid #cbd5e1; text-align: center; color: #334155;">${fecha}</td>
+                <td style="padding: 8px 10px; border: 1px solid #cbd5e1; text-align: center; color: #334155;">${hora}</td>
+            </tr>
+        `;
     });
-    const blob = new Blob([csv], { type: "text/csv" });
+
+    const tablaHtml = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+            <!--[if gte mso 9]>
+            <xml>
+                <x:ExcelWorkbook>
+                    <x:ExcelWorksheets>
+                        <x:ExcelWorksheet>
+                            <x:Name>Incidentes SIGI</x:Name>
+                            <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
+                        </x:ExcelWorksheet>
+                    </x:ExcelWorksheets>
+                </x:ExcelWorkbook>
+            </xml>
+            <![endif]-->
+            <style>
+                body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; }
+                table { border-collapse: collapse; width: 100%; }
+                th { font-family: 'Segoe UI', Calibri, Arial, sans-serif; font-size: 11pt; }
+                td { font-family: 'Segoe UI', Calibri, Arial, sans-serif; font-size: 10pt; }
+            </style>
+        </head>
+        <body>
+            <table>
+                <tr>
+                    <th colspan="6" style="background-color: #0b192c; color: #3b82f6; font-size: 15pt; font-weight: bold; text-align: center; padding: 14px; border: 1px solid #0b192c;">
+                        SIGI - SISTEMA DE INFORMACIÓN GEOGRÁFICO DE INCIDENTES
+                    </th>
+                </tr>
+                <tr>
+                    <td colspan="6" style="background-color: #1e293b; color: #94a3b8; font-size: 9pt; text-align: center; padding: 6px; border: 1px solid #1e293b;">
+                        Reporte Oficial de Incidentes | Generado el ${fechaExport} a las ${horaExport} | Total: ${incidentesData.length} registros
+                    </td>
+                </tr>
+                <tr style="height: 10px;"><td colspan="6"></td></tr>
+                <thead>
+                    <tr style="background-color: #2563eb; color: #ffffff;">
+                        <th style="padding: 10px; border: 1px solid #0369a1; text-align: center; font-weight: bold; width: 60px;">Num</th>
+                        <th style="padding: 10px; border: 1px solid #0369a1; text-align: left; font-weight: bold; width: 110px;">Código</th>
+                        <th style="padding: 10px; border: 1px solid #0369a1; text-align: center; font-weight: bold; width: 150px;">Tipo de Incidente</th>
+                        <th style="padding: 10px; border: 1px solid #0369a1; text-align: left; font-weight: bold; width: 200px;">Barrio / Vereda</th>
+                        <th style="padding: 10px; border: 1px solid #0369a1; text-align: center; font-weight: bold; width: 110px;">Fecha</th>
+                        <th style="padding: 10px; border: 1px solid #0369a1; text-align: center; font-weight: bold; width: 90px;">Hora</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${filasHtml}
+                </tbody>
+            </table>
+        </body>
+        </html>
+    `;
+
+    // \\uFEFF (UTF-8 BOM) para abrir nativamente en Excel con tildes y formato perfecto sin deformaciones
+    const blob = new Blob(["\uFEFF", tablaHtml], { type: "application/vnd.ms-excel;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "incidentes.csv";
+    const fechaArchivo = new Date().toISOString().slice(0, 10);
+    a.download = `SIGI_Reporte_Incidentes_${fechaArchivo}.xls`;
+    document.body.appendChild(a);
     a.click();
+    setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }, 250);
 });
 
 // Variables globales para la ubicación del usuario
@@ -724,8 +903,8 @@ function obtenerUbicacionUsuario() {
             // Círculo de precisión en el mapa
             circuloPrecisionUsuario = L.circle([lat, lng], {
                 radius: precision,
-                color: '#00d2ff',
-                fillColor: '#00d2ff',
+                color: '#2563eb',
+                fillColor: '#2563eb',
                 fillOpacity: 0.15,
                 weight: 1.5,
                 dashArray: '4, 6'
@@ -736,7 +915,7 @@ function obtenerUbicacionUsuario() {
                 .addTo(map)
                 .bindPopup(`
                     <div style="font-family: system-ui; padding: 4px;">
-                        <strong style="color: #00d2ff;">📍 Tu ubicación actual</strong><br>
+                        <strong style="color: #2563eb;">📍 Tu ubicación actual</strong><br>
                         <span style="font-size: 0.78rem; color: #a0aec0;">Precisión estimada: ±${Math.round(precision)} metros</span>
                     </div>
                 `)
@@ -786,7 +965,35 @@ let chartDona = null;
 let chartBarras = null;
 
 function cargarResumen() {
-    if (!incidentesData || incidentesData.length === 0) return;
+    const elTotal = document.getElementById("total");
+    const elRobos = document.getElementById("robos");
+    const elAcci = document.getElementById("accidentes");
+    const elPiques = document.getElementById("piques");
+    const elAgres = document.getElementById("agresiones");
+    const elTopB = document.getElementById("topBarrio");
+    const elTopV = document.getElementById("topVereda");
+    const topZonasList = document.getElementById("topZonasList");
+    const contMatriz = document.getElementById("matrizDiaHora");
+
+    if (!incidentesData || incidentesData.length === 0) {
+        if (elTotal) elTotal.textContent = "0";
+        if (elRobos) elRobos.textContent = "0";
+        if (elAcci) elAcci.textContent = "0";
+        if (elPiques) elPiques.textContent = "0";
+        if (elAgres) elAgres.textContent = "0";
+        if (elTopB) elTopB.textContent = "Sin datos";
+        if (elTopV) elTopV.textContent = "Sin datos";
+        if (topZonasList) {
+            topZonasList.innerHTML = `<li style="padding: 16px; color: var(--texto-suave); text-align: center; list-style: none;">No se encontraron registros para los filtros seleccionados</li>`;
+        }
+        if (chartDona) { chartDona.destroy(); chartDona = null; }
+        if (chartTendencia) { chartTendencia.destroy(); chartTendencia = null; }
+        if (chartHoras) { chartHoras.destroy(); chartHoras = null; }
+        if (contMatriz) {
+            contMatriz.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--texto-suave); padding: 24px; font-size: 0.88rem;">No hay incidentes para mostrar con los filtros actuales.</div>`;
+        }
+        return;
+    }
 
     // 0. Actualizar las tarjetas de resumen
     let r = 0, a = 0, p = 0, ag = 0;
@@ -842,31 +1049,24 @@ function cargarResumen() {
     });
 
     // Actualizar DOM de resumen
-    const elTotal = document.getElementById("total");
-    if(elTotal) elTotal.textContent = incidentesData.length;
-    const elRobos = document.getElementById("robos");
-    if(elRobos) elRobos.textContent = r;
-    const elAcci = document.getElementById("accidentes");
-    if(elAcci) elAcci.textContent = a;
-    const elPiques = document.getElementById("piques");
-    if(elPiques) elPiques.textContent = p;
-    const elAgres = document.getElementById("agresiones");
-    if(elAgres) elAgres.textContent = ag;
+    if (elTotal) elTotal.textContent = incidentesData.length;
+    if (elRobos) elRobos.textContent = r;
+    if (elAcci) elAcci.textContent = a;
+    if (elPiques) elPiques.textContent = p;
+    if (elAgres) elAgres.textContent = ag;
 
-    const elTopB = document.getElementById("topBarrio");
-    if(elTopB) {
+    if (elTopB) {
         let maxB = "N/A", maxCount = 0;
-        for(let [b, c] of Object.entries(conteoBarrio)) {
-            if(c > maxCount) { maxB = b; maxCount = c; }
+        for (let [b, c] of Object.entries(conteoBarrio)) {
+            if (c > maxCount) { maxB = b; maxCount = c; }
         }
         elTopB.textContent = maxB;
     }
 
-    const elTopV = document.getElementById("topVereda");
-    if(elTopV) {
+    if (elTopV) {
         let maxV = "N/A", maxCount = 0;
-        for(let [v, c] of Object.entries(conteoVereda)) {
-            if(c > maxCount) { maxV = v; maxCount = c; }
+        for (let [v, c] of Object.entries(conteoVereda)) {
+            if (c > maxCount) { maxV = v; maxCount = c; }
         }
         elTopV.textContent = maxV;
     }
@@ -876,7 +1076,6 @@ function cargarResumen() {
         .sort((a, b) => b[1] - a[1]) // Mayor a menor
         .slice(0, 10); // Top 10
         
-    const topZonasList = document.getElementById("topZonasList");
     if (topZonasList) {
         topZonasList.innerHTML = "";
         if (sortedBarrios.length > 0) {
@@ -888,15 +1087,19 @@ function cargarResumen() {
                 const pct = Math.round((count / maxVal) * 100);
                 
                 const rankClass = index < 3 ? `rank-${index + 1}` : '';
+
                 const li = document.createElement("li");
                 li.className = `top-zona-item ${rankClass}`;
                 li.innerHTML = `
                     <div class="zona-header">
                         <div class="zona-left">
-                            <span class="zona-rank">#${index + 1}</span>
-                            <span class="zona-name">${barrio}</span>
+                            <span class="zona-rank">${index + 1}</span>
+                            <span class="zona-name" title="${barrio}">${barrio}</span>
                         </div>
-                        <span class="zona-count"><i class="bi bi-exclamation-circle-fill"></i> ${count} incidentes</span>
+                        <div class="zona-stats">
+                            <span class="zona-count"><strong>${count}</strong> <small>casos</small></span>
+                            <span class="zona-badge-pct">${pct}%</span>
+                        </div>
                     </div>
                     <div class="zona-bar-bg">
                         <div class="zona-bar-fill" style="width: ${pct}%"></div>
@@ -921,14 +1124,14 @@ function cargarResumen() {
                 datasets: [{
                     data: [r, a, p, ag],
                     backgroundColor: [
-                        '#ef4444',
-                        '#f59e0b',
+                        '#e05d5d',
+                        '#10b981',
                         '#a855f7',
-                        '#ec4899'
+                        '#eab308'
                     ],
-                    borderColor: document.body.classList.contains("tema-claro") ? '#ffffff' : '#0d1117',
-                    borderWidth: 3,
-                    hoverOffset: 8
+                    borderColor: document.body.classList.contains("tema-claro") ? '#ffffff' : '#171a21',
+                    borderWidth: 2,
+                    hoverOffset: 6
                 }]
             },
             options: {
@@ -938,18 +1141,18 @@ function cargarResumen() {
                     legend: {
                         position: 'bottom',
                         labels: {
-                            color: document.body.classList.contains("tema-claro") ? '#0f172a' : '#c9d1d9',
-                            font: { size: 12, family: "'Outfit', sans-serif" },
+                            color: document.body.classList.contains("tema-claro") ? '#0f172a' : '#8a92a2',
+                            font: { size: 12, family: "'Plus Jakarta Sans', sans-serif" },
                             padding: 14,
                             usePointStyle: true,
                             pointStyle: 'circle'
                         }
                     },
                     tooltip: {
-                        backgroundColor: 'rgba(13, 17, 23, 0.95)',
-                        titleColor: '#00d2ff',
+                        backgroundColor: 'rgba(23, 26, 33, 0.95)',
+                        titleColor: '#4a70c7',
                         bodyColor: '#ffffff',
-                        borderColor: '#30363d',
+                        borderColor: '#262a35',
                         borderWidth: 1,
                         padding: 10,
                         callbacks: {
@@ -985,8 +1188,7 @@ function cargarResumen() {
         chartTendencia.destroy();
     }
 
-    // Colores basados en el CSS (var(--acento) o azul)
-    const colorAcento = '#388bfd';
+    const colorAcento = '#4a70c7';
     
     chartTendencia = new Chart(ctx, {
         type: 'line',
@@ -996,10 +1198,10 @@ function cargarResumen() {
                 label: 'Total Incidentes',
                 data: data,
                 borderColor: colorAcento,
-                backgroundColor: 'rgba(56, 139, 253, 0.1)',
-                borderWidth: 3,
+                backgroundColor: 'rgba(74, 112, 199, 0.1)',
+                borderWidth: 2.5,
                 pointBackgroundColor: colorAcento,
-                pointBorderColor: document.body.classList.contains("tema-claro") ? '#ffffff' : '#0d1117',
+                pointBorderColor: document.body.classList.contains("tema-claro") ? '#ffffff' : '#171a21',
                 pointBorderWidth: 2,
                 pointRadius: 5,
                 pointHoverRadius: 7,
@@ -1072,8 +1274,8 @@ function cargarResumen() {
             datasets: [{
                 label: 'Incidentes',
                 data: conteoPorHora,
-                backgroundColor: 'rgba(188, 140, 255, 0.7)',
-                borderColor: 'rgba(188, 140, 255, 1)',
+                backgroundColor: 'rgba(74, 112, 199, 0.65)',
+                borderColor: 'rgba(74, 112, 199, 0.95)',
                 borderWidth: 1,
                 borderRadius: 4
             }]
@@ -1113,7 +1315,6 @@ function cargarResumen() {
     });
 
     // ── MATRIZ DE CONCENTRACIÓN ──
-    const contMatriz = document.getElementById("matrizDiaHora");
     if (contMatriz) {
         contMatriz.innerHTML = "";
         
@@ -1148,25 +1349,175 @@ function cargarResumen() {
                 if (val > 0) {
                     const ratio = maxHeatmap > 0 ? (val / maxHeatmap) : 0;
                     if (ratio <= 0.33) {
-                        cell.style.backgroundColor = 'rgba(0, 210, 255, 0.75)';
-                        cell.style.boxShadow = '0 0 6px rgba(0, 210, 255, 0.3)';
+                        cell.style.backgroundColor = 'rgba(37, 99, 235, 0.85)';
+                        cell.style.boxShadow = 'none';
                     } else if (ratio <= 0.66) {
-                        cell.style.backgroundColor = 'rgba(245, 158, 11, 0.85)';
-                        cell.style.boxShadow = '0 0 8px rgba(245, 158, 11, 0.4)';
+                        cell.style.backgroundColor = 'rgba(217, 119, 6, 0.90)';
+                        cell.style.boxShadow = 'none';
                     } else {
-                        cell.style.backgroundColor = 'rgba(239, 68, 68, 0.95)';
-                        cell.style.boxShadow = '0 0 10px rgba(239, 68, 68, 0.6)';
+                        cell.style.backgroundColor = 'rgba(220, 38, 38, 0.92)';
+                        cell.style.boxShadow = 'none';
                     }
-                    cell.style.color = '#000000';
+                    cell.style.color = '#ffffff';
                     cell.style.fontWeight = '700';
-                    cell.title = `${diasSemana[d]} ${String(h).padStart(2, '0')}:00\nIncidentes: ${val}`;
+                    cell.style.fontSize = '0.72rem';
+                    cell.title = `${diasSemana[d]} ${String(h).padStart(2, '0')}:00\nIncidentes: ${val}\n(Clic para ver incidentes)`;
                     cell.textContent = val;
+                    cell.dataset.clickable = "true";
+                    cell.style.cursor = "pointer";
+                    cell.addEventListener("click", () => {
+                        mostrarIncidentesMatriz(d, h, diasSemana[d]);
+                    });
                 }
                 
                 contMatriz.appendChild(cell);
             }
         }
     }
+}
+
+// ── MODAL: DETALLE DE INCIDENTES POR MATRIZ (DÍA × HORA) CON PAGINACIÓN DE 7 REGISTROS ──
+let incidentesMatrizActual = [];
+let paginaMatrizActual = 1;
+const REGISTROS_POR_PAGINA_MATRIZ = 7;
+
+function renderizarPaginaMatriz() {
+    const tbody = document.getElementById("cuerpoTablaMatrizIncidentes");
+    const infoPaginacion = document.getElementById("infoPaginacionMatriz");
+    const labelPagina = document.getElementById("labelPaginaMatriz");
+    const btnAnt = document.getElementById("btnPagAntMatriz");
+    const btnSig = document.getElementById("btnPagSigMatriz");
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+    const total = incidentesMatrizActual.length;
+
+    if (total === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:18px; color:var(--texto-suave);">No hay incidentes registrados en esta franja.</td></tr>`;
+        if (infoPaginacion) infoPaginacion.textContent = "Mostrando 0 de 0 incidentes";
+        if (labelPagina) labelPagina.textContent = "Página 1 de 1";
+        if (btnAnt) btnAnt.disabled = true;
+        if (btnSig) btnSig.disabled = true;
+        return;
+    }
+
+    const totalPaginas = Math.ceil(total / REGISTROS_POR_PAGINA_MATRIZ) || 1;
+    if (paginaMatrizActual > totalPaginas) paginaMatrizActual = totalPaginas;
+    if (paginaMatrizActual < 1) paginaMatrizActual = 1;
+
+    const inicio = (paginaMatrizActual - 1) * REGISTROS_POR_PAGINA_MATRIZ;
+    const fin = Math.min(inicio + REGISTROS_POR_PAGINA_MATRIZ, total);
+    const slice = incidentesMatrizActual.slice(inicio, fin);
+
+    slice.forEach((inc, idx) => {
+        const consecutivo = inicio + idx + 1;
+        const fecha = inc.fechaincidente ? new Date(inc.fechaincidente).toLocaleDateString("es-CO") : "N/A";
+        const hora = inc.horaincidente ? inc.horaincidente.slice(0, 5) : "N/A";
+        const zona = inc.namebarrio || inc.nombrevereda || "Sin zona";
+
+        let badgeClass = "badge-default";
+        if (inc.idtipoincidente === 1) badgeClass = "badge-robo";
+        else if (inc.idtipoincidente === 2) badgeClass = "badge-agresion";
+        else if (inc.idtipoincidente === 3) badgeClass = "badge-pique";
+        else if (inc.idtipoincidente === 4) badgeClass = "badge-accidente";
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td style="color: var(--texto-suave); font-weight: bold; text-align: center;">${consecutivo}</td>
+            <td><strong>${inc.codigoincidente || 'N/A'}</strong></td>
+            <td style="text-align: center;"><span class="badge-tipo ${badgeClass}">${inc.nametipoincidente || 'N/A'}</span></td>
+            <td>${zona}</td>
+            <td style="text-align: center;">${fecha}</td>
+            <td style="text-align: center;">${hora}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    if (infoPaginacion) {
+        infoPaginacion.textContent = `Mostrando ${inicio + 1} a ${fin} de ${total} incidentes`;
+    }
+    if (labelPagina) {
+        labelPagina.textContent = `Página ${paginaMatrizActual} de ${totalPaginas}`;
+    }
+    if (btnAnt) {
+        btnAnt.disabled = paginaMatrizActual <= 1;
+    }
+    if (btnSig) {
+        btnSig.disabled = paginaMatrizActual >= totalPaginas;
+    }
+}
+
+function mostrarIncidentesMatriz(diaIdx, horaInt, diaCorto) {
+    const modal = document.getElementById("modalMatrizDetalle");
+    const titulo = document.getElementById("modalMatrizTitulo");
+    const subtitulo = document.getElementById("modalMatrizSubtitulo");
+    if (!modal) return;
+
+    const nombresDiasCompletos = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+    const nombreDia = nombresDiasCompletos[diaIdx] || diaCorto || "Día seleccionado";
+    const horaTexto = `${String(horaInt).padStart(2, '0')}:00 hrs`;
+
+    // Filtrar incidentes según día de la semana (0=Lun ... 6=Dom) y hora (0..23)
+    incidentesMatrizActual = (incidentesData || []).filter(inc => {
+        if (!inc.fechaincidente || !inc.horaincidente) return false;
+        const fechaObj = new Date(inc.fechaincidente);
+        if (isNaN(fechaObj)) return false;
+        let day = fechaObj.getDay();
+        day = day === 0 ? 6 : day - 1; // 0=Lun, 6=Dom
+        if (day !== diaIdx) return false;
+        const h = parseInt(inc.horaincidente.slice(0, 2), 10);
+        return h === horaInt;
+    });
+
+    paginaMatrizActual = 1;
+
+    if (titulo) {
+        titulo.innerHTML = `<i class="bi bi-grid-3x3-gap-fill" style="color: var(--acento, #3b82f6); margin-right: 8px;"></i> Incidentes: ${nombreDia} a las ${horaTexto}`;
+    }
+    if (subtitulo) {
+        subtitulo.textContent = `Se encontraron ${incidentesMatrizActual.length} incidente${incidentesMatrizActual.length === 1 ? '' : 's'} registrado${incidentesMatrizActual.length === 1 ? '' : 's'} en esta franja horaria:`;
+    }
+
+    renderizarPaginaMatriz();
+    modal.style.display = "flex";
+}
+
+// Cierre y controles de paginación del modal de matriz
+const btnCerrarModalMatriz = document.getElementById("btnCerrarModalMatriz");
+const modalMatrizDetalle = document.getElementById("modalMatrizDetalle");
+const btnPagAntMatriz = document.getElementById("btnPagAntMatriz");
+const btnPagSigMatriz = document.getElementById("btnPagSigMatriz");
+
+if (btnPagAntMatriz) {
+    btnPagAntMatriz.addEventListener("click", () => {
+        if (paginaMatrizActual > 1) {
+            paginaMatrizActual--;
+            renderizarPaginaMatriz();
+        }
+    });
+}
+
+if (btnPagSigMatriz) {
+    btnPagSigMatriz.addEventListener("click", () => {
+        const totalPaginas = Math.ceil(incidentesMatrizActual.length / REGISTROS_POR_PAGINA_MATRIZ) || 1;
+        if (paginaMatrizActual < totalPaginas) {
+            paginaMatrizActual++;
+            renderizarPaginaMatriz();
+        }
+    });
+}
+
+if (btnCerrarModalMatriz && modalMatrizDetalle) {
+    btnCerrarModalMatriz.addEventListener("click", () => {
+        modalMatrizDetalle.style.display = "none";
+    });
+}
+if (modalMatrizDetalle) {
+    modalMatrizDetalle.addEventListener("click", (e) => {
+        if (e.target === modalMatrizDetalle) {
+            modalMatrizDetalle.style.display = "none";
+        }
+    });
 }
 
 function contarFiltrosActivos() {
@@ -1209,6 +1560,9 @@ function cerrarPanelFiltros() {
     }
     if (btnFiltros) {
         btnFiltros.style.display = "";
+    }
+    if (contenedor) {
+        contenedor.style.display = "none";
     }
 }
 
@@ -1258,22 +1612,25 @@ map.createPane('incidentesPane');
 map.getPane('incidentesPane').style.zIndex = 450; // Siempre encima de polígonos
 
 const esriSat = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
-    attribution: "Tiles © Esri"
+    attribution: "Tiles © Esri",
+    maxZoom: 18
 });
 
-const cartoDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; CartoDB'
+const esriDark = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}", {
+    attribution: "Tiles © Esri",
+    maxZoom: 16
 });
 
 const osmStreet = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OSM'
+    attribution: '&copy; OpenStreetMap',
+    maxZoom: 19
 });
 
-// Por defecto mostramos la oscura o satelital, dejemos oscuro como default para el Dashboard
-cartoDark.addTo(map);
+// Por defecto mostramos el mapa oscuro limpio
+esriDark.addTo(map);
 
 const baseMaps = {
-    "Modo Oscuro": cartoDark,
+    "Modo Oscuro": esriDark,
     "Satelital": esriSat,
     "Calles (Normal)": osmStreet
 };
@@ -1313,6 +1670,9 @@ let heatLayer = L.heatLayer([], {
     maxZoom: 16,
     gradient: {0.4: 'blue', 0.6: 'cyan', 0.7: 'lime', 0.8: 'yellow', 1.0: 'red'}
 });
+
+let dbscanLayer = L.layerGroup();
+let modoDBSCAN = false;
 
 let capaBarrio = L.layerGroup().addTo(map);
 let capaVereda = L.layerGroup().addTo(map);
@@ -1459,6 +1819,8 @@ function renderizarIncidentes() {
 
     actualizarAnalisisRapido(incidentesData);
     llenarTablaIncidentes(true);
+    cargarResumen();
+    cargarIncidentesBarra();
 
     if (modoCalor) {
         map.removeLayer(capaIncidentes);
@@ -1544,25 +1906,22 @@ function renderizarIncidentes() {
                     </div>
                     
                     <div class="popup-location-box">
-                        <i class="bi bi-geo-alt-fill popup-loc-icon"></i>
-                        <div class="popup-loc-text">
-                            <span class="popup-loc-label">Zona / Barrio</span>
-                            <strong class="popup-loc-name">${incidente.namebarrio || incidente.nombrevereda || 'Sin zona asignada'}</strong>
-                        </div>
+                        <span class="popup-loc-label">Zona / Barrio</span>
+                        <strong class="popup-loc-name">${incidente.namebarrio || incidente.nombrevereda || 'Sin zona asignada'}</strong>
                     </div>
 
                     <div class="popup-coords-box">
-                        <span><strong>Lat:</strong> ${latStr}</span>
-                        <span><strong>Lng:</strong> ${lngStr}</span>
+                        <span>Lat ${latStr}</span>
+                        <span>Lng ${lngStr}</span>
                     </div>
 
                     <div class="popup-grid-2x2">
                         <div class="popup-grid-item">
-                            <span class="pg-label"><i class="bi bi-calendar3"></i> Fecha</span>
+                            <span class="pg-label">Fecha</span>
                             <span class="pg-val">${fecha}</span>
                         </div>
                         <div class="popup-grid-item">
-                            <span class="pg-label"><i class="bi bi-clock"></i> Hora</span>
+                            <span class="pg-label">Hora</span>
                             <span class="pg-val">${hora}</span>
                         </div>
                         <div class="popup-grid-item">
@@ -1640,6 +1999,118 @@ if(btnToggleHeatmap) {
     });
 }
 
+const btnToggleDBSCAN = document.getElementById("btnToggleDBSCAN");
+if (btnToggleDBSCAN) {
+    btnToggleDBSCAN.addEventListener("click", async (e) => {
+        if (e) e.stopPropagation();
+        if (map) map.closePopup();
+        modoDBSCAN = !modoDBSCAN;
+
+        const quickDock = document.getElementById('mapDbscanQuickDock');
+
+        if (modoDBSCAN) {
+            btnToggleDBSCAN.classList.add("activo");
+            btnToggleDBSCAN.style.background = "rgba(14, 165, 233, 0.4)";
+            btnToggleDBSCAN.style.boxShadow = "0 0 14px rgba(14, 165, 233, 0.7)";
+            map.addLayer(dbscanLayer);
+            await cargarYRenderizarHotspotsML();
+            if (quickDock) quickDock.style.display = 'flex';
+        } else {
+            btnToggleDBSCAN.classList.remove("activo");
+            btnToggleDBSCAN.style.background = "rgba(14, 165, 233, 0.15)";
+            btnToggleDBSCAN.style.boxShadow = "";
+            map.removeLayer(dbscanLayer);
+            dbscanLayer.clearLayers();
+            if (quickDock) quickDock.style.display = 'none';
+        }
+    });
+}
+
+async function cargarYRenderizarHotspotsML(eps = 450, minPts = 3) {
+    dbscanLayer.clearLayers();
+    try {
+        const res = await fetch(`/api/ml/hotspots?eps=${eps}&minPts=${minPts}`);
+        if (!res.ok) return;
+        const data = await res.json();
+
+        // Actualizar quick bar si la función existe
+        if (typeof actualizarQuickBarMapa === 'function') {
+            actualizarQuickBarMapa(data);
+        }
+
+        if (!data || !data.clusters || data.clusters.length === 0) {
+            console.log("No se identificaron concentraciones densas DBSCAN con los parámetros actuales.");
+            return;
+        }
+
+        data.clusters.forEach(cl => {
+            // Círculo de cobertura espacial del cluster
+            const circulo = L.circle([cl.centroide.lat, cl.centroide.lng], {
+                radius: cl.radio_metros,
+                color: cl.color,
+                fillColor: cl.color,
+                fillOpacity: 0.22,
+                weight: 2,
+                dashArray: '5, 5'
+            }).addTo(dbscanLayer);
+
+            // Marcador de núcleo del cluster con contador de incidentes
+            const customIcon = L.divIcon({
+                className: 'dbscan-cluster-marker',
+                html: `<div style="background:${cl.color}; color:#fff; border-radius:50%; width:30px; height:30px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12px; box-shadow:0 0 12px ${cl.color}; border:2px solid #fff; cursor:pointer;">${cl.cantidad_incidentes}</div>`,
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            });
+
+            const marker = L.marker([cl.centroide.lat, cl.centroide.lng], { icon: customIcon }).addTo(dbscanLayer);
+
+            const popupContent = `
+                <div style="font-family: 'Inter', sans-serif; min-width: 230px; padding: 6px;">
+                    <div style="font-weight: 800; color: ${cl.color}; margin-bottom: 6px; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+                        <span>🔥</span> ${cl.nombre}
+                    </div>
+                    <div style="font-size: 0.8rem; margin-bottom: 4px;">
+                        <b>Nivel de Riesgo:</b> <span style="font-weight:700; color:${cl.color}">${cl.nivel_riesgo}</span>
+                    </div>
+                    <div style="font-size: 0.8rem; margin-bottom: 4px;">
+                        <b>Incidentes agrupados:</b> <span style="font-weight:600;">${cl.cantidad_incidentes}</span>
+                    </div>
+                    <div style="font-size: 0.8rem; margin-bottom: 4px;">
+                        <b>Severidad promedio:</b> <span style="font-weight:600;">${cl.gravedad_promedio} / 5.0</span>
+                    </div>
+                    <div style="font-size: 0.8rem; margin-bottom: 4px;">
+                        <b>Radio de influencia:</b> ${cl.radio_metros} metros
+                    </div>
+                    <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 5px;">
+                        Algoritmo: DBSCAN Espacial (eps: ${eps}m, minPts: ${minPts})
+                    </div>
+                </div>
+            `;
+            circulo.bindPopup(popupContent);
+            marker.bindPopup(popupContent);
+        });
+    } catch (e) {
+        console.warn("Error al cargar hotspots ML:", e);
+    }
+}
+
+// Botón de recalcular DBSCAN en el AI Lab
+document.addEventListener("DOMContentLoaded", () => {
+    const btnEjecutarAjusteDBSCAN = document.getElementById('btnEjecutarAjusteDBSCAN');
+    if (btnEjecutarAjusteDBSCAN) {
+        btnEjecutarAjusteDBSCAN.addEventListener('click', () => {
+            const epsVal = parseInt(document.getElementById('dbscanParamEps')?.value || 450, 10);
+            const minPtsVal = parseInt(document.getElementById('dbscanParamMinPts')?.value || 3, 10);
+            if (typeof cargarRankingDBSCAN === 'function') {
+                cargarRankingDBSCAN(epsVal, minPtsVal);
+            }
+            if (typeof cargarYRenderizarHotspotsML === 'function') {
+                cargarYRenderizarHotspotsML(epsVal, minPtsVal);
+            }
+        });
+    }
+});
+
 // ════════════════════════════════
 // LÓGICA DE MI UBICACIÓN EN TIEMPO REAL
 // ════════════════════════════════
@@ -1680,8 +2151,8 @@ if (btnMiUbicacion) {
                 // Círculo de precisión GPS translúcido
                 miUbicacionCircle = L.circle([lat, lng], {
                     radius: accuracy,
-                    color: '#38bdf8',
-                    fillColor: '#38bdf8',
+                    color: '#2563eb',
+                    fillColor: '#2563eb',
                     fillOpacity: 0.12,
                     weight: 1.5,
                     dashArray: '4, 4'
@@ -1698,7 +2169,6 @@ if (btnMiUbicacion) {
                 const popupHtml = `
                     <div class="popup-card">
                         <div class="popup-user-header">
-                            <i class="bi bi-geo-alt-fill" style="color: #38bdf8; font-size: 1.1rem;"></i>
                             <span>Tu ubicación actual</span>
                         </div>
                         
@@ -1713,11 +2183,9 @@ if (btnMiUbicacion) {
                             </div>
                         </div>
 
-                        <div style="font-size: 0.72rem; color: #94a3b8; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 8px;">
-                            <span style="display: flex; align-items: center; gap: 5px;">
-                                <i class="bi bi-bullseye" style="color: #38bdf8;"></i> Precisión:
-                            </span>
-                            <strong style="color: #e2e8f0;">±${accuracy} metros</strong>
+                        <div style="font-size: 0.72rem; color: var(--texto-suave); display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 8px;">
+                            <span>Precisión</span>
+                            <strong style="color: var(--texto);">±${accuracy} metros</strong>
                         </div>
                     </div>
                 `;
@@ -1847,16 +2315,22 @@ function actualizarAnalisisRapido(data) {
         }
     }
 
-    if(elZona) elZona.innerHTML = maxZona !== "N/A" ? `${maxZona} <span style="font-size: 0.7em; font-weight: normal; color: var(--secundario, #94a3b8); margin-left: 4px;">- ${maxZonaCount} incidente${maxZonaCount === 1 ? '' : 's'}</span>` : "Sin zona";
-    let tipoColor = "gray";
-    if (maxTipo.toLowerCase().includes("robo")) tipoColor = "red";
-    else if (maxTipo.toLowerCase().includes("agresion") || maxTipo.toLowerCase().includes("amenaza")) tipoColor = "yellow";
-    else if (maxTipo.toLowerCase().includes("pique")) tipoColor = "magenta";
-    else if (maxTipo.toLowerCase().includes("accidente")) tipoColor = "limegreen";
-    if(elTipo) elTipo.innerHTML = maxTipo !== "N/A" ? `<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background-color:${tipoColor}; margin-right:4px;"></span>${maxTipo}` : "---";
+    if (elZona) {
+        if (maxZona !== "N/A") {
+            elZona.innerHTML = `<span class="kpi-zona-nombre" title="${maxZona}">${maxZona}</span> <span class="kpi-zona-conteo">(${maxZonaCount})</span>`;
+        } else {
+            elZona.textContent = "Sin zona";
+        }
+    }
+    let tipoColor = "var(--texto-suave)";
+    if (maxTipo.toLowerCase().includes("robo")) tipoColor = "var(--rojo)";
+    else if (maxTipo.toLowerCase().includes("agresion") || maxTipo.toLowerCase().includes("amenaza")) tipoColor = "var(--amarillo)";
+    else if (maxTipo.toLowerCase().includes("pique")) tipoColor = "var(--magenta)";
+    else if (maxTipo.toLowerCase().includes("accidente")) tipoColor = "var(--verde)";
+    if(elTipo) elTipo.innerHTML = maxTipo !== "N/A" ? `<span style="display:inline-block; width:7px; height:7px; border-radius:50%; background-color:${tipoColor}; margin-right:6px;"></span>${maxTipo}` : "---";
     if(elBarrio) elBarrio.textContent = maxZona !== "N/A" ? maxZona : "Sin zona";
-    if(elOldTipo) elOldTipo.textContent = maxTipo !== "N/A" ? maxTipo : "...";
-    if(elHora) elHora.textContent = maxHora !== "N/A" ? maxHora : "...";
+    if(elOldTipo) elOldTipo.textContent = maxTipo !== "N/A" ? maxTipo : "…";
+    if(elHora) elHora.textContent = maxHora !== "N/A" ? maxHora : "…";
 
     // CALCULO VARIACIÓN (Últimos 30 días vs 30 días previos del dataset visible)
     if (elVariacion && fechas.length > 0) {
@@ -1876,12 +2350,12 @@ function actualizarAnalisisRapido(data) {
         });
 
         if (countPrevious === 0) {
-            elVariacion.innerHTML = `${countRecent > 0 ? "↑" : ""} ${countRecent > 0 ? "100%" : "0%"} <span style="font-size: 0.55em; font-weight: normal; color: var(--secundario, #94a3b8); margin-left: 5px;">vs. mes anterior</span>`;
+            elVariacion.innerHTML = `${countRecent > 0 ? "↑" : ""} ${countRecent > 0 ? "100%" : "0%"}`;
             elVariacion.className = "kpi-valor " + (countRecent > 0 ? "kpi-variacion-negativa" : ""); // Aumento de crimen = negativo (rojo)
         } else {
             const pct = Math.round(((countRecent - countPrevious) / countPrevious) * 100);
             const symbol = pct > 0 ? "↑" : (pct < 0 ? "↓" : "");
-            elVariacion.innerHTML = `${symbol} ${Math.abs(pct)}% <span style="font-size: 0.55em; font-weight: normal; color: var(--secundario, #94a3b8); margin-left: 5px;">vs. mes anterior</span>`;
+            elVariacion.innerHTML = `${symbol} ${Math.abs(pct)}%`;
             elVariacion.className = "kpi-valor";
             if (pct > 0) elVariacion.classList.add("kpi-variacion-negativa"); // Rojo
             if (pct < 0) elVariacion.classList.add("kpi-variacion-positiva"); // Verde
@@ -2015,10 +2489,24 @@ document.querySelector(".restablecer").addEventListener("click", function (e) {
     desmarcarTiposInput();
     if (typeof inpBuscarLugar !== "undefined" && inpBuscarLugar) inpBuscarLugar.value = "";
     lugarSeleccionado = { nombre: "", tipo: "" };
+    if (contenedor) {
+        contenedor.innerHTML = "";
+        contenedor.style.display = "none";
+    }
     
     // Apagar heatmap si estaba encendido
     modoCalor = false;
     if(btnToggleHeatmap) btnToggleHeatmap.classList.remove("activo");
+
+    // Apagar DBSCAN si estaba encendido
+    modoDBSCAN = false;
+    if (btnToggleDBSCAN) {
+        btnToggleDBSCAN.classList.remove("activo");
+        btnToggleDBSCAN.style.background = "rgba(14, 165, 233, 0.15)";
+        btnToggleDBSCAN.style.boxShadow = "";
+    }
+    if (map && map.hasLayer(dbscanLayer)) map.removeLayer(dbscanLayer);
+    dbscanLayer.clearLayers();
     
     // Resetear tiempo a 3 meses
     const hoy = new Date();
@@ -2048,11 +2536,13 @@ document.querySelector(".restablecer").addEventListener("click", function (e) {
 
 if (inpBuscarLugar) {
     inpBuscarLugar.addEventListener("input", async function () {
+        if (!contenedor) return;
         this.after(contenedor);
         actualizarBadgeFiltros();
-        const texto = this.value;
+        const texto = this.value.trim();
         if (texto.length < 2) {
             contenedor.innerHTML = "";
+            contenedor.style.display = "none";
             lugarSeleccionado = { nombre: '', tipo: '' };
             return;
         }
@@ -2074,20 +2564,45 @@ if (inpBuscarLugar) {
             ].slice(0, 15); // Limitar a 15 sugerencias totales
 
             contenedor.innerHTML = "";
-            sugerencias.forEach(item => {
-                const div = document.createElement("div");
-                div.innerHTML = `${item.nombre} <small style="color:var(--secundario); font-size:10px;">(${item.tipo})</small>`;
-                div.classList.add("itemSugerencia");
-                div.addEventListener("click", function () {
-                    inpBuscarLugar.value = item.nombre;
-                    lugarSeleccionado = item;
-                    contenedor.innerHTML = "";
-                    actualizarBadgeFiltros();
+            if (sugerencias.length === 0) {
+                const sinResult = document.createElement("div");
+                sinResult.className = "itemSugerencia";
+                sinResult.style.color = "var(--texto-suave)";
+                sinResult.style.cursor = "default";
+                sinResult.style.fontStyle = "italic";
+                sinResult.textContent = "No se encontraron coincidencias";
+                contenedor.appendChild(sinResult);
+            } else {
+                sugerencias.forEach(item => {
+                    const div = document.createElement("div");
+                    div.innerHTML = `<span>${item.nombre}</span> <small style="color:var(--acento); font-size:11px; background:rgba(37,99,235,0.12); padding:2px 7px; border-radius:6px; font-weight:600;">${item.tipo}</small>`;
+                    div.classList.add("itemSugerencia");
+                    div.addEventListener("click", function (ev) {
+                        ev.stopPropagation();
+                        inpBuscarLugar.value = item.nombre;
+                        lugarSeleccionado = item;
+                        contenedor.innerHTML = "";
+                        contenedor.style.display = "none";
+                        actualizarBadgeFiltros();
+                    });
+                    contenedor.appendChild(div);
                 });
-                contenedor.appendChild(div);
-            });
+            }
+            contenedor.style.display = "block";
         } catch(e) {
-            console.error(e);
+            console.error("Error buscando sugerencias de lugares:", e);
+        }
+    });
+
+    inpBuscarLugar.addEventListener("focus", function () {
+        if (contenedor && contenedor.children.length > 0 && this.value.trim().length >= 2) {
+            contenedor.style.display = "block";
+        }
+    });
+
+    document.addEventListener("click", function (e) {
+        if (contenedor && !contenedor.contains(e.target) && e.target !== inpBuscarLugar) {
+            contenedor.style.display = "none";
         }
     });
 }
@@ -2096,13 +2611,49 @@ if (inpBuscarLugar) {
 let graficoAnimFrame = null;
 
 async function cargarIncidentesBarra() {
-    const q = `?fechaDesde=${filtroFechaDesde}&fechaHasta=${filtroFechaHasta}`;
-    const res = await fetch(`/top-incidentes${q}`);
-    const data = await res.json();
-    if (!data.length) return;
+    let data = [];
+    const tieneFiltroLugarOTipo = (typeof inpBuscarLugar !== 'undefined' && inpBuscarLugar && inpBuscarLugar.value.trim() !== '') || (typeof tiposId !== 'undefined' && tiposId && tiposId.length > 0);
+    
+    if (tieneFiltroLugarOTipo && typeof incidentesData !== 'undefined' && incidentesData && incidentesData.length > 0) {
+        const conteo = {};
+        incidentesData.forEach(inc => {
+            const t = inc.nametipoincidente || (inc.idtipoincidente === 1 ? 'Robo' : inc.idtipoincidente === 2 ? 'Agresiones/Amenazas' : inc.idtipoincidente === 3 ? 'Piques' : 'Accidentes de transito');
+            conteo[t] = (conteo[t] || 0) + 1;
+        });
+        const colores = {
+            "Robo": "#e74c3c",
+            "Agresiones/Amenazas": "#f1c40f",
+            "Piques": "#9b59b6",
+            "Accidentes de transito": "#2ecc71"
+        };
+        data = Object.entries(conteo).map(([tipo, cantidad]) => ({
+            tipo,
+            cantidad,
+            color: colores[tipo] || "#3b82f6"
+        }));
+        data.sort((a, b) => b.cantidad - a.cantidad);
+    } else {
+        const q = `?fechaDesde=${filtroFechaDesde}&fechaHasta=${filtroFechaHasta}`;
+        try {
+            const res = await fetch(`/top-incidentes${q}`);
+            data = await res.json();
+        } catch (e) {
+            console.error("Error obteniendo top-incidentes:", e);
+            data = [];
+        }
+    }
 
     const canvas = document.getElementById("graficoBarras");
     if (!canvas) return;
+
+    if (!data || !data.length) {
+        if (chartBarras) {
+            chartBarras.destroy();
+            chartBarras = null;
+        }
+        return;
+    }
+
     const ctx = canvas.getContext("2d");
 
     if (chartBarras) {
@@ -2116,16 +2667,16 @@ async function cargarIncidentesBarra() {
     function obtenerColorGradiente(tipoStr, colorBackend) {
         const t = (tipoStr || '').toLowerCase();
         if (t.includes('robo') || t.includes('hurto')) {
-            return { border: '#ef4444', fillStart: 'rgba(239, 68, 68, 0.12)', fillEnd: 'rgba(239, 68, 68, 0.45)' };
+            return { border: '#e05d5d', fillStart: 'rgba(224, 93, 93, 0.15)', fillEnd: 'rgba(224, 93, 93, 0.55)' };
         } else if (t.includes('accidente') || t.includes('tránsito') || t.includes('transito')) {
-            return { border: '#f59e0b', fillStart: 'rgba(245, 158, 11, 0.12)', fillEnd: 'rgba(245, 158, 11, 0.45)' };
+            return { border: '#10b981', fillStart: 'rgba(16, 185, 129, 0.15)', fillEnd: 'rgba(16, 185, 129, 0.55)' };
         } else if (t.includes('pique')) {
-            return { border: '#a855f7', fillStart: 'rgba(168, 85, 247, 0.12)', fillEnd: 'rgba(168, 85, 247, 0.45)' };
+            return { border: '#a855f7', fillStart: 'rgba(168, 85, 247, 0.15)', fillEnd: 'rgba(168, 85, 247, 0.55)' };
         } else if (t.includes('agresi') || t.includes('amenaza')) {
-            return { border: '#ec4899', fillStart: 'rgba(236, 72, 153, 0.12)', fillEnd: 'rgba(236, 72, 153, 0.45)' };
+            return { border: '#eab308', fillStart: 'rgba(234, 179, 8, 0.15)', fillEnd: 'rgba(234, 179, 8, 0.55)' };
         }
-        const base = colorBackend || '#00d2ff';
-        return { border: base, fillStart: 'rgba(0, 210, 255, 0.12)', fillEnd: 'rgba(0, 210, 255, 0.45)' };
+        const base = colorBackend || '#3b82f6';
+        return { border: base, fillStart: 'rgba(59, 130, 246, 0.15)', fillEnd: 'rgba(59, 130, 246, 0.55)' };
     }
 
     const parentWidth = canvas.parentElement ? canvas.parentElement.clientWidth : 300;
@@ -2166,7 +2717,7 @@ async function cargarIncidentesBarra() {
                 legend: { display: false },
                 tooltip: {
                     backgroundColor: 'rgba(13, 17, 23, 0.95)',
-                    titleColor: '#00d2ff',
+                    titleColor: '#3b82f6',
                     bodyColor: '#ffffff',
                     borderColor: '#30363d',
                     borderWidth: 1,
@@ -2253,15 +2804,17 @@ function mostrarInfoTemporal(mensaje) {
     const toast = document.createElement("div");
     toast.textContent = mensaje;
     toast.style.position = "fixed";
-    toast.style.top = "20px";
+    toast.style.top = (window.innerWidth <= 768) ? "calc(var(--mobile-header-h, 58px) + 10px)" : "20px";
     toast.style.left = "50%";
     toast.style.transform = "translateX(-50%)";
+    toast.setAttribute("role", "status");
+    toast.setAttribute("aria-live", "polite");
     toast.style.backgroundColor = "rgba(0, 0, 0, 0.85)";
     toast.style.color = "#fff";
-    toast.style.padding = "12px 24px";
+    toast.style.padding = "10px 20px";
     toast.style.borderRadius = "8px";
     toast.style.zIndex = "99999";
-    toast.style.fontSize = "0.9rem";
+    toast.style.fontSize = "0.85rem";
     toast.style.boxShadow = "0 4px 12px rgba(0,0,0,0.3)";
     toast.style.border = "1px solid var(--azul)";
     toast.style.opacity = "0";
@@ -2622,8 +3175,11 @@ document.addEventListener("DOMContentLoaded", () => {
         btnCerrarKpis.addEventListener("click", (e) => {
             e.stopPropagation();
             ribbonKpis.classList.add("kpi-oculto");
+            ribbonKpis.classList.add("esconder");
+            ribbonKpis.style.setProperty("display", "none", "important");
             btnAbrirKpis.classList.add("visible");
             btnAbrirKpis.style.setProperty("display", "inline-flex", "important");
+            document.getElementById("vistaMapa")?.classList.add("vista-mapa-kpi-oculto");
             setTimeout(() => {
                 if (typeof map !== "undefined" && map) {
                     map.invalidateSize();
@@ -2631,16 +3187,71 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 300);
         });
 
+        // Proteger el contenedor para que hacer clic o interactuar dentro NO lo cierre
+        ribbonKpis.addEventListener("click", (e) => {
+            if (!e.target.closest("#btnCerrarKpis")) {
+                e.stopPropagation();
+            }
+        });
+
         btnAbrirKpis.addEventListener("click", (e) => {
             e.stopPropagation();
             btnAbrirKpis.classList.remove("visible");
             btnAbrirKpis.style.setProperty("display", "none", "important");
             ribbonKpis.classList.remove("kpi-oculto");
+            ribbonKpis.classList.remove("esconder");
+            ribbonKpis.style.setProperty("display", "flex", "important");
+            document.getElementById("vistaMapa")?.classList.remove("vista-mapa-kpi-oculto");
             setTimeout(() => {
                 if (typeof map !== "undefined" && map) {
                     map.invalidateSize();
                 }
             }, 350);
+        });
+    }
+
+    // Scroll horizontal interactivo y fluido (rueda y arrastre con mouse) para el contenedor de KPIs
+    const kpiCardsScroll = document.querySelector(".kpi-cards-scroll");
+    if (kpiCardsScroll) {
+        // Redirigir rueda de mouse hacia scroll horizontal (eje X)
+        kpiCardsScroll.addEventListener("wheel", (e) => {
+            const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+            if (delta !== 0) {
+                e.preventDefault();
+                kpiCardsScroll.scrollLeft += delta;
+            }
+        }, { passive: false });
+
+        // Arrastre con mouse (Click & Drag para deslizar en escritorio / emulador móvil)
+        let isDown = false;
+        let startClientX = 0;
+        let scrollStartLeft = 0;
+
+        kpiCardsScroll.addEventListener("mousedown", (e) => {
+            if (e.button !== 0) return; // Solo clic izquierdo
+            isDown = true;
+            kpiCardsScroll.classList.add("kpi-dragging");
+            startClientX = e.clientX;
+            scrollStartLeft = kpiCardsScroll.scrollLeft;
+        });
+
+        window.addEventListener("mouseup", () => {
+            if (isDown) {
+                isDown = false;
+                kpiCardsScroll.classList.remove("kpi-dragging");
+            }
+        });
+
+        window.addEventListener("mousemove", (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const walk = (e.clientX - startClientX) * 1.4;
+            kpiCardsScroll.scrollLeft = scrollStartLeft - walk;
+        });
+
+        // Asegurar que el clic dentro del área de tarjetas nunca se propague hacia disparadores de cierre
+        kpiCardsScroll.addEventListener("click", (e) => {
+            e.stopPropagation();
         });
     }
 });
