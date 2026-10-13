@@ -1,6 +1,7 @@
 const pool = require('../db');
 const csv = require('csv-parser');
 const stream = require('stream');
+const IncidenteModel = require('../models/incidente.model');
 const { registrarLogActividad } = require('../utils/logger');
 const { subirImagenCloudinary, eliminarImagenCloudinary } = require('../utils/cloudinary');
 
@@ -55,25 +56,8 @@ const registrarIncidente = async (req, res) => {
       }
     }
 
-    // Auto-asociar barrio y vereda con PostGIS ST_Contains
-    let idbarrio = null;
-    let idvereda = null;
-
-    try {
-      const barrioRes = await pool.query(
-        "SELECT gid FROM barrio WHERE ST_Contains(geom, ST_SetSRID(ST_MakePoint($1, $2), 4326)) LIMIT 1",
-        [lngNum, latNum]
-      );
-      if (barrioRes.rows.length > 0) idbarrio = barrioRes.rows[0].gid;
-
-      const veredaRes = await pool.query(
-        "SELECT id FROM vereda WHERE ST_Contains(geom, ST_SetSRID(ST_MakePoint($1, $2), 4326)) LIMIT 1",
-        [lngNum, latNum]
-      );
-      if (veredaRes.rows.length > 0) idvereda = veredaRes.rows[0].id;
-    } catch (spatialErr) {
-      console.warn("Advertencia en consulta espacial PostGIS:", spatialErr.message);
-    }
+    // Auto-asociar barrio y vereda con PostGIS ST_Contains a través del modelo
+    const { idbarrio, idvereda } = await IncidenteModel.resolverUbicacionEspacial(lngNum, latNum);
 
     // Si quien registra es Admin o Superadmin, el incidente ya es verídico (Estado 5 = Aprobado / Resuelto)
     // Si es Reportero, queda en Estado 1 = Reportado (pendiente de revisión en cola)
@@ -87,46 +71,37 @@ const registrarIncidente = async (req, res) => {
     const parsedModalidad = parseInt(id_modalidad);
     const idModalidad = (!isNaN(parsedModalidad) && parsedModalidad > 0) ? parsedModalidad : null;
 
-    const result = await pool.query(`
-      INSERT INTO incidente
-      (
-        codigoincidente, idtipoincidente, fechaincidente, horaincidente, descripcionincidente,
-        geom, idusuario, id_usuario_creador, id_estado, id_admin_revisor, id_gravedad, id_modalidad, idbarrio, idvereda,
-        direccion, comentarios_adicionales, numero_victimas, numero_vehiculos_afectados, valor_perdidas,
-        requiere_ambulancia, requiere_policia, requiere_bomberos, origen, imagen_url
-      )
-      VALUES (
-        $1, $2, $3, $4, $5,
-        ST_SetSRID(ST_MakePoint($6, $7), 4326),
-        $8, $8, $9, $10, $11, $12, $13, $14,
-        $15, $16, $17, $18, $19,
-        $20, $21, $22, 'manual', $23
-      )
-      RETURNING idincidente, codigoincidente, fechaincidente, horaincidente, imagen_url
-    `, [
-      codigoincidente, parseInt(tipo), fecha, hora, textoDescripcion,
-      lngNum, latNum,
-      idusuarioLogueado, idEstado, adminRevisor, idGravedad, idModalidad, idbarrio, idvereda,
-      direccion || null, comentarios_adicionales || null,
-      numero_victimas ? parseInt(numero_victimas) : 1,
-      numero_vehiculos_afectados ? parseInt(numero_vehiculos_afectados) : 0,
-      valor_perdidas ? parseFloat(valor_perdidas) : null,
-      requiere_ambulancia === true || requiere_ambulancia === 'true',
-      requiere_policia === undefined ? true : (requiere_policia === true || requiere_policia === 'true'),
-      requiere_bomberos === true || requiere_bomberos === 'true',
+    const result = await IncidenteModel.crear({
+      codigoincidente,
+      tipo: parseInt(tipo),
+      fecha,
+      hora,
+      descripcion: textoDescripcion,
+      lng: lngNum,
+      lat: latNum,
+      idUsuario: idusuarioLogueado,
+      idEstado,
+      adminRevisor,
+      idGravedad,
+      idModalidad,
+      idbarrio,
+      idvereda,
+      direccion: direccion || null,
+      comentarios: comentarios_adicionales || null,
+      victimas: numero_victimas ? parseInt(numero_victimas) : 1,
+      vehiculos: numero_vehiculos_afectados ? parseInt(numero_vehiculos_afectados) : 0,
+      perdidas: valor_perdidas ? parseFloat(valor_perdidas) : null,
+      ambulancia: requiere_ambulancia === true || requiere_ambulancia === 'true',
+      policia: requiere_policia === undefined ? true : (requiere_policia === true || requiere_policia === 'true'),
+      bomberos: requiere_bomberos === true || requiere_bomberos === 'true',
       imagenUrl
-    ]);
+    });
 
     const nuevoIncidente = result.rows[0];
 
     // Asignar factores si vienen especificados
     if (Array.isArray(factores) && factores.length > 0) {
-      for (const factorId of factores) {
-        await pool.query(
-          "INSERT INTO incidente_factores (id_incidente, id_factor) VALUES ($1, $2) ON CONFLICT DO NOTHING",
-          [nuevoIncidente.idincidente, parseInt(factorId)]
-        );
-      }
+      await IncidenteModel.asociarFactores(nuevoIncidente.idincidente, factores);
     }
 
     // Registrar en auditoría
@@ -145,11 +120,30 @@ const registrarIncidente = async (req, res) => {
 
     // Si fue creado por reportero, notificar a los administradores
     if (!esAdminOSuper) {
-      await pool.query(`
-        INSERT INTO notificaciones (id_usuario, tipo, asunto, mensaje)
-        SELECT idusuario, 'alerta', 'Nuevo reporte de incidente', $1
-        FROM usuario WHERE rol IN ('admin', 'superadmin')
-      `, [`Nuevo incidente ${nuevoIncidente.codigoincidente} reportado en espera de revisión.`]);
+      await IncidenteModel.notificarAdmins(`Nuevo incidente ${nuevoIncidente.codigoincidente} reportado en espera de revisión.`);
+    }
+
+    // Notificar en tiempo real por WebSockets (Socket.io)
+    try {
+      const io = req.app && req.app.get('io');
+      if (io) {
+        io.emit('nuevo_incidente', {
+          idincidente: nuevoIncidente.idincidente,
+          codigoincidente: nuevoIncidente.codigoincidente,
+          idtipoincidente: parseInt(tipo),
+          descripcion: textoDescripcion,
+          lat: latNum,
+          lng: lngNum,
+          fecha,
+          hora,
+          id_estado: idEstado,
+          id_gravedad: idGravedad,
+          direccion: direccion || null,
+          imagen_url: nuevoIncidente.imagen_url
+        });
+      }
+    } catch (wsErr) {
+      console.warn("Aviso Socket.io:", wsErr.message);
     }
 
     res.status(201).json({
@@ -163,106 +157,40 @@ const registrarIncidente = async (req, res) => {
   }
 };
 
-// Obtener incidentes con filtros y JOINs explicativos
+// Obtener incidentes con filtros, JOINs explicativos y paginación opcional
 const obtenerIncidentes = async (req, res) => {
   try {
-    const { estado, gravedad, tipo, barrio, vereda, fecha_inicio, fecha_fin, mis_reportes } = req.query;
+    const { estado, gravedad, tipo, barrio, vereda, fecha_inicio, fecha_fin, mis_reportes, page, limit } = req.query;
 
-    let query = `
-      SELECT 
-        i.idincidente,
-        i.codigoincidente,
-        i.descripcionincidente,
-        i.fechaincidente,
-        i.horaincidente,
-        i.fecharegistro,
-        i.origen,
-        i.direccion,
-        i.numero_victimas,
-        i.numero_vehiculos_afectados,
-        i.valor_perdidas,
-        i.requiere_ambulancia,
-        i.requiere_policia,
-        i.requiere_bomberos,
-        ST_Y(i.geom) as lat,
-        ST_X(i.geom) as lng,
-        i.idtipoincidente,
-        ti.nametipoincidente as tipo_nombre,
-        i.id_estado,
-        ei.nombre as estado_nombre,
-        ei.color as estado_color,
-        ei.orden as estado_orden,
-        i.id_gravedad,
-        gi.nombre as gravedad_nombre,
-        gi.color as gravedad_color,
-        gi.nivel as gravedad_nivel,
-        i.id_modalidad,
-        mi.nombre as modalidad_nombre,
-        i.idbarrio,
-        b.namebarrio as barrio_nombre,
-        i.idvereda,
-        i.id_usuario_creador,
-        u.nombreusuario as creador_nombre,
-        i.imagen_url
-      FROM incidente i
-      LEFT JOIN tipo_incidente ti ON i.idtipoincidente = ti.idtipoincidente
-      LEFT JOIN estado_incidente ei ON i.id_estado = ei.id_estado
-      LEFT JOIN gravedad_incidente gi ON i.id_gravedad = gi.id_gravedad
-      LEFT JOIN modalidad_incidente mi ON i.id_modalidad = mi.id_modalidad
-      LEFT JOIN barrio b ON i.idbarrio = b.gid
-      LEFT JOIN vereda v ON i.idvereda = v.id
-      LEFT JOIN usuario u ON i.id_usuario_creador = u.idusuario
-      WHERE 1=1
-    `;
+    const result = await IncidenteModel.obtenerTodosConFiltros({
+      estado,
+      gravedad,
+      tipo,
+      barrio,
+      vereda,
+      fecha_inicio,
+      fecha_fin,
+      mis_reportes,
+      idUsuario: req.session?.idusuario
+    }, {
+      page,
+      limit
+    });
 
-    const params = [];
-    let paramIdx = 1;
-
-    if (mis_reportes === 'true' && req.session.idusuario) {
-      query += ` AND (i.id_usuario_creador = $${paramIdx} OR i.idusuario = $${paramIdx})`;
-      params.push(req.session.idusuario);
-      paramIdx++;
+    // Si el cliente solicita paginación explícita (page o paginated=true)
+    if (page || req.query.paginated === 'true') {
+      const curPage = parseInt(page) || 1;
+      const curLimit = parseInt(limit) || 20;
+      return res.json({
+        total: result.total,
+        page: curPage,
+        limit: curLimit,
+        totalPages: Math.ceil(result.total / curLimit) || 1,
+        data: result.rows
+      });
     }
 
-    if (estado) {
-      query += ` AND i.id_estado = $${paramIdx}`;
-      params.push(parseInt(estado));
-      paramIdx++;
-    }
-    if (gravedad) {
-      query += ` AND i.id_gravedad = $${paramIdx}`;
-      params.push(parseInt(gravedad));
-      paramIdx++;
-    }
-    if (tipo) {
-      query += ` AND i.idtipoincidente = $${paramIdx}`;
-      params.push(parseInt(tipo));
-      paramIdx++;
-    }
-    if (barrio) {
-      query += ` AND i.idbarrio = $${paramIdx}`;
-      params.push(parseInt(barrio));
-      paramIdx++;
-    }
-    if (vereda) {
-      query += ` AND i.idvereda = $${paramIdx}`;
-      params.push(parseInt(vereda));
-      paramIdx++;
-    }
-    if (fecha_inicio) {
-      query += ` AND i.fechaincidente >= $${paramIdx}`;
-      params.push(fecha_inicio);
-      paramIdx++;
-    }
-    if (fecha_fin) {
-      query += ` AND i.fechaincidente <= $${paramIdx}`;
-      params.push(fecha_fin);
-      paramIdx++;
-    }
-
-    query += ` ORDER BY i.fechaincidente DESC, i.horaincidente DESC`;
-
-    const result = await pool.query(query, params);
+    // Respuesta en array directo (100% retrocompatible con Leaflet y vistas actuales)
     res.json(result.rows);
   } catch (error) {
     console.error("Error al obtener incidentes:", error);
@@ -278,38 +206,7 @@ const obtenerMisReportes = async (req, res) => {
   }
 
   try {
-    const result = await pool.query(`
-      SELECT 
-        i.idincidente,
-        i.codigoincidente,
-        i.descripcionincidente,
-        i.fechaincidente,
-        i.horaincidente,
-        i.fecharegistro,
-        i.imagen_url,
-        i.id_estado,
-        i.id_gravedad,
-        i.id_modalidad,
-        i.direccion,
-        ST_Y(i.geom) as lat,
-        ST_X(i.geom) as lng,
-        ti.nametipoincidente as tipo_nombre,
-        ei.nombre as estado_nombre,
-        ei.color as estado_color,
-        gi.nombre as gravedad_nombre,
-        gi.color as gravedad_color,
-        b.namebarrio as barrio_nombre,
-        v.nombre as vereda_nombre
-      FROM incidente i
-      LEFT JOIN tipo_incidente ti ON i.idtipoincidente = ti.idtipoincidente
-      LEFT JOIN estado_incidente ei ON i.id_estado = ei.id_estado
-      LEFT JOIN gravedad_incidente gi ON i.id_gravedad = gi.id_gravedad
-      LEFT JOIN barrio b ON i.idbarrio = b.gid
-      LEFT JOIN vereda v ON i.idvereda = v.id
-      WHERE i.id_usuario_creador = $1 OR i.idusuario = $1
-      ORDER BY i.fechaincidente DESC, i.horaincidente DESC
-    `, [idusuarioLogueado]);
-
+    const result = await IncidenteModel.obtenerMisReportes(idusuarioLogueado);
     res.json(result.rows);
   } catch (error) {
     console.error("Error al obtener mis reportes:", error);
@@ -320,34 +217,7 @@ const obtenerMisReportes = async (req, res) => {
 // Obtener incidentes pendientes de revisión (Admin y Superadmin)
 const obtenerPendientes = async (req, res) => {
   try {
-    const result = await pool.query(`
-      SELECT 
-        i.idincidente,
-        i.codigoincidente,
-        i.descripcionincidente,
-        i.fechaincidente,
-        i.horaincidente,
-        i.fecharegistro,
-        ST_Y(i.geom) as lat,
-        ST_X(i.geom) as lng,
-        ti.nametipoincidente as tipo_nombre,
-        ei.nombre as estado_nombre,
-        ei.color as estado_color,
-        gi.nombre as gravedad_nombre,
-        b.namebarrio as barrio_nombre,
-        v.nombre as vereda_nombre,
-        u.nombreusuario as reportero_nombre
-      FROM incidente i
-      LEFT JOIN tipo_incidente ti ON i.idtipoincidente = ti.idtipoincidente
-      LEFT JOIN estado_incidente ei ON i.id_estado = ei.id_estado
-      LEFT JOIN gravedad_incidente gi ON i.id_gravedad = gi.id_gravedad
-      LEFT JOIN barrio b ON i.idbarrio = b.gid
-      LEFT JOIN vereda v ON i.idvereda = v.id
-      LEFT JOIN usuario u ON i.id_usuario_creador = u.idusuario
-      WHERE i.id_estado IN (1, 2)
-      ORDER BY i.fecharegistro ASC
-    `);
-
+    const result = await IncidenteModel.obtenerPendientes();
     res.json(result.rows);
   } catch (error) {
     console.error("Error al obtener incidentes pendientes:", error);
@@ -451,7 +321,7 @@ const eliminarIncidente = async (req, res) => {
       return res.status(403).json({ mensaje: "No puedes eliminar un reporte que ya está en proceso de revisión 🚫" });
     }
 
-    // Si tiene imagen asociada, eliminarla de Cloudinary o del almacenamiento local
+    // Si tiene imagen asociada, eliminarla
     if (inc.imagen_url) {
       try {
         await eliminarImagenCloudinary(inc.imagen_url);
@@ -460,7 +330,7 @@ const eliminarIncidente = async (req, res) => {
       }
     }
 
-    await pool.query("DELETE FROM incidente WHERE idincidente = $1", [incId]);
+    await IncidenteModel.eliminar(incId);
 
     await registrarLogActividad(
       idusuarioLogueado,
@@ -481,28 +351,7 @@ const eliminarIncidente = async (req, res) => {
 const obtenerIncidente = async (req, res) => {
   try {
     const incId = parseInt(req.params.id);
-    const result = await pool.query(`
-      SELECT 
-        i.*,
-        ST_Y(i.geom) as lat,
-        ST_X(i.geom) as lng,
-        ti.nametipoincidente as tipo_nombre,
-        ei.nombre as estado_nombre,
-        ei.color as estado_color,
-        gi.nombre as gravedad_nombre,
-        gi.color as gravedad_color,
-        mi.nombre as modalidad_nombre,
-        b.namebarrio as barrio_nombre,
-        v.nombre as vereda_nombre
-      FROM incidente i
-      LEFT JOIN tipo_incidente ti ON i.idtipoincidente = ti.idtipoincidente
-      LEFT JOIN estado_incidente ei ON i.id_estado = ei.id_estado
-      LEFT JOIN gravedad_incidente gi ON i.id_gravedad = gi.id_gravedad
-      LEFT JOIN modalidad_incidente mi ON i.id_modalidad = mi.id_modalidad
-      LEFT JOIN barrio b ON i.idbarrio = b.gid
-      LEFT JOIN vereda v ON i.idvereda = v.id
-      WHERE i.idincidente = $1
-    `, [incId]);
+    const result = await IncidenteModel.obtenerPorId(incId);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ mensaje: "Incidente no encontrado ❌" });
@@ -554,7 +403,6 @@ const actualizarIncidente = async (req, res) => {
     // Gestión de reemplazo de imagen (Cloudinary o local)
     let nuevaImagenUrl = undefined;
     if (req.file && req.file.buffer) {
-      // 1. Eliminar la foto anterior de Cloudinary/disco si existía
       if (inc.imagen_url) {
         try {
           await eliminarImagenCloudinary(inc.imagen_url);
@@ -562,7 +410,6 @@ const actualizarIncidente = async (req, res) => {
           console.warn("No se pudo eliminar la imagen anterior:", errDel.message);
         }
       }
-      // 2. Subir la nueva foto con el código de incidente existente
       try {
         nuevaImagenUrl = await subirImagenCloudinary(
           req.file.buffer,
@@ -769,16 +616,7 @@ const tomarIncidente = async (req, res) => {
 
   try {
     const incId = parseInt(id);
-    // Intentar tomar el incidente si no está tomado por otro admin o si ya estaba tomado por el mismo admin
-    const result = await pool.query(`
-      UPDATE incidente
-      SET id_admin_revisor = $1,
-          id_estado = 2, -- 2 = En evaluación
-          fecha_toma_revision = CURRENT_TIMESTAMP
-      WHERE idincidente = $2
-        AND (id_admin_revisor IS NULL OR id_admin_revisor = $1 OR id_estado = 1)
-      RETURNING idincidente, codigoincidente, id_estado, id_admin_revisor;
-    `, [idAdmin, incId]);
+    const result = await IncidenteModel.tomarIncidente(incId, idAdmin);
 
     if (result.rows.length === 0) {
       const checkRes = await pool.query(`
@@ -794,7 +632,6 @@ const tomarIncidente = async (req, res) => {
       });
     }
 
-    // Registrar log en segundo plano sin retrasar la respuesta al usuario
     registrarLogActividad(idAdmin, 'TOMAR_REVISION', 'incidente', incId, `Tomó la revisión del incidente #${incId}`, req).catch(err => console.error("Error en log:", err.message));
 
     res.json({
@@ -843,7 +680,6 @@ const liberarIncidente = async (req, res) => {
       return res.status(403).json({ mensaje: "No tienes permisos para liberar este incidente o ya no está asignado a ti ⛔" });
     }
 
-    // Registrar log en segundo plano
     registrarLogActividad(idAdmin, 'LIBERAR_REVISION', 'incidente', incId, `Liberó el incidente #${incId} devolviéndolo a la cola pública`, req).catch(err => console.error("Error en log:", err.message));
 
     res.json({ mensaje: `Incidente #${incId} devuelto a la cola pública de verificación ↩️` });
@@ -866,21 +702,12 @@ const resolverIncidente = async (req, res) => {
 
   try {
     const incId = parseInt(id);
-    const result = await pool.query(`
-      UPDATE incidente
-      SET id_estado = 5, -- 5 = Resuelto / Aprobado
-          id_usuario_editor = $1,
-          fecha_edicion = CURRENT_TIMESTAMP,
-          comentarios_adicionales = COALESCE($2, comentarios_adicionales)
-      WHERE idincidente = $3
-      RETURNING idincidente, id_estado;
-    `, [idAdmin, notas, incId]);
+    const result = await IncidenteModel.resolverIncidente(incId, idAdmin, notas);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ mensaje: "Incidente no encontrado" });
     }
 
-    // Registrar log en segundo plano
     registrarLogActividad(idAdmin, 'APROBAR_INCIDENTE', 'incidente', incId, `Aprobó y resolvió el incidente #${incId}`, req).catch(err => console.error("Error en log:", err.message));
 
     res.json({ mensaje: `Incidente #${incId} verificado y aprobado exitosamente ✅` });
@@ -903,21 +730,12 @@ const cerrarIncidente = async (req, res) => {
 
   try {
     const incId = parseInt(id);
-    const result = await pool.query(`
-      UPDATE incidente
-      SET id_estado = 6, -- 6 = Cerrado sin resolver / Desestimado
-          id_usuario_editor = $1,
-          fecha_edicion = CURRENT_TIMESTAMP,
-          comentarios_adicionales = COALESCE($2, comentarios_adicionales)
-      WHERE idincidente = $3
-      RETURNING idincidente, id_estado;
-    `, [idAdmin, motivo ? `[DESESTIMADO]: ${motivo}` : null, incId]);
+    const result = await IncidenteModel.cerrarIncidente(incId, idAdmin, motivo);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ mensaje: "Incidente no encontrado" });
     }
 
-    // Registrar log en segundo plano
     registrarLogActividad(idAdmin, 'DESESTIMAR_INCIDENTE', 'incidente', incId, `Desestimó/cerró el incidente #${incId}`, req).catch(err => console.error("Error en log:", err.message));
 
     res.json({ mensaje: `Incidente #${incId} desestimado / cerrado exitosamente ❌` });

@@ -1,7 +1,7 @@
 const path = require('path');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
-const pool = require('../db');
+const AuthModel = require('../models/auth.model');
 const { registrarLogActividad } = require('../utils/logger');
 const { enviarEmailRecuperacion } = require('../utils/mailer');
 
@@ -72,10 +72,7 @@ const getUsuario = (req, res) => {
 const login = async (req, res) => {
   const { usuario, contrasenia } = req.body;
   try {
-    const result = await pool.query(
-      "SELECT * FROM usuario WHERE nombreusuario = $1 OR email = $1",
-      [usuario]
-    );
+    const result = await AuthModel.buscarPorNombreOEmail(usuario);
 
     if (result.rows.length === 0) {
       await registrarLogActividad(null, 'LOGIN_FALLIDO', 'usuario', null, `Intento fallido de login con usuario/correo: ${usuario}`, req);
@@ -108,10 +105,7 @@ const login = async (req, res) => {
       req.session.debe_cambiar_password = user.debe_cambiar_password === true;
 
       // Actualizar fecha de último acceso
-      await pool.query(
-        "UPDATE usuario SET ultimo_acceso = CURRENT_TIMESTAMP WHERE idusuario = $1",
-        [user.idusuario]
-      );
+      await AuthModel.actualizarUltimoAcceso(user.idusuario);
 
       // Registrar en auditoría
       await registrarLogActividad(user.idusuario, 'LOGIN', 'usuario', user.idusuario, 'Inicio de sesión exitoso', req);
@@ -154,10 +148,7 @@ const recuperarPassword = async (req, res) => {
   }
 
   try {
-    const userResult = await pool.query(
-      'SELECT idusuario, nombreusuario, email FROM usuario WHERE LOWER(email) = LOWER($1)',
-      [email.trim()]
-    );
+    const userResult = await AuthModel.buscarPorEmail(email);
 
     // Por seguridad, damos la misma respuesta genérica aunque el correo no exista
     if (userResult.rows.length === 0) {
@@ -173,16 +164,10 @@ const recuperarPassword = async (req, res) => {
     const expiracion = new Date(Date.now() + 60 * 60 * 1000);
 
     // Inactivar tokens de reset anteriores no usados para este usuario
-    await pool.query(
-      "UPDATE token SET usado = true WHERE id_usuario = $1 AND tipo = 'reset_password' AND usado = false",
-      [user.idusuario]
-    );
+    await AuthModel.invalidarTokensResetPrevios(user.idusuario);
 
     // Guardar nuevo token
-    await pool.query(`
-      INSERT INTO token (id_usuario, token, tipo, expiracion, usado)
-      VALUES ($1, $2, 'reset_password', $3, false)
-    `, [user.idusuario, token, expiracion]);
+    await AuthModel.guardarTokenReset(user.idusuario, token, expiracion);
 
     // Enviar correo
     await enviarEmailRecuperacion(user.email, user.nombreusuario, token, req);
@@ -217,12 +202,7 @@ const validarTokenReset = async (req, res) => {
   }
 
   try {
-    const result = await pool.query(`
-      SELECT t.id_token, t.expiracion, t.usado, u.nombreusuario, u.email
-      FROM token t
-      JOIN usuario u ON t.id_usuario = u.idusuario
-      WHERE t.token = $1 AND t.tipo = 'reset_password'
-    `, [token]);
+    const result = await AuthModel.obtenerTokenReset(token);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ valido: false, mensaje: 'El enlace de recuperación es inválido ❌' });
@@ -267,12 +247,7 @@ const resetPassword = async (req, res) => {
   }
 
   try {
-    const result = await pool.query(`
-      SELECT t.id_token, t.id_usuario, t.expiracion, t.usado, u.nombreusuario
-      FROM token t
-      JOIN usuario u ON t.id_usuario = u.idusuario
-      WHERE t.token = $1 AND t.tipo = 'reset_password'
-    `, [token]);
+    const result = await AuthModel.obtenerTokenReset(token);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ mensaje: 'El enlace de recuperación es inválido ❌' });
@@ -292,13 +267,8 @@ const resetPassword = async (req, res) => {
     const hashedPassword = await bcrypt.hash(nuevaContrasenia, 10);
 
     // Actualizar usuario y marcar token como usado
-    await pool.query(`
-      UPDATE usuario 
-      SET contraseniausuario = $1, debe_cambiar_password = false, fecha_actualizacion = CURRENT_TIMESTAMP
-      WHERE idusuario = $2
-    `, [hashedPassword, tokenData.id_usuario]);
-
-    await pool.query('UPDATE token SET usado = true WHERE id_token = $1', [tokenData.id_token]);
+    await AuthModel.actualizarPassword(tokenData.id_usuario, hashedPassword);
+    await AuthModel.marcarTokenUsado(tokenData.id_token);
 
     await registrarLogActividad(
       tokenData.id_usuario,
@@ -344,10 +314,7 @@ const cambiarPasswordPrimerIngreso = async (req, res) => {
   }
 
   try {
-    const userResult = await pool.query(
-      'SELECT idusuario, nombreusuario, contraseniausuario FROM usuario WHERE idusuario = $1',
-      [req.session.idusuario]
-    );
+    const userResult = await AuthModel.obtenerCredencialesPorId(req.session.idusuario);
 
     if (userResult.rows.length === 0) {
       return res.status(404).json({ mensaje: 'Usuario no encontrado ❌' });
@@ -362,11 +329,7 @@ const cambiarPasswordPrimerIngreso = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(nuevaContrasenia, 10);
 
-    await pool.query(`
-      UPDATE usuario
-      SET contraseniausuario = $1, debe_cambiar_password = false, fecha_actualizacion = CURRENT_TIMESTAMP
-      WHERE idusuario = $2
-    `, [hashedPassword, user.idusuario]);
+    await AuthModel.actualizarPassword(user.idusuario, hashedPassword);
 
     req.session.debe_cambiar_password = false;
 

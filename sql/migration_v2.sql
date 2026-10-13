@@ -337,4 +337,13 @@ UPDATE public.incidente SET id_usuario_creador = idusuario WHERE id_usuario_crea
 -- Asignar rol 'superadmin' al primer usuario o usuarios existentes si están sin rol definido
 UPDATE public.usuario SET rol = 'superadmin' WHERE rol IS NULL OR rol = 'reportero' AND idusuario = 1;
 
+-- 14. TABLA: session (Persistencia de sesiones de express-session)
+CREATE TABLE IF NOT EXISTS public."session" (
+    "sid" character varying NOT NULL COLLATE pg_catalog."default",
+    "sess" json NOT NULL,
+    "expire" timestamp(6) without time zone NOT NULL,
+    CONSTRAINT "session_pkey" PRIMARY KEY ("sid")
+);
+CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON public."session" ("expire");
+
 COMMIT;

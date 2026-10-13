@@ -1,5 +1,7 @@
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const pool = require('../db');
+const UsuarioModel = require('../models/usuario.model');
 const { registrarLogActividad } = require('../utils/logger');
 const { enviarEmailBienvenida } = require('../utils/mailer');
 
@@ -9,22 +11,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Obtener todos los usuarios (Superadmin y Admin)
 const getUsuarios = async (req, res) => {
   try {
-    const result = await pool.query(`
-      SELECT 
-        idusuario,
-        nombreusuario,
-        email,
-        rol,
-        estado,
-        dependencia,
-        telefono,
-        debe_cambiar_password,
-        ultimo_acceso,
-        fecha_registro
-      FROM usuario
-      ORDER BY idusuario ASC
-    `);
-
+    const result = await UsuarioModel.obtenerTodos();
     res.json(result.rows);
   } catch (error) {
     console.error('Error al obtener usuarios:', error);
@@ -36,21 +23,7 @@ const getUsuarios = async (req, res) => {
 const getUsuarioById = async (req, res) => {
   const { id } = req.params;
   try {
-    const result = await pool.query(`
-      SELECT 
-        idusuario,
-        nombreusuario,
-        email,
-        rol,
-        estado,
-        dependencia,
-        telefono,
-        debe_cambiar_password,
-        ultimo_acceso,
-        fecha_registro
-      FROM usuario
-      WHERE idusuario = $1
-    `, [id]);
+    const result = await UsuarioModel.obtenerPorId(id);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ mensaje: 'Usuario no encontrado ❌' });
@@ -83,16 +56,12 @@ const crearUsuario = async (req, res) => {
   const cleanNombre = nombreusuario.trim();
   const cleanEmail = email.trim();
   const userRol = rol || 'reportero';
-  // El estado al registrar solo puede ser activo o inactivo (no bloqueado)
   const userEstado = (estado === 'inactivo') ? 'inactivo' : 'activo';
   const userDependencia = dependencia || 'General';
 
   try {
     // 2. Verificar duplicado estricto por nombre de usuario o email (insensible a mayúsculas)
-    const dupCheck = await pool.query(
-      'SELECT idusuario, nombreusuario, email FROM usuario WHERE LOWER(nombreusuario) = LOWER($1) OR LOWER(email) = LOWER($2)',
-      [cleanNombre, cleanEmail]
-    );
+    const dupCheck = await UsuarioModel.verificarDuplicado(cleanNombre, cleanEmail);
 
     if (dupCheck.rows.length > 0) {
       const match = dupCheck.rows[0];
@@ -103,28 +72,21 @@ const crearUsuario = async (req, res) => {
     }
 
     // 3. Generar contraseña temporal automática segura (no la define el admin)
-    const crypto = require('crypto');
     const passwordTemporal = String(Math.floor(100000 + crypto.randomInt(900000)));
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(passwordTemporal, saltRounds);
 
     // 4. Insertar nuevo usuario con debe_cambiar_password = true por defecto
-    const result = await pool.query(`
-      INSERT INTO usuario (
-        nombreusuario, contraseniausuario, entidadusuario, email, rol, estado, dependencia, telefono, created_by, debe_cambiar_password
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true)
-      RETURNING idusuario, nombreusuario, email, rol, estado, dependencia, debe_cambiar_password
-    `, [
-      cleanNombre,
-      hashedPassword,
-      userDependencia,
-      cleanEmail,
-      userRol,
-      userEstado,
-      userDependencia,
-      telefono ? telefono.trim() : null,
-      req.session.idusuario || null
-    ]);
+    const result = await UsuarioModel.crear({
+      nombreusuario: cleanNombre,
+      contraseniausuario: hashedPassword,
+      dependencia: userDependencia,
+      email: cleanEmail,
+      rol: userRol,
+      estado: userEstado,
+      telefono: telefono ? telefono.trim() : null,
+      createdBy: req.session.idusuario || null
+    });
 
     const nuevoUsuario = result.rows[0];
 
@@ -160,7 +122,7 @@ const actualizarUsuario = async (req, res) => {
   const { nombreusuario, email, contrasenia, rol, estado, dependencia, telefono } = req.body;
 
   try {
-    const userCheck = await pool.query('SELECT * FROM usuario WHERE idusuario = $1', [id]);
+    const userCheck = await UsuarioModel.obtenerPorId(id);
     if (userCheck.rows.length === 0) {
       return res.status(404).json({ mensaje: 'Usuario no encontrado ❌' });
     }
@@ -248,10 +210,7 @@ const cambiarEstadoUsuario = async (req, res) => {
   }
 
   try {
-    const result = await pool.query(
-      'UPDATE usuario SET estado = $1, fecha_actualizacion = CURRENT_TIMESTAMP WHERE idusuario = $2 RETURNING idusuario, nombreusuario, estado',
-      [estado, id]
-    );
+    const result = await UsuarioModel.cambiarEstado(id, estado);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ mensaje: 'Usuario no encontrado ❌' });
@@ -312,14 +271,14 @@ const eliminarUsuario = async (req, res) => {
   }
 
   try {
-    const userCheck = await pool.query('SELECT nombreusuario FROM usuario WHERE idusuario = $1', [id]);
+    const userCheck = await UsuarioModel.obtenerPorId(id);
     if (userCheck.rows.length === 0) {
       return res.status(404).json({ mensaje: 'Usuario no encontrado ❌' });
     }
 
     const nombreEliminado = userCheck.rows[0].nombreusuario;
 
-    await pool.query('DELETE FROM usuario WHERE idusuario = $1', [id]);
+    await UsuarioModel.eliminar(id);
 
     await registrarLogActividad(
       req.session.idusuario,

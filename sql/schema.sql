@@ -128,6 +128,17 @@ ALTER TABLE IF EXISTS public.vereda
     ON DELETE NO ACTION;
 
 -- ============================================================
+-- TABLA: session (Persistencia de sesiones de express-session)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public."session" (
+    "sid" character varying NOT NULL COLLATE pg_catalog."default",
+    "sess" json NOT NULL,
+    "expire" timestamp(6) without time zone NOT NULL,
+    CONSTRAINT "session_pkey" PRIMARY KEY ("sid")
+);
+CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON public."session" ("expire");
+
+-- ============================================================
 -- VERIFICAR QUE TODO ESTÁ BIEN
 -- ============================================================
 SELECT PostGIS_Version();
