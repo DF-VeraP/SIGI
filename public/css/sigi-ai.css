@@ -1,0 +1,1010 @@
+/* ============================================================
+   SIGI — CENTRO DE INTELIGENCIA ARTIFICIAL Y MACHINE LEARNING
+   Estilos del AI Lab: Arquitectura visual descansada, sobria y ejecutiva
+   ============================================================ */
+
+.vista-ai-container,
+#vistaIA {
+    padding: 24px 28px;
+    height: 100%;
+    overflow-y: auto;
+    color: var(--texto);
+    background: var(--bg-dark);
+    box-sizing: border-box;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) var(--bg-dark);
+}
+
+.vista-ai-container::-webkit-scrollbar,
+#vistaIA::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.vista-ai-container::-webkit-scrollbar-track,
+#vistaIA::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.vista-ai-container::-webkit-scrollbar-thumb,
+#vistaIA::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+/* Header del AI Lab */
+.ai-lab-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 22px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.ai-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ai-icon-pulse {
+    display: none;
+}
+
+.ai-title-wrap h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--texto);
+    letter-spacing: -0.015em;
+}
+
+.ai-title-wrap p {
+    margin: 4px 0 0 0;
+    font-size: 0.82rem;
+    color: var(--texto-suave);
+    line-height: 1.4;
+}
+
+.ai-header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: var(--texto-suave);
+}
+
+.ai-dot-online {
+    width: 7px;
+    height: 7px;
+    background: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+}
+
+/* Pestañas de Navegación del Lab (Segmented Pill Style) */
+.ai-nav-tabs {
+    display: inline-flex;
+    gap: 4px;
+    margin-bottom: 22px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    padding: 4px;
+    border-radius: 10px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.ai-nav-tabs::-webkit-scrollbar { display: none; }
+
+.ai-tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--texto-suave);
+    padding: 7px 16px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 7px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.18s ease;
+    white-space: nowrap;
+}
+
+.ai-tab-btn:hover {
+    color: var(--texto);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.ai-tab-btn.active {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.09);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Tarjetas Generales */
+.ai-card {
+    background: var(--bg-card);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 12px;
+    padding: 20px 22px;
+    position: relative;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
+}
+
+.ai-card-title {
+    font-size: 0.96rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--texto);
+    letter-spacing: -0.01em;
+}
+
+/* Grid del Laboratorio NLP */
+.ai-nlp-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 18px;
+}
+
+@media (max-width: 992px) {
+    .ai-nlp-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Chips de Escenarios Rápidos */
+.ai-quick-scenarios {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 14px;
+}
+
+.ai-chip-scenario {
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--texto-suave);
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 0.76rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+}
+
+.ai-chip-scenario:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+}
+
+.ai-textarea-lab {
+    width: 100%;
+    min-height: 110px;
+    background: rgba(0, 0, 0, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: var(--texto);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    resize: vertical;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ai-textarea-lab:focus {
+    outline: none;
+    border-color: var(--acento);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.btn-open-ailab {
+    background: var(--azul);
+    color: #ffffff;
+    border: none;
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s ease;
+}
+
+.btn-open-ailab:hover {
+    background: var(--azul-hover);
+}
+
+/* ============================================================
+   Panel de Resultados NLP — Diagnóstico AI
+   ============================================================ */
+.ai-result-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.ai-card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2px;
+}
+
+.ai-live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--texto-suave);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+
+.ai-live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10b981;
+}
+
+/* Hero Predicción Principal */
+.ai-prediccion-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(37, 99, 235, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.22);
+    padding: 14px 18px;
+    border-radius: 10px;
+    gap: 14px;
+}
+
+.ai-pred-hero-eyebrow {
+    font-size: 0.70rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--texto-suave);
+    font-weight: 600;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.ai-pred-tipo-nombre {
+    font-size: 1.30rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+}
+
+.ai-pred-confidence-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(59, 130, 246, 0.12);
+    border: 1px solid rgba(59, 130, 246, 0.28);
+    padding: 5px 12px;
+    border-radius: 20px;
+    margin-top: 2px;
+}
+
+.ai-pred-confianza-badge {
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: #93c5fd;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Sección de Distribución Probabilística */
+.ai-distribution-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ai-distribution-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3px;
+}
+
+.ai-section-subtitle {
+    font-size: 0.80rem;
+    font-weight: 600;
+    color: var(--texto);
+}
+
+.ai-softmax-hint {
+    font-size: 0.70rem;
+    color: var(--texto-suave);
+}
+
+.ai-prob-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.ai-prob-row {
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-left: 3px solid transparent;
+    border-radius: 8px;
+    padding: 9px 12px;
+    transition: background 0.18s ease;
+}
+
+.ai-prob-row:hover {
+    background: rgba(255, 255, 255, 0.045);
+}
+
+.ai-prob-row.is-winner {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.ai-prob-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.ai-prob-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ai-prob-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.ai-prob-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--texto);
+}
+
+.ai-prob-winner-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.66rem;
+    font-weight: 600;
+    color: #cbd5e1;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 1px 7px;
+    border-radius: 4px;
+    letter-spacing: 0.02em;
+}
+
+.ai-prob-value {
+    font-size: 0.82rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.ai-prob-track {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.ai-prob-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.4s ease;
+}
+
+/* Medidor de Gravedad y Recursos */
+.ai-gravity-box {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 12px 16px;
+    border-radius: 10px;
+}
+
+.ai-gravity-score {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.ai-gravity-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.ai-gravity-title {
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--texto);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.ai-grav-tag {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    letter-spacing: 0.02em;
+}
+
+.ai-gravity-desc {
+    margin: 3px 0 0 0;
+    font-size: 0.75rem;
+    color: var(--texto-suave);
+}
+
+.ai-triggers-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.ai-trigger-chip {
+    font-size: 0.70rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+}
+
+.ai-trigger-chip.alert-trigger {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.28);
+    color: #fca5a5;
+}
+
+.ai-trigger-chip.safe {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--texto-suave);
+}
+
+/* Auxilio Operativo Recomendado */
+.ai-dispatch-box {
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    padding: 12px 16px;
+}
+
+.ai-dispatch-label {
+    font-size: 0.70rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--texto-suave);
+    font-weight: 600;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.ai-dispatch-pills-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.ai-dispatch-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 11px;
+    border-radius: 6px;
+    font-size: 0.76rem;
+    font-weight: 600;
+}
+
+.ai-dispatch-pill.dispatch-police {
+    background: rgba(59, 130, 246, 0.12);
+    border: 1px solid rgba(59, 130, 246, 0.28);
+    color: #93c5fd;
+}
+
+.ai-dispatch-pill.dispatch-ambulance {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.28);
+    color: #fca5a5;
+}
+
+.ai-dispatch-pill.dispatch-fire {
+    background: rgba(249, 115, 22, 0.12);
+    border: 1px solid rgba(249, 115, 22, 0.28);
+    color: #fdba74;
+}
+
+.ai-dispatch-pill.dispatch-standard {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #cbd5e1;
+}
+
+/* ============================================================
+   TAB 2: DBSCAN SPATIAL CLUSTERING & RANKING
+   ============================================================ */
+
+/* Selects de Hiperparámetros */
+#dbscanParamEps,
+#dbscanParamMinPts {
+    background: rgba(0, 0, 0, 0.25) !important;
+    color: var(--texto) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 7px 12px !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    font-size: 0.80rem !important;
+    outline: none !important;
+}
+
+/* KPI Cards de Concentración Espacial y Forecast */
+.ai-forecast-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.ai-forecast-kpi-card {
+    background: var(--bg-card);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+    padding: 14px 18px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.ai-forecast-kpi-label {
+    font-size: 0.70rem;
+    color: var(--texto-suave);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    font-weight: 600;
+}
+
+.ai-forecast-kpi-val {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-top: 4px;
+    color: var(--texto);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Tabla de Ranking de Clusters DBSCAN */
+.ai-clusters-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.82rem;
+    margin-top: 6px;
+}
+
+.ai-clusters-table th {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--texto-suave);
+    text-align: left;
+    padding: 10px 14px;
+    font-weight: 600;
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ai-clusters-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: var(--texto);
+    vertical-align: middle;
+}
+
+.ai-clusters-table tr:hover td {
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.ai-cluster-col-rank {
+    width: 65px;
+}
+
+.ai-cluster-rank-num {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #cbd5e1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.76rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.ai-cluster-name {
+    font-weight: 600;
+    color: #ffffff;
+    font-size: 0.85rem;
+    letter-spacing: -0.01em;
+}
+
+.ai-cluster-sub {
+    font-size: 0.72rem;
+    color: var(--texto-suave);
+    margin-top: 2px;
+}
+
+.ai-risk-badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+}
+
+.ai-cluster-metric {
+    font-variant-numeric: tabular-nums;
+    font-size: 0.82rem;
+}
+
+.ai-cluster-unit {
+    color: var(--texto-suave);
+    font-size: 0.74rem;
+    font-weight: 400;
+}
+
+.btn-ir-cluster {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-ir-cluster:hover {
+    background: var(--azul);
+    color: #ffffff;
+    border-color: var(--azul);
+}
+
+/* Dock flotante de afinación DBSCAN en el mapa */
+.map-dbscan-dock {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    background: var(--bg-card);
+    border: 1px solid var(--borde);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 6px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--texto);
+    font-size: 0.76rem;
+}
+
+.map-dbscan-dock select {
+    background: var(--bg-surface);
+    color: var(--texto);
+    border: 1px solid var(--borde);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+}
+
+/* ============================================================
+   SIGI AI LAB — ADAPTACIÓN PREMIUM MODO CLARO (TEMA-CLARO)
+   ============================================================ */
+
+body.tema-claro .vista-ai-container,
+body.tema-claro #vistaIA {
+    background: var(--bg-dark) !important;
+    color: #0f172a !important;
+}
+
+body.tema-claro .ai-lab-header {
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+
+body.tema-claro .ai-title-wrap h2 {
+    color: #0f172a !important;
+}
+
+body.tema-claro .ai-title-wrap p {
+    color: #64748b !important;
+}
+
+body.tema-claro .ai-header-badge {
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #475569 !important;
+}
+
+body.tema-claro .ai-nav-tabs {
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+body.tema-claro .ai-tab-btn {
+    color: #475569 !important;
+}
+
+body.tema-claro .ai-tab-btn:hover {
+    color: #0f172a !important;
+    background: #e2e8f0 !important;
+}
+
+body.tema-claro .ai-tab-btn.active {
+    color: #2563eb !important;
+    background: #ffffff !important;
+    border: 1px solid #93c5fd !important;
+    box-shadow: 0 1px 4px rgba(37, 99, 235, 0.12) !important;
+    font-weight: 700 !important;
+}
+
+body.tema-claro .ai-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.tema-claro .ai-card-title {
+    color: #0f172a !important;
+}
+
+body.tema-claro .ai-live-badge {
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #475569 !important;
+}
+
+/* NLP Simulator en Modo Claro */
+body.tema-claro .ai-chip-scenario {
+    background: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #334155 !important;
+}
+
+body.tema-claro .ai-chip-scenario:hover {
+    background: #e2e8f0 !important;
+    border-color: #94a3b8 !important;
+    color: #0f172a !important;
+}
+
+body.tema-claro .ai-textarea-lab {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.tema-claro .ai-textarea-lab::placeholder {
+    color: #94a3b8 !important;
+}
+
+body.tema-claro .ai-prediccion-hero {
+    background: #eff6ff !important;
+    border: 1px solid #bfdbfe !important;
+}
+
+body.tema-claro .ai-pred-hero-eyebrow {
+    color: #64748b !important;
+}
+
+body.tema-claro .ai-pred-tipo-nombre {
+    color: #0f172a !important;
+}
+
+body.tema-claro .ai-pred-confidence-pill {
+    background: #dbeafe !important;
+    border: 1px solid #93c5fd !important;
+}
+
+body.tema-claro .ai-pred-confianza-badge {
+    color: #1d4ed8 !important;
+}
+
+body.tema-claro .ai-prob-row {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+body.tema-claro .ai-prob-row:hover {
+    background: #f1f5f9 !important;
+}
+
+body.tema-claro .ai-prob-row.is-winner {
+    background: #f0fdf4 !important;
+    border-color: #bbf7d0 !important;
+}
+
+body.tema-claro .ai-prob-name {
+    color: #0f172a !important;
+}
+
+body.tema-claro .ai-prob-winner-badge {
+    background: #dcfce7 !important;
+    border: 1px solid #86efac !important;
+    color: #15803d !important;
+}
+
+body.tema-claro .ai-prob-track {
+    background: #e2e8f0 !important;
+}
+
+body.tema-claro .ai-gravity-box {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+body.tema-claro .ai-gravity-title {
+    color: #0f172a !important;
+}
+
+body.tema-claro .ai-dispatch-box {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+body.tema-claro .ai-trigger-chip.safe {
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #475569 !important;
+}
+
+body.tema-claro .ai-dispatch-pill.dispatch-standard {
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #334155 !important;
+}
+
+/* DBSCAN en Modo Claro */
+body.tema-claro #dbscanParamEps,
+body.tema-claro #dbscanParamMinPts {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.tema-claro .ai-clusters-table th {
+    background: #f8fafc !important;
+    color: #475569 !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+
+body.tema-claro .ai-clusters-table td {
+    border-bottom: 1px solid #f1f5f9 !important;
+    color: #0f172a !important;
+}
+
+body.tema-claro .ai-clusters-table tr:hover td {
+    background: #f8fafc !important;
+}
+
+body.tema-claro .ai-cluster-name {
+    color: #0f172a !important;
+}
+
+body.tema-claro .ai-cluster-rank-num {
+    background: #e2e8f0 !important;
+    color: #1e293b !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+body.tema-claro .btn-ir-cluster {
+    background: #eff6ff !important;
+    border: 1px solid #bfdbfe !important;
+    color: #1d4ed8 !important;
+}
+
+body.tema-claro .btn-ir-cluster:hover {
+    background: #2563eb !important;
+    border-color: #2563eb !important;
+    color: #ffffff !important;
+}
+
+body.tema-claro .map-dbscan-dock {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+}
+
+body.tema-claro .map-dbscan-dock select {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+/* Forecast KPIs en Modo Claro */
+body.tema-claro .ai-forecast-kpi-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+body.tema-claro .ai-forecast-kpi-val {
+    color: #0f172a !important;
+}
+
+/* Scrollbar sutil para AI Lab en Modo Claro */
+body.tema-claro .vista-ai-container,
+body.tema-claro #vistaIA {
+    scrollbar-width: thin !important;
+    scrollbar-color: #cbd5e1 transparent !important;
+}
+
+body.tema-claro .vista-ai-container::-webkit-scrollbar,
+body.tema-claro #vistaIA::-webkit-scrollbar {
+    width: 6px !important;
+    height: 6px !important;
+}
+
+body.tema-claro .vista-ai-container::-webkit-scrollbar-track,
+body.tema-claro #vistaIA::-webkit-scrollbar-track {
+    background: transparent !important;
+}
+
+body.tema-claro .vista-ai-container::-webkit-scrollbar-thumb,
+body.tema-claro #vistaIA::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1 !important;
+    border-radius: 999px !important;
+    border: 1px solid transparent !important;
+    background-clip: padding-box !important;
+}
+
+body.tema-claro .vista-ai-container::-webkit-scrollbar-thumb:hover,
+body.tema-claro #vistaIA::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8 !important;
+}

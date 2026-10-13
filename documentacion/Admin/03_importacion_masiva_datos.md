@@ -23,13 +23,13 @@
   - Sanitización de formatos de fecha y hora.
 
 ### 2.2. Inserción Transaccional por Lote
-- **Identificador de Lote (`batch_id`):** Cada importación genera un UUID o timestamp único que etiqueta a todas las filas insertadas en esa ejecución.
+- **Identificador de Lote (`id_lote`):** Cada importación genera un identificador numérico/secuencial único que etiqueta a todas las filas insertadas con `origen = 'masivo'`.
 - **Transacción Atómica en PostgreSQL (`BEGIN ... COMMIT`):** Si una fila presenta un error irrecuperable de base de datos, toda la transacción se cancela (`ROLLBACK`), evitando inconsistencias parciales.
 
 ### 2.3. Mecanismo de Reversión (Deshacer Última Importación)
 - **Endpoint:** `DELETE /importados/ultimo`
 - **Utilidad:** Si el analista nota que el archivo importado tenía columnas corridas o fechas erróneas, puede presionar *"Deshacer última importación"*.
-- **Acción:** El servidor localiza el lote más reciente (`MAX(batch_id)`) y elimina de forma limpia todos los incidentes asociados a esa carga masiva.
+- **Acción:** El servidor localiza el lote masivo más reciente (`id_lote`) y elimina de forma limpia todos los incidentes asociados a esa carga masiva.
 
 ---
 

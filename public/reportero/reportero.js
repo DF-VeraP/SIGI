@@ -81,6 +81,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     // 2. Cargar catálogos (tipos, modalidades, etc.)
     await cargarCatalogos();
 
+    // 2.1 Inicializar Asistente Predictivo de Inteligencia Artificial (SIGI ML)
+    if (window.SigiMLAssistant) {
+        new SigiMLAssistant({
+            textareaId: 'descripcion',
+            tipoSelectId: 'tipoIncidente',
+            gravedadSelectId: 'gravedad',
+            horaInputId: 'hora',
+            chkPoliciaId: 'chkPolicia',
+            chkAmbulanciaId: 'chkAmbulancia',
+            chkBomberosId: 'chkBomberos'
+        });
+    }
+
     // 3. Inicializar Leaflet Mini Mapa
     initMiniMapa();
 
@@ -383,7 +396,31 @@ async function enviarReporte(e) {
         }
 
     } catch (err) {
-        console.error("Error al enviar reporte:", err);
+        console.warn("Fallo de conexión al enviar reporte:", err);
+        if (window.SIGI_PWA) {
+            const offlinePayload = {
+                tipo: document.getElementById("tipo").value,
+                fecha: document.getElementById("fecha").value,
+                hora: document.getElementById("hora").value,
+                lat: document.getElementById("lat").value,
+                lng: document.getElementById("lng").value,
+                id_gravedad: document.getElementById("gravedad").value,
+                id_modalidad: document.getElementById("modalidad").value,
+                direccion: document.getElementById("direccion").value,
+                descripcion: document.getElementById("descripcion").value,
+                requiere_policia: document.getElementById("chkPolicia")?.checked ?? false,
+                requiere_ambulancia: document.getElementById("chkAmbulancia")?.checked ?? false,
+                requiere_bomberos: document.getElementById("chkBomberos")?.checked ?? false
+            };
+            window.SIGI_PWA.guardarEnColaOffline(offlinePayload);
+            showAlert("💾 Modo Offline: Tu reporte ha sido guardado de forma segura en tu teléfono/PC y se enviará automáticamente al recuperar conexión.", "warning");
+            document.getElementById("formReporte").reset();
+            fotoComprimida = null;
+            if (document.getElementById("previewContainer")) {
+                document.getElementById("previewContainer").style.display = "none";
+            }
+            return;
+        }
         showAlert("❌ Error de conexión al registrar el incidente", "error");
     } finally {
         btnSubmit.disabled = false;

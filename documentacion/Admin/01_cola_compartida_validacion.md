@@ -22,14 +22,15 @@
 - **Endpoint:** `POST /api/incidentes/:id/tomar`
 - **Lógica Transaccional:**
   - Cuando un administrador decide revisar un incidente, el servidor asigna las columnas:
-    - `bloqueado_por = req.session.id_usuario`
-    - `fecha_bloqueo = NOW()`
+    - `id_admin_revisor = req.session.idusuario`
+    - `id_estado = 2` (En evaluación)
+    - `fecha_toma_revision = NOW()`
   - **Protección contra Carreras:** Si otro analista intenta tomar el mismo reporte, el backend responde `409 Conflict` informando el nombre del colega que lo está atendiendo actualmente.
 
 ### 2.3. Liberación Manual y Auto-Desbloqueo
 - **Endpoint:** `POST /api/incidentes/:id/liberar`
 - **Liberación Voluntaria:** El analista puede cerrar el modal o presionar "Liberar" para que el reporte regrese a la bolsa general.
-- **Liberación Automática por Inactividad:** Si el analista mantiene el modal abierto sin interactuar por más de 15 minutos, el bloqueo expira automáticamente en la base de datos permitiendo que otro analista lo atienda.
+- **Liberación Automática por Inactividad:** Si el analista mantiene el modal abierto sin interactuar por más de 10 minutos (HU-ADM-02), el bloqueo expira automáticamente en la base de datos permitiendo que otro analista lo atienda.
 
 ### 2.4. Resolución Definitiva del Incidente
 - **Aprobación Oficial:**

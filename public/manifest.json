@@ -1,0 +1,25 @@
+{
+  "name": "SIGI - Mapeo y Gestión de Incidentes",
+  "short_name": "SIGI Móvil",
+  "description": "Sistema de Información Geográfica de Incidentes y Gestión del Riesgo en Campo",
+  "start_url": "/reportero/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0b1120",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/assets/img/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/img/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

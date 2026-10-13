@@ -29,36 +29,114 @@
     </style>
 </head>
 
-<body class="contFlexCentColumn" style="visibility: hidden;">
-    <header class="contFlex">
-        <div class="header-brand-container">
-            <div class="contFlexCent" style="gap: 10px; align-items: center;">
-                <img src="../assets/img/logo_sigi.png" alt="SIGI Logo" style="height: 32px; width: auto; border-radius: 8px; box-shadow: 0 0 10px rgba(70, 214, 247, 0.35);">
-                <h1 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--acento); letter-spacing: 0.05em;">SIGI</h1>
+<body style="visibility: hidden;">
+    <div class="layout-wrapper admin-layout-wrapper">
+        <!-- Sidebar Vertical Institucional (Diseño unificado con Dashboard) -->
+        <aside class="sidebar admin-sidebar desktop-only" id="adminSidebar">
+            <!-- Botón Toggle de la Sidebar -->
+            <button id="btnToggleSidebarAdmin" class="btn-toggle-sidebar" title="Colapsar / Expandir menú">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+
+            <!-- Logo y Marca -->
+            <div class="sidebar-logo">
+                <img src="../assets/img/logo_sigi.png" alt="Logo SIGI">
+                <span class="logo-title">SIGI</span>
+                <span class="logo-tag">Gestión Institucional</span>
             </div>
 
-            <div class="header-right-controls" style="display: flex; align-items: center; gap: 8px;">
-                <button id="btnTemaHeader" class="toggle-iphone-header" title="Cambiar modo Claro / Oscuro para comodidad visual">
-                    <span class="icono-sol"><i class="bi bi-sun-fill"></i></span>
-                    <div class="sw-slider"></div>
-                    <span class="icono-luna"><i class="bi bi-moon-stars-fill"></i></span>
+            <hr class="sidebar-divider">
+
+            <!-- Navegación Vertical -->
+            <nav class="sidebar-nav" id="navSidebarAdmin">
+                <button id="btnInicio" class="nav-btn pintarBotonNav" title="Inicio / Monitoreo Geográfico">
+                    <i class="bi bi-house-door-fill"></i>
+                    <span class="nav-text">Inicio</span>
                 </button>
-                <button type="button" id="btnHamburguesa" class="btn-hamburguesa" aria-label="Abrir menú de navegación">
-                    <i class="bi bi-list" id="iconoHamburguesa"></i>
+                <button id="btnVerif" class="nav-btn" title="Cola de Verificación de Incidentes">
+                    <i class="bi bi-shield-exclamation"></i>
+                    <span class="nav-text">Incidentes</span>
+                    <span id="badgePendientes" style="display: none; background: #ef4444; color: #ffffff; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 10px; margin-left: auto; box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);">0</span>
+                </button>
+                <button id="btnUsuarios" class="nav-btn" style="display: none;" title="Gestión de Usuarios (Superadmin)">
+                    <i class="bi bi-people-fill"></i>
+                    <span class="nav-text">Usuarios</span>
+                </button>
+                <button id="btnAuditoria" class="nav-btn" style="display: none;" title="Auditoría y Logs (Superadmin)">
+                    <i class="bi bi-journal-text"></i>
+                    <span class="nav-text">Auditoría</span>
+                </button>
+                <button id="btnReportePDF" class="nav-btn btn-pdf-header" title="Descargar informe ejecutivo en PDF">
+                    <i class="bi bi-file-earmark-pdf-fill"></i>
+                    <span class="nav-text">Informe PDF</span>
+                </button>
+            </nav>
+
+            <!-- Contenedor Inferior: Usuario, Tema y Cerrar Sesión -->
+            <div class="sidebar-footer">
+                <div class="badge-usuario-admin" id="contenedorUsuarioHeader" title="Perfil de Usuario Activo">
+                    <i class="bi bi-person-circle"></i>
+                    <span class="nav-text" id="textoBienvenida">Bienvenido ?????</span>
+                </div>
+
+                <hr class="sidebar-divider">
+
+                <div class="sidebar-tema-fila">
+                    <span class="nav-text tema-label-text">Tema</span>
+                    <button id="btnTemaHeader" class="toggle-iphone-header" title="Cambiar modo Claro / Oscuro para comodidad visual">
+                        <span class="icono-sol"><i class="bi bi-sun-fill"></i></span>
+                        <div class="sw-slider"></div>
+                        <span class="icono-luna"><i class="bi bi-moon-stars-fill"></i></span>
+                    </button>
+                </div>
+
+                <button id="cerrarSesion" class="nav-btn btn-logout-admin" title="Cerrar sesión">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span class="nav-text">Cerrar sesión</span>
                 </button>
             </div>
-        </div>
+        </aside>
 
-        <nav class="contFlex nav-header-menu" id="navHeaderMenu">
-            <button id="btnInicio">Inicio</button>
-            <button id="btnVerif">Incidentes <span id="badgePendientes" style="display: none; background: #ef4444; color: #ffffff; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 10px; margin-left: 6px; box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);">0</span></button>
-            <button id="btnUsuarios" style="display: none;">Usuarios</button>
-            <button id="btnAuditoria" style="display: none;">Auditoría</button>
-            <h2 id="textoBienvenida">Bienvenido ?????</h2>
-            <button id="cerrarSesion">Cerrar sesión</button>
-        </nav>
-    </header>
-    <main>
+        <!-- Cabecera Móvil (Mobile App Bar - <= 820px) -->
+        <header class="mobile-app-header mobile-only">
+            <div class="header-brand-container">
+                <div class="header-brand-group">
+                    <img src="../assets/img/logo_sigi.png" alt="SIGI Logo" class="header-logo-img">
+                    <div class="header-title-wrap">
+                        <h1 class="header-brand-title">SIGI</h1>
+                        <span class="header-brand-tag">Gestión Institucional</span>
+                    </div>
+                </div>
+
+                <div class="header-right-controls">
+                    <button id="btnTemaHeaderMobile" class="toggle-iphone-header" title="Cambiar modo Claro / Oscuro para comodidad visual">
+                        <span class="icono-sol"><i class="bi bi-sun-fill"></i></span>
+                        <div class="sw-slider"></div>
+                        <span class="icono-luna"><i class="bi bi-moon-stars-fill"></i></span>
+                    </button>
+                    <button type="button" id="btnHamburguesa" class="btn-hamburguesa" aria-label="Abrir menú de navegación">
+                        <i class="bi bi-list" id="iconoHamburguesa"></i>
+                    </button>
+                </div>
+            </div>
+
+            <nav class="contFlex nav-header-menu" id="navHeaderMenu">
+                <button id="btnInicioMobile" class="nav-admin-btn"><i class="bi bi-house-door-fill"></i> <span>Inicio</span></button>
+                <button id="btnVerifMobile" class="nav-admin-btn"><i class="bi bi-shield-exclamation"></i> <span>Incidentes</span> <span id="badgePendientesMobile" style="display: none; background: #ef4444; color: #ffffff; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 10px; margin-left: 6px; box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);">0</span></button>
+                <button id="btnUsuariosMobile" class="nav-admin-btn" style="display: none;"><i class="bi bi-people-fill"></i> <span>Usuarios</span></button>
+                <button id="btnAuditoriaMobile" class="nav-admin-btn" style="display: none;"><i class="bi bi-journal-text"></i> <span>Auditoría</span></button>
+                <button id="btnReportePDFMobile" class="nav-admin-btn btn-pdf-header" style="display: flex; align-items: center; gap: 6px;" title="Descargar informe ejecutivo en PDF"><i class="bi bi-file-earmark-pdf-fill"></i> <span>Informe PDF</span></button>
+                <div class="badge-usuario-admin">
+                    <i class="bi bi-person-circle"></i>
+                    <h2 id="textoBienvenidaMobile" style="font-size: 0.78rem; color: inherit; margin: 0; font-weight: 600;">Bienvenido ?????</h2>
+                </div>
+                <button id="cerrarSesionMobile" class="nav-admin-btn btn-logout-admin"><i class="bi bi-box-arrow-right"></i> <span>Cerrar sesión</span></button>
+            </nav>
+        </header>
+
+        <!-- Área de Contenido Principal -->
+        <div class="admin-main-area">
+            <main>
         <div class="contMain contFlex">
             <section class="inicio contFlexCent">
                 <div class="contenedor-mapas-wrapper">
@@ -477,9 +555,19 @@
                             Siguiente
                         </button>
                     </div>
-                </div>
-            </section>
     </main>
+            <footer class="sigi-footer">
+                <div class="footer-contenido">
+                    <span class="footer-marca">SIGI — Sistema de Información Geográfica de Incidentes</span>
+                    <span class="footer-sep">·</span>
+                    <span class="footer-autor">Daniel Felipe Vera Perdomo (SENA)</span>
+                    <span class="footer-sep">·</span>
+                    <span class="footer-copy">© 2025 Todos los derechos reservados</span>
+                </div>
+            </footer>
+        </div> <!-- Fin .admin-main-area -->
+    </div> <!-- Fin .admin-layout-wrapper -->
+
     <!-- MODAL EDITAR INCIDENTE -->
     <div id="modalEditar" class="modal">
         <div class="modal-contenido" style="max-width: 460px; background: var(--bg-card); border: 1px solid var(--borde-acento); border-radius: 10px; padding: 22px;">
@@ -832,17 +920,11 @@
         </div>
     </div>
 
-    <footer class="sigi-footer">
-        <div class="footer-contenido">
-            <span class="footer-marca">SIGI — Sistema de Información Geográfica de Incidentes</span>
-            <span class="footer-sep">·</span>
-            <span class="footer-autor">Daniel Felipe Vera Perdomo (SENA)</span>
-            <span class="footer-sep">·</span>
-            <span class="footer-copy">© 2025 Todos los derechos reservados</span>
-        </div>
-    </footer>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="../js/session-timer.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="../js/sigi-realtime.js"></script>
+    <script src="../js/sigi-ml-assistant.js"></script>
     <script src="admin.js?v=61"></script>
 </body>
 

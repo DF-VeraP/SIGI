@@ -1,33 +1,72 @@
-document.querySelectorAll("header nav button:not(.toggle-iphone-header)").forEach(btn => {
+// Control de Sidebar Vertical (Admin / Superadmin)
+const adminSidebar = document.getElementById("adminSidebar");
+const btnToggleSidebarAdmin = document.getElementById("btnToggleSidebarAdmin");
+
+function reajustarMapasAdmin() {
+    if (typeof map !== 'undefined' && map) map.invalidateSize();
+    if (typeof map2 !== 'undefined' && map2) map2.invalidateSize();
+}
+
+if (btnToggleSidebarAdmin && adminSidebar) {
+    // Restaurar preferencia persistida de colapso
+    const estabaColapsada = localStorage.getItem("sigi_admin_sidebar_colapsada") === "true";
+    if (estabaColapsada) {
+        adminSidebar.classList.add("colapsada");
+        const iconoToggle = btnToggleSidebarAdmin.querySelector("i");
+        if (iconoToggle) iconoToggle.className = "bi bi-chevron-right";
+    }
+
+    btnToggleSidebarAdmin.addEventListener("click", () => {
+        const estaColapsada = adminSidebar.classList.toggle("colapsada");
+        const iconoToggle = btnToggleSidebarAdmin.querySelector("i");
+        if (iconoToggle) {
+            iconoToggle.className = estaColapsada ? "bi bi-chevron-right" : "bi bi-chevron-left";
+        }
+        localStorage.setItem("sigi_admin_sidebar_colapsada", estaColapsada ? "true" : "false");
+        setTimeout(reajustarMapasAdmin, 360);
+    });
+
+    adminSidebar.addEventListener("transitionend", (e) => {
+        if (e.propertyName === "width") {
+            reajustarMapasAdmin();
+        }
+    });
+}
+
+// Botones de navegación activa en Sidebar y Móvil
+document.querySelectorAll(".admin-sidebar .sidebar-nav button, header nav button:not(.toggle-iphone-header)").forEach(btn => {
     btn.addEventListener("click", function () {
-        document.querySelectorAll("header nav button:not(.toggle-iphone-header)").forEach(btn => {
-            btn.classList.remove("pintarBotonNav");
+        document.querySelectorAll(".admin-sidebar .sidebar-nav button, header nav button:not(.toggle-iphone-header)").forEach(b => {
+            b.classList.remove("pintarBotonNav");
         });
         btn.classList.add("pintarBotonNav");
     });
 });
 
-// Toggle Tema Claro / Oscuro Header (Tipo iPhone)
+// Toggle Tema Claro / Oscuro Header (Tipo iPhone) - Escritorio y Móvil
 const btnTemaHeader = document.getElementById("btnTemaHeader");
+const btnTemaHeaderMobile = document.getElementById("btnTemaHeaderMobile");
+
+function alternarTemaAdmin(e) {
+    if (e) e.stopPropagation();
+    document.body.classList.toggle("tema-claro");
+    document.documentElement.classList.toggle("tema-claro");
+    const esClaro = document.body.classList.contains("tema-claro");
+    localStorage.setItem("tema_sigi_admin", esClaro ? "claro" : "oscuro");
+    if (typeof btnVerMapa !== "undefined" && btnVerMapa && !btnVerMapa.classList.contains("activo")) {
+        btnVerMapa.style.background = "";
+        btnVerMapa.style.color = "";
+    }
+}
+
 if (localStorage.getItem("tema_sigi_admin") === "claro") {
     document.body.classList.add("tema-claro");
     document.documentElement.classList.add("tema-claro");
 }
-if (btnTemaHeader) {
-    btnTemaHeader.addEventListener("click", function (e) {
-        e.stopPropagation();
-        document.body.classList.toggle("tema-claro");
-        document.documentElement.classList.toggle("tema-claro");
-        const esClaro = document.body.classList.contains("tema-claro");
-        localStorage.setItem("tema_sigi_admin", esClaro ? "claro" : "oscuro");
-        if (btnVerMapa && !btnVerMapa.classList.contains("activo")) {
-            btnVerMapa.style.background = "";
-            btnVerMapa.style.color = "";
-        }
-    });
-}
+if (btnTemaHeader) btnTemaHeader.addEventListener("click", alternarTemaAdmin);
+if (btnTemaHeaderMobile) btnTemaHeaderMobile.addEventListener("click", alternarTemaAdmin);
 
-// Menú Hamburguesa Responsivo
+// Menú Hamburguesa Responsivo en Móvil
 const btnHamburguesa = document.getElementById("btnHamburguesa");
 const navHeaderMenu = document.getElementById("navHeaderMenu");
 const iconoHamburguesa = document.getElementById("iconoHamburguesa");
@@ -87,6 +126,24 @@ function cambiarPestana(pestañaNombre) {
     const secUsuarios = document.getElementById("secUsuarios");
     const secAuditoria = document.getElementById("secAuditoria");
 
+    // Sincronizar resaltado de botones de navegación (Sidebar y Móvil)
+    document.querySelectorAll(".admin-sidebar .sidebar-nav button, header nav button:not(.toggle-iphone-header)").forEach(b => {
+        b.classList.remove("pintarBotonNav");
+    });
+    if (pestañaNombre === 'inicio') {
+        document.getElementById("btnInicio")?.classList.add("pintarBotonNav");
+        document.getElementById("btnInicioMobile")?.classList.add("pintarBotonNav");
+    } else if (pestañaNombre === 'verif') {
+        document.getElementById("btnVerif")?.classList.add("pintarBotonNav");
+        document.getElementById("btnVerifMobile")?.classList.add("pintarBotonNav");
+    } else if (pestañaNombre === 'usuarios') {
+        document.getElementById("btnUsuarios")?.classList.add("pintarBotonNav");
+        document.getElementById("btnUsuariosMobile")?.classList.add("pintarBotonNav");
+    } else if (pestañaNombre === 'auditoria') {
+        document.getElementById("btnAuditoria")?.classList.add("pintarBotonNav");
+        document.getElementById("btnAuditoriaMobile")?.classList.add("pintarBotonNav");
+    }
+
     if (pestañaNombre === 'inicio' || pestañaNombre === 'verif') {
         if (secUsuarios) secUsuarios.style.display = 'none';
         if (secAuditoria) secAuditoria.style.display = 'none';
@@ -125,14 +182,27 @@ window.addEventListener("resize", () => {
     if (typeof map2 !== 'undefined' && map2) map2.invalidateSize();
 });
 
-document.getElementById("btnInicio").addEventListener("click", () => cambiarPestana('inicio'));
-document.getElementById("btnVerif").addEventListener("click", () => cambiarPestana('verif'));
+// Event listeners de navegación (Escritorio)
+document.getElementById("btnInicio")?.addEventListener("click", () => cambiarPestana('inicio'));
+document.getElementById("btnVerif")?.addEventListener("click", () => cambiarPestana('verif'));
 
 const btnUsuariosEl = document.getElementById("btnUsuarios");
 if (btnUsuariosEl) btnUsuariosEl.addEventListener("click", () => cambiarPestana('usuarios'));
 
 const btnAuditoriaEl = document.getElementById("btnAuditoria");
 if (btnAuditoriaEl) btnAuditoriaEl.addEventListener("click", () => cambiarPestana('auditoria'));
+
+// Event listeners de navegación (Móvil)
+document.getElementById("btnInicioMobile")?.addEventListener("click", () => cambiarPestana('inicio'));
+document.getElementById("btnVerifMobile")?.addEventListener("click", () => cambiarPestana('verif'));
+document.getElementById("btnUsuariosMobile")?.addEventListener("click", () => cambiarPestana('usuarios'));
+document.getElementById("btnAuditoriaMobile")?.addEventListener("click", () => cambiarPestana('auditoria'));
+document.getElementById("btnReportePDFMobile")?.addEventListener("click", () => {
+    document.getElementById("btnReportePDF")?.click();
+});
+document.getElementById("cerrarSesionMobile")?.addEventListener("click", () => {
+    window.location.href = "/logout";
+});
 
 // --- SISTEMA DE TOASTS ---
 function mostrarToast(mensaje, tipo = "info") {
@@ -492,18 +562,27 @@ async function cargarUsuario() {
             usuarioActual = data;
             document.body.style.visibility = "visible";
             const rolLabel = data.rol === 'superadmin' ? 'Superadmin' : (data.rol === 'admin' ? 'Admin' : 'Reportero');
-            document.getElementById("textoBienvenida").innerText = `Bienvenido ${data.usuario} (${rolLabel})`;
+            const textoBienvenidaEl = document.getElementById("textoBienvenida");
+            if (textoBienvenidaEl) textoBienvenidaEl.innerText = `Bienvenido ${data.usuario} (${rolLabel})`;
+            const textoBienvenidaMobileEl = document.getElementById("textoBienvenidaMobile");
+            if (textoBienvenidaMobileEl) textoBienvenidaMobileEl.innerText = `Bienvenido ${data.usuario} (${rolLabel})`;
 
-            // Mostrar u ocultar pestañas según el rol
+            // Mostrar u ocultar pestañas según el rol (Escritorio y Móvil)
             const btnUsuarios = document.getElementById("btnUsuarios");
             const btnAuditoria = document.getElementById("btnAuditoria");
+            const btnUsuariosMobile = document.getElementById("btnUsuariosMobile");
+            const btnAuditoriaMobile = document.getElementById("btnAuditoriaMobile");
 
             if (data.rol === 'superadmin') {
-                if (btnUsuarios) btnUsuarios.style.display = "inline-block";
-                if (btnAuditoria) btnAuditoria.style.display = "inline-block";
+                if (btnUsuarios) btnUsuarios.style.display = "flex";
+                if (btnAuditoria) btnAuditoria.style.display = "flex";
+                if (btnUsuariosMobile) btnUsuariosMobile.style.display = "flex";
+                if (btnAuditoriaMobile) btnAuditoriaMobile.style.display = "flex";
             } else if (data.rol === 'admin') {
                 if (btnUsuarios) btnUsuarios.style.display = "none";
                 if (btnAuditoria) btnAuditoria.style.display = "none";
+                if (btnUsuariosMobile) btnUsuariosMobile.style.display = "none";
+                if (btnAuditoriaMobile) btnAuditoriaMobile.style.display = "none";
             } else {
                 window.location.href = "/reportero/index.html";
             }
@@ -834,6 +913,15 @@ async function cargarTipos() {
         select.appendChild(option1);
         select2.appendChild(option2);
     });
+
+    // Inicializar Asistente Predictivo de Inteligencia Artificial (SIGI ML)
+    if (window.SigiMLAssistant) {
+        new SigiMLAssistant({
+            textareaId: 'descripcion',
+            tipoSelectId: 'tipoIncidente',
+            horaInputId: 'hora'
+        });
+    }
 }
 
 // Configuración de límites en Fecha y Hora
@@ -1007,13 +1095,21 @@ contar();
 
 function actualizarBadgePendientes(incidentes) {
     const badge = document.getElementById("badgePendientes");
-    if (!badge || !Array.isArray(incidentes)) return;
+    const badgeMobile = document.getElementById("badgePendientesMobile");
+    if (!Array.isArray(incidentes)) return;
     const pendientes = incidentes.filter(inc => parseInt(inc.id_estado || 1) === 1).length;
     if (pendientes > 0) {
-        badge.innerText = pendientes;
-        badge.style.display = "inline-block";
+        if (badge) {
+            badge.innerText = pendientes;
+            badge.style.display = "inline-block";
+        }
+        if (badgeMobile) {
+            badgeMobile.innerText = pendientes;
+            badgeMobile.style.display = "inline-block";
+        }
     } else {
-        badge.style.display = "none";
+        if (badge) badge.style.display = "none";
+        if (badgeMobile) badgeMobile.style.display = "none";
     }
 }
 
@@ -2781,5 +2877,27 @@ document.getElementById("btnPagSigLog")?.addEventListener("click", () => {
         renderizarTablaAuditoria();
     }
 });
+
+// Botón Exportar Informe Ejecutivo Mensual en PDF
+document.getElementById("btnReportePDF")?.addEventListener("click", () => {
+    mostrarToast("📄 Descargando informe ejecutivo en PDF...", "info");
+    const ahora = new Date();
+    const url = `/api/reportes/pdf?mes=${ahora.getMonth() + 1}&anio=${ahora.getFullYear()}`;
+    window.open(url, '_blank');
+});
+
+// Sincronización en tiempo real recibida por WebSockets (Socket.io)
+window.addEventListener("sigi:nuevo_incidente", () => {
+    if (typeof cargarVerificaciones === "function") {
+        cargarVerificaciones();
+    }
+});
+
+window.addEventListener("sigi:incidente_actualizado", () => {
+    if (typeof cargarVerificaciones === "function") {
+        cargarVerificaciones();
+    }
+});
+
 
 
