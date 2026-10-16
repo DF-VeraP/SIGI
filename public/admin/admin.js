@@ -161,6 +161,7 @@ function cambiarPestana(pestañaNombre) {
         if (secPerfil) secPerfil.style.display = 'none';
 
         if (contMain) {
+            contMain.style.removeProperty("display");
             contMain.style.display = "flex";
             contMain.style.width = "200%";
         }
@@ -190,7 +191,9 @@ function cambiarPestana(pestañaNombre) {
     } else {
         const secInicio = document.querySelector(".inicio");
         if (secInicio) secInicio.style.visibility = "hidden";
-        if (contMain) contMain.style.display = "none";
+        if (contMain) {
+            contMain.style.setProperty("display", "none", "important");
+        }
 
         if (secUsuarios) {
             secUsuarios.style.display = pestañaNombre === 'usuarios' ? 'block' : 'none';
@@ -2456,6 +2459,10 @@ function renderizarTablaUsuarios() {
 
         const fechaRegFmt = formatearFechaHora(u.fecha_registro);
 
+        const esMismoUsuario = usuarioActual && (parseInt(usuarioActual.idusuario) === parseInt(u.idusuario));
+        const toggleDisabledAttr = esMismoUsuario ? 'disabled style="opacity: 0.35; cursor: not-allowed;" title="No puedes inactivar o bloquear tu propia cuenta en sesión"' : `title="${u.estado === 'activo' ? 'Bloquear acceso' : 'Activar acceso'}"`;
+        const deleteDisabledAttr = esMismoUsuario ? 'disabled style="opacity: 0.35; cursor: not-allowed;" title="No puedes eliminar tu propia cuenta en sesión"' : 'title="Eliminar usuario"';
+
         const tr = document.createElement("tr");
         tr.className = "fila-incidente-hover";
         tr.innerHTML = `
@@ -2472,10 +2479,10 @@ function renderizarTablaUsuarios() {
                     <button type="button" class="btn-icon-usr btn-edit-user" data-id="${u.idusuario}" title="Editar usuario" aria-label="Editar usuario">
                         <i class="bi bi-pencil" aria-hidden="true"></i>
                     </button>
-                    <button type="button" class="btn-icon-usr btn-toggle-estado ${u.estado === 'activo' ? 'btn-usr-bloquear' : 'btn-usr-activar'}" data-id="${u.idusuario}" data-estado="${u.estado}" title="${u.estado === 'activo' ? 'Bloquear acceso' : 'Activar acceso'}" aria-label="${u.estado === 'activo' ? 'Bloquear usuario' : 'Activar usuario'}">
+                    <button type="button" class="btn-icon-usr btn-toggle-estado ${u.estado === 'activo' ? 'btn-usr-bloquear' : 'btn-usr-activar'}" data-id="${u.idusuario}" data-estado="${u.estado}" ${toggleDisabledAttr} aria-label="${u.estado === 'activo' ? 'Bloquear usuario' : 'Activar usuario'}">
                         <i class="bi ${u.estado === 'activo' ? 'bi-slash-circle' : 'bi-check-circle'}" aria-hidden="true"></i>
                     </button>
-                    <button type="button" class="btn-icon-usr btn-delete-user" data-id="${u.idusuario}" data-nombre="${u.nombreusuario}" title="Eliminar usuario" aria-label="Eliminar usuario">
+                    <button type="button" class="btn-icon-usr btn-delete-user" data-id="${u.idusuario}" data-nombre="${u.nombreusuario}" ${deleteDisabledAttr} aria-label="Eliminar usuario">
                         <i class="bi bi-trash3" aria-hidden="true"></i>
                     </button>
                 </div>
@@ -2500,9 +2507,14 @@ function asignarEventosAccionesUsuarios() {
     document.querySelectorAll(".btn-toggle-estado").forEach(btn => {
         btn.addEventListener("click", async (e) => {
             const targetBtn = e.target.closest(".btn-toggle-estado");
-            if (!targetBtn) return;
+            if (!targetBtn || targetBtn.disabled) return;
 
             const id = targetBtn.dataset.id;
+            if (usuarioActual && parseInt(usuarioActual.idusuario) === parseInt(id)) {
+                mostrarToast("⚠️ No puedes inactivar o bloquear tu propia cuenta de Superadmin en sesión", "advertencia");
+                return;
+            }
+
             const estadoActual = targetBtn.dataset.estado;
             const nuevoEstado = estadoActual === 'activo' ? 'bloqueado' : 'activo';
 
@@ -2547,7 +2559,12 @@ function asignarEventosAccionesUsuarios() {
 
             const btnDel = e.target.closest(".btn-delete-user");
             if (btnDel) {
+                if (btnDel.disabled) return;
                 const id = parseInt(btnDel.dataset.id);
+                if (usuarioActual && parseInt(usuarioActual.idusuario) === id) {
+                    mostrarToast("⚠️ No puedes eliminar tu propia cuenta en sesión", "advertencia");
+                    return;
+                }
                 const nombre = btnDel.dataset.nombre;
                 abrirModalEliminarUsuario(id, nombre);
                 return;

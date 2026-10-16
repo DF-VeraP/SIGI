@@ -171,6 +171,23 @@ class UsuarioModel {
       [id]
     );
   }
+
+  /**
+   * Cuenta cuántos superadministradores activos existen en el sistema (opcionalmente excluyendo a uno por ID)
+   */
+  static async contarSuperadminsActivos(excluirId = null) {
+    if (excluirId) {
+      const res = await pool.query(
+        "SELECT COUNT(*)::int AS total FROM usuario WHERE rol = 'superadmin' AND estado = 'activo' AND idusuario != $1",
+        [parseInt(excluirId)]
+      );
+      return res.rows[0]?.total || 0;
+    }
+    const res = await pool.query(
+      "SELECT COUNT(*)::int AS total FROM usuario WHERE rol = 'superadmin' AND estado = 'activo'"
+    );
+    return res.rows[0]?.total || 0;
+  }
 }
 
 module.exports = UsuarioModel;

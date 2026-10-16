@@ -152,6 +152,27 @@ const actualizarUsuario = async (req, res) => {
       }
     }
 
+    // Validación de protección para cuentas de Superadmin
+    const idNum = parseInt(id);
+    const targetUser = userCheck.rows[0];
+    const vaAInactivarse = estado && estado !== 'activo';
+    const vaACambiarRol = rol && rol !== 'superadmin';
+
+    if (targetUser.rol === 'superadmin' && (vaAInactivarse || vaACambiarRol)) {
+      if (idNum === req.session.idusuario) {
+        return res.status(400).json({
+          mensaje: 'Por seguridad, no puedes degradar tu propio rol de Superadmin ni inactivarte desde tu sesión activa ⚠️'
+        });
+      }
+
+      const otrosSuperadmins = await UsuarioModel.contarSuperadminsActivos(idNum);
+      if (otrosSuperadmins === 0) {
+        return res.status(400).json({
+          mensaje: 'Acción bloqueada: No es posible modificar el rol ni inactivar a este usuario porque es el único Superadmin activo del sistema. Debe existir al menos otro Superadmin habilitado ⚠️'
+        });
+      }
+    }
+
     let hashedPassword = userCheck.rows[0].contraseniausuario;
     if (contrasenia && contrasenia.trim() !== '') {
       hashedPassword = await bcrypt.hash(contrasenia, 10);
@@ -203,6 +224,7 @@ const actualizarUsuario = async (req, res) => {
 const cambiarEstadoUsuario = async (req, res) => {
   const { id } = req.params;
   const { estado } = req.body;
+  const idNum = parseInt(id);
 
   const estadosValidos = ['activo', 'inactivo', 'pendiente', 'bloqueado'];
   if (!estadosValidos.includes(estado)) {
@@ -210,18 +232,37 @@ const cambiarEstadoUsuario = async (req, res) => {
   }
 
   try {
-    const result = await UsuarioModel.cambiarEstado(id, estado);
-
-    if (result.rows.length === 0) {
+    const userCheck = await UsuarioModel.obtenerPorId(idNum);
+    if (userCheck.rows.length === 0) {
       return res.status(404).json({ mensaje: 'Usuario no encontrado ❌' });
     }
+    const targetUser = userCheck.rows[0];
+
+    // Regla 1: Un superadmin no puede auto-inactivarse ni bloquear su propia cuenta en sesión activa
+    if (idNum === req.session.idusuario && estado !== 'activo') {
+      return res.status(400).json({
+        mensaje: 'Por seguridad, no puedes inactivar o bloquear tu propia cuenta de Superadmin mientras estás en sesión ⚠️'
+      });
+    }
+
+    // Regla 2: No se puede inactivar/bloquear al último superadmin activo del sistema
+    if (targetUser.rol === 'superadmin' && estado !== 'activo') {
+      const otrosSuperadmins = await UsuarioModel.contarSuperadminsActivos(idNum);
+      if (otrosSuperadmins === 0) {
+        return res.status(400).json({
+          mensaje: 'Acción bloqueada: No es posible inactivar a este usuario porque es el único Superadmin activo en el sistema. Debe existir al menos otro Superadmin habilitado ⚠️'
+        });
+      }
+    }
+
+    const result = await UsuarioModel.cambiarEstado(idNum, estado);
 
     await registrarLogActividad(
       req.session.idusuario,
       'CAMBIAR_ESTADO_USUARIO',
       'usuario',
-      id,
-      `Estado del usuario ID ${id} cambiado a ${estado}`,
+      idNum,
+      `Estado del usuario ID ${idNum} cambiado a ${estado}`,
       req
     );
 
@@ -265,27 +306,38 @@ const getAuditoriaLogs = async (req, res) => {
 // Eliminar usuario (Solo Superadmin)
 const eliminarUsuario = async (req, res) => {
   const { id } = req.params;
+  const idNum = parseInt(id);
 
-  if (parseInt(id) === req.session.idusuario) {
+  if (idNum === req.session.idusuario) {
     return res.status(400).json({ mensaje: 'No puedes eliminar tu propio usuario en sesión ⚠️' });
   }
 
   try {
-    const userCheck = await UsuarioModel.obtenerPorId(id);
+    const userCheck = await UsuarioModel.obtenerPorId(idNum);
     if (userCheck.rows.length === 0) {
       return res.status(404).json({ mensaje: 'Usuario no encontrado ❌' });
     }
 
-    const nombreEliminado = userCheck.rows[0].nombreusuario;
+    const targetUser = userCheck.rows[0];
+    if (targetUser.rol === 'superadmin') {
+      const otrosSuperadmins = await UsuarioModel.contarSuperadminsActivos(idNum);
+      if (otrosSuperadmins === 0) {
+        return res.status(400).json({
+          mensaje: 'Acción bloqueada: No es posible eliminar al único Superadmin activo del sistema. Debe existir al menos otro Superadmin habilitado ⚠️'
+        });
+      }
+    }
 
-    await UsuarioModel.eliminar(id);
+    const nombreEliminado = targetUser.nombreusuario;
+
+    await UsuarioModel.eliminar(idNum);
 
     await registrarLogActividad(
       req.session.idusuario,
       'ELIMINAR_USUARIO',
       'usuario',
-      id,
-      `Usuario ${nombreEliminado} (ID: ${id}) eliminado del sistema`,
+      idNum,
+      `Usuario ${nombreEliminado} (ID: ${idNum}) eliminado del sistema`,
       req
     );
 

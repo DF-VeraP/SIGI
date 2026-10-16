@@ -9,8 +9,8 @@ async function registrarLogActividad(id_usuario, accion, tabla_afectada = null, 
     let user_agent = null;
 
     if (req) {
-      ip = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || null;
-      user_agent = req.headers['user-agent'] || null;
+      ip = req.headers?.['x-forwarded-for'] || req.socket?.remoteAddress || req.ip || null;
+      user_agent = req.headers?.['user-agent'] || null;
     }
 
     const userId = id_usuario || (req && req.session ? req.session.idusuario : null);
