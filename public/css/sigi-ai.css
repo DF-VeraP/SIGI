@@ -347,7 +347,7 @@
 .ai-prob-row {
     background: rgba(255, 255, 255, 0.025);
     border: 1px solid rgba(255, 255, 255, 0.06);
-    border-left: 3px solid transparent;
+    border-left: 1px solid rgba(255, 255, 255, 0.06) !important;
     border-radius: 8px;
     padding: 9px 12px;
     transition: background 0.18s ease;
@@ -359,7 +359,8 @@
 
 .ai-prob-row.is-winner {
     background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
 .ai-prob-header {
@@ -857,6 +858,7 @@ body.tema-claro .ai-pred-confianza-badge {
 body.tema-claro .ai-prob-row {
     background: #f8fafc !important;
     border: 1px solid #e2e8f0 !important;
+    border-left: 1px solid #e2e8f0 !important;
 }
 
 body.tema-claro .ai-prob-row:hover {
@@ -865,7 +867,8 @@ body.tema-claro .ai-prob-row:hover {
 
 body.tema-claro .ai-prob-row.is-winner {
     background: #f0fdf4 !important;
-    border-color: #bbf7d0 !important;
+    border: 1px solid #bbf7d0 !important;
+    border-left: 1px solid #bbf7d0 !important;
 }
 
 body.tema-claro .ai-prob-name {

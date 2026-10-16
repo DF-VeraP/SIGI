@@ -24,12 +24,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     function showAlert(msg, type = "danger") {
         alertReset.className = `alert-box ${type}`;
         respReset.textContent = msg;
-        if (type === "danger") {
-            alertIconReset.className = "bi bi-exclamation-triangle-fill";
-        } else if (type === "success") {
-            alertIconReset.className = "bi bi-check-circle-fill";
-        } else if (type === "warning") {
-            alertIconReset.className = "bi bi-exclamation-circle-fill";
+        if (alertIconReset) {
+            if (type === "danger") {
+                alertIconReset.className = "bi bi-exclamation-triangle-fill";
+            } else if (type === "success") {
+                alertIconReset.className = "bi bi-check-circle-fill";
+            } else if (type === "warning") {
+                alertIconReset.className = "bi bi-exclamation-circle-fill";
+            }
         }
         alertReset.style.display = "flex";
     }
@@ -38,7 +40,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         alertReset.style.display = "none";
     }
 
-    // Toggle de visibilidad de contraseña
+    // Toggle de visibilidad de contraseña (soporta botón texto o icono)
     if (toggleNuevaPass && nuevaContrasenia) {
         toggleNuevaPass.addEventListener("click", () => {
             const isPass = nuevaContrasenia.getAttribute("type") === "password";
@@ -48,6 +50,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
             if (eyeIconNueva) {
                 eyeIconNueva.className = isPass ? "bi bi-eye-slash" : "bi bi-eye";
+            } else {
+                toggleNuevaPass.textContent = isPass ? "Ocultar" : "Mostrar";
             }
         });
     }
@@ -140,4 +144,37 @@ document.addEventListener("DOMContentLoaded", async () => {
     [nuevaContrasenia, confirmarContrasenia].forEach(input => {
         if (input) input.addEventListener("input", hideAlert);
     });
+
+    // ── Control de Tema Claro / Oscuro Sincronizado con SIGI ──
+    const btnTemaLogin = document.getElementById("btnTemaLogin");
+
+    function inicializarTemaLogin() {
+        const temaGuardado = localStorage.getItem("tema_sigi_dashboard") || localStorage.getItem("tema_sigi_admin");
+        if (temaGuardado === "claro") {
+            document.body.classList.add("tema-claro");
+        } else {
+            document.body.classList.remove("tema-claro");
+        }
+        actualizarMetaThemeLogin();
+    }
+
+    function actualizarMetaThemeLogin() {
+        const esClaro = document.body.classList.contains("tema-claro");
+        const metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (metaTheme) {
+            metaTheme.setAttribute("content", esClaro ? "#f4f6f9" : "#090d16");
+        }
+    }
+
+    if (btnTemaLogin) {
+        btnTemaLogin.addEventListener("click", () => {
+            document.body.classList.toggle("tema-claro");
+            const esClaro = document.body.classList.contains("tema-claro");
+            localStorage.setItem("tema_sigi_dashboard", esClaro ? "claro" : "oscuro");
+            localStorage.setItem("tema_sigi_admin", esClaro ? "claro" : "oscuro");
+            actualizarMetaThemeLogin();
+        });
+    }
+
+    inicializarTemaLogin();
 });

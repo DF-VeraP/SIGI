@@ -214,13 +214,13 @@
             align-items: center !important;
             justify-content: center !important;
             margin-left: 12px !important;
-            padding-left: 10px !important;
-            border-left: 1px solid var(--borde) !important;
+            padding-left: 4px !important;
+            border-left: none !important;
             align-self: stretch !important;
         }
 
         body.tema-claro .kpi-cerrar-slot {
-            border-left-color: rgba(0, 0, 0, 0.1) !important;
+            border-left: none !important;
         }
 
         /* Cada KPI como un sub-contenedor distintivo tipo píldora / card */
@@ -897,9 +897,9 @@
                 display: flex !important;
                 align-items: center !important;
                 justify-content: center !important;
-                padding-left: 8px !important;
+                padding-left: 4px !important;
                 padding-right: 2px !important;
-                border-left: 1px solid var(--borde) !important;
+                border-left: none !important;
                 margin-left: 4px !important;
                 align-self: stretch !important;
             }
@@ -1620,11 +1620,13 @@
         <!-- Vista Móvil: Feed Nativo de Tarjetas de Incidentes -->
         <div class="mobile-incident-container mobile-only">
             <div class="mobile-incident-header">
-                <div class="mobile-feed-title">
-                    <i class="bi bi-card-list"></i>
-                    <h2>Reportes de Incidentes</h2>
+                <div class="mobile-feed-title-wrap">
+                    <div class="mobile-feed-title">
+                        <h2>Reportes de Incidentes</h2>
+                    </div>
+                    <span class="mobile-feed-badge" id="badgeIncidentesMobile">0 reportes</span>
                 </div>
-                <span class="mobile-feed-badge" id="badgeIncidentesMobile">0 reportes</span>
+                <div class="incidentes-acciones-mobile" id="contenedorAccionesIncidentesMobile"></div>
             </div>
 
             <!-- Buscador rápido táctil -->

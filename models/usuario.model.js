@@ -132,6 +132,37 @@ class UsuarioModel {
   }
 
   /**
+   * Actualizar perfil personal de usuario (email, teléfono, dependencia, contraseña opcional)
+   */
+  static async actualizarPerfil(id, { email, telefono, dependencia, hashedPassword }) {
+    if (hashedPassword) {
+      return pool.query(`
+        UPDATE usuario
+        SET 
+          email = COALESCE($1, email),
+          telefono = COALESCE($2, telefono),
+          dependencia = COALESCE($3, dependencia),
+          contraseniausuario = $4,
+          debe_cambiar_password = false,
+          fecha_actualizacion = CURRENT_TIMESTAMP
+        WHERE idusuario = $5
+        RETURNING idusuario, nombreusuario, email, rol, estado, dependencia, telefono, fecha_registro, ultimo_acceso
+      `, [email, telefono, dependencia, hashedPassword, id]);
+    } else {
+      return pool.query(`
+        UPDATE usuario
+        SET 
+          email = COALESCE($1, email),
+          telefono = COALESCE($2, telefono),
+          dependencia = COALESCE($3, dependencia),
+          fecha_actualizacion = CURRENT_TIMESTAMP
+        WHERE idusuario = $4
+        RETURNING idusuario, nombreusuario, email, rol, estado, dependencia, telefono, fecha_registro, ultimo_acceso
+      `, [email, telefono, dependencia, id]);
+    }
+  }
+
+  /**
    * Eliminar usuario por ID
    */
   static async eliminar(id) {

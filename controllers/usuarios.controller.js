@@ -296,6 +296,133 @@ const eliminarUsuario = async (req, res) => {
   }
 };
 
+// Obtener información del perfil personal del usuario autenticado
+const getPerfil = async (req, res) => {
+  try {
+    const id = req.session.idusuario;
+    if (!id) {
+      return res.status(401).json({ mensaje: 'Sesión no iniciada' });
+    }
+
+    const result = await UsuarioModel.obtenerPorId(id);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ mensaje: 'Usuario no encontrado' });
+    }
+
+    const u = result.rows[0];
+    res.json({
+      idusuario: u.idusuario,
+      nombreusuario: u.nombreusuario,
+      email: u.email || '',
+      rol: u.rol || 'reportero',
+      estado: u.estado || 'activo',
+      dependencia: u.dependencia || '',
+      telefono: u.telefono || '',
+      fecha_registro: u.fecha_registro,
+      ultimo_acceso: u.ultimo_acceso
+    });
+  } catch (error) {
+    console.error('Error al obtener perfil:', error);
+    res.status(500).json({ mensaje: 'Error al obtener datos del perfil' });
+  }
+};
+
+// Actualizar perfil personal (email, teléfono, contraseña opcional)
+const actualizarPerfil = async (req, res) => {
+  try {
+    const id = req.session.idusuario;
+    if (!id) {
+      return res.status(401).json({ mensaje: 'Sesión no iniciada' });
+    }
+
+    const { email, telefono, dependencia, password_actual, password_nuevo } = req.body;
+
+    const userCheck = await UsuarioModel.obtenerPorId(id);
+    if (userCheck.rows.length === 0) {
+      return res.status(404).json({ mensaje: 'Usuario no encontrado' });
+    }
+    const currentRecord = userCheck.rows[0];
+
+    // 1. Validar email si fue enviado
+    let cleanEmail = null;
+    if (email && email.trim() !== '') {
+      cleanEmail = email.trim();
+      if (!EMAIL_REGEX.test(cleanEmail)) {
+        return res.status(400).json({ mensaje: 'El correo electrónico no tiene un formato válido ⚠️' });
+      }
+      const dupEmail = await pool.query(
+        'SELECT idusuario FROM usuario WHERE LOWER(email) = LOWER($1) AND idusuario != $2',
+        [cleanEmail, id]
+      );
+      if (dupEmail.rows.length > 0) {
+        return res.status(400).json({ mensaje: 'El correo electrónico ya se encuentra registrado por otro usuario ⚠️' });
+      }
+    }
+
+    // 2. Validar cambio de contraseña si fue enviado
+    let hashedPassword = null;
+    if (password_nuevo && password_nuevo.trim() !== '') {
+      if (!password_actual || password_actual.trim() === '') {
+        return res.status(400).json({ mensaje: 'Debes ingresar tu contraseña actual para confirmar el cambio ⚠️' });
+      }
+
+      // Obtener hash actual de la BD
+      const authQuery = await pool.query('SELECT contraseniausuario FROM usuario WHERE idusuario = $1', [id]);
+      const validCurrent = await bcrypt.compare(password_actual, authQuery.rows[0].contraseniausuario);
+      if (!validCurrent) {
+        return res.status(400).json({ mensaje: 'La contraseña actual ingresada es incorrecta ❌' });
+      }
+
+      // Validar complejidad de nueva contraseña
+      if (password_nuevo.length < 8) {
+        return res.status(400).json({ mensaje: 'La nueva contraseña debe tener al mensaje al menos 8 caracteres ⚠️' });
+      }
+      if (!/[A-Z]/.test(password_nuevo)) {
+        return res.status(400).json({ mensaje: 'La nueva contraseña debe incluir al menos una letra mayúscula ⚠️' });
+      }
+      if (!/[a-z]/.test(password_nuevo)) {
+        return res.status(400).json({ mensaje: 'La nueva contraseña debe incluir al menos una letra minúscula ⚠️' });
+      }
+      if (!/\d/.test(password_nuevo)) {
+        return res.status(400).json({ mensaje: 'La nueva contraseña debe incluir al menos un número ⚠️' });
+      }
+
+      hashedPassword = await bcrypt.hash(password_nuevo, 10);
+    }
+
+    const result = await UsuarioModel.actualizarPerfil(id, {
+      email: cleanEmail,
+      telefono: telefono ? telefono.trim() : null,
+      dependencia: dependencia ? dependencia.trim() : null,
+      hashedPassword
+    });
+
+    const updated = result.rows[0];
+
+    // Sincronizar sesión
+    if (cleanEmail) req.session.email = cleanEmail;
+    if (dependencia) req.session.dependencia = dependencia;
+    if (hashedPassword) req.session.debe_cambiar_password = false;
+
+    await registrarLogActividad(
+      id,
+      'ACTUALIZAR_PERFIL',
+      'usuario',
+      id,
+      `Usuario ${updated.nombreusuario} actualizó su perfil${hashedPassword ? ' con cambio de contraseña' : ''}`,
+      req
+    );
+
+    res.json({
+      mensaje: 'Perfil actualizado exitosamente ✅',
+      usuario: updated
+    });
+  } catch (error) {
+    console.error('Error al actualizar perfil:', error);
+    res.status(500).json({ mensaje: 'Error al actualizar información del perfil' });
+  }
+};
+
 module.exports = {
   getUsuarios,
   getUsuarioById,
@@ -303,5 +430,7 @@ module.exports = {
   actualizarUsuario,
   cambiarEstadoUsuario,
   eliminarUsuario,
-  getAuditoriaLogs
+  getAuditoriaLogs,
+  getPerfil,
+  actualizarPerfil
 };

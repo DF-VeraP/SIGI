@@ -1,16 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PanelAdmin</title>
+    <title>SIGI — Panel de Administración y Control</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="admin.css?v=61">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin.css?v=71">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script>
+        (function () {
+            const tema = localStorage.getItem("tema_sigi_admin") || localStorage.getItem("tema_sigi_dashboard");
+            if (tema === "claro") {
+                document.documentElement.classList.add("tema-claro");
+            }
+        })();
+    </script>
     <style>
         .panel-filtros-animado {
             display: none;
@@ -34,48 +42,55 @@
         <!-- Sidebar Vertical Institucional (Diseño unificado con Dashboard) -->
         <aside class="sidebar admin-sidebar desktop-only" id="adminSidebar">
             <!-- Botón Toggle de la Sidebar -->
-            <button id="btnToggleSidebarAdmin" class="btn-toggle-sidebar" title="Colapsar / Expandir menú">
-                <i class="bi bi-chevron-left"></i>
+            <button id="btnToggleSidebarAdmin" class="btn-toggle-sidebar" title="Colapsar / Expandir menú" aria-label="Colapsar o expandir barra lateral">
+                <i class="bi bi-chevron-left" aria-hidden="true"></i>
             </button>
 
             <!-- Logo y Marca -->
             <div class="sidebar-logo">
-                <img src="../assets/img/logo_sigi.png" alt="Logo SIGI">
+                <img src="../assets/img/logo_sigi.png" alt="Logo institucional SIGI" width="34" height="34">
                 <span class="logo-title">SIGI</span>
-                <span class="logo-tag">Gestión Institucional</span>
+                <span class="logo-tag" id="sidebarLogoTag">Superadmin</span>
             </div>
 
             <hr class="sidebar-divider">
 
             <!-- Navegación Vertical -->
-            <nav class="sidebar-nav" id="navSidebarAdmin">
+            <nav class="sidebar-nav" id="navSidebarAdmin" aria-label="Navegación principal de administración">
                 <button id="btnInicio" class="nav-btn pintarBotonNav" title="Inicio / Monitoreo Geográfico">
-                    <i class="bi bi-house-door-fill"></i>
+                    <i class="bi bi-house-door-fill" aria-hidden="true"></i>
                     <span class="nav-text">Inicio</span>
                 </button>
                 <button id="btnVerif" class="nav-btn" title="Cola de Verificación de Incidentes">
-                    <i class="bi bi-shield-exclamation"></i>
+                    <i class="bi bi-shield-exclamation" aria-hidden="true"></i>
                     <span class="nav-text">Incidentes</span>
-                    <span id="badgePendientes" style="display: none; background: #ef4444; color: #ffffff; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 10px; margin-left: auto; box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);">0</span>
                 </button>
                 <button id="btnUsuarios" class="nav-btn" style="display: none;" title="Gestión de Usuarios (Superadmin)">
-                    <i class="bi bi-people-fill"></i>
+                    <i class="bi bi-people-fill" aria-hidden="true"></i>
                     <span class="nav-text">Usuarios</span>
                 </button>
                 <button id="btnAuditoria" class="nav-btn" style="display: none;" title="Auditoría y Logs (Superadmin)">
-                    <i class="bi bi-journal-text"></i>
+                    <i class="bi bi-journal-text" aria-hidden="true"></i>
                     <span class="nav-text">Auditoría</span>
                 </button>
+                <button id="btnTiposIncidentes" class="nav-btn" style="display: none;" title="Catálogo de Tipos de Incidentes (Superadmin)">
+                    <i class="bi bi-tags-fill" aria-hidden="true"></i>
+                    <span class="nav-text">Tipos de Incidentes</span>
+                </button>
                 <button id="btnReportePDF" class="nav-btn btn-pdf-header" title="Descargar informe ejecutivo en PDF">
-                    <i class="bi bi-file-earmark-pdf-fill"></i>
+                    <i class="bi bi-file-earmark-pdf-fill" aria-hidden="true"></i>
                     <span class="nav-text">Informe PDF</span>
+                </button>
+                <button id="btnPerfil" class="nav-btn" title="Mi Perfil / Configuración de cuenta">
+                    <i class="bi bi-person-gear" aria-hidden="true"></i>
+                    <span class="nav-text">Perfil</span>
                 </button>
             </nav>
 
             <!-- Contenedor Inferior: Usuario, Tema y Cerrar Sesión -->
             <div class="sidebar-footer">
                 <div class="badge-usuario-admin" id="contenedorUsuarioHeader" title="Perfil de Usuario Activo">
-                    <i class="bi bi-person-circle"></i>
+                    <i class="bi bi-person-circle" aria-hidden="true"></i>
                     <span class="nav-text" id="textoBienvenida">Bienvenido ?????</span>
                 </div>
 
@@ -83,15 +98,15 @@
 
                 <div class="sidebar-tema-fila">
                     <span class="nav-text tema-label-text">Tema</span>
-                    <button id="btnTemaHeader" class="toggle-iphone-header" title="Cambiar modo Claro / Oscuro para comodidad visual">
-                        <span class="icono-sol"><i class="bi bi-sun-fill"></i></span>
-                        <div class="sw-slider"></div>
-                        <span class="icono-luna"><i class="bi bi-moon-stars-fill"></i></span>
+                    <button id="btnTemaHeader" class="toggle-iphone-header" title="Cambiar modo Claro / Oscuro para comodidad visual" aria-label="Cambiar tema claro u oscuro">
+                        <span class="icono-sol" aria-hidden="true"><i class="bi bi-sun-fill" aria-hidden="true"></i></span>
+                        <div class="sw-slider" aria-hidden="true"></div>
+                        <span class="icono-luna" aria-hidden="true"><i class="bi bi-moon-stars-fill" aria-hidden="true"></i></span>
                     </button>
                 </div>
 
                 <button id="cerrarSesion" class="nav-btn btn-logout-admin" title="Cerrar sesión">
-                    <i class="bi bi-box-arrow-right"></i>
+                    <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
                     <span class="nav-text">Cerrar sesión</span>
                 </button>
             </div>
@@ -101,43 +116,46 @@
         <header class="mobile-app-header mobile-only">
             <div class="header-brand-container">
                 <div class="header-brand-group">
-                    <img src="../assets/img/logo_sigi.png" alt="SIGI Logo" class="header-logo-img">
+                    <img src="../assets/img/logo_sigi.png" alt="Logo institucional SIGI" class="header-logo-img" width="30" height="30">
                     <div class="header-title-wrap">
-                        <h1 class="header-brand-title">SIGI</h1>
-                        <span class="header-brand-tag">Gestión Institucional</span>
+                        <span class="header-brand-title">SIGI</span>
+                        <span class="header-brand-tag" id="headerBrandTag">Superadmin</span>
                     </div>
                 </div>
 
                 <div class="header-right-controls">
-                    <button id="btnTemaHeaderMobile" class="toggle-iphone-header" title="Cambiar modo Claro / Oscuro para comodidad visual">
-                        <span class="icono-sol"><i class="bi bi-sun-fill"></i></span>
-                        <div class="sw-slider"></div>
-                        <span class="icono-luna"><i class="bi bi-moon-stars-fill"></i></span>
+                    <button id="btnTemaHeaderMobile" class="toggle-iphone-header" title="Cambiar modo Claro / Oscuro para comodidad visual" aria-label="Cambiar tema claro u oscuro">
+                        <span class="icono-sol" aria-hidden="true"><i class="bi bi-sun-fill" aria-hidden="true"></i></span>
+                        <div class="sw-slider" aria-hidden="true"></div>
+                        <span class="icono-luna" aria-hidden="true"><i class="bi bi-moon-stars-fill" aria-hidden="true"></i></span>
                     </button>
                     <button type="button" id="btnHamburguesa" class="btn-hamburguesa" aria-label="Abrir menú de navegación">
-                        <i class="bi bi-list" id="iconoHamburguesa"></i>
+                        <i class="bi bi-list" id="iconoHamburguesa" aria-hidden="true"></i>
                     </button>
                 </div>
             </div>
 
-            <nav class="contFlex nav-header-menu" id="navHeaderMenu">
-                <button id="btnInicioMobile" class="nav-admin-btn"><i class="bi bi-house-door-fill"></i> <span>Inicio</span></button>
-                <button id="btnVerifMobile" class="nav-admin-btn"><i class="bi bi-shield-exclamation"></i> <span>Incidentes</span> <span id="badgePendientesMobile" style="display: none; background: #ef4444; color: #ffffff; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 10px; margin-left: 6px; box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);">0</span></button>
-                <button id="btnUsuariosMobile" class="nav-admin-btn" style="display: none;"><i class="bi bi-people-fill"></i> <span>Usuarios</span></button>
-                <button id="btnAuditoriaMobile" class="nav-admin-btn" style="display: none;"><i class="bi bi-journal-text"></i> <span>Auditoría</span></button>
-                <button id="btnReportePDFMobile" class="nav-admin-btn btn-pdf-header" style="display: flex; align-items: center; gap: 6px;" title="Descargar informe ejecutivo en PDF"><i class="bi bi-file-earmark-pdf-fill"></i> <span>Informe PDF</span></button>
+            <nav class="contFlex nav-header-menu" id="navHeaderMenu" aria-label="Menú móvil de navegación">
+                <button id="btnInicioMobile" class="nav-admin-btn"><i class="bi bi-house-door-fill" aria-hidden="true"></i> <span>Inicio</span></button>
+                <button id="btnVerifMobile" class="nav-admin-btn"><i class="bi bi-shield-exclamation" aria-hidden="true"></i> <span>Incidentes</span></button>
+                <button id="btnUsuariosMobile" class="nav-admin-btn" style="display: none;"><i class="bi bi-people-fill" aria-hidden="true"></i> <span>Usuarios</span></button>
+                <button id="btnAuditoriaMobile" class="nav-admin-btn" style="display: none;"><i class="bi bi-journal-text" aria-hidden="true"></i> <span>Auditoría</span></button>
+                <button id="btnTiposIncidentesMobile" class="nav-admin-btn" style="display: none;"><i class="bi bi-tags-fill" aria-hidden="true"></i> <span>Tipos Incidentes</span></button>
+                <button id="btnReportePDFMobile" class="nav-admin-btn btn-pdf-header" style="display: flex; align-items: center; gap: 6px;" title="Descargar informe ejecutivo en PDF"><i class="bi bi-file-earmark-pdf-fill" aria-hidden="true"></i> <span>Informe PDF</span></button>
+                <button id="btnPerfilMobile" class="nav-admin-btn"><i class="bi bi-person-gear" aria-hidden="true"></i> <span>Perfil</span></button>
                 <div class="badge-usuario-admin">
-                    <i class="bi bi-person-circle"></i>
+                    <i class="bi bi-person-circle" aria-hidden="true"></i>
                     <h2 id="textoBienvenidaMobile" style="font-size: 0.78rem; color: inherit; margin: 0; font-weight: 600;">Bienvenido ?????</h2>
                 </div>
-                <button id="cerrarSesionMobile" class="nav-admin-btn btn-logout-admin"><i class="bi bi-box-arrow-right"></i> <span>Cerrar sesión</span></button>
+                <button id="cerrarSesionMobile" class="nav-admin-btn btn-logout-admin"><i class="bi bi-box-arrow-right" aria-hidden="true"></i> <span>Cerrar sesión</span></button>
             </nav>
         </header>
 
         <!-- Área de Contenido Principal -->
         <div class="admin-main-area">
             <main>
-        <div class="contMain contFlex">
+                <h1 class="visually-hidden">SIGI — Panel de Administración y Control</h1>
+                <div class="contMain contFlex">
             <section class="inicio contFlexCent">
                 <div class="contenedor-mapas-wrapper">
                     <!-- Mapa Principal -->
@@ -145,18 +163,18 @@
                         <!-- Componente Unificado de Búsqueda Flotante -->
                         <div class="contenedor-busqueda-mapa" id="contenedorBusquedaMapa">
                             <div class="barras-busqueda-header">
-                                <i class="bi bi-search icono-lupa"></i>
-                                <input type="text" id="inputBusquedaMapa" placeholder="Buscar barrio o vereda..." autocomplete="off">
-                                <button type="button" id="btnLimpiarBusquedaMapa" class="btn-limpiar-busqueda" style="display: none;" title="Limpiar ubicación">
-                                    <i class="bi bi-x-circle-fill"></i>
+                                <i class="bi bi-search icono-lupa" aria-hidden="true"></i>
+                                <input type="text" id="inputBusquedaMapa" name="busquedaMapa" placeholder="Buscar barrio o vereda…" autocomplete="off" spellcheck="false" aria-label="Buscar barrio o vereda en el mapa">
+                                <button type="button" id="btnLimpiarBusquedaMapa" class="btn-limpiar-busqueda" style="display: none;" title="Limpiar ubicación" aria-label="Limpiar búsqueda en el mapa">
+                                    <i class="bi bi-x-circle-fill" aria-hidden="true"></i>
                                 </button>
                             </div>
                             <div id="sugerenciasMapa" class="sugerencias-mapa-box" style="display: none;"></div>
                         </div>
 
                         <!-- Toggle Claro/Noche (Pertenece únicamente al mapa de coordenadas) -->
-                        <button class="btnClaroNoche" title="Cambiar tema de mapa">
-                            <div></div>
+                        <button class="btnClaroNoche" title="Cambiar tema de mapa" aria-label="Cambiar tema visual del mapa">
+                            <div aria-hidden="true"></div>
                         </button>
                     </div>
 
@@ -164,192 +182,204 @@
                     <div class="mapita2 esconderMapa" id="mapa2"></div>
 
                     <!-- Botón Alternar Capa Incidentes (Permanentemente Visible) -->
-                    <button id="ver" title="Alternar entre mapa base e mapa de incidentes">
-                        <i class="bi bi-layers-fill"></i> Incidentes
+                    <button id="ver" title="Alternar entre mapa base e mapa de incidentes" aria-label="Alternar capa de incidentes">
+                        Incidentes
                     </button>
                 </div>
                 <div class="contFormulario contFlexCol">
-                    <form action="" class="contFlexCol">
-                        <div id="contenedorToast"></div>
+                    <form action="" class="contFlexCol form-incidente-unificado">
+                        <div id="contenedorToast" aria-live="polite" role="status"></div>
                         <div class="headForm contFlex">
-                            <h3>Detalles del incidente</h3>
-                            <button class="impDat"><i class="bi bi-database-fill-up"></i></button>
+                            <div class="form-header-title-wrap">
+                                <h3>Detalles del incidente</h3>
+                                <span class="form-header-sub">Registro georreferenciado</span>
+                            </div>
+                            <button type="button" class="impDat btn-importar-rapido" title="Importar datos masivos desde CSV / XLSX">
+                                Importar
+                            </button>
                         </div>
                         <section class="tipoInc contFlex">
-                            <label for="tipoIncidente">Tipo de incidente *</label>
-                            <select name="" id="tipoIncidente">
-                                <option value="">Seleccione una categoria</option>
+                            <label for="tipoIncidente" class="form-label-incidente">Tipo de incidente <span class="campo-obligatorio">*</span></label>
+                            <select name="tipoIncidente" id="tipoIncidente" class="filtro-select-control select-incidente-custom">
+                                <option value="">Seleccione una categoría…</option>
                             </select>
                         </section>
                         <div class="contFlex contVarios">
-                            <section>
-                                <div class="contFlexCent" style="justify-content: space-between; margin-bottom: 2px;">
-                                    <label for="fecha" style="margin: 0;">Fecha *</label>
-                                    <button type="button" id="btnAhora" class="btn-ahora" title="Establecer fecha y hora actual">
-                                        <i class="bi bi-clock-history"></i> Ahora
-                                    </button>
-                                </div>
-                                <input type="date" id="fecha">
-                            </section>
-                            <section>
-                                <label for="hora" style="margin-bottom: 2px;">Hora *</label>
-                                <input type="time" id="hora">
-                            </section>
-                            <section>
-                                <label for="comuna">Comuna</label>
-                                <input type="text" placeholder="Ejemplo: Norte" id="comuna" disabled value="1">
-                            </section>
-                            <section>
-                                <label for="barrio">Barrio/Vereda/Lugar</label>
-                                <input type="text" id="barrio" placeholder="Ejemplo: Juan 23" disabled>
-                            </section>
-                            <section>
-                                <label for="latitud">Latitud *</label>
-                                <input type="text" id="latitud" placeholder="">
-                            </section>
-                            <section>
-                                <label for="longitud">Longitud *</label>
-                                <input type="text" id="longitud" placeholder="">
-                            </section>
+                            <div class="form-fila-tiempo-unificada">
+                                <section class="campo-tiempo-item">
+                                    <label for="fecha">Fecha <span class="campo-obligatorio">*</span></label>
+                                    <input type="date" id="fecha" name="fecha">
+                                </section>
+                                <section class="campo-tiempo-item">
+                                    <div class="tiempo-hora-head">
+                                        <label for="hora">Hora <span class="campo-obligatorio">*</span></label>
+                                        <button type="button" id="btnAhora" class="btn-ahora-pill" title="Establecer fecha y hora actual">
+                                            Ahora
+                                        </button>
+                                    </div>
+                                    <input type="time" id="hora" name="hora">
+                                </section>
+                            </div>
+                            <div class="form-fila-territorio">
+                                <section>
+                                    <label for="comuna">Comuna</label>
+                                    <input type="text" placeholder="Ejemplo: Norte" id="comuna" name="comuna" disabled value="1">
+                                </section>
+                                <section>
+                                    <label for="barrio">Barrio / Vereda</label>
+                                    <input type="text" id="barrio" name="barrio" placeholder="Ejemplo: Juan 23" disabled>
+                                </section>
+                            </div>
+                            <div class="form-fila-coordenadas">
+                                <section>
+                                    <label for="latitud">Latitud <span class="campo-obligatorio">*</span></label>
+                                    <input type="text" id="latitud" name="latitud" inputmode="decimal" spellcheck="false" placeholder="0.00000">
+                                </section>
+                                <section>
+                                    <label for="longitud">Longitud <span class="campo-obligatorio">*</span></label>
+                                    <input type="text" id="longitud" name="longitud" inputmode="decimal" spellcheck="false" placeholder="0.00000">
+                                </section>
+                            </div>
                             <section class="secDesc contFlex">
-                                <label for="descripcion">Descripcion(Opcional)</label>
-                                <textarea name="" id="descripcion" placeholder="Colicion de 2 vehiculos..."></textarea>
+                                <label for="descripcion">Descripción (Opcional)</label>
+                                <textarea name="descripcion" id="descripcion" placeholder="Detalle descriptivo del incidente observado…" rows="2"></textarea>
                             </section>
                         </div>
                         <section class="botonesForm contFlexCent">
-                            <button class="limpiarF">Limpiar formulario</button>
-                            <button class="registrarD">Registrar incidente</button>
+                            <button type="button" class="limpiarF btn-form-limpiar" title="Limpiar formulario">
+                                Limpiar
+                            </button>
+                            <button type="submit" class="registrarD btn-form-registrar" title="Registrar nuevo reporte en el mapa">
+                                Registrar incidente
+                            </button>
                         </section>
                     </form>
                 </div>
             </section>
             <!-- SECCIÓN 2: VERIFICACIÓN DE DATOS -->
             <section class="verificacion">
-                <!-- Contenedores Superiores: Info (Izquierda) + Filtros Desplegables (Derecha) -->
-                <div class="grid-superior-verificacion">
-                    <!-- Contenedor Izquierdo: Título & Total Incidentes Compacto -->
-                    <div class="card-total-incidentes">
-                        <div class="contFlexCent" style="justify-content: space-between; gap: 10px;">
-                            <h2 style="font-size: 1.05rem; font-weight: 700; margin: 0; line-height: 1.2;">
-                                Verificación
-                            </h2>
-                            <div style="display: flex; align-items: center; gap: 6px;">
-                                <span class="label-total" style="font-size: 0.74rem; font-weight: 500;">Total:</span>
-                                <span class="numero badge-total-incidentes" id="conteoTotalVerificacion">0</span>
+                <!-- Panel Superior Unificado: Header de Gestión + Filtros Racionales -->
+                <div class="panel-verificacion-card">
+                    <!-- Fila Superior: Título, KPIs y Acciones de Filtro -->
+                    <div class="panel-header-toolbar" id="headerFiltrosIncidentes">
+                        <div class="panel-header-info">
+                            <div class="panel-titulo-fila">
+                                <h2 class="panel-titulo-principal">Verificación de Incidentes</h2>
+                                <span class="badge-kpi-total" title="Total de reportes en el sistema">
+                                    <span class="label-kpi">Total</span>
+                                    <span class="numero badge-total-incidentes numero-kpi" id="conteoTotalVerificacion">0</span>
+                                </span>
+                            </div>
+                            <p class="panel-subtitulo-info">Auditoría, validación y control operativo de incidentes georreferenciados.</p>
+                        </div>
+                        <div class="panel-header-acciones">
+                            <span id="badgeFiltrosActivosIncidentes" class="badge-filtros-activos" style="display: none;">
+                                <span class="dot-filtro-activo"></span> <span id="textoFiltrosActivos">0 filtros</span>
+                            </span>
+                            <button type="button" id="btnResetFiltrosIncidentes" class="btn-limpiar-filtros" title="Restablecer filtros" aria-label="Restablecer filtros de incidentes">
+                                <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Restablecer
+                            </button>
+                            <button type="button" id="btnToggleFiltrosIncidentes" class="btn-toggle-desplegar" aria-label="Mostrar u ocultar filtros" title="Plegar / desplegar filtros">
+                                <i class="bi bi-chevron-down" id="iconoDesplegarFiltros" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Fila de Controles Desplegable (Rejilla Racional de 5 campos sin iconos innecesarios) -->
+                    <div class="cuerpo-filtros-desplegable" id="cuerpoFiltrosIncidentes">
+                        <div class="filtros-grid-racional">
+                            <!-- 1. Búsqueda por Código -->
+                            <div class="grupo-filtro-campo campo-codigo">
+                                <label for="buscarCodigoIncidenteInput" class="filtro-campo-label">
+                                    Código
+                                </label>
+                                <input type="text" id="buscarCodigoIncidenteInput" name="buscarCodigoIncidente" class="filtro-input-control" placeholder="Ej: PI061026…" autocomplete="off" spellcheck="false" title="Escribe el código del incidente">
+                            </div>
+
+                            <!-- 2. Búsqueda por Ubicación o Texto -->
+                            <div class="grupo-filtro-campo campo-texto">
+                                <label for="buscarIncidenteInput" class="filtro-campo-label">
+                                    Ubicación o descripción
+                                </label>
+                                <input type="text" id="buscarIncidenteInput" name="buscarIncidente" class="filtro-input-control" placeholder="Barrio, vereda, detalle…" autocomplete="off" spellcheck="false">
+                            </div>
+
+                            <!-- 3. Selector de Estado -->
+                            <div class="grupo-filtro-campo campo-estado">
+                                <label for="estadoIncidenteFiltro" class="filtro-campo-label">
+                                    Estado
+                                </label>
+                                <select id="estadoIncidenteFiltro" name="estadoIncidenteFiltro" class="filtro-select-control w-100">
+                                    <option value="">Todos los estados</option>
+                                    <option value="1">En Cola (Pendientes)</option>
+                                    <option value="2">En Evaluación (Tomados)</option>
+                                    <option value="5">Aprobados / Resueltos</option>
+                                    <option value="6">Desestimados / Cerrados</option>
+                                </select>
+                            </div>
+
+                            <!-- 4. Selector de Categoría -->
+                            <div class="grupo-filtro-campo campo-categoria">
+                                <label for="tipoIncidenteFiltro" class="filtro-campo-label">
+                                    Categoría
+                                </label>
+                                <select id="tipoIncidenteFiltro" name="tipoIncidenteFiltro" class="filtro-select-control w-100">
+                                    <option value="">Todas las categorías</option>
+                                </select>
+                            </div>
+
+                            <!-- 5. Filtro de Tiempo -->
+                            <div class="grupo-filtro-campo campo-tiempo">
+                                <label for="btnAbrirFiltroTiempo" class="filtro-campo-label">
+                                    Período
+                                </label>
+                                <button type="button" id="btnAbrirFiltroTiempo" class="btn-filtro-tiempo w-100" aria-label="Filtrar por rango temporal" title="Filtrar por rango de fechas">
+                                    <span id="labelBotonTiempo">3 meses</span>
+                                    <i class="bi bi-chevron-expand flecha-tiempo" aria-hidden="true"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Contenedor Derecho: Filtros de Búsqueda Desplegables -->
-                    <div class="card-filtros-incidentes">
-                        <div class="header-filtros-toggle" id="headerFiltrosIncidentes">
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <i class="bi bi-search icono-embudo"></i>
-                                <span class="titulo-filtros">
-                                    Filtros de Búsqueda
-                                </span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <span id="badgeFiltrosActivosIncidentes" class="badge-filtros-activos" style="display: none;">
-                                    <span class="dot-filtro-activo"></span> <span id="textoFiltrosActivos">0 filtros</span>
-                                </span>
-                                <button type="button" id="btnResetFiltrosIncidentes" class="btn-limpiar-filtros" title="Restablecer filtros">
-                                    Limpiar
-                                </button>
-                                <button type="button" id="btnToggleFiltrosIncidentes" class="btn-toggle-desplegar" aria-label="Mostrar u ocultar filtros">
-                                    <i class="bi bi-chevron-down" id="iconoDesplegarFiltros"></i>
-                                </button>
-                            </div>
-                        </div>
+                    <!-- Hidden selects for JS compatibility -->
+                    <select id="verificacionFiltroPrincipal" style="display: none;">
+                        <option value="todos">Todos los reportes</option>
+                    </select>
+                    <select id="filtroAnio" style="display: none;"></select>
+                </div>
 
-                        <!-- Cuerpo Desplegable de Filtros -->
-                        <div class="cuerpo-filtros-desplegable" id="cuerpoFiltrosIncidentes">
-                            <!-- Fila 1: Búsquedas de texto / código -->
-                            <div class="fila-filtros-grid fila-grid-busquedas">
-                                <div class="grupo-filtro-campo">
-                                    <label for="buscarCodigoIncidenteInput" class="filtro-campo-label">Buscar por código</label>
-                                    <div class="input-con-icono-wrapper">
-                                        <i class="bi bi-hash icono-input-campo"></i>
-                                        <input type="text" id="buscarCodigoIncidenteInput" class="filtro-input-control con-padding-icono" placeholder="#INC-685 o código completo..." title="Escribe el código o ID del incidente">
-                                    </div>
-                                </div>
-                                <div class="grupo-filtro-campo">
-                                    <label for="buscarIncidenteInput" class="filtro-campo-label">Buscar por ubicación o texto</label>
-                                    <div class="input-con-icono-wrapper">
-                                        <i class="bi bi-geo-alt icono-input-campo"></i>
-                                        <input type="text" id="buscarIncidenteInput" class="filtro-input-control con-padding-icono" placeholder="barrio, vereda, usuario o descripción...">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Fila 2: Selectores y Tiempo -->
-                            <div class="fila-filtros-grid fila-grid-selectores">
-                                <div class="grupo-filtro-campo">
-                                    <label for="estadoIncidenteFiltro" class="filtro-campo-label">Estado</label>
-                                    <select id="estadoIncidenteFiltro" class="filtro-select-control w-100">
-                                        <option value="">Todos los estados</option>
-                                        <option value="1">Pendientes (Cola pública)</option>
-                                        <option value="2">En Evaluación (Tomados)</option>
-                                        <option value="5">Aprobados / Resueltos</option>
-                                        <option value="6">Desestimados / Cerrados</option>
-                                    </select>
-                                </div>
-
-                                <div class="grupo-filtro-campo">
-                                    <label for="tipoIncidenteFiltro" class="filtro-campo-label">Categoría</label>
-                                    <select id="tipoIncidenteFiltro" class="filtro-select-control w-100">
-                                        <option value="">Todas las categorías</option>
-                                    </select>
-                                </div>
-
-                                <div class="grupo-filtro-campo">
-                                    <label class="filtro-campo-label">Tiempo</label>
-                                    <button type="button" id="btnAbrirFiltroTiempo" class="btn-filtro-tiempo w-100">
-                                        <i class="bi bi-calendar3"></i> <span id="labelBotonTiempo">3 meses</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Hidden selects for JS compatibility -->
-                        <select id="verificacionFiltroPrincipal" style="display: none;">
-                            <option value="todos">Todos los reportes</option>
-                        </select>
-                        <select id="filtroAnio" style="display: none;"></select>
+                <!-- 3. Contenedor Unificado de Tabla de Incidentes (Mismo diseño que Dashboard) -->
+                <div class="tabla-contenedor-sigi">
+                    <div class="table-responsive contTablaDatos">
+                        <table class="tabla-moderna tabla-sigi" id="tablaIncidentesPublicaAdmin">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="th-col-num">Num</th>
+                                    <th scope="col" class="th-col-id">Código</th>
+                                    <th scope="col" class="th-col-tipo">Categoría</th>
+                                    <th scope="col" class="th-col-estado">Estado</th>
+                                    <th scope="col" class="th-col-barrio">Barrio</th>
+                                    <th scope="col" class="th-col-acciones">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaIncidentes">
+                                <tr><td colspan="6" style="text-align: center; padding: 24px; color: var(--texto-suave);">Cargando incidentes…</td></tr>
+                            </tbody>
+                        </table>
                     </div>
-                </div>
 
-                <!-- 3. Tabla Completa de Incidentes -->
-                <div class="contTablaDatos">
-                    <table class="tabla-sigi" style="text-align: center;">
-                        <thead>
-                            <tr>
-                                <th style="text-align: center;">#</th>
-                                <th style="text-align: center;">ID Incidente</th>
-                                <th style="text-align: center;">Tipo</th>
-                                <th style="text-align: center;">Estado</th>
-                                <th style="text-align: center;">Revisor</th>
-                                <th style="text-align: center;">Creado</th>
-                                <th style="text-align: center;">Opciones / Revisión</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tablaIncidentes">
-                            <tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--texto-suave);">Cargando incidentes...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- 4. Paginación de Incidentes -->
-                <div class="user-pagination-bar">
-                    <span id="infoPaginacionIncidentes">Mostrando 0 de 0 incidentes</span>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <button type="button" id="btnPagAntIncidente" class="btn-pag-incidente">
-                            Anterior
-                        </button>
-                        <span id="labelPaginaIncidente">Página 1 de 1</span>
-                        <button type="button" id="btnPagSigIncidente" class="btn-pag-incidente">
-                            Siguiente
-                        </button>
+                    <!-- 4. Paginación de Incidentes Integrada al Mismo Marco -->
+                    <div class="user-pagination-bar" id="paginacionIncidentes">
+                        <span id="infoPaginacionIncidentes">Mostrando 0 de 0 incidentes</span>
+                        <div class="paginacion-controles">
+                            <button type="button" id="btnPagAntIncidente" class="btn-pag-incidente" aria-label="Página anterior de incidentes">
+                                Anterior
+                            </button>
+                            <span id="labelPaginaIncidente">Página 1 de 1</span>
+                            <button type="button" id="btnPagSigIncidente" class="btn-pag-incidente" aria-label="Página siguiente de incidentes">
+                                Siguiente
+                            </button>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -366,32 +396,32 @@
                             <h2 style="font-size: 1.1rem; color: var(--texto); font-weight: 700; margin: 0; line-height: 1.2;">
                                 Gestión de Usuarios
                             </h2>
-                            <button type="button" id="btnNuevoUsuario" onclick="abrirModalCrearUsuario()" style="padding: 6px 12px; background: #10b981; color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 0.78rem; cursor: pointer; transition: background 0.2s ease; white-space: nowrap;">
+                            <button type="button" id="btnNuevoUsuario" class="btn-nuevo-usuario" onclick="abrirModalCrearUsuario()">
                                 + Nuevo usuario
                             </button>
                         </div>
 
                         <!-- Mini Badges de KPIs -->
                         <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
-                            <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--borde); border-radius: 6px; padding: 3px 7px; display: flex; align-items: center; gap: 5px;">
-                                <span style="font-size: 0.68rem; color: var(--texto-suave); font-weight: 600;">Total:</span>
-                                <span id="kpiTotalUsuarios" style="font-size: 0.82rem; font-weight: 700; color: var(--texto);">0</span>
+                            <div class="kpi-mini-badge total">
+                                <span>Total:</span>
+                                <span id="kpiTotalUsuarios" class="kpi-num">0</span>
                             </div>
-                            <div style="background: rgba(167, 139, 250, 0.1); border: 1px solid rgba(167, 139, 250, 0.25); border-radius: 6px; padding: 3px 7px; display: flex; align-items: center; gap: 5px;">
-                                <span style="font-size: 0.68rem; color: #a78bfa; font-weight: 600;">Superadmin:</span>
-                                <span id="kpiSuperadmins" style="font-size: 0.82rem; font-weight: 700; color: #a78bfa;">0</span>
+                            <div class="kpi-mini-badge superadmin">
+                                <span>Superadmin:</span>
+                                <span id="kpiSuperadmins" class="kpi-num">0</span>
                             </div>
-                            <div style="background: rgba(96, 165, 250, 0.1); border: 1px solid rgba(96, 165, 250, 0.25); border-radius: 6px; padding: 3px 7px; display: flex; align-items: center; gap: 5px;">
-                                <span style="font-size: 0.68rem; color: #60a5fa; font-weight: 600;">Admin:</span>
-                                <span id="kpiAdmins" style="font-size: 0.82rem; font-weight: 700; color: #60a5fa;">0</span>
+                            <div class="kpi-mini-badge admin">
+                                <span>Admin:</span>
+                                <span id="kpiAdmins" class="kpi-num">0</span>
                             </div>
-                            <div style="background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.25); border-radius: 6px; padding: 3px 7px; display: flex; align-items: center; gap: 5px;">
-                                <span style="font-size: 0.68rem; color: #34d399; font-weight: 600;">Reportero:</span>
-                                <span id="kpiReporteros" style="font-size: 0.82rem; font-weight: 700; color: #34d399;">0</span>
+                            <div class="kpi-mini-badge reportero">
+                                <span>Reportero:</span>
+                                <span id="kpiReporteros" class="kpi-num">0</span>
                             </div>
-                            <div style="background: rgba(248, 113, 113, 0.1); border: 1px solid rgba(248, 113, 113, 0.25); border-radius: 6px; padding: 3px 7px; display: flex; align-items: center; gap: 5px;">
-                                <span style="font-size: 0.68rem; color: #f87171; font-weight: 600;">Inactivos:</span>
-                                <span id="kpiBloqueados" style="font-size: 0.82rem; font-weight: 700; color: #f87171;">0</span>
+                            <div class="kpi-mini-badge inactivo">
+                                <span>Inactivos:</span>
+                                <span id="kpiBloqueados" class="kpi-num">0</span>
                             </div>
                         </div>
                     </div>
@@ -404,12 +434,12 @@
 
                         <div class="user-filter-bar" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                             <div style="flex: 1; min-width: 180px;">
-                                <input type="text" id="buscarUsuarioInput" placeholder="Buscar por usuario, email o dependencia..." style="width: 100%; padding: 6px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.78rem; outline: none;">
+                                <input type="text" id="buscarUsuarioInput" name="buscarUsuario" placeholder="Buscar por usuario, email o dependencia…" autocomplete="off" spellcheck="false" aria-label="Buscar por usuario, email o dependencia" style="width: 100%; padding: 6px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.78rem;">
                             </div>
 
                             <div style="display: flex; gap: 6px; align-items: center;">
-                                <label style="font-size: 0.75rem; color: var(--texto-suave); font-weight: 500;">Rol:</label>
-                                <select id="filtroRolUsuario" style="padding: 6px 8px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.78rem; outline: none; cursor: pointer;">
+                                <label for="filtroRolUsuario" style="font-size: 0.75rem; color: var(--texto-suave); font-weight: 500;">Rol:</label>
+                                <select id="filtroRolUsuario" name="filtroRolUsuario" style="padding: 6px 8px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.78rem; cursor: pointer;">
                                     <option value="todos">Todos los roles</option>
                                     <option value="superadmin">Superadmin</option>
                                     <option value="admin">Administrador</option>
@@ -418,8 +448,8 @@
                             </div>
 
                             <div style="display: flex; gap: 6px; align-items: center;">
-                                <label style="font-size: 0.75rem; color: var(--texto-suave); font-weight: 500;">Estado:</label>
-                                <select id="filtroEstadoUsuario" style="padding: 6px 8px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.78rem; outline: none; cursor: pointer;">
+                                <label for="filtroEstadoUsuario" style="font-size: 0.75rem; color: var(--texto-suave); font-weight: 500;">Estado:</label>
+                                <select id="filtroEstadoUsuario" name="filtroEstadoUsuario" style="padding: 6px 8px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.78rem; cursor: pointer;">
                                     <option value="todos">Todos los estados</option>
                                     <option value="activo">Activo</option>
                                     <option value="bloqueado">Bloqueado</option>
@@ -427,135 +457,341 @@
                                 </select>
                             </div>
 
-                            <button type="button" id="btnResetFiltrosUsuarios" style="padding: 6px 10px; background: transparent; border: 1px solid var(--borde); border-radius: 6px; color: var(--texto-suave); font-size: 0.76rem; cursor: pointer;" title="Restablecer filtros">
+                            <button type="button" id="btnResetFiltrosUsuarios" style="padding: 6px 10px; background: transparent; border: 1px solid var(--borde); border-radius: 6px; color: var(--texto-suave); font-size: 0.76rem; cursor: pointer;" title="Restablecer filtros" aria-label="Restablecer filtros de usuarios">
                                 Limpiar
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- 3. Tabla Completa de Usuarios con Acciones -->
-                <div class="contTablaDatos" style="background: var(--bg-card); border: 1px solid var(--borde); border-radius: 8px; overflow-x: auto; margin-bottom: 16px;">
-                    <table class="tabla-sigi" style="text-align: left;">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Usuario</th>
-                                <th>Rol</th>
-                                <th>Estado</th>
-                                <th>Fecha Registro</th>
-                                <th>Último Acceso</th>
-                                <th style="text-align: center;">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tablaUsuarios">
-                            <tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--texto-suave);">Cargando usuarios...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+                <!-- 3. Tabla Completa de Usuarios con Acciones en Marco Unificado -->
+                <div class="tabla-contenedor-sigi">
+                    <div class="table-responsive contTablaDatos">
+                        <table class="tabla-moderna tabla-sigi" id="tablaUsuariosAdmin">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="th-col-num" style="text-align: center;">Num</th>
+                                    <th scope="col">Usuario</th>
+                                    <th scope="col">Rol</th>
+                                    <th scope="col">Estado</th>
+                                    <th scope="col">Fecha Registro</th>
+                                    <th scope="col" style="text-align: center;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaUsuarios">
+                                <tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--texto-suave);">Cargando usuarios…</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
 
-                <!-- 4. Paginación de Usuarios -->
-                <div class="user-pagination-bar" style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); border: 1px solid var(--borde); border-radius: 8px; padding: 8px 14px; flex-wrap: wrap; gap: 10px;">
-                    <span id="infoPaginacionUsuarios" style="font-size: 0.78rem; color: var(--texto-suave);">Mostrando 0 de 0 usuarios</span>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <button type="button" id="btnPagAntUsuario" style="padding: 4px 10px; background: transparent; border: 1px solid var(--borde); border-radius: 6px; font-size: 0.75rem; color: var(--texto); cursor: pointer;">
-                            Anterior
-                        </button>
-                        <span id="labelPaginaUsuario" style="font-size: 0.78rem; color: var(--texto-suave); padding: 0 4px;">Página 1 de 1</span>
-                        <button type="button" id="btnPagSigUsuario" style="padding: 4px 10px; background: transparent; border: 1px solid var(--borde); border-radius: 6px; font-size: 0.75rem; color: var(--texto); cursor: pointer;">
-                            Siguiente
-                        </button>
+                    <!-- 4. Paginación de Usuarios -->
+                    <div class="user-pagination-bar" id="paginacionUsuarios">
+                        <span id="infoPaginacionUsuarios">Mostrando 0 de 0 usuarios</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button type="button" id="btnPagAntUsuario" class="btn-pag-incidente" aria-label="Página anterior de usuarios">
+                                Anterior
+                            </button>
+                            <span id="labelPaginaUsuario">Página 1 de 1</span>
+                            <button type="button" id="btnPagSigUsuario" class="btn-pag-incidente" aria-label="Página siguiente de usuarios">
+                                Siguiente
+                            </button>
+                        </div>
                     </div>
                 </div>
             </section>
 
             <!-- SECCIÓN 4: AUDITORÍA Y LOGS (SUPERADMIN) -->
             <section class="sec-auditoria esconder" id="secAuditoria">
-                <!-- 1. Cabecera Dividida en 2 Contenedores (Info/KPIs vs Filtros) -->
-                <div class="grid-superior-auditoria">
-                    
-                    <!-- Contenedor Izquierdo: Información + KPIs + Acción -->
-                    <div style="background: var(--bg-card); border: 1px solid var(--borde); border-radius: 10px; padding: 18px 20px; display: flex; flex-direction: column; justify-content: space-between;">
-                        <div>
-                            <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--texto); margin: 0 0 4px 0; letter-spacing: 0.02em;">Auditoría de Actividades</h2>
-                            <p style="font-size: 0.78rem; color: var(--texto-suave); margin: 0 0 14px 0; line-height: 1.4;">
-                                Registro y seguimiento en tiempo real de acciones y movimientos del sistema.
-                            </p>
+                <!-- 1. Cabecera Unificada con Estilo Panel Card de Gestión -->
+                <div class="panel-verificacion-card">
+                    <div class="panel-header-toolbar">
+                        <div class="panel-header-info">
+                            <div class="panel-titulo-fila">
+                                <h2 class="panel-titulo-principal">Auditoría de Actividades</h2>
+                                <span class="badge-kpi-total" title="Total de logs registrados">
+                                    <span class="label-kpi">Total</span>
+                                    <span class="numero-kpi" id="kpiTotalLogs">0</span>
+                                </span>
+                                <span class="badge-kpi-total" title="Logs registrados hoy" style="border-color: rgba(16, 185, 129, 0.35);">
+                                    <span class="label-kpi" style="color: #34d399;">Hoy</span>
+                                    <span class="numero-kpi" id="kpiLogsHoy" style="color: #34d399;">0</span>
+                                </span>
+                            </div>
+                            <p class="panel-subtitulo-info">Registro y seguimiento en tiempo real de acciones, cambios y accesos al sistema.</p>
                         </div>
-                        
-                        <!-- Badges de Resumen KPIs -->
-                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;">
-                            <div style="background: rgba(96, 165, 250, 0.08); border: 1px solid rgba(96, 165, 250, 0.2); padding: 4px 10px; border-radius: 6px; font-size: 0.74rem;">
-                                <span style="color: var(--texto-suave);">Total Logs:</span> <strong id="kpiTotalLogs" style="color: #60a5fa;">0</strong>
+                        <div class="panel-header-acciones">
+                            <button type="button" id="btnRefreshLogs" class="btn-limpiar-filtros" title="Actualizar registros de auditoría" aria-label="Actualizar registros de auditoría">
+                                <i class="bi bi-arrow-clockwise" aria-hidden="true"></i> Actualizar
+                            </button>
+                            <button type="button" id="btnResetFiltrosLogs" class="btn-limpiar-filtros" title="Restablecer filtros de auditoría" aria-label="Restablecer filtros">
+                                <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Limpiar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Buscador Unificado -->
+                    <div class="cuerpo-filtros-desplegable" style="margin-top: 14px;">
+                        <div class="input-con-icono-wrapper" style="width: 100%;">
+                            <i class="bi bi-search icono-input-campo" aria-hidden="true"></i>
+                            <input type="text" id="buscarLogInput" name="buscarLog" class="filtro-input-control con-padding-icono" placeholder="Buscar por usuario, acción, tabla afectada, detalle o dirección IP…" autocomplete="off" spellcheck="false">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Tabla Completa de Auditoría en Marco Unificado -->
+                <div class="tabla-contenedor-sigi">
+                    <div class="table-responsive contTablaDatos">
+                        <table class="tabla-moderna tabla-sigi" id="tablaAuditoriaAdmin">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="th-col-num">Num</th>
+                                    <th scope="col" style="text-align: center; width: 160px;">Fecha / Hora</th>
+                                    <th scope="col" style="text-align: center;">Usuario</th>
+                                    <th scope="col" style="text-align: center;">Acción</th>
+                                    <th scope="col" style="text-align: center;">Entidad</th>
+                                    <th scope="col" style="text-align: center; width: 110px;">Detalles</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaAuditoria">
+                                <tr><td colspan="6" style="text-align: center; padding: 24px; color: var(--texto-suave);">Cargando registros de auditoría…</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 3. Paginación de Auditoría Integrada -->
+                    <div class="user-pagination-bar" id="paginacionAuditoria">
+                        <span id="infoPaginacionLogs">Mostrando 0 de 0 logs</span>
+                        <div class="paginacion-controles">
+                            <button type="button" id="btnPagAntLog" class="btn-pag-incidente" aria-label="Página anterior de auditoría">
+                                Anterior
+                            </button>
+                            <span id="labelPaginaLog">Página 1 de 1</span>
+                            <button type="button" id="btnPagSigLog" class="btn-pag-incidente" aria-label="Página siguiente de auditoría">
+                                Siguiente
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        
+            <!-- SECCIÓN 4.5: GESTIÓN DE TIPOS DE INCIDENTES (EXCLUSIVO SUPERADMIN) -->
+            <section class="sec-tipos-incidentes esconder" id="secTiposIncidentes">
+                <!-- Contenedores Superiores: Info + KPIs (Izquierda) + Filtros (Derecha) -->
+                <div class="grid-superior-usuarios">
+                    
+                    <!-- Contenedor Izquierdo: Título, Acción & KPIs -->
+                    <div style="background: var(--bg-card); border: 1px solid var(--borde); border-radius: 8px; padding: 12px 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                            <div>
+                                <h2 style="font-size: 1.1rem; color: var(--texto); font-weight: 700; margin: 0; line-height: 1.2;">
+                                    Catálogo de Tipos de Incidentes
+                                </h2>
+                                <span style="font-size: 0.73rem; color: var(--texto-suave);">Clasificación oficial y codificación de colores para mapas y reportes (Superadmin)</span>
                             </div>
-                            <div style="background: rgba(52, 211, 153, 0.08); border: 1px solid rgba(52, 211, 153, 0.2); padding: 4px 10px; border-radius: 6px; font-size: 0.74rem;">
-                                <span style="color: var(--texto-suave);">Hoy:</span> <strong id="kpiLogsHoy" style="color: #34d399;">0</strong>
-                            </div>
+                            <button type="button" id="btnNuevoTipo" class="btn-nuevo-usuario" onclick="abrirModalCrearTipo()">
+                                + Nuevo tipo
+                            </button>
                         </div>
 
-                        <!-- Botón de Acción Principal -->
-                        <div style="display: flex; gap: 10px;">
-                            <button type="button" id="btnRefreshLogs" style="padding: 6px 14px; background: transparent; border: 1px solid var(--borde); border-radius: 6px; font-size: 0.78rem; font-weight: 600; color: var(--texto); cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 6px;">
-                                Actualizar logs
-                            </button>
+                        <!-- Mini Badges de KPIs -->
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+                            <div class="kpi-mini-badge total">
+                                <span>Total:</span>
+                                <span id="kpiTotalTipos" class="kpi-num">0</span>
+                            </div>
+                            <div class="kpi-mini-badge" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981;">
+                                <span>Activos:</span>
+                                <span id="kpiTiposActivos" class="kpi-num">0</span>
+                            </div>
+                            <div class="kpi-mini-badge inactivo">
+                                <span>Inactivos:</span>
+                                <span id="kpiTiposInactivos" class="kpi-num">0</span>
+                            </div>
+                            <div class="kpi-mini-badge" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: #3b82f6;">
+                                <span>Con incidentes:</span>
+                                <span id="kpiTiposConIncidentes" class="kpi-num">0</span>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Contenedor Derecho: Filtros y Búsqueda -->
-                    <div style="background: var(--bg-card); border: 1px solid var(--borde); border-radius: 10px; padding: 18px 20px; display: flex; flex-direction: column; justify-content: space-between;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                            <span style="font-size: 0.82rem; font-weight: 700; color: var(--texto); text-transform: uppercase; letter-spacing: 0.04em;">
-                                Filtros de Búsqueda
-                            </span>
-                            <button type="button" id="btnResetFiltrosLogs" style="padding: 4px 10px; background: transparent; border: 1px solid var(--borde); border-radius: 6px; color: var(--texto-suave); font-size: 0.75rem; cursor: pointer; transition: all 0.2s ease;" title="Restablecer filtros">
+                    <div style="background: var(--bg-card); border: 1px solid var(--borde); border-radius: 8px; padding: 12px 16px; display: flex; flex-direction: column; justify-content: center; gap: 8px;">
+                        <div style="font-size: 0.74rem; font-weight: 700; color: var(--texto-suave); text-transform: uppercase; letter-spacing: 0.05em;">
+                            Búsqueda y Filtros de Catálogo
+                        </div>
+
+                        <div class="user-filter-bar" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <div style="flex: 1; min-width: 170px;">
+                                <input type="text" id="buscarTipoInput" placeholder="Buscar por tipo o descripción…" autocomplete="off" spellcheck="false" style="width: 100%; padding: 6px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.78rem;">
+                            </div>
+
+                            <div style="display: flex; gap: 6px; align-items: center;">
+                                <label for="filtroCategoriaTipo" style="font-size: 0.75rem; color: var(--texto-suave); font-weight: 500;">Categoría:</label>
+                                <select id="filtroCategoriaTipo" style="padding: 6px 8px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.78rem; cursor: pointer;">
+                                    <option value="todas">Todas las categorías</option>
+                                </select>
+                            </div>
+
+                            <div style="display: flex; gap: 6px; align-items: center;">
+                                <label for="filtroEstadoTipo" style="font-size: 0.75rem; color: var(--texto-suave); font-weight: 500;">Estado:</label>
+                                <select id="filtroEstadoTipo" style="padding: 6px 8px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.78rem; cursor: pointer;">
+                                    <option value="todos">Todos</option>
+                                    <option value="activo">Solo activos</option>
+                                    <option value="inactivo">Solo inactivos</option>
+                                </select>
+                            </div>
+
+                            <button type="button" id="btnResetFiltrosTipos" style="padding: 6px 10px; background: transparent; border: 1px solid var(--borde); border-radius: 6px; color: var(--texto-suave); font-size: 0.76rem; cursor: pointer;" title="Restablecer filtros" aria-label="Restablecer filtros de tipos">
                                 Limpiar
                             </button>
                         </div>
+                    </div>
+                </div>
 
-                        <!-- Formulario / Campos de Filtro -->
-                        <div style="display: grid; grid-template-columns: 1fr; gap: 12px;">
-                            <div>
-                                <label for="buscarLogInput" style="font-size: 0.72rem; color: var(--texto-suave); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 4px;">Buscar por texto</label>
-                                <input type="text" id="buscarLogInput" placeholder="Buscar por usuario, acción, entidad, descripción o IP..." style="width: 100%; padding: 7px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.8rem; outline: none; box-sizing: border-box;">
+                <!-- 3. Tabla Completa de Tipos con Marco Unificado SIGI -->
+                <div class="tabla-contenedor-sigi">
+                    <div class="table-responsive contTablaDatos">
+                        <table class="tabla-moderna tabla-sigi" id="tablaTiposAdmin">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="th-col-num" style="text-align: center;">Num</th>
+                                    <th scope="col" class="th-col-color" style="text-align: center;">Color</th>
+                                    <th scope="col" class="th-col-tipo">Tipo de Incidente</th>
+                                    <th scope="col" class="th-col-categoria">Categoría Macro</th>
+                                    <th scope="col" class="th-col-riesgo" style="text-align: center;">Riesgo Base</th>
+                                    <th scope="col" class="th-col-incidentes" style="text-align: center;">Incidentes</th>
+                                    <th scope="col" class="th-col-estado" style="text-align: center;">Estado</th>
+                                    <th scope="col" class="th-col-acciones" style="text-align: center;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cuerpoTablaTipos">
+                                <tr><td colspan="8" style="text-align: center; padding: 20px; color: var(--texto-suave);">Cargando tipos de incidentes…</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 4. Paginación de Tipos (Diseño Institucional Unificado) -->
+                    <div class="user-pagination-bar" id="paginacionTipos">
+                        <span id="infoPaginacionTipos">Mostrando 0 de 0 tipos</span>
+                        <div class="paginacion-controles">
+                            <button type="button" id="btnPagAntTipos" class="btn-pag-incidente" aria-label="Página anterior de tipos">
+                                Anterior
+                            </button>
+                            <span id="labelPaginaTipos">Página 1 de 1</span>
+                            <button type="button" id="btnPagSigTipos" class="btn-pag-incidente" aria-label="Página siguiente de tipos">
+                                Siguiente
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        
+            <!-- SECCIÓN 5: GESTIÓN DE PERFIL PERSONAL (SUPERADMIN & ADMIN) -->
+            <section class="sec-perfil esconder" id="secPerfil">
+                <div class="panel-verificacion-card">
+                    <div class="panel-header-toolbar">
+                        <div class="panel-header-info">
+                            <div class="panel-titulo-fila">
+                                <h2 class="panel-titulo-principal">Mi Perfil</h2>
+                                <span class="badge-kpi-total" id="badgeRolPerfil" title="Rol actual en el sistema">
+                                    <span class="label-kpi">Rol</span>
+                                    <span class="numero-kpi" id="perfilRolTexto" style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">--</span>
+                                </span>
                             </div>
+                            <p class="panel-subtitulo-info">Gestión de credenciales, seguridad y datos de contacto de tu cuenta institucional.</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- 2. Tabla Completa de Auditoría -->
-                <div class="contTablaDatos" style="background: var(--bg-card); border: 1px solid var(--borde); border-radius: 8px; overflow-x: auto; margin-bottom: 16px;">
-                    <table class="tabla-sigi" style="text-align: center;">
-                        <thead>
-                            <tr>
-                                <th style="text-align: center;">#</th>
-                                <th style="text-align: center;">Fecha / Hora</th>
-                                <th style="text-align: center;">Usuario</th>
-                                <th style="text-align: center;">Acción</th>
-                                <th style="text-align: center;">Entidad</th>
-                                <th style="text-align: center;">ID Reg</th>
-                                <th style="text-align: center;">Descripción</th>
-                                <th style="text-align: center;">Dirección IP</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tablaAuditoria">
-                            <tr><td colspan="8" style="text-align: center; padding: 20px; color: var(--texto-suave);">Cargando logs de auditoría...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+                <!-- Marco Principal del Perfil -->
+                <div class="perfil-card-marco">
+                    <!-- Columna Izquierda: Ficha Resumen de Cuenta -->
+                    <div class="perfil-col-resumen">
+                        <div class="perfil-avatar-wrap">
+                            <div class="perfil-avatar-circulo" id="perfilAvatarLetra">?</div>
+                            <h3 class="perfil-usuario-nombre" id="perfilResumenNombre">Usuario</h3>
+                            <span class="perfil-usuario-email" id="perfilResumenEmail">correo@ejemplo.com</span>
+                        </div>
 
-                <!-- 3. Paginación de Auditoría -->
-                <div class="user-pagination-bar" style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); border: 1px solid var(--borde); border-radius: 8px; padding: 8px 14px; flex-wrap: wrap; gap: 10px;">
-                    <span id="infoPaginacionLogs" style="font-size: 0.78rem; color: var(--texto-suave);">Mostrando 0 de 0 logs</span>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <button type="button" id="btnPagAntLog" style="padding: 4px 10px; background: transparent; border: 1px solid var(--borde); border-radius: 6px; font-size: 0.75rem; color: var(--texto); cursor: pointer;">
-                            Anterior
-                        </button>
-                        <span id="labelPaginaLog" style="font-size: 0.78rem; color: var(--texto-suave); padding: 0 4px;">Página 1 de 1</span>
-                        <button type="button" id="btnPagSigLog" style="padding: 4px 10px; background: transparent; border: 1px solid var(--borde); border-radius: 6px; font-size: 0.75rem; color: var(--texto); cursor: pointer;">
-                            Siguiente
-                        </button>
+                        <div class="perfil-datos-lista">
+                            <div class="perfil-dato-item">
+                                <span class="perfil-dato-label">Nivel de Permisos</span>
+                                <span class="perfil-dato-valor" id="perfilResumenRol">--</span>
+                            </div>
+                            <div class="perfil-dato-item">
+                                <span class="perfil-dato-label">Estado de la Cuenta</span>
+                                <span class="perfil-dato-valor" id="perfilResumenEstado">--</span>
+                            </div>
+                            <div class="perfil-dato-item">
+                                <span class="perfil-dato-label">Fecha de Registro</span>
+                                <span class="perfil-dato-valor" id="perfilResumenFechaReg">--</span>
+                            </div>
+                            <div class="perfil-dato-item">
+                                <span class="perfil-dato-label">Último Acceso</span>
+                                <span class="perfil-dato-valor" id="perfilResumenUltimoAcceso">--</span>
+                            </div>
+                        </div>
                     </div>
-    </main>
+
+                    <!-- Columna Derecha: Formulario de Actualización y Seguridad -->
+                    <div class="perfil-col-formulario">
+                        <form id="formPerfilUsuario" class="form-perfil-estilo">
+                            <!-- Sección 1: Datos de Contacto -->
+                            <div class="perfil-bloque-seccion">
+                                <h4 class="perfil-bloque-titulo">Información Personal y Contacto</h4>
+                                
+                                <div class="perfil-campo-grupo">
+                                    <label for="perfilInputEmail" class="perfil-label">Correo electrónico institucional</label>
+                                    <input type="email" id="perfilInputEmail" name="email" required autocomplete="email" class="filtro-input-control" placeholder="tu_correo@ejemplo.com">
+                                </div>
+
+                                <div class="perfil-fila-dos-campos">
+                                    <div class="perfil-campo-grupo">
+                                        <label for="perfilInputTelefono" class="perfil-label">Teléfono de contacto</label>
+                                        <input type="tel" id="perfilInputTelefono" name="telefono" autocomplete="tel" class="filtro-input-control" placeholder="Ej: 3001234567">
+                                    </div>
+                                    <div class="perfil-campo-grupo">
+                                        <label for="perfilInputDependencia" class="perfil-label">Dependencia / Entidad</label>
+                                        <input type="text" id="perfilInputDependencia" name="dependencia" class="filtro-input-control" placeholder="Ej: Despacho / Alcaldía">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sección 2: Seguridad y Cambio de Contraseña -->
+                            <div class="perfil-bloque-seccion">
+                                <h4 class="perfil-bloque-titulo">Seguridad y Cambio de Contraseña</h4>
+                                <p class="perfil-bloque-ayuda">Diligencia estos campos únicamente si deseas modificar tu contraseña de acceso.</p>
+
+                                <div class="perfil-campo-grupo">
+                                    <label for="perfilPasswordActual" class="perfil-label">Contraseña actual</label>
+                                    <input type="password" id="perfilPasswordActual" name="password_actual" autocomplete="current-password" class="filtro-input-control" placeholder="Ingresa tu contraseña actual">
+                                </div>
+
+                                <div class="perfil-fila-dos-campos">
+                                    <div class="perfil-campo-grupo">
+                                        <label for="perfilPasswordNuevo" class="perfil-label">Nueva contraseña</label>
+                                        <input type="password" id="perfilPasswordNuevo" name="password_nuevo" autocomplete="new-password" class="filtro-input-control" placeholder="Mínimo 8 caracteres">
+                                    </div>
+                                    <div class="perfil-campo-grupo">
+                                        <label for="perfilPasswordConfirmar" class="perfil-label">Confirmar nueva contraseña</label>
+                                        <input type="password" id="perfilPasswordConfirmar" name="password_confirmar" autocomplete="new-password" class="filtro-input-control" placeholder="Repite la nueva contraseña">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Alerta de Respuesta del Perfil -->
+                            <div id="perfilAlertaBox" class="modal-alerta-box" style="display: none; margin-top: 8px;"></div>
+
+                            <!-- Acciones del Formulario -->
+                            <div class="perfil-acciones-fila">
+                                <button type="button" id="btnRestablecerFormPerfil" class="btn-modal-cancelar">Restablecer</button>
+                                <button type="submit" id="btnGuardarPerfilSubmit" class="btn-modal-guardar">Guardar cambios</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </main>
             <footer class="sigi-footer">
                 <div class="footer-contenido">
                     <span class="footer-marca">SIGI — Sistema de Información Geográfica de Incidentes</span>
@@ -570,29 +806,32 @@
 
     <!-- MODAL EDITAR INCIDENTE -->
     <div id="modalEditar" class="modal">
-        <div class="modal-contenido" style="max-width: 460px; background: var(--bg-card); border: 1px solid var(--borde-acento); border-radius: 10px; padding: 22px;">
+        <div class="modal-contenido" style="max-width: 460px; background: var(--bg-card); border: 1px solid var(--borde-acento); border-radius: 12px; padding: 22px; position: relative;">
+            <button type="button" class="btn-cerrar-modal" id="btnCerrarModalEditar" onclick="document.getElementById('modalEditar').style.display='none'" aria-label="Cerrar ventana de edición">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
             <h3 style="color: var(--texto); font-size: 1.1rem; font-weight: 600; margin-bottom: 18px;">Editar Incidente</h3>
 
             <input type="hidden" id="editId">
 
             <div class="grupo" style="margin-bottom: 12px;">
-                <label style="display: block; font-size: 0.78rem; color: var(--texto-suave); margin-bottom: 4px;">Fecha</label>
-                <input type="date" id="editFecha" style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; outline: none;">
+                <label for="editFecha" style="display: block; font-size: 0.78rem; color: var(--texto-suave); margin-bottom: 4px;">Fecha</label>
+                <input type="date" id="editFecha" name="editFecha" style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem;">
             </div>
 
             <div class="grupo" style="margin-bottom: 12px;">
-                <label style="display: block; font-size: 0.78rem; color: var(--texto-suave); margin-bottom: 4px;">Hora</label>
-                <input type="time" id="editHora" style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; outline: none;">
+                <label for="editHora" style="display: block; font-size: 0.78rem; color: var(--texto-suave); margin-bottom: 4px;">Hora</label>
+                <input type="time" id="editHora" name="editHora" style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem;">
             </div>
 
             <div class="grupo" style="margin-bottom: 18px;">
-                <label style="display: block; font-size: 0.78rem; color: var(--texto-suave); margin-bottom: 4px;">Descripción</label>
-                <textarea id="editDescripcion" rows="3" style="width: 100%; min-height: 70px; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; outline: none; resize: vertical;"></textarea>
+                <label for="editDescripcion" style="display: block; font-size: 0.78rem; color: var(--texto-suave); margin-bottom: 4px;">Descripción</label>
+                <textarea id="editDescripcion" name="editDescripcion" rows="3" style="width: 100%; min-height: 70px; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; resize: vertical;"></textarea>
             </div>
 
             <div class="acciones" style="display: flex; gap: 10px; margin-top: 20px;">
-                <button id="btnGuardar" style="flex: 1; padding: 9px; background: #10b981; color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer;">Guardar cambios</button>
-                <button id="btnCerrar" style="padding: 9px 16px; background: transparent; border: 1px solid var(--borde); color: var(--texto-suave); border-radius: 6px; font-size: 0.85rem; cursor: pointer;">Cancelar</button>
+                <button type="button" id="btnGuardar" style="flex: 1; padding: 9px; background: #10b981; color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer;">Guardar cambios</button>
+                <button type="button" id="btnCerrar" style="padding: 9px 16px; background: transparent; border: 1px solid var(--borde); color: var(--texto-suave); border-radius: 6px; font-size: 0.85rem; cursor: pointer;">Cancelar</button>
             </div>
         </div>
     </div>
@@ -600,9 +839,11 @@
     <!-- MODAL FILTRO DE TIEMPO -->
     <div id="modalFiltroTiempo" class="modal">
         <div class="modal-contenido modal-tiempo" style="max-width: 480px; background: var(--bg-card); border: 1px solid var(--borde-acento); border-radius: 10px; padding: 22px;">
-            <div class="modal-cabecera" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div class="modal-cabecera" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; position: relative;">
                 <h3 style="color: var(--texto); font-size: 1.1rem; font-weight: 600; margin: 0;">Filtrar por tiempo</h3>
-                <span class="cerrar-modal-tiempo" id="btnCerrarFiltroTiempo" style="font-size: 1.2rem; color: var(--texto-suave); cursor: pointer;">&times;</span>
+                <button type="button" class="btn-cerrar-modal" id="btnCerrarFiltroTiempo" aria-label="Cerrar filtro de tiempo">
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                </button>
             </div>
             
             <div class="modal-cuerpo" style="display: flex; flex-direction: column; gap: 16px;">
@@ -627,11 +868,11 @@
                         <div class="inputs-rango-modal" style="display: flex; gap: 10px; margin-bottom: 8px;">
                             <div class="campo-modal" style="flex: 1;">
                                 <label for="fechaDesdeModal" style="display: block; font-size: 0.75rem; color: var(--texto-suave); margin-bottom: 4px;">Desde</label>
-                                <input type="date" id="fechaDesdeModal" class="input-modal-fecha" style="width: 100%; padding: 7px 8px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.8rem; outline: none;">
+                                <input type="date" id="fechaDesdeModal" name="fechaDesdeModal" class="input-modal-fecha" style="width: 100%; padding: 7px 8px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.8rem;">
                             </div>
                             <div class="campo-modal" style="flex: 1;">
                                 <label for="fechaHastaModal" style="display: block; font-size: 0.75rem; color: var(--texto-suave); margin-bottom: 4px;">Hasta</label>
-                                <input type="date" id="fechaHastaModal" class="input-modal-fecha" style="width: 100%; padding: 7px 8px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.8rem; outline: none;">
+                                <input type="date" id="fechaHastaModal" name="fechaHastaModal" class="input-modal-fecha" style="width: 100%; padding: 7px 8px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.8rem;">
                             </div>
                         </div>
                         <div class="botones-rango-modal" style="display: flex; gap: 8px;">
@@ -647,7 +888,7 @@
                     <div class="mes-especifico-modal" style="display: flex; gap: 8px; align-items: flex-end;">
                         <div class="campo-modal" style="flex: 1;">
                             <label for="mesFiltroModal" style="display: block; font-size: 0.75rem; color: var(--texto-suave); margin-bottom: 4px;">Mes y año</label>
-                            <input type="month" id="mesFiltroModal" class="input-modal-month" style="width: 100%; padding: 7px 8px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.8rem; outline: none;">
+                            <input type="month" id="mesFiltroModal" name="mesFiltroModal" class="input-modal-month" style="width: 100%; padding: 7px 8px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.8rem;">
                         </div>
                         <button type="button" id="btnFiltrarMesModal" style="padding: 7px 16px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: 600;">Filtrar</button>
                     </div>
@@ -659,8 +900,8 @@
                     <div class="mes-especifico-modal" style="display: flex; gap: 8px; align-items: flex-end;">
                         <div class="campo-modal" style="flex: 1;">
                             <label for="anioFiltroModal" style="display: block; font-size: 0.75rem; color: var(--texto-suave); margin-bottom: 4px;">Seleccionar año</label>
-                            <select id="anioFiltroModal" class="input-modal-fecha" style="width: 100%; padding: 7px 8px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.8rem; outline: none; cursor: pointer;">
-                                <option value="">---</option>
+                            <select id="anioFiltroModal" name="anioFiltroModal" class="input-modal-fecha" style="width: 100%; padding: 7px 8px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.8rem; cursor: pointer;">
+                                <option value="">Seleccionar año…</option>
                             </select>
                         </div>
                         <button type="button" id="btnFiltrarAnioModal" style="padding: 7px 16px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: 600;">Filtrar</button>
@@ -679,8 +920,10 @@
 
     <!-- MODAL IMPORTAR DATOS -->
     <div class="ventana esconder contFlexCent">
-        <div class="ventanaInfo" style="max-width: 440px; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 22px;">
-            <i class="bi bi-x cerrar-modal" id="cerrarModal" style="font-size: 1.2rem; color: var(--texto-suave); top: 16px; right: 16px;"></i>
+        <div class="ventanaInfo" style="max-width: 440px; background: var(--bg-card); border: 1px solid var(--borde); border-radius: 12px; padding: 22px; position: relative;">
+            <button type="button" class="btn-cerrar-modal" id="cerrarModal" aria-label="Cerrar modal de importación">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
 
             <div class="contenido" style="margin-bottom: 16px;">
                 <h3 style="color: var(--texto); font-size: 1.1rem; font-weight: 600; margin-bottom: 6px;">Importar datos</h3>
@@ -696,16 +939,16 @@
 
                 <div class="grupo-input" style="margin-bottom: 0;">
                     <label for="archivo" style="display: block; font-size: 0.78rem; color: var(--texto-suave); margin-bottom: 6px;">Seleccionar archivo</label>
-                    <input type="file" id="archivo" accept=".csv, .xlsx" style="width: 100%; padding: 14px; background: var(--bg-input); border: 1px dashed var(--borde); border-radius: 6px; color: var(--texto-suave); font-size: 0.8rem; cursor: pointer;">
+                    <input type="file" id="archivo" name="archivo" accept=".csv, .xlsx" style="width: 100%; padding: 14px; background: var(--bg-input); border: 1px dashed var(--borde); border-radius: 6px; color: var(--texto-suave); font-size: 0.8rem; cursor: pointer;">
                 </div>
             </div>
 
             <div class="acciones" style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px;">
                 <div style="display: flex; gap: 10px;">
-                    <button class="btn importar" style="flex: 1; padding: 9px; background: #10b981; color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer;">Importar datos</button>
-                    <button class="btn cancelar" id="cancelarModal" style="padding: 9px 16px; background: transparent; border: 1px solid var(--borde); color: var(--texto-suave); border-radius: 6px; font-size: 0.85rem; cursor: pointer;">Cancelar</button>
+                    <button type="button" class="btn importar" style="flex: 1; padding: 9px; background: #10b981; color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer;">Importar datos</button>
+                    <button type="button" class="btn cancelar" id="cancelarModal" style="padding: 9px 16px; background: transparent; border: 1px solid var(--borde); color: var(--texto-suave); border-radius: 6px; font-size: 0.85rem; cursor: pointer;">Cancelar</button>
                 </div>
-                <button class="btn btn-rojo" id="btnDeshacerImportacion" style="width: 100%; padding: 8px; background: transparent; border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; border-radius: 6px; font-size: 0.8rem; cursor: pointer;">
+                <button type="button" class="btn btn-rojo" id="btnDeshacerImportacion" style="width: 100%; padding: 8px; background: transparent; border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; border-radius: 6px; font-size: 0.8rem; cursor: pointer;">
                     Deshacer última importación masiva
                 </button>
             </div>
@@ -714,8 +957,10 @@
     
     <!-- MODAL CONFIRMAR ELIMINACIÓN DE INCIDENTE -->
     <div class="ventana esconder contFlexCent" id="modalConfirmarEliminar">
-        <div class="ventanaInfo" style="max-width: 400px; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 22px; text-align: center;">
-            <i class="bi bi-x cerrar-modal" id="cerrarModalEliminar" style="font-size: 1.2rem; color: var(--texto-suave); top: 16px; right: 16px;"></i>
+        <div class="ventanaInfo" style="max-width: 400px; background: var(--bg-card); border: 1px solid var(--borde); border-radius: 12px; padding: 22px; text-align: center; position: relative;">
+            <button type="button" class="btn-cerrar-modal" id="cerrarModalEliminar" aria-label="Cerrar confirmación de eliminación">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
             <div class="contenido" style="margin-top: 8px;">
                 <h3 style="color: var(--texto); font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;">Eliminar incidente</h3>
                 <p class="descripcion" style="font-size: 0.85rem; color: var(--texto-suave); margin-bottom: 20px;">
@@ -723,16 +968,18 @@
                 </p>
             </div>
             <div class="acciones" style="display: flex; gap: 10px; justify-content: center;">
-                <button class="btn btn-rojo" id="btnConfirmarEliminar" style="padding: 8px 18px; background: #ef4444; color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer;">Sí, eliminar</button>
-                <button class="btn cancelar" id="btnCancelarEliminar" style="padding: 8px 16px; background: transparent; border: 1px solid var(--borde); color: var(--texto-suave); border-radius: 6px; font-size: 0.82rem; cursor: pointer;">Cancelar</button>
+                <button type="button" class="btn btn-rojo" id="btnConfirmarEliminar" style="padding: 8px 18px; background: #ef4444; color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer;">Sí, eliminar</button>
+                <button type="button" class="btn cancelar" id="btnCancelarEliminar" style="padding: 8px 16px; background: transparent; border: 1px solid var(--borde); color: var(--texto-suave); border-radius: 6px; font-size: 0.82rem; cursor: pointer;">Cancelar</button>
             </div>
         </div>
     </div>
     
     <!-- MODAL CONFIRMAR DESHACER IMPORTACIÓN -->
     <div class="ventana esconder contFlexCent" id="modalConfirmarDeshacer">
-        <div class="ventanaInfo" style="max-width: 400px; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 22px; text-align: center;">
-            <i class="bi bi-x cerrar-modal" id="cerrarModalDeshacer" style="font-size: 1.2rem; color: var(--texto-suave); top: 16px; right: 16px;"></i>
+        <div class="ventanaInfo" style="max-width: 400px; background: var(--bg-card); border: 1px solid var(--borde); border-radius: 12px; padding: 22px; text-align: center; position: relative;">
+            <button type="button" class="btn-cerrar-modal" id="cerrarModalDeshacer" aria-label="Cerrar confirmación de deshacer">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
             <div class="contenido" style="margin-top: 8px;">
                 <h3 style="color: var(--texto); font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;">Deshacer importación</h3>
                 <p class="descripcion" style="font-size: 0.85rem; color: var(--texto-suave); margin-bottom: 20px;">
@@ -740,58 +987,91 @@
                 </p>
             </div>
             <div class="acciones" style="display: flex; gap: 10px; justify-content: center;">
-                <button class="btn btn-rojo" id="btnConfirmarDeshacer" style="padding: 8px 18px; background: #ef4444; color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer;">Sí, deshacer</button>
-                <button class="btn cancelar" id="btnCancelarDeshacer" style="padding: 8px 16px; background: transparent; border: 1px solid var(--borde); color: var(--texto-suave); border-radius: 6px; font-size: 0.82rem; cursor: pointer;">Cancelar</button>
+                <button type="button" class="btn btn-rojo" id="btnConfirmarDeshacer" style="padding: 8px 18px; background: #ef4444; color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer;">Sí, deshacer</button>
+                <button type="button" class="btn cancelar" id="btnCancelarDeshacer" style="padding: 8px 16px; background: transparent; border: 1px solid var(--borde); color: var(--texto-suave); border-radius: 6px; font-size: 0.82rem; cursor: pointer;">Cancelar</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL USUARIO (CREAR Y EDITAR) -->
-    <div id="modalNuevoUsuario" class="modal">
-        <div class="modal-contenido" style="max-width: 480px; background: var(--bg-card); border: 1px solid var(--borde-acento); border-radius: 10px; padding: 22px;">
-            <h3 id="modalUsuarioTitle" style="color: var(--texto); font-size: 1.1rem; font-weight: 600; margin-bottom: 18px;">
-                Crear nuevo usuario
-            </h3>
-            <form id="formCrearUsuario">
+    <div id="modalNuevoUsuario" class="modal modal-admin-sigi">
+        <div class="modal-contenido modal-scroll modal-detalle-card" style="max-width: 500px;">
+            <button type="button" class="btn-cerrar-modal" onclick="cerrarModalUsuario()" aria-label="Cerrar ventana de usuario">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+
+            <!-- Header con icono y título -->
+            <div class="modal-usuario-header">
+                <div class="modal-usuario-header-icono">
+                    <i class="bi bi-person-gear" aria-hidden="true"></i>
+                </div>
+                <div class="modal-usuario-header-texto">
+                    <span class="modal-detalle-subtitulo">Gestión de Credenciales</span>
+                    <h3 id="modalUsuarioTitle" class="modal-usuario-titulo">Crear nuevo usuario</h3>
+                </div>
+            </div>
+
+            <form id="formCrearUsuario" class="form-usuario-moderno">
                 <input type="hidden" id="editUserId">
-                <div class="grupo" style="margin-bottom: 12px;">
-                    <label style="display: block; font-size: 0.78rem; color: var(--texto-suave); margin-bottom: 4px;">Nombre de usuario *</label>
-                    <input type="text" id="newNombreUsuario" required placeholder="ej: juan_perez" style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; outline: none;">
+                
+                <div class="form-grupo-modal">
+                    <label for="newNombreUsuario" class="form-label-modal">Nombre de usuario <span class="campo-obligatorio">*</span></label>
+                    <div class="input-con-icono-wrapper">
+                        <i class="bi bi-person icono-input-campo" aria-hidden="true"></i>
+                        <input type="text" id="newNombreUsuario" name="nombreUsuario" required autocomplete="off" spellcheck="false" placeholder="ej: juan_perez" class="filtro-input-control con-padding-icono">
+                    </div>
                 </div>
-                <div class="grupo" style="margin-bottom: 12px;">
-                    <label style="display: block; font-size: 0.78rem; color: var(--texto-suave); margin-bottom: 4px;">Correo electrónico *</label>
-                    <input type="email" id="newEmail" required placeholder="ej: juan@entidad.gov.co" style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; outline: none;">
+
+                <div class="form-grupo-modal">
+                    <label for="newEmail" class="form-label-modal">Correo electrónico <span class="campo-obligatorio">*</span></label>
+                    <div class="input-con-icono-wrapper">
+                        <i class="bi bi-envelope icono-input-campo" aria-hidden="true"></i>
+                        <input type="email" id="newEmail" name="email" required autocomplete="off" spellcheck="false" placeholder="ej: juan@entidad.gov.co" class="filtro-input-control con-padding-icono">
+                    </div>
                 </div>
-                <div style="display: flex; gap: 12px; margin-bottom: 12px;">
-                    <div class="grupo" style="flex: 1;">
-                        <label style="display: block; font-size: 0.78rem; color: var(--texto-suave); margin-bottom: 4px;">Rol *</label>
-                        <select id="newRol" required style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; outline: none; cursor: pointer;">
+
+                <div class="form-fila-doble">
+                    <div class="form-grupo-modal">
+                        <label for="newRol" class="form-label-modal">Rol en el sistema <span class="campo-obligatorio">*</span></label>
+                        <select id="newRol" name="rol" required class="filtro-select-control">
                             <option value="reportero">Reportero</option>
                             <option value="admin">Administrador</option>
                             <option value="superadmin">Superadministrador</option>
                         </select>
                     </div>
-                    <div class="grupo" style="flex: 1;">
-                        <label style="display: block; font-size: 0.78rem; color: var(--texto-suave); margin-bottom: 4px;">Estado *</label>
-                        <select id="newEstado" required style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; outline: none; cursor: pointer;">
+                    <div class="form-grupo-modal">
+                        <label for="newEstado" class="form-label-modal">Estado de cuenta <span class="campo-obligatorio">*</span></label>
+                        <select id="newEstado" name="estado" required class="filtro-select-control">
                             <option value="activo">Activo</option>
                             <option value="inactivo">Inactivo</option>
                         </select>
                     </div>
                 </div>
-                <div class="grupo" style="margin-bottom: 12px;">
-                    <label style="display: block; font-size: 0.78rem; color: var(--texto-suave); margin-bottom: 4px;">Dependencia / Entidad</label>
-                    <input type="text" id="newDependencia" placeholder="ej: Policía Nacional / Alcaldía" style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; outline: none;">
+
+                <div class="form-grupo-modal">
+                    <label for="newDependencia" class="form-label-modal">Dependencia / Entidad</label>
+                    <div class="input-con-icono-wrapper">
+                        <i class="bi bi-building icono-input-campo" aria-hidden="true"></i>
+                        <input type="text" id="newDependencia" name="dependencia" placeholder="ej: Policía Nacional / Alcaldía" class="filtro-input-control con-padding-icono">
+                    </div>
                 </div>
-                <div class="grupo" style="margin-bottom: 18px;">
-                    <label style="display: block; font-size: 0.78rem; color: var(--texto-suave); margin-bottom: 4px;">Teléfono de contacto</label>
-                    <input type="text" id="newTelefono" placeholder="ej: 3001234567" style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; outline: none;">
+
+                <div class="form-grupo-modal">
+                    <label for="newTelefono" class="form-label-modal">Teléfono de contacto</label>
+                    <div class="input-con-icono-wrapper">
+                        <i class="bi bi-telephone icono-input-campo" aria-hidden="true"></i>
+                        <input type="tel" id="newTelefono" name="telefono" placeholder="ej: 3001234567" class="filtro-input-control con-padding-icono">
+                    </div>
                 </div>
+
                 <!-- Alerta interna del modal para visibilidad inmediata -->
-                <div id="modalUserAlert" style="display: none; padding: 10px 14px; border-radius: 6px; font-size: 0.8rem; margin-bottom: 14px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; line-height: 1.4;"></div>
-                <div class="acciones" style="display: flex; gap: 10px; margin-top: 10px;">
-                    <button type="submit" id="btnGuardarUsuarioSubmit" style="flex: 1; padding: 9px; background: #10b981; color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer;">Guardar usuario</button>
-                    <button type="button" id="btnCerrarModalUsuario" onclick="cerrarModalUsuario()" style="padding: 9px 16px; background: transparent; border: 1px solid var(--borde); color: var(--texto-suave); border-radius: 6px; font-size: 0.85rem; cursor: pointer;">Cancelar</button>
+                <div id="modalUserAlert" style="display: none;" class="modal-alerta-box"></div>
+
+                <div class="modal-acciones-footer">
+                    <button type="button" id="btnCerrarModalUsuario" onclick="cerrarModalUsuario()" class="btn-modal-op btn-modal-cancelar">Cancelar</button>
+                    <button type="submit" id="btnGuardarUsuarioSubmit" class="btn-modal-op btn-modal-guardar">
+                        <i class="bi bi-check2-circle" aria-hidden="true"></i> Guardar usuario
+                    </button>
                 </div>
             </form>
         </div>
@@ -799,7 +1079,10 @@
 
     <!-- MODAL CONFIRMAR ELIMINAR USUARIO -->
     <div id="modalEliminarUsuario" class="modal">
-        <div class="modal-contenido" style="max-width: 400px; background: var(--bg-card); border: 1px solid var(--borde-acento); border-radius: 10px; padding: 22px; text-align: center;">
+        <div class="modal-contenido" style="max-width: 400px; background: var(--bg-card); border: 1px solid var(--borde-acento); border-radius: 12px; padding: 22px; text-align: center; position: relative;">
+            <button type="button" class="btn-cerrar-modal" onclick="document.getElementById('modalEliminarUsuario').style.display='none'" aria-label="Cerrar confirmación de eliminación">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
             <h3 style="color: var(--texto); font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;">Eliminar usuario</h3>
             <p style="font-size: 0.85rem; color: var(--texto-suave); margin-bottom: 20px;">
                 ¿Estás seguro de eliminar al usuario <strong id="deleteNombreUsuario" style="color: var(--texto);">--</strong>? Esta acción no se puede deshacer.
@@ -811,27 +1094,49 @@
         </div>
     </div>
 
-    <!-- MODAL DETALLE COMPLETO DE INCIDENTE -->
+    <!-- MODAL DETALLE COMPLETO DE INCIDENTE (Ergonómico, Intuitivo y Elegante) -->
     <div id="modalDetalleIncidente" class="modal modal-admin-sigi" style="display: none;">
         <div class="modal-contenido modal-scroll modal-detalle-card">
-            <button type="button" class="btn-cerrar-modal" onclick="cerrarModalDetalle()">&times;</button>
+            <button type="button" class="btn-cerrar-modal" onclick="cerrarModalDetalle()" aria-label="Cerrar detalle de incidente">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
 
             <!-- Encabezado Modal -->
             <div class="modal-detalle-header">
-                <span id="detModalId" class="badge-incidente-id">#INC-000</span>
-                <span id="detModalTipoBadge"></span>
+                <div class="modal-detalle-header-info">
+                    <span class="modal-detalle-subtitulo">Detalle Operativo del Reporte</span>
+                    <h3 id="detModalId" class="modal-detalle-codigo">--</h3>
+                </div>
+                <div class="modal-detalle-badges-wrap">
+                    <span id="detModalTipoBadge"></span>
+                    <span id="detModalEstadoBadge"></span>
+                </div>
             </div>
 
-            <!-- Grid de Metadatos Detallados (Sin redundancia) -->
+            <!-- Grid de Metadatos Detallados -->
             <div class="modal-detalle-grid">
-                <div>
+                <div class="modal-detalle-item">
                     <span class="modal-meta-label">Fecha y Hora</span>
                     <div id="detModalFechaHora" class="modal-meta-valor">--</div>
                 </div>
-                <div>
+                <div class="modal-detalle-item">
                     <span class="modal-meta-label">Ubicación Territorial</span>
                     <div id="detModalUbicacion" class="modal-meta-valor">--</div>
                 </div>
+                <div class="modal-detalle-item">
+                    <span class="modal-meta-label">Reportado por</span>
+                    <div id="detModalReportadoPor" class="modal-meta-valor">--</div>
+                </div>
+                <div class="modal-detalle-item">
+                    <span class="modal-meta-label">Revisor Asignado</span>
+                    <div id="detModalRevisor" class="modal-meta-valor">--</div>
+                </div>
+            </div>
+
+            <!-- Coordenadas Geográficas (si existen) -->
+            <div id="detModalCoordsCont" class="modal-coords-box" style="display: none;">
+                <span class="modal-meta-label">Coordenadas</span>
+                <span id="detModalCoords" class="coords-valor">--</span>
             </div>
 
             <!-- Descripción -->
@@ -842,30 +1147,130 @@
 
             <!-- Evidencia Fotográfica -->
             <div id="detModalFotoCont" class="modal-detalle-foto-seccion" style="display: none;">
-                <span class="modal-meta-label">Evidencia Fotográfica</span>
-                <div class="modal-foto-box">
-                    <img id="detModalFotoImg" src="" alt="Evidencia fotográfica" title="Haz clic para ver a pantalla completa">
+                <div class="modal-foto-header-bar">
+                    <span class="modal-meta-label">Evidencia Fotográfica</span>
+                    <span class="foto-hint-click"><i class="bi bi-zoom-in" aria-hidden="true"></i> Clic para pantalla completa</span>
                 </div>
+                <div class="modal-foto-box">
+                    <img id="detModalFotoImg" src="" alt="Evidencia fotográfica del incidente" title="Haz clic para ver en pantalla completa">
+                </div>
+            </div>
+
+            <!-- Barra de Acciones Operativas Dinámicas -->
+            <div class="modal-detalle-acciones-bar" id="detModalAcciones">
+                <!-- Se llena dinámicamente según el estado del incidente -->
             </div>
         </div>
     </div>
 
     <!-- MODAL VISOR DE FOTO DE EVIDENCIA -->
     <div id="modalVisorFoto" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 999999; justify-content: center; align-items: center; padding: 20px;">
-        <div style="position: relative; max-width: 650px; width: 100%; background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-            <button id="btnCerrarVisorFoto" onclick="cerrarVisorFoto()" style="position: absolute; top: 12px; right: 15px; background: transparent; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer;">&times;</button>
-            <h3 id="tituloVisorFoto" style="color: #f8fafc; font-size: 1.05rem; font-weight: 600; margin-bottom: 12px;">Evidencia de Terreno</h3>
-            <div style="width: 100%; overflow: hidden; border-radius: 8px; background: #0f172a; display: flex; align-items: center; justify-content: center; min-height: 250px;">
-                <img id="imgVisorModal" src="" alt="Evidencia fotográfica" style="max-width: 100%; max-height: 65vh; object-fit: contain;">
+        <div style="position: relative; max-width: 650px; width: 100%; background: var(--bg-card); border: 1px solid var(--borde); border-radius: 12px; padding: 20px; text-align: center; box-shadow: var(--sombra);">
+            <button type="button" class="btn-cerrar-modal" id="btnCerrarVisorFoto" onclick="cerrarVisorFoto()" aria-label="Cerrar visor de fotografía">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+            <h3 id="tituloVisorFoto" style="color: var(--texto); font-size: 1.05rem; font-weight: 600; margin-bottom: 12px;">Evidencia de Terreno</h3>
+            <div style="width: 100%; overflow: hidden; border-radius: 8px; background: var(--bg-input); display: flex; align-items: center; justify-content: center; min-height: 250px;">
+                <img id="imgVisorModal" src="" alt="Evidencia fotográfica en tamaño completo" style="max-width: 100%; max-height: 65vh; object-fit: contain;">
             </div>
-            <p id="descVisorFoto" style="color: #94a3b8; font-size: 0.8rem; margin-top: 10px; font-style: italic;"></p>
+            <p id="descVisorFoto" style="color: var(--texto-suave); font-size: 0.8rem; margin-top: 10px; font-style: italic;"></p>
+        </div>
+    </div>
+
+    <!-- MODAL VISOR DE INFORME EJECUTIVO EN PDF (Vista previa interactiva) -->
+    <div id="modalVisorPDF" class="modal modal-admin-sigi" style="display: none;">
+        <div class="modal-contenido modal-scroll modal-detalle-card modal-pdf-card">
+            <button type="button" class="btn-cerrar-modal" onclick="cerrarVisorPDF()" aria-label="Cerrar visor de informe PDF">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+
+            <!-- Header Modal Visor -->
+            <div class="modal-detalle-header" style="margin-bottom: 12px; padding-bottom: 12px;">
+                <div class="modal-detalle-header-info">
+                    <span class="modal-detalle-subtitulo">Vista Previa Institucional</span>
+                    <h3 class="modal-detalle-codigo" id="tituloVisorPDF">Informe Ejecutivo Mensual (PDF)</h3>
+                </div>
+                <div class="modal-detalle-badges-wrap" style="gap: 8px;">
+                    <a id="btnAbrirNuevaPestanaPDF" href="#" target="_blank" class="btn-modal-op btn-modal-editar" style="text-decoration: none;" title="Abrir informe en pestaña completa">
+                        Abrir en pestaña
+                    </a>
+                    <a id="btnDescargarPDFModal" href="#" download class="btn-modal-op btn-modal-tomar" style="text-decoration: none;" title="Descargar copia local en formato PDF">
+                        Descargar PDF
+                    </a>
+                </div>
+            </div>
+
+            <!-- Contenedor del Visor / Iframe -->
+            <div class="visor-pdf-marco">
+                <div id="cargandoVisorPDF" class="visor-pdf-loader">
+                    Generando vista previa del documento…
+                </div>
+                <iframe id="iframeVisorPDF" src="" style="width: 100%; height: 100%; border: none; display: block;" title="Vista previa del informe ejecutivo mensual en PDF"></iframe>
+            </div>
+
+            <!-- Footer Modal con Botón Cerrar -->
+            <div class="modal-detalle-footer" style="margin-top: 12px; padding-top: 10px;">
+                <button type="button" class="btn-cerrar-modal-footer" onclick="cerrarVisorPDF()" aria-label="Cerrar visor">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DETALLE COMPLETO DE AUDITORÍA (Diseño unificado SIGI) -->
+    <div id="modalDetalleLog" class="modal modal-admin-sigi" style="display: none;">
+        <div class="modal-contenido modal-scroll modal-detalle-card" style="max-width: 580px;">
+            <button type="button" class="btn-cerrar-modal" onclick="cerrarModalDetalleLog()" aria-label="Cerrar detalle de auditoría">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+            
+            <div class="modal-detalle-header">
+                <div class="modal-detalle-header-info">
+                    <span class="modal-detalle-subtitulo">Detalle de Actividad</span>
+                    <h3 id="detLogTitulo" class="modal-detalle-codigo">LOG #--</h3>
+                </div>
+                <div class="modal-detalle-badges-wrap" id="detLogBadgesWrap">
+                    <span class="badge-accion" id="detLogBadgeAccion">ACCION</span>
+                </div>
+            </div>
+
+            <div class="modal-user-grid">
+                <div class="modal-user-item">
+                    <span class="modal-meta-label">Fecha y Hora</span>
+                    <div id="detLogFechaHora" class="modal-meta-valor">--</div>
+                </div>
+                <div class="modal-user-item">
+                    <span class="modal-meta-label">Usuario</span>
+                    <div id="detLogUsuario" class="modal-meta-valor">--</div>
+                </div>
+                <div class="modal-user-item">
+                    <span class="modal-meta-label">Entidad / Módulo</span>
+                    <div id="detLogEntidad" class="modal-meta-valor">--</div>
+                </div>
+                <div class="modal-user-item">
+                    <span class="modal-meta-label">ID Registro Afectado</span>
+                    <div id="detLogIdRegistro" class="modal-meta-valor" style="color: var(--acento); font-weight: 700;">--</div>
+                </div>
+                <div class="modal-user-item" style="grid-column: 1 / -1;">
+                    <span class="modal-meta-label">Dirección IP de Origen</span>
+                    <div id="detLogIp" class="modal-meta-valor" style="font-family: monospace;">--</div>
+                </div>
+                <div class="modal-user-item" style="grid-column: 1 / -1;">
+                    <span class="modal-meta-label">Descripción Completa del Evento</span>
+                    <div id="detLogDescripcion" class="modal-meta-valor" style="white-space: pre-wrap; line-height: 1.5; font-size: 0.85rem; background: rgba(0,0,0,0.2); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--borde);">--</div>
+                </div>
+            </div>
+
+            <div class="modal-detalle-footer">
+                <button type="button" class="btn-cerrar-modal-footer" onclick="cerrarModalDetalleLog()" aria-label="Cerrar detalle">Cerrar</button>
+            </div>
         </div>
     </div>
 
     <!-- MODAL DETALLE COMPLETO DE USUARIO -->
     <div id="modalDetalleUsuario" class="modal modal-admin-sigi" style="display: none;">
         <div class="modal-contenido modal-scroll modal-detalle-card" style="max-width: 580px;">
-            <button type="button" class="btn-cerrar-modal" onclick="cerrarModalDetalleUsuario()">&times;</button>
+            <button type="button" class="btn-cerrar-modal" onclick="cerrarModalDetalleUsuario()" aria-label="Cerrar detalle de usuario">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
 
             <!-- Header Modal con Avatar de Inicial -->
             <div class="modal-user-header">
@@ -876,7 +1281,6 @@
                         <span id="detUserRolBadge"></span>
                         <span id="detUserEstadoBadge"></span>
                     </div>
-                    <span id="detUserId" class="modal-user-id">ID Usuario: #--</span>
                 </div>
             </div>
 
@@ -915,7 +1319,144 @@
 
             <!-- Footer con Botón Cerrar -->
             <div class="modal-detalle-footer">
-                <button type="button" class="btn-cerrar-modal-footer" onclick="cerrarModalDetalleUsuario()">Cerrar</button>
+                <button type="button" class="btn-cerrar-modal-footer" onclick="cerrarModalDetalleUsuario()" aria-label="Cerrar detalle de usuario">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CREAR / EDITAR TIPO DE INCIDENTE (Estructurado, Sin Iconos) -->
+    <div id="modalTipoIncidente" class="modal" style="display: none;">
+        <div class="modal-contenido modal-scroll" style="max-width: 530px; background: var(--bg-card); border: 1px solid var(--borde-acento); border-radius: 12px; padding: 24px; position: relative; box-shadow: 0 16px 40px rgba(0,0,0,0.45);">
+            <button type="button" class="btn-cerrar-modal" id="cerrarModalTipo" onclick="cerrarModalTipo()" aria-label="Cerrar ventana">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+
+            <!-- Encabezado Estructural Limpio -->
+            <div style="margin-bottom: 18px; border-bottom: 1px solid var(--borde); padding-bottom: 12px;">
+                <span style="display: inline-block; font-size: 0.68rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;">
+                    Catálogo Oficial SIGI
+                </span>
+                <h3 id="tituloModalTipo" style="color: var(--texto); font-size: 1.15rem; font-weight: 700; margin: 0 0 4px 0; line-height: 1.2;">
+                    Nuevo tipo de incidente
+                </h3>
+                <p style="font-size: 0.78rem; color: var(--texto-suave); margin: 0; line-height: 1.35;">
+                    Estructura la clasificación, categoría macro y codificación cromática oficial para reportes y visualización.
+                </p>
+            </div>
+
+            <form id="formTipoIncidente" onsubmit="guardarTipoIncidente(event)">
+                <input type="hidden" id="tipoEditId">
+
+                <!-- Bloque 1: Clasificación y Alcance -->
+                <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--borde); border-radius: 8px; padding: 14px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px;">
+                    <div style="font-size: 0.72rem; font-weight: 700; color: var(--texto-suave); text-transform: uppercase; letter-spacing: 0.05em;">
+                        Información y Clasificación
+                    </div>
+
+                    <!-- Nombre del Tipo -->
+                    <div class="form-grupo-modal">
+                        <label for="tipoNombreInput" class="form-label-modal" style="display: block; font-size: 0.76rem; font-weight: 600; color: var(--texto); margin-bottom: 5px;">
+                            Nombre del tipo de incidente <span style="color: #ef4444;">*</span>
+                        </label>
+                        <input type="text" id="tipoNombreInput" required minlength="3" maxlength="80" placeholder="Ej: Inundación o Desbordamiento" autocomplete="off" spellcheck="false" class="filtro-input-control" style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem;">
+                        <div id="feedbackNombreTipo" style="font-size: 0.72rem; margin-top: 4px; display: none;"></div>
+                    </div>
+
+                    <!-- Fila Doble: Categoría y Nivel de Riesgo -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div class="form-grupo-modal">
+                            <label for="tipoCategoriaSelect" class="form-label-modal" style="display: block; font-size: 0.76rem; font-weight: 600; color: var(--texto); margin-bottom: 5px;">
+                                Categoría Macro <span style="color: #ef4444;">*</span>
+                            </label>
+                            <select id="tipoCategoriaSelect" required class="filtro-select-control" style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; cursor: pointer;">
+                                <!-- Opciones pobladas dinámicamente -->
+                            </select>
+                        </div>
+                        <div class="form-grupo-modal">
+                            <label for="tipoRiesgoSelect" class="form-label-modal" style="display: block; font-size: 0.76rem; font-weight: 600; color: var(--texto); margin-bottom: 5px;">
+                                Nivel de Riesgo Base
+                            </label>
+                            <select id="tipoRiesgoSelect" class="filtro-select-control" style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; cursor: pointer;">
+                                <option value="baja">Baja</option>
+                                <option value="media" selected>Media</option>
+                                <option value="alta">Alta</option>
+                                <option value="critica">Crítica</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="form-grupo-modal">
+                        <label for="tipoDescripcionInput" class="form-label-modal" style="display: block; font-size: 0.76rem; font-weight: 600; color: var(--texto); margin-bottom: 5px;">
+                            Descripción / Criterio Operativo
+                        </label>
+                        <textarea id="tipoDescripcionInput" rows="2" maxlength="250" placeholder="Breve descripción del alcance operativo de este incidente..." class="filtro-input-control" style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; resize: vertical;"></textarea>
+                    </div>
+                </div>
+
+                <!-- Bloque 2: Codificación Cromática (Mapas y Reportes) -->
+                <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--borde); border-radius: 8px; padding: 14px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px;">
+                    <div style="font-size: 0.72rem; font-weight: 700; color: var(--texto-suave); text-transform: uppercase; letter-spacing: 0.05em;">
+                        Identificación Cromática (Mapas y Reportes)
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <input type="color" id="tipoColorPicker" value="#06b6d4" style="width: 44px; height: 38px; border: 1px solid var(--borde); border-radius: 6px; cursor: pointer; padding: 2px; background: transparent;">
+                        <input type="text" id="tipoColorHex" value="#06b6d4" maxlength="7" spellcheck="false" style="width: 95px; text-transform: uppercase; font-family: monospace; font-weight: 700; padding: 8px 10px; background: var(--bg-card); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; text-align: center;">
+                        
+                        <!-- Previsualizador estilo badge sin iconos -->
+                        <div id="tipoBadgePreview" style="padding: 5px 14px; border-radius: 20px; font-size: 0.76rem; font-weight: 700; background: rgba(6, 182, 212, 0.2); color: #06b6d4; border: 1px solid rgba(6, 182, 212, 0.4);">
+                            Vista previa en mapa
+                        </div>
+                    </div>
+
+                    <!-- Paleta recomendada sin iconos -->
+                    <div style="margin-top: 4px;">
+                        <span style="font-size: 0.7rem; color: var(--texto-suave); display: block; margin-bottom: 6px; font-weight: 600;">Tonos de contraste recomendados:</span>
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="paletaSugeridaTipos">
+                            <!-- Chips insertados dinámicamente -->
+                        </div>
+                    </div>
+
+                    <!-- Alerta de proximidad o similitud de color (texto limpio sin iconos) -->
+                    <div id="alertaColorTipo" style="font-size: 0.76rem; border-radius: 6px; padding: 8px 12px; display: none; line-height: 1.4;"></div>
+                </div>
+
+                <!-- Alerta general del modal -->
+                <div id="modalTipoAlert" style="display: none; padding: 8px 12px; border-radius: 6px; font-size: 0.78rem; margin-bottom: 12px;"></div>
+
+                <!-- Footer con acciones (Limpios, sin iconos) -->
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; border-top: 1px solid var(--borde); padding-top: 14px;">
+                    <button type="button" onclick="cerrarModalTipo()" class="btn-modal-cancelar" style="padding: 8px 18px; background: transparent; border: 1px solid var(--borde); color: var(--texto-suave); border-radius: 6px; font-size: 0.82rem; cursor: pointer;">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="btnGuardarTipoSubmit" class="btn-modal-guardar" style="padding: 8px 20px; background: #10b981; color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer;">
+                        Guardar tipo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRMAR ACTIVAR / INACTIVAR TIPO DE INCIDENTE (Estructurado, Sin Iconos) -->
+    <div id="modalConfirmarEstadoTipo" class="modal" style="display: none;">
+        <div class="modal-contenido" style="max-width: 440px; background: var(--bg-card); border: 1px solid var(--borde-acento); border-radius: 12px; padding: 24px; text-align: center; position: relative; box-shadow: 0 16px 40px rgba(0,0,0,0.45);">
+            <button type="button" class="btn-cerrar-modal" onclick="cerrarModalConfirmarEstadoTipo()" aria-label="Cerrar confirmación">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+            <h3 id="tituloConfirmarEstadoTipo" style="color: var(--texto); font-size: 1.15rem; font-weight: 700; margin-bottom: 8px;">
+                Inactivar tipo de incidente
+            </h3>
+            <div id="mensajeConfirmarEstadoTipo" style="font-size: 0.86rem; color: var(--texto-suave); margin-bottom: 20px; line-height: 1.45; text-align: left;">
+                <!-- Texto dinámico estructurado -->
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button type="button" id="btnConfirmarAccionEstadoTipo" style="padding: 8px 20px; border: none; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer;">
+                    Confirmar
+                </button>
+                <button type="button" onclick="cerrarModalConfirmarEstadoTipo()" class="btn-modal-cancelar" style="padding: 8px 16px; background: transparent; border: 1px solid var(--borde); color: var(--texto-suave); border-radius: 6px; font-size: 0.82rem; cursor: pointer;">
+                    Cancelar
+                </button>
             </div>
         </div>
     </div>
@@ -925,7 +1466,7 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="../js/sigi-realtime.js"></script>
     <script src="../js/sigi-ml-assistant.js"></script>
-    <script src="admin.js?v=61"></script>
+    <script src="admin.js?v=75"></script>
 </body>
 
 </html>

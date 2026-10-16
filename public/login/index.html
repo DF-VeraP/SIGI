@@ -7,9 +7,18 @@
     <title>SIGI — Acceso al Sistema</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="login.css?v=3">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="login.css?v=5">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <script>
+        (function() {
+            const tema = localStorage.getItem("tema_sigi_dashboard") || localStorage.getItem("tema_sigi_admin");
+            if (tema === "claro") {
+                document.documentElement.classList.add("tema-claro");
+                document.addEventListener("DOMContentLoaded", () => document.body.classList.add("tema-claro"));
+            }
+        })();
+    </script>
 </head>
 <body>
     <!-- Fondos ambientales dinámicos -->
@@ -22,16 +31,24 @@
 
     <div class="main-wrapper">
         
-        <!-- Barra Superior con Botón Volver Integrado (Sin colisiones) -->
+        <!-- Barra Superior con Botón Volver Integrado y Selector de Tema -->
         <header class="top-nav-bar">
             <a href="/dashboard/index.html" class="btn-back-pill" title="Volver al mapa interactivo">
                 <i class="bi bi-arrow-left" aria-hidden="true"></i>
                 <span>Volver al Mapa</span>
             </a>
 
-            <div class="live-status-badge">
-                <span class="pulse-dot"></span>
-                <span class="status-text">Red de Monitoreo Activa · Caquetá</span>
+            <div class="top-nav-actions">
+                <div class="live-status-badge">
+                    <span class="pulse-dot"></span>
+                    <span class="status-text">Red de Monitoreo Activa · Caquetá</span>
+                </div>
+
+                <button id="btnTemaLogin" class="toggle-iphone-header" title="Cambiar modo Claro / Oscuro" aria-label="Cambiar tema claro u oscuro">
+                    <span class="icono-sol"><i class="bi bi-sun-fill"></i></span>
+                    <span class="sw-slider"></span>
+                    <span class="icono-luna"><i class="bi bi-moon-fill"></i></span>
+                </button>
             </div>
         </header>
 
@@ -157,7 +174,7 @@
                         <div class="form-group">
                             <div class="label-row" style="display: flex; justify-content: space-between; align-items: center;">
                                 <label for="pssuser">Contraseña</label>
-                                <button type="button" class="link-forgot-pwd" id="btnForgotPass" style="background: none; border: none; color: var(--accent-teal); font-size: 0.76rem; cursor: pointer; text-decoration: none; padding: 0;">¿Olvidaste tu contraseña?</button>
+                                <button type="button" class="link-forgot-pwd" id="btnForgotPass">¿Olvidaste tu contraseña?</button>
                             </div>
                             <div class="input-container">
                                 <i class="bi bi-shield-lock input-icon" aria-hidden="true"></i>
@@ -210,26 +227,23 @@
         <div class="auth-modal-card">
             <button type="button" class="auth-modal-close" id="btnCloseRecuperar" aria-label="Cerrar modal">&times;</button>
             <div class="auth-modal-header">
-                <h2 id="titleRecuperar"><i class="bi bi-key-fill text-primary" style="color: #38bdf8;"></i> Recuperar Contraseña</h2>
+                <h2 id="titleRecuperar">Recuperar Contraseña</h2>
                 <p>Ingresa tu correo institucional registrado. Te enviaremos un enlace seguro para restablecer tu acceso.</p>
             </div>
             <form id="formRecuperarPass" novalidate>
                 <div class="form-group">
                     <label for="emailRecuperar">Correo Electrónico Registrado</label>
                     <div class="input-container">
-                        <i class="bi bi-envelope-fill input-icon"></i>
-                        <input type="email" id="emailRecuperar" placeholder="ej. usuario@sigi.gov.co" required>
+                        <input type="email" id="emailRecuperar" placeholder="ej. usuario@sigi.gov.co" required style="padding-left: 14px;">
                     </div>
                 </div>
                 <div id="alertRecuperar" class="alert-box" style="display: none; margin-top: 10px;">
-                    <i id="alertIconRecuperar" class="bi bi-info-circle-fill"></i>
                     <span id="respRecuperar"></span>
                 </div>
                 <div class="auth-modal-actions">
                     <button type="button" class="btn-modal-cancel" id="btnCancelRecuperar">Cancelar</button>
                     <button type="submit" class="btn-modal-primary" id="btnSubmitRecuperar">
                         <span>Enviar Enlace</span>
-                        <i class="bi bi-send-fill" style="font-size: 0.8rem;"></i>
                     </button>
                 </div>
             </form>

@@ -158,6 +158,7 @@ function cambiarVista(vistaId) {
     // Reubicación dinámica de la barra de filtros y acciones
     const actionsGroup = document.querySelector(".map-actions-group");
     const contenedorTabla = document.getElementById("contenedorAccionesTabla");
+    const contenedorMobileIncidentes = document.getElementById("contenedorAccionesIncidentesMobile");
     const contenedorAnalitica = document.getElementById("contenedorAccionesAnalitica");
     const btnExportarCsv = document.getElementById("btnExportarCsv");
     const mapEl = document.getElementById("map");
@@ -167,11 +168,15 @@ function cambiarVista(vistaId) {
     const quickDbscanDock = document.getElementById("mapDbscanQuickDock");
 
     if (actionsGroup) {
-        if (vistaId === "tabla" && contenedorTabla) {
-            if (btnExportarCsv && btnExportarCsv.parentElement === contenedorTabla) {
-                contenedorTabla.insertBefore(actionsGroup, btnExportarCsv);
-            } else {
-                contenedorTabla.appendChild(actionsGroup);
+        if (vistaId === "tabla") {
+            const esMovil = window.innerWidth <= 768;
+            const targetContainer = (esMovil && contenedorMobileIncidentes) ? contenedorMobileIncidentes : contenedorTabla;
+            if (targetContainer) {
+                if (btnExportarCsv && btnExportarCsv.parentElement === targetContainer) {
+                    targetContainer.insertBefore(actionsGroup, btnExportarCsv);
+                } else {
+                    targetContainer.appendChild(actionsGroup);
+                }
             }
             actionsGroup.classList.add("en-tabla");
             actionsGroup.classList.remove("en-analitica");
@@ -2065,29 +2070,41 @@ async function cargarYRenderizarHotspotsML(eps = 450, minPts = 3) {
             const marker = L.marker([cl.centroide.lat, cl.centroide.lng], { icon: customIcon }).addTo(dbscanLayer);
 
             const popupContent = `
-                <div style="font-family: 'Inter', sans-serif; min-width: 230px; padding: 6px;">
-                    <div style="font-weight: 800; color: ${cl.color}; margin-bottom: 6px; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-                        <span>🔥</span> ${cl.nombre}
+                <div class="dbscan-popup-card">
+                    <div class="dbscan-popup-head">
+                        <h4 class="dbscan-popup-title">${cl.nombre}</h4>
+                        <span class="dbscan-risk-pill" style="--risk-accent: ${cl.color};">${cl.nivel_riesgo}</span>
                     </div>
-                    <div style="font-size: 0.8rem; margin-bottom: 4px;">
-                        <b>Nivel de Riesgo:</b> <span style="font-weight:700; color:${cl.color}">${cl.nivel_riesgo}</span>
+                    <div class="dbscan-metrics-grid">
+                        <div class="dbscan-metric-item">
+                            <span class="dbscan-metric-label">Incidentes agrupados</span>
+                            <span class="dbscan-metric-val">${cl.cantidad_incidentes}</span>
+                        </div>
+                        <div class="dbscan-metric-item">
+                            <span class="dbscan-metric-label">Severidad promedio</span>
+                            <span class="dbscan-metric-val">${cl.gravedad_promedio} <small>/ 5.0</small></span>
+                        </div>
+                        <div class="dbscan-metric-item">
+                            <span class="dbscan-metric-label">Radio de influencia</span>
+                            <span class="dbscan-metric-val">${Number(cl.radio_metros).toLocaleString('es-CO')} m</span>
+                        </div>
                     </div>
-                    <div style="font-size: 0.8rem; margin-bottom: 4px;">
-                        <b>Incidentes agrupados:</b> <span style="font-weight:600;">${cl.cantidad_incidentes}</span>
-                    </div>
-                    <div style="font-size: 0.8rem; margin-bottom: 4px;">
-                        <b>Severidad promedio:</b> <span style="font-weight:600;">${cl.gravedad_promedio} / 5.0</span>
-                    </div>
-                    <div style="font-size: 0.8rem; margin-bottom: 4px;">
-                        <b>Radio de influencia:</b> ${cl.radio_metros} metros
-                    </div>
-                    <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 5px;">
-                        Algoritmo: DBSCAN Espacial (eps: ${eps}m, minPts: ${minPts})
+                    <div class="dbscan-popup-footer">
+                        <span>DBSCAN Espacial</span>
+                        <span class="dbscan-param-dot">&bull;</span>
+                        <span>eps: ${eps}m</span>
+                        <span class="dbscan-param-dot">&bull;</span>
+                        <span>minPts: ${minPts}</span>
                     </div>
                 </div>
             `;
-            circulo.bindPopup(popupContent);
-            marker.bindPopup(popupContent);
+            const popupOptions = {
+                className: 'custom-popup-container dbscan-popup-wrapper',
+                maxWidth: 320,
+                minWidth: 260
+            };
+            circulo.bindPopup(popupContent, popupOptions);
+            marker.bindPopup(popupContent, popupOptions);
         });
     } catch (e) {
         console.warn("Error al cargar hotspots ML:", e);
@@ -2760,6 +2777,16 @@ window.addEventListener("resize", () => {
     map.invalidateSize();
     if (vistaActual === "estadisticas") {
         cargarIncidentesBarra();
+    }
+    if (vistaActual === "tabla") {
+        const ag = document.querySelector(".map-actions-group");
+        const cTabla = document.getElementById("contenedorAccionesTabla");
+        const cMobile = document.getElementById("contenedorAccionesIncidentesMobile");
+        const esMovil = window.innerWidth <= 768;
+        const target = (esMovil && cMobile) ? cMobile : cTabla;
+        if (ag && target && ag.parentElement !== target) {
+            target.appendChild(ag);
+        }
     }
 });
 

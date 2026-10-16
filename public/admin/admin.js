@@ -52,14 +52,17 @@ function alternarTemaAdmin(e) {
     document.body.classList.toggle("tema-claro");
     document.documentElement.classList.toggle("tema-claro");
     const esClaro = document.body.classList.contains("tema-claro");
-    localStorage.setItem("tema_sigi_admin", esClaro ? "claro" : "oscuro");
+    const nuevoTema = esClaro ? "claro" : "oscuro";
+    localStorage.setItem("tema_sigi_admin", nuevoTema);
+    localStorage.setItem("tema_sigi_dashboard", nuevoTema);
     if (typeof btnVerMapa !== "undefined" && btnVerMapa && !btnVerMapa.classList.contains("activo")) {
         btnVerMapa.style.background = "";
         btnVerMapa.style.color = "";
     }
 }
 
-if (localStorage.getItem("tema_sigi_admin") === "claro") {
+const temaGuardadoAdmin = localStorage.getItem("tema_sigi_admin") || localStorage.getItem("tema_sigi_dashboard");
+if (temaGuardadoAdmin === "claro") {
     document.body.classList.add("tema-claro");
     document.documentElement.classList.add("tema-claro");
 }
@@ -108,12 +111,11 @@ const headerFiltros = document.getElementById("headerFiltrosIncidentes");
 const cuerpoFiltros = document.getElementById("cuerpoFiltrosIncidentes");
 const iconoDesplegar = document.getElementById("iconoDesplegarFiltros");
 
-if (headerFiltros && cuerpoFiltros) {
-    headerFiltros.addEventListener("click", (e) => {
-        if (e.target.closest("#btnResetFiltrosIncidentes")) return;
-        
+if (btnToggleFiltros && cuerpoFiltros) {
+    btnToggleFiltros.addEventListener("click", (e) => {
+        e.stopPropagation();
         const estaColapsado = cuerpoFiltros.classList.toggle("colapsado");
-        if (btnToggleFiltros) btnToggleFiltros.classList.toggle("rotado", !estaColapsado);
+        btnToggleFiltros.classList.toggle("rotado", !estaColapsado);
         if (iconoDesplegar) {
             iconoDesplegar.className = estaColapsado ? "bi bi-chevron-down" : "bi bi-chevron-up";
         }
@@ -125,6 +127,8 @@ function cambiarPestana(pestañaNombre) {
     const contMain = document.querySelector(".contMain");
     const secUsuarios = document.getElementById("secUsuarios");
     const secAuditoria = document.getElementById("secAuditoria");
+    const secTiposIncidentes = document.getElementById("secTiposIncidentes");
+    const secPerfil = document.getElementById("secPerfil");
 
     // Sincronizar resaltado de botones de navegación (Sidebar y Móvil)
     document.querySelectorAll(".admin-sidebar .sidebar-nav button, header nav button:not(.toggle-iphone-header)").forEach(b => {
@@ -142,18 +146,28 @@ function cambiarPestana(pestañaNombre) {
     } else if (pestañaNombre === 'auditoria') {
         document.getElementById("btnAuditoria")?.classList.add("pintarBotonNav");
         document.getElementById("btnAuditoriaMobile")?.classList.add("pintarBotonNav");
+    } else if (pestañaNombre === 'tipos') {
+        document.getElementById("btnTiposIncidentes")?.classList.add("pintarBotonNav");
+        document.getElementById("btnTiposIncidentesMobile")?.classList.add("pintarBotonNav");
+    } else if (pestañaNombre === 'perfil') {
+        document.getElementById("btnPerfil")?.classList.add("pintarBotonNav");
+        document.getElementById("btnPerfilMobile")?.classList.add("pintarBotonNav");
     }
 
     if (pestañaNombre === 'inicio' || pestañaNombre === 'verif') {
         if (secUsuarios) secUsuarios.style.display = 'none';
         if (secAuditoria) secAuditoria.style.display = 'none';
+        if (secTiposIncidentes) secTiposIncidentes.style.display = 'none';
+        if (secPerfil) secPerfil.style.display = 'none';
 
         if (contMain) {
             contMain.style.display = "flex";
             contMain.style.width = "200%";
         }
 
+        const secInicio = document.querySelector(".inicio");
         if (pestañaNombre === 'inicio') {
+            if (secInicio) secInicio.style.visibility = "visible";
             if (contMain) contMain.style.transform = "translateX(0%)";
             setTimeout(() => {
                 if (typeof map !== 'undefined') map.invalidateSize();
@@ -161,8 +175,21 @@ function cambiarPestana(pestañaNombre) {
             }, 300);
         } else if (pestañaNombre === 'verif') {
             if (contMain) contMain.style.transform = "translateX(-50%)";
+            if (secInicio) {
+                if (window.innerWidth <= 820) {
+                    secInicio.style.visibility = "hidden";
+                } else {
+                    setTimeout(() => {
+                        if (contMain && contMain.style.transform.includes("-50%")) {
+                            secInicio.style.visibility = "hidden";
+                        }
+                    }, 280);
+                }
+            }
         }
     } else {
+        const secInicio = document.querySelector(".inicio");
+        if (secInicio) secInicio.style.visibility = "hidden";
         if (contMain) contMain.style.display = "none";
 
         if (secUsuarios) {
@@ -171,10 +198,18 @@ function cambiarPestana(pestañaNombre) {
         if (secAuditoria) {
             secAuditoria.style.display = pestañaNombre === 'auditoria' ? 'block' : 'none';
         }
+        if (secTiposIncidentes) {
+            secTiposIncidentes.style.display = pestañaNombre === 'tipos' ? 'block' : 'none';
+        }
+        if (secPerfil) {
+            secPerfil.style.display = pestañaNombre === 'perfil' ? 'block' : 'none';
+        }
     }
 
     if (pestañaNombre === 'usuarios') cargarUsuarios();
     if (pestañaNombre === 'auditoria') cargarAuditoriaLogs();
+    if (pestañaNombre === 'tipos') cargarTiposIncidentes();
+    if (pestañaNombre === 'perfil') cargarDatosPerfil();
 }
 
 window.addEventListener("resize", () => {
@@ -192,13 +227,24 @@ if (btnUsuariosEl) btnUsuariosEl.addEventListener("click", () => cambiarPestana(
 const btnAuditoriaEl = document.getElementById("btnAuditoria");
 if (btnAuditoriaEl) btnAuditoriaEl.addEventListener("click", () => cambiarPestana('auditoria'));
 
+const btnTiposIncidentesEl = document.getElementById("btnTiposIncidentes");
+if (btnTiposIncidentesEl) btnTiposIncidentesEl.addEventListener("click", () => cambiarPestana('tipos'));
+
+const btnPerfilEl = document.getElementById("btnPerfil");
+if (btnPerfilEl) btnPerfilEl.addEventListener("click", () => cambiarPestana('perfil'));
+
+document.getElementById("contenedorUsuarioHeader")?.addEventListener("click", () => cambiarPestana('perfil'));
+
 // Event listeners de navegación (Móvil)
 document.getElementById("btnInicioMobile")?.addEventListener("click", () => cambiarPestana('inicio'));
 document.getElementById("btnVerifMobile")?.addEventListener("click", () => cambiarPestana('verif'));
 document.getElementById("btnUsuariosMobile")?.addEventListener("click", () => cambiarPestana('usuarios'));
 document.getElementById("btnAuditoriaMobile")?.addEventListener("click", () => cambiarPestana('auditoria'));
-document.getElementById("btnReportePDFMobile")?.addEventListener("click", () => {
-    document.getElementById("btnReportePDF")?.click();
+document.getElementById("btnTiposIncidentesMobile")?.addEventListener("click", () => cambiarPestana('tipos'));
+document.getElementById("btnPerfilMobile")?.addEventListener("click", () => cambiarPestana('perfil'));
+document.getElementById("btnReportePDFMobile")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    abrirVisorPDF();
 });
 document.getElementById("cerrarSesionMobile")?.addEventListener("click", () => {
     window.location.href = "/logout";
@@ -353,11 +399,18 @@ function cargarVeredas() {
 
 cargarVeredas();
 
+let catalogoTiposMap = {};
+
 function obtenerColor(tipo) {
-    if (tipo === 1) return "red";
-    if (tipo === 2) return "yellow";
-    if (tipo === 3) return "magenta";
-    if (tipo === 4) return "limegreen";
+    const tipoId = parseInt(tipo);
+    if (catalogoTiposMap && catalogoTiposMap[tipoId] && catalogoTiposMap[tipoId].color) {
+        return catalogoTiposMap[tipoId].color;
+    }
+    if (tipoId === 1) return "#ef4444";
+    if (tipoId === 2) return "#f59e0b";
+    if (tipoId === 3) return "#8b5cf6";
+    if (tipoId === 4) return "#10b981";
+    return "#3b82f6";
 }
 // Renderiza marcadores en el mapa de verificación con los datos recibidos
 function renderMapa(data) {
@@ -567,22 +620,35 @@ async function cargarUsuario() {
             const textoBienvenidaMobileEl = document.getElementById("textoBienvenidaMobile");
             if (textoBienvenidaMobileEl) textoBienvenidaMobileEl.innerText = `Bienvenido ${data.usuario} (${rolLabel})`;
 
+            // Actualizar etiqueta del logo acorde al rol
+            const rolTagLabel = data.rol === 'superadmin' ? 'Superadmin' : (data.rol === 'admin' ? 'Administrador' : 'Gestión');
+            const sidebarLogoTag = document.getElementById("sidebarLogoTag");
+            if (sidebarLogoTag) sidebarLogoTag.innerText = rolTagLabel;
+            const headerBrandTag = document.getElementById("headerBrandTag");
+            if (headerBrandTag) headerBrandTag.innerText = rolTagLabel;
+
             // Mostrar u ocultar pestañas según el rol (Escritorio y Móvil)
             const btnUsuarios = document.getElementById("btnUsuarios");
             const btnAuditoria = document.getElementById("btnAuditoria");
+            const btnTiposIncidentes = document.getElementById("btnTiposIncidentes");
             const btnUsuariosMobile = document.getElementById("btnUsuariosMobile");
             const btnAuditoriaMobile = document.getElementById("btnAuditoriaMobile");
+            const btnTiposIncidentesMobile = document.getElementById("btnTiposIncidentesMobile");
 
             if (data.rol === 'superadmin') {
                 if (btnUsuarios) btnUsuarios.style.display = "flex";
                 if (btnAuditoria) btnAuditoria.style.display = "flex";
+                if (btnTiposIncidentes) btnTiposIncidentes.style.display = "flex";
                 if (btnUsuariosMobile) btnUsuariosMobile.style.display = "flex";
                 if (btnAuditoriaMobile) btnAuditoriaMobile.style.display = "flex";
+                if (btnTiposIncidentesMobile) btnTiposIncidentesMobile.style.display = "flex";
             } else if (data.rol === 'admin') {
                 if (btnUsuarios) btnUsuarios.style.display = "none";
                 if (btnAuditoria) btnAuditoria.style.display = "none";
+                if (btnTiposIncidentes) btnTiposIncidentes.style.display = "none";
                 if (btnUsuariosMobile) btnUsuariosMobile.style.display = "none";
                 if (btnAuditoriaMobile) btnAuditoriaMobile.style.display = "none";
+                if (btnTiposIncidentesMobile) btnTiposIncidentesMobile.style.display = "none";
             } else {
                 window.location.href = "/reportero/index.html";
             }
@@ -901,17 +967,29 @@ async function cargarTipos() {
     const select = document.getElementById("tipoIncidente");
     const select2 = document.getElementById("tipoIncidenteFiltro");
 
+    if (select) {
+        select.innerHTML = '<option value="" disabled selected>Seleccione el tipo de incidente</option>';
+    }
+    if (select2) {
+        select2.innerHTML = '<option value="">Todos los tipos</option>';
+    }
+
     data.forEach(tipo => {
-        const option1 = document.createElement("option");
-        option1.value = tipo.idtipoincidente;
-        option1.textContent = tipo.nametipoincidente;
+        catalogoTiposMap[tipo.idtipoincidente] = tipo;
 
-        const option2 = document.createElement("option");
-        option2.value = tipo.idtipoincidente;
-        option2.textContent = tipo.nametipoincidente;
+        if (select) {
+            const option1 = document.createElement("option");
+            option1.value = tipo.idtipoincidente;
+            option1.textContent = tipo.nametipoincidente;
+            select.appendChild(option1);
+        }
 
-        select.appendChild(option1);
-        select2.appendChild(option2);
+        if (select2) {
+            const option2 = document.createElement("option");
+            option2.value = tipo.idtipoincidente;
+            option2.textContent = tipo.nametipoincidente;
+            select2.appendChild(option2);
+        }
     });
 
     // Inicializar Asistente Predictivo de Inteligencia Artificial (SIGI ML)
@@ -1094,23 +1172,11 @@ async function contar() {
 contar();
 
 function actualizarBadgePendientes(incidentes) {
+    // Se elimina el conteo de incidentes en el sidebar a petición del usuario
     const badge = document.getElementById("badgePendientes");
     const badgeMobile = document.getElementById("badgePendientesMobile");
-    if (!Array.isArray(incidentes)) return;
-    const pendientes = incidentes.filter(inc => parseInt(inc.id_estado || 1) === 1).length;
-    if (pendientes > 0) {
-        if (badge) {
-            badge.innerText = pendientes;
-            badge.style.display = "inline-block";
-        }
-        if (badgeMobile) {
-            badgeMobile.innerText = pendientes;
-            badgeMobile.style.display = "inline-block";
-        }
-    } else {
-        if (badge) badge.style.display = "none";
-        if (badgeMobile) badgeMobile.style.display = "none";
-    }
+    if (badge) badge.style.display = "none";
+    if (badgeMobile) badgeMobile.style.display = "none";
 }
 
 let ultimosIdsConocidos = new Set();
@@ -1299,7 +1365,7 @@ function renderTabla(data) {
     if (!tbody) return;
 
     if (incidentesFiltrados.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px; color: var(--texto-suave);">No se encontraron incidentes coincidentes.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--texto-suave);">No se encontraron incidentes coincidentes.</td></tr>';
         if (infoPag) infoPag.innerText = "Mostrando 0 de 0 incidentes";
         if (labelPag) labelPag.innerText = "Página 1 de 1";
         if (btnAnt) btnAnt.disabled = true;
@@ -1340,85 +1406,60 @@ function renderTabla(data) {
             tipoBadge = `<span class="badge-tipo badge-tipo-otro" title="${nombreTipo}">${nombreTipo}</span>`;
         }
 
-        // Estado y Revisor Badge
+        // Estado Badge
         const estadoId = parseInt(incidente.id_estado) || 1;
         let estadoBadge = '';
-        let opcionesHtml = '';
+        let botonAccionRapida = '';
 
-        const esMio = (idAdminLogueado && parseInt(incidente.id_admin_revisor) === parseInt(idAdminLogueado)) || 
-                       (adminLogueado && incidente.admin_revisor_nombre === adminLogueado);
-
-        if (estadoId === 1) { // 1 = Reportado (Pendiente en Cola Pública)
-            estadoBadge = `<span class="badge-estado badge-estado-cola" title="Disponible en la cola pública">En Cola</span>`;
-            opcionesHtml = `<button class="btnTomarIncidente btn-secundario-accion" data-id="${incidente.idincidente}">Tomar Revisión</button>`;
+        if (estadoId === 1) { // 1 = En cola
+            estadoBadge = `<span class="badge-estado badge-estado-cola" title="Pendiente en cola de revisión">En Cola</span>`;
+            botonAccionRapida = `<button type="button" class="btnTomarIncidente btn-secundario-accion" data-id="${incidente.idincidente}" title="Tomar reporte para revisión">Tomar</button>`;
         } else if (estadoId === 2) { // 2 = En evaluación
-            const revisorNombre = incidente.admin_revisor_nombre || 'un Admin';
-            if (esMio || isSuperadmin) {
-                estadoBadge = `<span class="badge-estado badge-estado-proceso" title="Revisando por ti">Revisando: ${revisorNombre}</span>`;
-                opcionesHtml = `
-                    <button class="btnResolverIncidente btn-accion-aprobar" data-id="${incidente.idincidente}">Aprobar</button>
-                    <button class="btnCerrarIncidente btn-accion-desestimar" data-id="${incidente.idincidente}">Desestimar</button>
-                    <button class="btnLiberarIncidente btn-accion-liberar" data-id="${incidente.idincidente}" title="Devolver a la cola pública">Liberar</button>
-                `;
-            } else {
-                estadoBadge = `<span class="badge-estado badge-estado-otro-revisor">Revisando por ${revisorNombre}</span>`;
-                opcionesHtml = `<span style="font-size: 0.75rem; color: var(--texto-suave); font-style: italic;">En revisión</span>`;
-            }
-        } else if (estadoId === 5) { // 5 = Resuelto / Aprobado
-            estadoBadge = `<span class="badge-estado badge-estado-aprobado">Aprobado</span>`;
-            opcionesHtml = `
-                <button class="btnEditar btn-accion-editar" data-id="${incidente.idincidente}">Editar</button>
-                <button class="btnEliminar btn-accion-eliminar" data-id="${incidente.idincidente}">Eliminar</button>
-            `;
-        } else { // 6 = Cerrado / Desestimado
-            estadoBadge = `<span class="badge-estado badge-estado-rechazado">Desestimado</span>`;
-            opcionesHtml = `
-                <button class="btnEditar btn-accion-editar" data-id="${incidente.idincidente}">Editar</button>
-                <button class="btnEliminar btn-accion-eliminar" data-id="${incidente.idincidente}">Eliminar</button>
-            `;
+            estadoBadge = `<span class="badge-estado badge-estado-proceso" title="Tomado para revisión">En Evaluación</span>`;
+        } else if (estadoId === 5) { // 5 = Aprobado
+            estadoBadge = `<span class="badge-estado badge-estado-aprobado" title="Incidente verificado y aprobado">Aprobado</span>`;
+        } else { // 6 = Desestimado
+            estadoBadge = `<span class="badge-estado badge-estado-rechazado" title="Incidente desestimado">Desestimado</span>`;
         }
 
         const consecutivo = inicio + index + 1;
-        const revisorNombre = incidente.admin_revisor_nombre || 'Sin asignar';
-        const creadorNombre = incidente.nombreusuario || 'Sistema';
+        const codigoLimpio = incidente.codigoincidente || `INC-${incidente.idincidente}`;
+        const barrioNombre = incidente.namebarrio || (incidente.nombre ? incidente.nombre : 'Sin zona');
 
-        const codigoTexto = incidente.codigoincidente ? `<div style="font-size: 0.72rem; color: var(--texto-suave); font-family: monospace; margin-top: 2px;">${incidente.codigoincidente}</div>` : '';
+        let fechaTexto = '--';
+        if (incidente.fechaincidente) {
+            try {
+                const d = new Date(incidente.fechaincidente);
+                const dia = d.getDate();
+                const mes = d.getMonth() + 1;
+                const anio = d.getFullYear();
+                const hora = incidente.horaincidente ? incidente.horaincidente.slice(0, 5) : '';
+                fechaTexto = `${dia}/${mes}/${anio}${hora ? ' ' + hora : ''}`;
+            } catch(e) {
+                fechaTexto = incidente.fechaincidente.slice(0, 10);
+            }
+        }
 
+        fila.className = "fila-incidente-hover";
         fila.innerHTML = `
-            <td style="padding: 10px 12px; text-align: center; vertical-align: middle;" class="celda-consecutivo">
-                #${consecutivo}
+            <td class="celda-consecutivo">${consecutivo}</td>
+            <td class="celda-codigo">
+                <span class="codigo-incidente-texto" title="Código: ${codigoLimpio}">${codigoLimpio}</span>
             </td>
-            <td style="padding: 10px 12px; text-align: center; vertical-align: middle;">
-                <span class="badge-incidente-id" title="${incidente.codigoincidente ? 'Código: ' + incidente.codigoincidente : ''}">#INC-${incidente.idincidente}</span>
-                ${codigoTexto}
-            </td>
-            <td style="padding: 10px 12px; text-align: center; vertical-align: middle;">
-                <div style="display: flex; justify-content: center; align-items: center;">
-                    ${tipoBadge}
-                </div>
-            </td>
-            <td style="padding: 10px 12px; text-align: center; vertical-align: middle;">
-                <div style="display: flex; justify-content: center; align-items: center;">
-                    ${estadoBadge}
-                </div>
-            </td>
-            <td style="padding: 10px 12px; text-align: center; vertical-align: middle;" class="celda-texto-principal">
-                ${revisorNombre}
-            </td>
-            <td style="padding: 10px 12px; text-align: center; vertical-align: middle;" class="celda-texto-principal">
-                ${creadorNombre}
-            </td>
-            <td style="padding: 10px 12px; text-align: center; vertical-align: middle;">
-                <div style="display: flex; gap: 6px; justify-content: center; align-items: center; align-content: center; flex-wrap: wrap; width: 100%; text-align: center;">
-                    <button onclick="verDetalleIncidente(${incidente.idincidente})" class="btn-primario-detalle">Detalle</button>
-                    ${opcionesHtml}
+            <td class="celda-centrada">${tipoBadge}</td>
+            <td class="celda-centrada">${estadoBadge}</td>
+            <td class="celda-barrio" title="${barrioNombre}">${barrioNombre}</td>
+            <td class="celda-acciones">
+                <div class="acciones-celda-wrap">
+                    <button type="button" onclick="verDetalleIncidente(${incidente.idincidente})" class="btn-primario-detalle" title="Ver detalle completo y opciones">Detalle</button>
+                    ${botonAccionRapida}
                 </div>
             </td>
         `;
         tbody.appendChild(fila);
     });
 
-    if (infoPag) infoPag.innerText = `Mostrando ${inicio + 1} - ${fin} de ${totalRegs} incidentes`;
+    if (infoPag) infoPag.innerText = `Mostrando ${inicio + 1} a ${fin} de ${totalRegs} incidentes`;
     if (labelPag) labelPag.innerText = `Página ${paginaActualIncidentes} de ${totalPaginas}`;
     if (btnAnt) btnAnt.disabled = paginaActualIncidentes === 1;
     if (btnSig) btnSig.disabled = paginaActualIncidentes === totalPaginas;
@@ -1437,7 +1478,7 @@ function togglePanelFiltros() {
             }
         }, 300);
         if (btn) {
-            btn.style.background = "rgba(59, 130, 246, 0.12)";
+            btn.style.background = "var(--bg-input)";
             btn.innerHTML = `<span>Filtros</span>`;
         }
     } else {
@@ -1445,7 +1486,7 @@ function togglePanelFiltros() {
         void cont.offsetWidth; // Trigger layout reflow for CSS transition start
         cont.classList.add("activo");
         if (btn) {
-            btn.style.background = "rgba(59, 130, 246, 0.25)";
+            btn.style.background = "rgba(255, 255, 255, 0.08)";
             btn.innerHTML = `<span>Ocultar Filtros</span>`;
         }
     }
@@ -1462,11 +1503,11 @@ function verDetalleIncidente(id) {
     const modal = document.getElementById("modalDetalleIncidente");
     if (!modal) return;
 
-    // Llenar metadatos del modal (Sin redundancia con la tabla)
+    // Código sin "#"
     const idEl = document.getElementById("detModalId");
+    const codigoLimpio = incidente.codigoincidente || `INC-${incidente.idincidente}`;
     if (idEl) {
-        idEl.className = "badge-incidente-id";
-        idEl.innerText = `#INC-${incidente.idincidente}`;
+        idEl.innerText = codigoLimpio;
     }
     
     // Categoría / Tipo Badge
@@ -1483,33 +1524,125 @@ function verDetalleIncidente(id) {
         detTipoBadge.innerHTML = `<span class="badge-tipo ${tipoClase}">${nombreTipo}</span>`;
     }
 
-    const fechaFmt = new Date(incidente.fechaincidente).toLocaleDateString("es-CO");
-    const horaFmt = incidente.horaincidente || '--';
+    // Estado Badge
+    const estadoId = parseInt(incidente.id_estado) || 1;
+    const detEstadoBadge = document.getElementById("detModalEstadoBadge");
+    if (detEstadoBadge) {
+        let estadoBadgeHtml = '';
+        if (estadoId === 1) estadoBadgeHtml = '<span class="badge-estado badge-estado-cola">En Cola</span>';
+        else if (estadoId === 2) estadoBadgeHtml = '<span class="badge-estado badge-estado-proceso">En Evaluación</span>';
+        else if (estadoId === 5) estadoBadgeHtml = '<span class="badge-estado badge-estado-aprobado">Aprobado</span>';
+        else estadoBadgeHtml = '<span class="badge-estado badge-estado-rechazado">Desestimado</span>';
+        detEstadoBadge.innerHTML = estadoBadgeHtml;
+    }
+
+    let fechaFmt = '--';
+    if (incidente.fechaincidente) {
+        try {
+            const d = new Date(incidente.fechaincidente);
+            const dia = d.getDate();
+            const mes = d.getMonth() + 1;
+            const anio = d.getFullYear();
+            fechaFmt = `${dia}/${mes}/${anio}`;
+        } catch(e) {
+            fechaFmt = incidente.fechaincidente.slice(0, 10);
+        }
+    }
+    const horaFmt = incidente.horaincidente ? incidente.horaincidente.slice(0, 5) : '--';
     
     const fhEl = document.getElementById("detModalFechaHora");
     const ubEl = document.getElementById("detModalUbicacion");
+    const repEl = document.getElementById("detModalReportadoPor");
+    const revEl = document.getElementById("detModalRevisor");
     const dsEl = document.getElementById("detModalDescripcion");
 
-    if (fhEl) fhEl.innerText = `${fechaFmt} — ${horaFmt}`;
+    if (fhEl) fhEl.innerText = `${fechaFmt} · ${horaFmt}`;
 
     const barrioTxt = incidente.namebarrio || "Sin barrio";
-    const veredaTxt = incidente.nombre ? ` / Vereda: ${incidente.nombre}` : '';
+    const veredaTxt = incidente.nombre ? ` / ${incidente.nombre}` : '';
     if (ubEl) ubEl.innerText = `${barrioTxt}${veredaTxt}`;
+    if (repEl) repEl.innerText = incidente.nombreusuario || "Ciudadano / Sistema";
+    if (revEl) revEl.innerText = incidente.admin_revisor_nombre || "Sin asignar";
     if (dsEl) dsEl.innerText = incidente.descripcionincidente || "Sin descripción proporcionada.";
+
+    // Coordenadas
+    const coordsCont = document.getElementById("detModalCoordsCont");
+    const coordsEl = document.getElementById("detModalCoords");
+    if (incidente.latitud && incidente.longitud && coordsCont && coordsEl) {
+        coordsEl.innerText = `Lat: ${parseFloat(incidente.latitud).toFixed(5)}, Lng: ${parseFloat(incidente.longitud).toFixed(5)}`;
+        coordsCont.style.display = "flex";
+    } else if (coordsCont) {
+        coordsCont.style.display = "none";
+    }
 
     // Evidencia Fotográfica
     const contFoto = document.getElementById("detModalFotoCont");
     const imgFoto = document.getElementById("detModalFotoImg");
     if (incidente.imagen_url && contFoto && imgFoto) {
         imgFoto.src = incidente.imagen_url;
-        imgFoto.onclick = () => abrirVisorFoto(incidente.imagen_url, `INC-${incidente.idincidente}`, incidente.descripcionincidente);
+        imgFoto.onclick = () => abrirVisorFoto(incidente.imagen_url, codigoLimpio, incidente.descripcionincidente);
         contFoto.style.display = "block";
     } else if (contFoto) {
         contFoto.style.display = "none";
     }
 
+    // Acciones operativas dinámicas en el Modal
+    const accionesBar = document.getElementById("detModalAcciones");
+    if (accionesBar) {
+        const adminLogueado = usuarioActual ? (usuarioActual.usuario || usuarioActual.nombreusuario) : '';
+        const idAdminLogueado = usuarioActual ? (usuarioActual.idusuario || usuarioActual.id) : null;
+        const isSuperadmin = usuarioActual && usuarioActual.rol === 'superadmin';
+        const esMio = (idAdminLogueado && parseInt(incidente.id_admin_revisor) === parseInt(idAdminLogueado)) || 
+                       (adminLogueado && incidente.admin_revisor_nombre === adminLogueado);
+
+        let btnsHtml = '';
+        if (estadoId === 1) {
+            btnsHtml += `<button type="button" class="btn-modal-op btn-modal-tomar" onclick="accionModal('tomar', ${incidente.idincidente}, this)">Tomar Reporte</button>`;
+        } else if (estadoId === 2) {
+            if (esMio || isSuperadmin) {
+                btnsHtml += `
+                    <button type="button" class="btn-modal-op btn-modal-aprobar" onclick="accionModal('resolver', ${incidente.idincidente}, this)">Aprobar</button>
+                    <button type="button" class="btn-modal-op btn-modal-desestimar" onclick="accionModal('cerrar', ${incidente.idincidente}, this)">Desestimar</button>
+                    <button type="button" class="btn-modal-op btn-modal-liberar" onclick="accionModal('liberar', ${incidente.idincidente}, this)">Liberar</button>
+                `;
+            } else {
+                btnsHtml += `<span class="badge-modal-en-revision">En revisión por ${incidente.admin_revisor_nombre || 'otro admin'}</span>`;
+            }
+        } else {
+            btnsHtml += `
+                <button type="button" class="btn-modal-op btn-modal-editar" onclick="accionModal('editar', ${incidente.idincidente}, this)">Editar</button>
+                <button type="button" class="btn-modal-op btn-modal-eliminar" onclick="accionModal('eliminar', ${incidente.idincidente}, this)">Eliminar</button>
+            `;
+        }
+        btnsHtml += `<button type="button" class="btn-modal-op btn-modal-cerrar" onclick="cerrarModalDetalle()">Cerrar</button>`;
+        accionesBar.innerHTML = btnsHtml;
+    }
+
     modal.style.display = "flex";
 }
+
+async function accionModal(tipo, id, btn) {
+    if (tipo === 'tomar') {
+        await tomarIncidente(id, btn);
+        cerrarModalDetalle();
+    } else if (tipo === 'resolver') {
+        await resolverIncidente(id, btn);
+        cerrarModalDetalle();
+    } else if (tipo === 'cerrar') {
+        cerrarModalDetalle();
+        await cerrarIncidente(id, null);
+    } else if (tipo === 'liberar') {
+        await liberarIncidente(id, btn);
+        cerrarModalDetalle();
+    } else if (tipo === 'editar') {
+        cerrarModalDetalle();
+        editarIncidente(id);
+    } else if (tipo === 'eliminar') {
+        cerrarModalDetalle();
+        eliminarIncidente(id);
+    }
+}
+window.accionModal = accionModal;
 
 function cerrarModalDetalle() {
     const modal = document.getElementById("modalDetalleIncidente");
@@ -2096,7 +2229,7 @@ if (btnImportarDatos) {
         const formData = new FormData();
         formData.append("archivo", file);
 
-        btnImportarDatos.textContent = "Cargando...";
+        btnImportarDatos.textContent = "Cargando…";
         btnImportarDatos.disabled = true;
 
         try {
@@ -2168,7 +2301,7 @@ if (btnConfirmarDeshacer) {
             console.error(error);
             mostrarToast("Error de conexión", "error");
         } finally {
-            btnDeshacerImportacion.innerHTML = '<i class="bi bi-arrow-counterclockwise"></i> Deshacer última importación masiva';
+            btnDeshacerImportacion.innerHTML = 'Deshacer última importación masiva';
             btnDeshacerImportacion.disabled = false;
         }
     });
@@ -2188,17 +2321,17 @@ let usuarioAEliminarId = null;
 async function cargarUsuarios() {
     const tbody = document.getElementById("tablaUsuarios");
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 20px; color: var(--texto-suave);">Cargando usuarios...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--texto-suave);">Cargando usuarios…</td></tr>';
 
     try {
         const res = await fetch("/api/usuarios");
         if (res.status === 401) {
-            tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #f87171; padding: 20px;">🔒 Sesión no válida o expirada. Redirigiendo a inicio de sesión...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #f87171; padding: 20px;">🔒 Sesión no válida o expirada. Redirigiendo a inicio de sesión…</td></tr>';
             setTimeout(() => { window.location.href = "/login/index.html"; }, 1200);
             return;
         }
         if (res.status === 403) {
-            tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #f87171; padding: 20px;">⛔ Acceso denegado: Permisos insuficientes para administrar usuarios.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #f87171; padding: 20px;">⛔ Acceso denegado: Permisos insuficientes para administrar usuarios.</td></tr>';
             return;
         }
         if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
@@ -2214,7 +2347,7 @@ async function cargarUsuarios() {
 
     } catch (err) {
         console.error("Error en cargarUsuarios:", err);
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #f87171; padding: 20px;">Error al consultar usuarios del sistema.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #f87171; padding: 20px;">Error al consultar usuarios del sistema.</td></tr>';
     }
 }
 
@@ -2286,7 +2419,7 @@ function renderizarTablaUsuarios() {
     const totalRegs = usuariosFiltrados.length;
 
     if (totalRegs === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 25px; color: var(--texto-suave);">No se encontraron usuarios coincidentes.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 25px; color: var(--texto-suave);">No se encontraron usuarios coincidentes.</td></tr>';
         if (infoPag) infoPag.innerText = "Mostrando 0 de 0 usuarios";
         if (labelPag) labelPag.innerText = "Página 0 de 0";
         if (btnAnt) btnAnt.disabled = true;
@@ -2302,50 +2435,48 @@ function renderizarTablaUsuarios() {
     const paginados = usuariosFiltrados.slice(inicio, fin);
 
     tbody.innerHTML = "";
-    paginados.forEach(u => {
+    paginados.forEach((u, idx) => {
         let rolBadge = '';
         if (u.rol === 'superadmin') {
-            rolBadge = `<span style="background: rgba(124, 58, 237, 0.12); color: #a78bfa; border: 1px solid rgba(124, 58, 237, 0.25); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600;">Superadmin</span>`;
+            rolBadge = `<span class="badge-rol badge-rol-superadmin">Superadmin</span>`;
         } else if (u.rol === 'admin') {
-            rolBadge = `<span style="background: rgba(37, 99, 235, 0.12); color: #60a5fa; border: 1px solid rgba(37, 99, 235, 0.25); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600;">Admin</span>`;
+            rolBadge = `<span class="badge-rol badge-rol-admin">Admin</span>`;
         } else {
-            rolBadge = `<span style="background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600;">Reportero</span>`;
+            rolBadge = `<span class="badge-rol badge-rol-reportero">Reportero</span>`;
         }
 
         let estadoBadge = '';
         if (u.estado === 'activo') {
-            estadoBadge = `<span style="background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600;">Activo</span>`;
+            estadoBadge = `<span class="badge-estado-usr badge-usr-activo">Activo</span>`;
         } else if (u.estado === 'bloqueado') {
-            estadoBadge = `<span style="background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.25); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600;">Bloqueado</span>`;
+            estadoBadge = `<span class="badge-estado-usr badge-usr-bloqueado">Bloqueado</span>`;
         } else {
-            estadoBadge = `<span style="background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.25); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600;">Inactivo</span>`;
+            estadoBadge = `<span class="badge-estado-usr badge-usr-inactivo">Inactivo</span>`;
         }
 
         const fechaRegFmt = formatearFechaHora(u.fecha_registro);
-        const ultimoAccesoFmt = formatearFechaHora(u.ultimo_acceso);
 
         const tr = document.createElement("tr");
-        tr.style.borderBottom = "1px solid var(--borde)";
+        tr.className = "fila-incidente-hover";
         tr.innerHTML = `
-            <td style="padding: 10px 12px; color: var(--texto-suave);">#${u.idusuario}</td>
-            <td style="padding: 10px 12px; font-weight: 600; color: var(--texto);">${u.nombreusuario}</td>
-            <td style="padding: 10px 12px;">${rolBadge}</td>
-            <td style="padding: 10px 12px;">${estadoBadge}</td>
-            <td style="padding: 10px 12px; color: var(--texto-suave); font-size: 0.78rem;">${fechaRegFmt}</td>
-            <td style="padding: 10px 12px; color: var(--texto-suave); font-size: 0.78rem;">${ultimoAccesoFmt}</td>
-            <td style="padding: 10px 12px; text-align: center;">
-                <div style="display: flex; gap: 5px; justify-content: center;">
-                    <button type="button" class="btn-view-user" data-id="${u.idusuario}" title="Ver todos los detalles del usuario" style="padding: 4px 8px; background: rgba(70, 214, 247, 0.12); color: var(--acento); border: 1px solid var(--borde-acento); border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 600;">
-                        <i class="bi bi-eye"></i> Ver
+            <td class="celda-consecutivo" style="text-align: center;">${inicio + idx + 1}</td>
+            <td style="font-weight: 600; color: var(--texto);">${u.nombreusuario}</td>
+            <td>${rolBadge}</td>
+            <td>${estadoBadge}</td>
+            <td style="color: var(--texto-suave); font-size: 0.82rem;">${fechaRegFmt}</td>
+            <td class="celda-acciones celda-centrada">
+                <div class="acciones-iconos-wrap">
+                    <button type="button" class="btn-icon-usr btn-view-user" data-id="${u.idusuario}" title="Ver todos los detalles del usuario" aria-label="Ver usuario">
+                        <i class="bi bi-eye" aria-hidden="true"></i>
                     </button>
-                    <button type="button" class="btn-edit-user" data-id="${u.idusuario}" title="Editar usuario" style="padding: 4px 8px; background: transparent; color: var(--texto); border: 1px solid var(--borde); border-radius: 6px; cursor: pointer; font-size: 0.75rem;">
-                        Editar
+                    <button type="button" class="btn-icon-usr btn-edit-user" data-id="${u.idusuario}" title="Editar usuario" aria-label="Editar usuario">
+                        <i class="bi bi-pencil" aria-hidden="true"></i>
                     </button>
-                    <button type="button" class="btn-toggle-estado" data-id="${u.idusuario}" data-estado="${u.estado}" title="${u.estado === 'activo' ? 'Bloquear acceso' : 'Activar acceso'}" style="padding: 4px 8px; background: transparent; color: var(--texto-suave); border: 1px solid var(--borde); border-radius: 6px; cursor: pointer; font-size: 0.75rem;">
-                        ${u.estado === 'activo' ? 'Bloquear' : 'Activar'}
+                    <button type="button" class="btn-icon-usr btn-toggle-estado ${u.estado === 'activo' ? 'btn-usr-bloquear' : 'btn-usr-activar'}" data-id="${u.idusuario}" data-estado="${u.estado}" title="${u.estado === 'activo' ? 'Bloquear acceso' : 'Activar acceso'}" aria-label="${u.estado === 'activo' ? 'Bloquear usuario' : 'Activar usuario'}">
+                        <i class="bi ${u.estado === 'activo' ? 'bi-slash-circle' : 'bi-check-circle'}" aria-hidden="true"></i>
                     </button>
-                    <button type="button" class="btn-delete-user" data-id="${u.idusuario}" data-nombre="${u.nombreusuario}" title="Eliminar usuario" style="padding: 4px 8px; background: transparent; color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; cursor: pointer; font-size: 0.75rem;">
-                        Eliminar
+                    <button type="button" class="btn-icon-usr btn-delete-user" data-id="${u.idusuario}" data-nombre="${u.nombreusuario}" title="Eliminar usuario" aria-label="Eliminar usuario">
+                        <i class="bi bi-trash3" aria-hidden="true"></i>
                     </button>
                 </div>
             </td>
@@ -2433,7 +2564,8 @@ function abrirModalDetalleUsuario(id) {
     const modal = document.getElementById("modalDetalleUsuario");
     if (!modal) return;
 
-    document.getElementById("detUserId").innerText = `ID Usuario: #${usuario.idusuario}`;
+    const elDetUserId = document.getElementById("detUserId");
+    if (elDetUserId) elDetUserId.innerText = "";
     document.getElementById("detUserNombre").innerText = usuario.nombreusuario || "Sin nombre";
     document.getElementById("detUserEmail").innerText = usuario.email || "No registrado";
     document.getElementById("detUserDependencia").innerText = usuario.dependencia || usuario.entidadusuario || "General";
@@ -2453,7 +2585,7 @@ function abrirModalDetalleUsuario(id) {
         if (elRolBadge) elRolBadge.innerHTML = `<span style="background: rgba(124, 58, 237, 0.15); color: #a78bfa; border: 1px solid rgba(124, 58, 237, 0.3); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;">Superadmin</span>`;
         if (elPermisos) elPermisos.innerText = "Acceso Total al Sistema y Auditoría";
     } else if (usuario.rol === 'admin') {
-        if (elRolBadge) elRolBadge.innerHTML = `<span style="background: rgba(37, 99, 235, 0.15); color: #60a5fa; border: 1px solid rgba(37, 99, 235, 0.3); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;">Admin</span>`;
+        if (elRolBadge) elRolBadge.innerHTML = `<span style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;">Admin</span>`;
         if (elPermisos) elPermisos.innerText = "Gestión de Incidentes y Reportes";
     } else {
         if (elRolBadge) elRolBadge.innerHTML = `<span style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;">Reportero</span>`;
@@ -2535,7 +2667,7 @@ function abrirModalEditarUsuario(u) {
     document.getElementById("newDependencia").value = u.dependencia || u.entidadusuario || "";
     document.getElementById("newTelefono").value = u.telefono || "";
 
-    if (title) title.innerHTML = `Editar usuario #${u.idusuario}`;
+    if (title) title.innerText = `Editar usuario: ${u.nombreusuario || u.idusuario}`;
 
     modal.classList.add("active");
     modal.style.setProperty("display", "flex", "important");
@@ -2551,7 +2683,7 @@ function abrirModalEliminarUsuario(id, nombre) {
     if (!modal) return;
 
     usuarioAEliminarId = id;
-    if (labelNombre) labelNombre.innerText = nombre || `ID #${id}`;
+    if (labelNombre) labelNombre.innerText = nombre || `ID ${id}`;
     modal.style.display = "flex";
 }
 
@@ -2711,10 +2843,26 @@ window.addEventListener("click", (e) => {
 
 window.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
-        const modalUser = document.getElementById("modalNuevoUsuario");
+        if (typeof cerrarModalUsuario === "function") cerrarModalUsuario();
         const modalDel = document.getElementById("modalEliminarUsuario");
-        if (modalUser) modalUser.style.display = "none";
         if (modalDel) modalDel.style.display = "none";
+        
+        const modalEdit = document.getElementById("modalEditar");
+        if (modalEdit) modalEdit.style.display = "none";
+
+        const modalTiempo = document.getElementById("modalFiltroTiempo");
+        if (modalTiempo) modalTiempo.style.display = "none";
+
+        if (typeof cerrarModalDetalle === "function") cerrarModalDetalle();
+        if (typeof cerrarVisorFoto === "function") cerrarVisorFoto();
+        if (typeof cerrarModalDetalleUsuario === "function") cerrarModalDetalleUsuario();
+
+        const ventanaImport = document.querySelector(".ventana");
+        if (ventanaImport) ventanaImport.classList.add("esconder");
+        const modalConfirmDel = document.getElementById("modalConfirmarEliminar");
+        if (modalConfirmDel) modalConfirmDel.classList.add("esconder");
+        const modalConfirmDeshacer = document.getElementById("modalConfirmarDeshacer");
+        if (modalConfirmDeshacer) modalConfirmDeshacer.classList.add("esconder");
     }
 });
 
@@ -2730,12 +2878,12 @@ const filasPorPaginaLogs = 10;
 async function cargarAuditoriaLogs() {
     const tbody = document.getElementById("tablaAuditoria");
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--texto-suave);">Cargando logs de auditoría...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px; color: var(--texto-suave);">Cargando registros de auditoría…</td></tr>';
 
     try {
         const res = await fetch("/api/usuarios/auditoria/logs");
         if (res.status === 401) {
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #f87171; padding: 20px;">🔒 Sesión no válida o expirada. Redirigiendo a inicio de sesión...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #f87171; padding: 20px;">🔒 Sesión no válida o expirada. Redirigiendo a inicio de sesión…</td></tr>';
             setTimeout(() => { window.location.href = "/login/index.html"; }, 1200);
             return;
         }
@@ -2797,7 +2945,7 @@ function renderizarTablaAuditoria() {
     if (!tbody) return;
 
     if (logsFiltrados.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px; color: var(--texto-suave);">No se encontraron registros de auditoría.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--texto-suave);">No se encontraron registros de auditoría.</td></tr>';
         if (infoPag) infoPag.innerText = "Mostrando 0 de 0 logs";
         if (labelPag) labelPag.innerText = "Página 1 de 1";
         if (btnAnt) btnAnt.disabled = true;
@@ -2822,26 +2970,28 @@ function renderizarTablaAuditoria() {
         
         let accionBadge = '';
         if (accionStr.includes("CREAR") || accionStr.includes("INSERT") || accionStr.includes("NUEVO")) {
-            accionBadge = `<span style="background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600;">${accionStr}</span>`;
+            accionBadge = `<span class="badge-accion badge-accion-crear">${accionStr}</span>`;
         } else if (accionStr.includes("ACTUALIZAR") || accionStr.includes("EDITAR") || accionStr.includes("UPDATE")) {
-            accionBadge = `<span style="background: rgba(37, 99, 235, 0.12); color: #60a5fa; border: 1px solid rgba(37, 99, 235, 0.25); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600;">${accionStr}</span>`;
+            accionBadge = `<span class="badge-accion badge-accion-actualizar">${accionStr}</span>`;
         } else if (accionStr.includes("ELIMINAR") || accionStr.includes("DELETE") || accionStr.includes("BLOQUEAR")) {
-            accionBadge = `<span style="background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.25); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600;">${accionStr}</span>`;
+            accionBadge = `<span class="badge-accion badge-accion-eliminar">${accionStr}</span>`;
         } else {
-            accionBadge = `<span style="background: rgba(124, 58, 237, 0.12); color: #a78bfa; border: 1px solid rgba(124, 58, 237, 0.25); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600;">${accionStr}</span>`;
+            accionBadge = `<span class="badge-accion badge-accion-otro">${accionStr}</span>`;
         }
 
         const tr = document.createElement("tr");
-        tr.style.borderBottom = "1px solid var(--borde)";
+        tr.className = "fila-incidente-hover";
         tr.innerHTML = `
-            <td style="padding: 10px 12px; color: var(--texto-suave); font-weight: 500; font-size: 0.78rem; text-align: center;">${inicio + idx + 1}</td>
-            <td style="padding: 10px 12px; color: var(--texto); font-size: 0.78rem; text-align: center; white-space: nowrap;">${fechaFmt}</td>
-            <td style="padding: 10px 12px; font-weight: 600; color: var(--texto); text-align: center;">${l.nombreusuario || 'Sistema'}</td>
-            <td style="padding: 10px 12px; text-align: center;">${accionBadge}</td>
-            <td style="padding: 10px 12px; color: var(--texto); text-align: center;">${l.tabla_afectada || 'General'}</td>
-            <td style="padding: 10px 12px; color: #60a5fa; font-weight: 600; text-align: center;">${l.id_registro ? `#${l.id_registro}` : '--'}</td>
-            <td style="padding: 10px 12px; color: var(--texto-suave); text-align: center; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${l.descripcion || ''}">${l.descripcion || '--'}</td>
-            <td style="padding: 10px 12px; color: var(--texto-suave); font-size: 0.78rem; text-align: center; white-space: nowrap;">${l.ip_origen || '127.0.0.1'}</td>
+            <td style="text-align: center;" class="celda-consecutivo">${inicio + idx + 1}</td>
+            <td style="text-align: center; white-space: nowrap;">${fechaFmt}</td>
+            <td style="font-weight: 600; color: var(--texto); text-align: center;">${l.nombreusuario || 'Sistema'}</td>
+            <td style="text-align: center;">${accionBadge}</td>
+            <td style="text-align: center;">${l.tabla_afectada || 'General'}</td>
+            <td style="text-align: center;" class="celda-acciones">
+                <button type="button" class="btn-primario-detalle btn-view-log" onclick="verDetalleLog(${l.id_log})" title="Ver todos los detalles del registro de auditoría">
+                    <i class="bi bi-eye" aria-hidden="true"></i> Detalle
+                </button>
+            </td>
         `;
         tbody.appendChild(tr);
     });
@@ -2850,6 +3000,67 @@ function renderizarTablaAuditoria() {
     if (labelPag) labelPag.innerText = `Página ${paginaActualLogs} de ${totalPaginas}`;
     if (btnAnt) btnAnt.disabled = paginaActualLogs === 1;
     if (btnSig) btnSig.disabled = paginaActualLogs === totalPaginas;
+}
+
+// Ventana emergente con el detalle completo de un registro de auditoría
+function verDetalleLog(idLog) {
+    const log = todosLosLogs.find(l => l.id_log === parseInt(idLog));
+    if (!log) return;
+
+    const modal = document.getElementById("modalDetalleLog");
+    if (!modal) return;
+
+    const detTitulo = document.getElementById("detLogTitulo");
+    const detBadge = document.getElementById("detLogBadgeAccion");
+    const detFecha = document.getElementById("detLogFechaHora");
+    const detUser = document.getElementById("detLogUsuario");
+    const detEntidad = document.getElementById("detLogEntidad");
+    const detIdReg = document.getElementById("detLogIdRegistro");
+    const detIp = document.getElementById("detLogIp");
+    const detDesc = document.getElementById("detLogDescripcion");
+
+    if (detTitulo) detTitulo.innerText = `Actividad #${log.id_log}`;
+    if (detFecha) detFecha.innerText = formatearFechaHora(log.fecha_hora);
+    if (detUser) detUser.innerText = log.nombreusuario || 'Sistema';
+    if (detEntidad) detEntidad.innerText = log.tabla_afectada || 'General';
+    if (detIdReg) detIdReg.innerText = log.id_registro ? String(log.id_registro) : 'No aplica';
+    if (detIp) detIp.innerText = log.ip_origen || '127.0.0.1';
+    if (detDesc) detDesc.innerText = log.descripcion || 'Sin descripción adicional registrada.';
+
+    if (detBadge) {
+        const accionStr = (log.accion || "ACCION").toUpperCase();
+        detBadge.innerText = accionStr;
+        detBadge.className = "badge-accion";
+        if (accionStr.includes("CREAR") || accionStr.includes("INSERT") || accionStr.includes("NUEVO")) {
+            detBadge.classList.add("badge-accion-crear");
+        } else if (accionStr.includes("ACTUALIZAR") || accionStr.includes("EDITAR") || accionStr.includes("UPDATE")) {
+            detBadge.classList.add("badge-accion-actualizar");
+        } else if (accionStr.includes("ELIMINAR") || accionStr.includes("DELETE") || accionStr.includes("BLOQUEAR")) {
+            detBadge.classList.add("badge-accion-eliminar");
+        } else {
+            detBadge.classList.add("badge-accion-otro");
+        }
+    }
+
+    modal.style.display = "flex";
+}
+
+function cerrarModalDetalleLog() {
+    const modal = document.getElementById("modalDetalleLog");
+    if (modal) modal.style.display = "none";
+}
+
+window.verDetalleLog = verDetalleLog;
+window.cerrarModalDetalleLog = cerrarModalDetalleLog;
+
+// Cerrar modal al hacer clic en el backdrop
+const modalDetalleLogEl = document.getElementById("modalDetalleLog");
+if (modalDetalleLogEl) {
+    modalDetalleLogEl.addEventListener("click", (e) => {
+        if (e.target === modalDetalleLogEl) {
+            cerrarModalDetalleLog();
+        }
+    });
 }
 
 // Inicialización de Event Listeners de Auditoría Logs
@@ -2878,12 +3089,284 @@ document.getElementById("btnPagSigLog")?.addEventListener("click", () => {
     }
 });
 
-// Botón Exportar Informe Ejecutivo Mensual en PDF
-document.getElementById("btnReportePDF")?.addEventListener("click", () => {
-    mostrarToast("📄 Descargando informe ejecutivo en PDF...", "info");
+let blobUrlActualPDF = null;
+
+async function abrirVisorPDF() {
+    const modal = document.getElementById("modalVisorPDF");
+    const iframe = document.getElementById("iframeVisorPDF");
+    const loader = document.getElementById("cargandoVisorPDF");
+    const btnDescargar = document.getElementById("btnDescargarPDFModal");
+    const btnAbrir = document.getElementById("btnAbrirNuevaPestanaPDF");
+    const titulo = document.getElementById("tituloVisorPDF");
+
+    if (!modal) return;
+
+    modal.style.display = "flex";
+
     const ahora = new Date();
-    const url = `/api/reportes/pdf?mes=${ahora.getMonth() + 1}&anio=${ahora.getFullYear()}`;
-    window.open(url, '_blank');
+    const mes = ahora.getMonth() + 1;
+    const anio = ahora.getFullYear();
+
+    const nombreMeses = [
+        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    const nombreMes = nombreMeses[mes - 1] || 'Mes actual';
+
+    if (titulo) {
+        titulo.innerText = `Informe Ejecutivo — ${nombreMes} ${anio}`;
+    }
+
+    if (loader) {
+        loader.classList.remove("oculto");
+        loader.innerText = "Generando vista previa del documento…";
+        loader.style.removeProperty("display");
+    }
+
+    try {
+        const previewUrl = `/api/reportes/pdf?mes=${mes}&anio=${anio}&t=${Date.now()}`;
+        const res = await fetch(previewUrl);
+        if (!res.ok) {
+            throw new Error(`Error en el servidor al generar el PDF (${res.status})`);
+        }
+
+        const blob = await res.blob();
+
+        // Liberar URL anterior si existiera
+        if (blobUrlActualPDF) {
+            URL.revokeObjectURL(blobUrlActualPDF);
+        }
+
+        blobUrlActualPDF = URL.createObjectURL(blob);
+
+        if (iframe) {
+            iframe.src = blobUrlActualPDF;
+        }
+
+        if (btnDescargar) {
+            btnDescargar.href = blobUrlActualPDF;
+            btnDescargar.setAttribute("download", `Informe_Ejecutivo_SIGI_${nombreMes}_${anio}.pdf`);
+        }
+
+        if (btnAbrir) {
+            btnAbrir.href = blobUrlActualPDF;
+        }
+
+        // Ocultar overlay de carga de forma inmediata y garantizada
+        if (loader) {
+            loader.classList.add("oculto");
+            loader.style.setProperty("display", "none", "important");
+        }
+    } catch (err) {
+        console.error("Error al cargar PDF:", err);
+        if (loader) {
+            loader.classList.remove("oculto");
+            loader.style.removeProperty("display");
+            loader.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <p style="color: #f87171; margin-bottom: 12px; font-weight: 600;">No se pudo previsualizar el documento automáticamente.</p>
+                    <a href="/api/reportes/pdf?download=1" class="btn-modal-op btn-modal-tomar" style="text-decoration: none;">Descargar PDF directamente</a>
+                </div>
+            `;
+        }
+    }
+}
+
+function cerrarVisorPDF() {
+    const modal = document.getElementById("modalVisorPDF");
+    const iframe = document.getElementById("iframeVisorPDF");
+    const loader = document.getElementById("cargandoVisorPDF");
+    if (modal) modal.style.display = "none";
+    if (iframe) iframe.src = "";
+    if (loader) {
+        loader.classList.remove("oculto");
+        loader.style.removeProperty("display");
+    }
+    if (blobUrlActualPDF) {
+        URL.revokeObjectURL(blobUrlActualPDF);
+        blobUrlActualPDF = null;
+    }
+}
+
+window.abrirVisorPDF = abrirVisorPDF;
+window.cerrarVisorPDF = cerrarVisorPDF;
+
+// Botón de Informe Ejecutivo en PDF (Abre ventana emergente de vista previa)
+document.getElementById("btnReportePDF")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    abrirVisorPDF();
+});
+
+// ════════════════════════════════
+// GESTIÓN DE PERFIL (SUPERADMIN & ADMIN)
+// ════════════════════════════════
+let perfilUsuarioActual = null;
+
+async function cargarDatosPerfil() {
+    const alertaBox = document.getElementById("perfilAlertaBox");
+    if (alertaBox) alertaBox.style.display = "none";
+
+    try {
+        const res = await fetch("/api/perfil");
+        if (res.status === 401) {
+            window.location.href = "/login/index.html";
+            return;
+        }
+        if (!res.ok) throw new Error("Error al obtener información de tu perfil");
+
+        const data = await res.json();
+        perfilUsuarioActual = data;
+
+        // Llenar Ficha Resumen
+        const resumenNombre = document.getElementById("perfilResumenNombre");
+        const resumenEmail = document.getElementById("perfilResumenEmail");
+        const resumenId = document.getElementById("perfilResumenId");
+        const resumenRol = document.getElementById("perfilResumenRol");
+        const resumenEstado = document.getElementById("perfilResumenEstado");
+        const resumenFechaReg = document.getElementById("perfilResumenFechaReg");
+        const resumenUltimoAcceso = document.getElementById("perfilResumenUltimoAcceso");
+        const avatarLetra = document.getElementById("perfilAvatarLetra");
+        const rolTexto = document.getElementById("perfilRolTexto");
+
+        const nombre = data.nombreusuario || "Usuario";
+        if (resumenNombre) resumenNombre.innerText = nombre;
+        if (avatarLetra) avatarLetra.innerText = nombre.charAt(0).toUpperCase();
+        if (resumenEmail) resumenEmail.innerText = data.email || "No registrado";
+        if (resumenId) resumenId.innerText = data.idusuario || "--";
+        if (resumenRol) resumenRol.innerText = data.rol === 'superadmin' ? 'Superadministrador' : (data.rol === 'admin' ? 'Administrador' : 'Reportero');
+        if (rolTexto) rolTexto.innerText = data.rol || '--';
+        if (resumenEstado) resumenEstado.innerText = (data.estado || 'activo').toUpperCase();
+        if (resumenFechaReg) resumenFechaReg.innerText = data.fecha_registro ? formatearFechaHora(data.fecha_registro) : '--';
+        if (resumenUltimoAcceso) resumenUltimoAcceso.innerText = data.ultimo_acceso ? formatearFechaHora(data.ultimo_acceso) : 'Sesión activa';
+
+        // Llenar Formulario
+        const inputEmail = document.getElementById("perfilInputEmail");
+        const inputTelefono = document.getElementById("perfilInputTelefono");
+        const inputDependencia = document.getElementById("perfilInputDependencia");
+        const passActual = document.getElementById("perfilPasswordActual");
+        const passNuevo = document.getElementById("perfilPasswordNuevo");
+        const passConfirmar = document.getElementById("perfilPasswordConfirmar");
+
+        if (inputEmail) inputEmail.value = data.email || "";
+        if (inputTelefono) inputTelefono.value = data.telefono || "";
+        if (inputDependencia) inputDependencia.value = data.dependencia || "";
+        if (passActual) passActual.value = "";
+        if (passNuevo) passNuevo.value = "";
+        if (passConfirmar) passConfirmar.value = "";
+    } catch (err) {
+        console.error("Error al cargar datos del perfil:", err);
+        mostrarToast("No se pudo cargar la información del perfil", "error");
+    }
+}
+
+// Envío del formulario de actualización de perfil
+document.getElementById("formPerfilUsuario")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const alertaBox = document.getElementById("perfilAlertaBox");
+    const email = document.getElementById("perfilInputEmail")?.value.trim();
+    const telefono = document.getElementById("perfilInputTelefono")?.value.trim();
+    const dependencia = document.getElementById("perfilInputDependencia")?.value.trim();
+    const password_actual = document.getElementById("perfilPasswordActual")?.value;
+    const password_nuevo = document.getElementById("perfilPasswordNuevo")?.value;
+    const password_confirmar = document.getElementById("perfilPasswordConfirmar")?.value;
+
+    if (alertaBox) {
+        alertaBox.style.display = "none";
+        alertaBox.className = "modal-alerta-box";
+    }
+
+    if (password_nuevo || password_confirmar) {
+        if (!password_actual) {
+            if (alertaBox) {
+                alertaBox.innerText = "Debes ingresar tu contraseña actual para autorizar el cambio de clave.";
+                alertaBox.style.display = "block";
+            }
+            return;
+        }
+        if (password_nuevo !== password_confirmar) {
+            if (alertaBox) {
+                alertaBox.innerText = "La nueva contraseña y su confirmación no coinciden.";
+                alertaBox.style.display = "block";
+            }
+            return;
+        }
+        if (password_nuevo.length < 8) {
+            if (alertaBox) {
+                alertaBox.innerText = "La nueva contraseña debe tener al menos 8 caracteres.";
+                alertaBox.style.display = "block";
+            }
+            return;
+        }
+        if (!/[A-Z]/.test(password_nuevo) || !/[a-z]/.test(password_nuevo) || !/\d/.test(password_nuevo)) {
+            if (alertaBox) {
+                alertaBox.innerText = "La nueva contraseña debe incluir al menos una mayúscula, una minúscula y un número.";
+                alertaBox.style.display = "block";
+            }
+            return;
+        }
+    }
+
+    const payload = { email, telefono, dependencia };
+    if (password_nuevo) {
+        payload.password_actual = password_actual;
+        payload.password_nuevo = password_nuevo;
+    }
+
+    const btnSubmit = document.getElementById("btnGuardarPerfilSubmit");
+    const textoOriginal = btnSubmit ? btnSubmit.innerText : "Guardar cambios";
+    if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerText = "Guardando...";
+    }
+
+    try {
+        const res = await fetch("/api/perfil", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data.mensaje || "Error al actualizar el perfil");
+        }
+
+        mostrarToast(data.mensaje || "Perfil actualizado correctamente", "exito");
+        if (alertaBox) {
+            alertaBox.className = "modal-alerta-box alerta-exito";
+            alertaBox.innerText = data.mensaje || "Perfil actualizado exitosamente.";
+            alertaBox.style.display = "block";
+        }
+
+        // Limpiar campos de contraseña
+        const passActualEl = document.getElementById("perfilPasswordActual");
+        const passNuevoEl = document.getElementById("perfilPasswordNuevo");
+        const passConfirmarEl = document.getElementById("perfilPasswordConfirmar");
+        if (passActualEl) passActualEl.value = "";
+        if (passNuevoEl) passNuevoEl.value = "";
+        if (passConfirmarEl) passConfirmarEl.value = "";
+
+        // Refrescar datos del perfil
+        cargarDatosPerfil();
+    } catch (err) {
+        console.error("Error al guardar perfil:", err);
+        if (alertaBox) {
+            alertaBox.className = "modal-alerta-box";
+            alertaBox.innerText = err.message || "Error al procesar la actualización del perfil.";
+            alertaBox.style.display = "block";
+        }
+        mostrarToast(err.message || "Error al actualizar perfil", "error");
+    } finally {
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerText = textoOriginal;
+        }
+    }
+});
+
+document.getElementById("btnRestablecerFormPerfil")?.addEventListener("click", () => {
+    cargarDatosPerfil();
 });
 
 // Sincronización en tiempo real recibida por WebSockets (Socket.io)
@@ -2898,6 +3381,723 @@ window.addEventListener("sigi:incidente_actualizado", () => {
         cargarVerificaciones();
     }
 });
+
+// ══════════════════════════════════════════════════════════════════
+// GESTIÓN DE CATÁLOGO DE TIPOS DE INCIDENTES (EXCLUSIVO SUPERADMIN)
+// ══════════════════════════════════════════════════════════════════
+
+let allTipos = [];
+let tiposFiltrados = [];
+let paginaActualTipos = 1;
+const registrosPorPaginaTipos = 10;
+let tipoAEliminarId = null;
+
+// Paleta institucional de colores recomendados (altamente contrastantes)
+const PALETA_SUGERIDA = [
+    '#06B6D4', '#2563EB', '#EC4899', '#6366F1', 
+    '#64748B', '#EA580C', '#84CC16', '#0D9488', 
+    '#E11D48', '#8B5CF6', '#D97706', '#14B8A6'
+];
+
+/**
+ * Normaliza texto para comparaciones estrictas anti-duplicados
+ */
+function normalizarTextoLocal(txt) {
+    if (!txt || typeof txt !== 'string') return '';
+    return txt
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s+/g, ' ');
+}
+
+/**
+ * Convierte código HEX a RGB
+ */
+function hexToRgbLocal(hex) {
+    let c = (hex || '').replace('#', '').trim();
+    if (c.length === 3) {
+        c = c.split('').map(x => x + x).join('');
+    }
+    const num = parseInt(c, 16);
+    if (isNaN(num)) return { r: 0, g: 0, b: 0 };
+    return {
+        r: (num >> 16) & 255,
+        g: (num >> 8) & 255,
+        b: num & 255
+    };
+}
+
+/**
+ * Calcula la distancia perceptual ponderada de color (Redmean)
+ */
+function calcularDistanciaColorLocal(hex1, hex2) {
+    if (!hex1 || !hex2) return 999;
+    const rgb1 = hexToRgbLocal(hex1);
+    const rgb2 = hexToRgbLocal(hex2);
+    const rMean = (rgb1.r + rgb2.r) / 2;
+    const deltaR = rgb1.r - rgb2.r;
+    const deltaG = rgb1.g - rgb2.g;
+    const deltaB = rgb1.b - rgb2.b;
+    return Math.sqrt(
+        (2 + rMean / 256) * deltaR * deltaR +
+        4 * deltaG * deltaG +
+        (2 + (255 - rMean) / 256) * deltaB * deltaB
+    );
+}
+
+/**
+ * Consulta la lista completa de tipos de incidentes y actualiza el mapa de colores
+ */
+async function cargarTiposIncidentes() {
+    const tbody = document.getElementById("cuerpoTablaTipos");
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 24px; color: var(--texto-suave);">Cargando catálogo de tipos de incidentes…</td></tr>';
+
+    try {
+        const [resTipos, resCatalogos] = await Promise.all([
+            fetch("/api/catalogos/tipos"),
+            fetch("/api/catalogos")
+        ]);
+
+        if (resTipos.status === 401 || resTipos.status === 403) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #f87171; padding: 20px;">⛔ Acceso restringido: Solo el Superadministrador puede gestionar este catálogo.</td></tr>';
+            return;
+        }
+
+        if (!resTipos.ok) throw new Error(`Error HTTP ${resTipos.status}`);
+        allTipos = await resTipos.json();
+        if (!Array.isArray(allTipos)) allTipos = [];
+
+        // Poblar mapa global de tipos para colores dinámicos en mapa y badges
+        allTipos.forEach(t => {
+            catalogoTiposMap[t.idtipoincidente] = t;
+        });
+
+        // Cargar categorías en el select de filtros y en el modal
+        if (resCatalogos.ok) {
+            const dataCat = await resCatalogos.json();
+            poblarSelectsCategorias(dataCat.categorias || []);
+        }
+
+        // 1. Actualizar KPIs
+        actualizarKpisTipos(allTipos);
+
+        // 2. Aplicar filtros y renderizar
+        aplicarFiltrosTipos();
+
+    } catch (err) {
+        console.error("Error al cargarTiposIncidentes:", err);
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #f87171; padding: 20px;">Error al consultar tipos de incidentes.</td></tr>';
+    }
+}
+
+/**
+ * Llena los selects de categorías en la barra de filtros y en el modal
+ */
+function poblarSelectsCategorias(categorias) {
+    const filtroCat = document.getElementById("filtroCategoriaTipo");
+    const modalCat = document.getElementById("tipoCategoriaSelect");
+
+    if (filtroCat) {
+        const valorPrevio = filtroCat.value;
+        filtroCat.innerHTML = '<option value="todas">Todas las categorías</option>';
+        categorias.forEach(c => {
+            const opt = document.createElement("option");
+            opt.value = c.id_categoria;
+            opt.textContent = c.nombre;
+            filtroCat.appendChild(opt);
+        });
+        if (valorPrevio) filtroCat.value = valorPrevio;
+    }
+
+    if (modalCat) {
+        modalCat.innerHTML = '<option value="" disabled selected>Seleccione categoría macro</option>';
+        categorias.forEach(c => {
+            const opt = document.createElement("option");
+            opt.value = c.id_categoria;
+            opt.textContent = c.nombre;
+            modalCat.appendChild(opt);
+        });
+    }
+}
+
+/**
+ * Actualiza los badges de métricas en la parte superior
+ */
+function actualizarKpisTipos(lista) {
+    const elTotal = document.getElementById("kpiTotalTipos");
+    const elActivos = document.getElementById("kpiTiposActivos");
+    const elInactivos = document.getElementById("kpiTiposInactivos");
+    const elConInc = document.getElementById("kpiTiposConIncidentes");
+
+    if (elTotal) elTotal.innerText = lista.length;
+    if (elActivos) elActivos.innerText = lista.filter(t => t.activo).length;
+    if (elInactivos) elInactivos.innerText = lista.filter(t => !t.activo).length;
+    if (elConInc) elConInc.innerText = lista.filter(t => (t.total_incidentes || 0) > 0).length;
+}
+
+/**
+ * Filtra los tipos según búsqueda, categoría y estado
+ */
+function aplicarFiltrosTipos() {
+    const query = normalizarTextoLocal(document.getElementById("buscarTipoInput")?.value || "");
+    const catFiltro = document.getElementById("filtroCategoriaTipo")?.value || "todas";
+    const estadoFiltro = document.getElementById("filtroEstadoTipo")?.value || "todos";
+
+    tiposFiltrados = allTipos.filter(t => {
+        const nombreNorm = normalizarTextoLocal(t.nametipoincidente);
+        const descNorm = normalizarTextoLocal(t.descripcion || "");
+        const coincideTexto = !query || nombreNorm.includes(query) || descNorm.includes(query);
+
+        const coincideCat = catFiltro === "todas" || String(t.id_categoria) === String(catFiltro);
+        const coincideEstado = estadoFiltro === "todos" || 
+            (estadoFiltro === "activo" && t.activo) || 
+            (estadoFiltro === "inactivo" && !t.activo);
+
+        return coincideTexto && coincideCat && coincideEstado;
+    });
+
+    paginaActualTipos = 1;
+    renderizarTablaTipos();
+}
+
+/**
+ * Renderiza la tabla de tipos con paginación de 10 registros, numeración consecutiva y diseño unificado SIGI
+ */
+function renderizarTablaTipos() {
+    const tbody = document.getElementById("cuerpoTablaTipos");
+    const infoPag = document.getElementById("infoPaginacionTipos");
+    const labelPag = document.getElementById("labelPaginaTipos");
+    const btnAnt = document.getElementById("btnPagAntTipos");
+    const btnSig = document.getElementById("btnPagSigTipos");
+
+    if (!tbody) return;
+
+    if (tiposFiltrados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 24px; color: var(--texto-suave);">No se encontraron tipos de incidentes que coincidan con los filtros.</td></tr>';
+        if (infoPag) infoPag.innerText = "Mostrando 0 de 0 tipos";
+        if (labelPag) labelPag.innerText = "Página 1 de 1";
+        if (btnAnt) btnAnt.disabled = true;
+        if (btnSig) btnSig.disabled = true;
+        return;
+    }
+
+    const totalRegistros = tiposFiltrados.length;
+    const totalPaginas = Math.ceil(totalRegistros / registrosPorPaginaTipos) || 1;
+    if (paginaActualTipos > totalPaginas) paginaActualTipos = totalPaginas;
+
+    const inicio = (paginaActualTipos - 1) * registrosPorPaginaTipos;
+    const fin = Math.min(inicio + registrosPorPaginaTipos, totalRegistros);
+    const paginaTipos = tiposFiltrados.slice(inicio, fin);
+
+    let html = "";
+    paginaTipos.forEach((t, index) => {
+        const numConsecutivo = inicio + index + 1;
+        const colorHex = (t.color || "#3b82f6").toUpperCase();
+        const categoriaTxt = t.categoria_nombre || "General";
+        const riesgo = (t.nivel_riesgo_base || "media").toLowerCase();
+        const tieneIncidentes = (t.total_incidentes || 0) > 0;
+
+        let badgeRiesgoStyle = "background: rgba(148, 163, 184, 0.15); color: var(--texto-suave); border: 1px solid rgba(148, 163, 184, 0.25);";
+        if (riesgo === 'baja') badgeRiesgoStyle = "background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);";
+        if (riesgo === 'media') badgeRiesgoStyle = "background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);";
+        if (riesgo === 'alta') badgeRiesgoStyle = "background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);";
+        if (riesgo === 'critica') badgeRiesgoStyle = "background: rgba(220, 38, 38, 0.25); color: #f87171; border: 1px solid rgba(220, 38, 38, 0.45); font-weight: 700;";
+
+        html += `
+            <tr class="fila-incidente-hover" style="border-bottom: 1px solid var(--borde); transition: background 0.15s ease;">
+                <td class="celda-consecutivo" style="text-align: center; font-weight: 700; color: var(--texto-suave); font-size: 0.8rem;">
+                    ${numConsecutivo}
+                </td>
+                <td class="celda-color-tipo" style="text-align: center;">
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: var(--bg-card); padding: 3px 8px; border-radius: 20px; border: 1px solid var(--borde);">
+                        <span style="width: 14px; height: 14px; border-radius: 50%; background: ${colorHex}; display: inline-block; box-shadow: 0 0 6px ${colorHex}80;"></span>
+                        <code style="font-size: 0.72rem; font-weight: 700; color: var(--texto);">${colorHex}</code>
+                    </div>
+                </td>
+                <td class="celda-nombre-tipo">
+                    <div class="tipo-nombre-titulo">
+                        ${t.nametipoincidente}
+                    </div>
+                    ${t.descripcion ? `<div class="tipo-descripcion-sub">${t.descripcion}</div>` : ''}
+                </td>
+                <td class="celda-cat-tipo" style="font-size: 0.82rem; color: var(--texto);">
+                    ${categoriaTxt}
+                </td>
+                <td class="celda-riesgo-tipo" style="text-align: center;">
+                    <span style="padding: 3px 9px; border-radius: 12px; font-size: 0.72rem; font-weight: 600; text-transform: capitalize; ${badgeRiesgoStyle}">
+                        ${riesgo}
+                    </span>
+                </td>
+                <td class="celda-incidentes-tipo" style="text-align: center;">
+                    <span style="display: inline-block; padding: 2px 10px; border-radius: 12px; font-weight: 700; font-size: 0.78rem; background: ${tieneIncidentes ? 'rgba(59, 130, 246, 0.15)' : 'rgba(148, 163, 184, 0.1)'}; color: ${tieneIncidentes ? '#60a5fa' : 'var(--texto-suave)'}; border: 1px solid ${tieneIncidentes ? 'rgba(59, 130, 246, 0.3)' : 'var(--borde)'};">
+                        ${t.total_incidentes || 0}
+                    </span>
+                </td>
+                <td class="celda-estado-tipo" style="text-align: center;">
+                    <span class="badge-estado-usr ${t.activo ? 'badge-usr-activo' : 'badge-usr-inactivo'}">
+                        ${t.activo ? 'Activo' : 'Inactivo'}
+                    </span>
+                </td>
+                <td class="celda-acciones celda-centrada celda-acciones-tipo">
+                    <div class="acciones-iconos-wrap">
+                        <button type="button" class="btn-icon-usr btn-edit-user" title="Editar tipo de incidente" onclick="abrirModalEditarTipo(${t.idtipoincidente})" aria-label="Editar tipo">
+                            <i class="bi bi-pencil" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="btn-icon-usr ${t.activo ? 'btn-usr-bloquear' : 'btn-usr-activar'}" title="${t.activo ? 'Inactivar tipo de incidente' : 'Activar tipo de incidente'}" onclick="solicitarCambioEstadoTipo(${t.idtipoincidente}, ${!t.activo})" aria-label="${t.activo ? 'Inactivar' : 'Activar'}">
+                            <i class="bi ${t.activo ? 'bi-toggle-on' : 'bi-toggle-off'}" style="font-size: 1.15rem;" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+
+    if (infoPag) infoPag.innerText = `Mostrando ${inicio + 1} a ${fin} de ${totalRegistros} tipos`;
+    if (labelPag) labelPag.innerText = `Página ${paginaActualTipos} de ${totalPaginas}`;
+    if (btnAnt) btnAnt.disabled = paginaActualTipos <= 1;
+    if (btnSig) btnSig.disabled = paginaActualTipos >= totalPaginas;
+}
+
+/**
+ * Paginación de tabla de tipos (Tope estándar de 10 registros por página)
+ */
+document.getElementById("btnPagAntTipos")?.addEventListener("click", () => {
+    if (paginaActualTipos > 1) {
+        paginaActualTipos--;
+        renderizarTablaTipos();
+    }
+});
+document.getElementById("btnPagSigTipos")?.addEventListener("click", () => {
+    const totalPaginas = Math.ceil(tiposFiltrados.length / registrosPorPaginaTipos) || 1;
+    if (paginaActualTipos < totalPaginas) {
+        paginaActualTipos++;
+        renderizarTablaTipos();
+    }
+});
+
+// Event listeners de filtros de tipos
+document.getElementById("buscarTipoInput")?.addEventListener("input", () => aplicarFiltrosTipos());
+document.getElementById("filtroCategoriaTipo")?.addEventListener("change", () => aplicarFiltrosTipos());
+document.getElementById("filtroEstadoTipo")?.addEventListener("change", () => aplicarFiltrosTipos());
+document.getElementById("btnResetFiltrosTipos")?.addEventListener("click", () => {
+    const bInput = document.getElementById("buscarTipoInput");
+    const cSelect = document.getElementById("filtroCategoriaTipo");
+    const eSelect = document.getElementById("filtroEstadoTipo");
+    if (bInput) bInput.value = "";
+    if (cSelect) cSelect.value = "todas";
+    if (eSelect) eSelect.value = "todos";
+    aplicarFiltrosTipos();
+});
+
+/**
+ * Ventana emergente de advertencia previa al inactivar o activar un tipo de incidente
+ */
+let estadoTipoPendiente = { id: null, nuevoEstado: null };
+
+function solicitarCambioEstadoTipo(id, nuevoEstado) {
+    const tipo = allTipos.find(t => t.idtipoincidente === parseInt(id));
+    if (!tipo) return;
+
+    estadoTipoPendiente = { id, nuevoEstado };
+    const modal = document.getElementById("modalConfirmarEstadoTipo");
+    const titulo = document.getElementById("tituloConfirmarEstadoTipo");
+    const mensaje = document.getElementById("mensajeConfirmarEstadoTipo");
+    const btnConfirmar = document.getElementById("btnConfirmarAccionEstadoTipo");
+
+    if (nuevoEstado === false) {
+        // Confirmación para inactivar
+        if (titulo) titulo.innerText = "Inactivar tipo de incidente";
+        if (mensaje) {
+            mensaje.innerHTML = `
+                ¿Deseas inactivar el tipo de incidente <strong style="color: var(--texto); font-weight: 700;">"${tipo.nametipoincidente}"</strong>?
+                <div style="margin-top: 14px; padding: 12px 14px; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 8px; font-size: 0.8rem; color: #fbbf24; line-height: 1.5;">
+                    <div style="font-weight: 700; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; margin-bottom: 4px; color: #f59e0b;">Efecto en el sistema</div>
+                    Al inactivarlo, este tipo no aparecerá en los formularios para nuevos reportes de incidentes. Sin embargo, se conservará intacto en todos los registros históricos, estadísticas y mapas previos.
+                </div>
+            `;
+        }
+        if (btnConfirmar) {
+            btnConfirmar.innerText = "Sí, inactivar";
+            btnConfirmar.style.background = "#f59e0b";
+            btnConfirmar.style.color = "#000000";
+        }
+    } else {
+        // Confirmación para activar
+        if (titulo) titulo.innerText = "Activar tipo de incidente";
+        if (mensaje) {
+            mensaje.innerHTML = `
+                ¿Deseas activar el tipo de incidente <strong style="color: var(--texto); font-weight: 700;">"${tipo.nametipoincidente}"</strong>?
+                <div style="margin-top: 14px; padding: 12px 14px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; font-size: 0.8rem; color: #34d399; line-height: 1.5;">
+                    <div style="font-weight: 700; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.04em; margin-bottom: 4px; color: #10b981;">Disponibilidad inmediata</div>
+                    Volverá a estar habilitado para la selección en los formularios de registro y actualización de incidentes.
+                </div>
+            `;
+        }
+        if (btnConfirmar) {
+            btnConfirmar.innerText = "Sí, activar";
+            btnConfirmar.style.background = "#10b981";
+            btnConfirmar.style.color = "#ffffff";
+        }
+    }
+
+    if (modal) modal.style.display = "flex";
+}
+
+function cerrarModalConfirmarEstadoTipo() {
+    estadoTipoPendiente = { id: null, nuevoEstado: null };
+    const modal = document.getElementById("modalConfirmarEstadoTipo");
+    if (modal) modal.style.display = "none";
+}
+
+document.getElementById("btnConfirmarAccionEstadoTipo")?.addEventListener("click", async () => {
+    if (!estadoTipoPendiente.id) return;
+    const { id, nuevoEstado } = estadoTipoPendiente;
+    cerrarModalConfirmarEstadoTipo();
+    await cambiarEstadoTipoIncidente(id, nuevoEstado);
+});
+
+/**
+ * Construye la paleta sugerida de colores en el modal
+ */
+function inicializarPaletaSugeridaModal() {
+    const cont = document.getElementById("paletaSugeridaTipos");
+    if (!cont) return;
+    cont.innerHTML = "";
+    PALETA_SUGERIDA.forEach(colorHex => {
+        const chip = document.createElement("span");
+        chip.className = "chip-color-sugerido";
+        chip.style.backgroundColor = colorHex;
+        chip.title = `Seleccionar ${colorHex}`;
+        chip.onclick = () => {
+            seleccionarColorModal(colorHex);
+        };
+        cont.appendChild(chip);
+    });
+}
+
+function seleccionarColorModal(colorHex) {
+    const picker = document.getElementById("tipoColorPicker");
+    const hexInput = document.getElementById("tipoColorHex");
+    if (picker) picker.value = colorHex;
+    if (hexInput) hexInput.value = colorHex.toUpperCase();
+    actualizarPrevisualizacionColor(colorHex);
+    evaluarSimilitudColorEnVivo(colorHex);
+}
+
+function actualizarPrevisualizacionColor(colorHex) {
+    const preview = document.getElementById("tipoBadgePreview");
+    if (preview) {
+        preview.style.background = `${colorHex}22`;
+        preview.style.color = colorHex;
+        preview.style.borderColor = `${colorHex}66`;
+    }
+}
+
+/**
+ * Evalúa en tiempo real si el color elegido es casi igual o idéntico a un tipo existente
+ */
+function evaluarSimilitudColorEnVivo(nuevoHex) {
+    const alerta = document.getElementById("alertaColorTipo");
+    const btnSubmit = document.getElementById("btnGuardarTipoSubmit");
+    const idActual = document.getElementById("tipoEditId")?.value;
+
+    if (!alerta) return true;
+
+    const hexRegex = /^#([0-9a-fA-F]{6})$/;
+    if (!hexRegex.test(nuevoHex)) {
+        alerta.style.display = "block";
+        alerta.style.background = "rgba(239, 68, 68, 0.12)";
+        alerta.style.border = "1px solid rgba(239, 68, 68, 0.35)";
+        alerta.style.color = "#f87171";
+        alerta.innerHTML = "⚠️ Ingrese un código hexadecimal válido de 6 caracteres (ej: #06B6D4).";
+        if (btnSubmit) btnSubmit.disabled = true;
+        return false;
+    }
+
+    // Comparar contra todos los tipos existentes activos
+    let tipoColision = null;
+    let menorDistancia = 999;
+
+    for (const t of allTipos) {
+        if (idActual && String(t.idtipoincidente) === String(idActual)) continue;
+        if (!t.activo || !t.color) continue;
+
+        const dist = calcularDistanciaColorLocal(nuevoHex, t.color);
+        if (dist < menorDistancia) {
+            menorDistancia = dist;
+            if (dist < 85) {
+                tipoColision = t;
+            }
+        }
+    }
+
+    if (tipoColision) {
+        alerta.style.display = "block";
+        alerta.style.background = "rgba(239, 68, 68, 0.15)";
+        alerta.style.border = "1px solid rgba(239, 68, 68, 0.45)";
+        alerta.style.color = "#f87171";
+        alerta.innerHTML = `<b>Color muy similar</b> al tipo existente <b>"${tipoColision.nametipoincidente}"</b> (${(tipoColision.color || '').toUpperCase()}). Por favor elija un tono con mayor contraste para diferenciar los puntos en el mapa.`;
+        if (btnSubmit) btnSubmit.disabled = true;
+        return false;
+    } else {
+        alerta.style.display = "block";
+        alerta.style.background = "rgba(16, 185, 129, 0.12)";
+        alerta.style.border = "1px solid rgba(16, 185, 129, 0.35)";
+        alerta.style.color = "#10b981";
+        alerta.innerHTML = `<b>Color contrastante</b>: Tono con excelente diferenciación visual para cartografía.`;
+        if (btnSubmit) btnSubmit.disabled = false;
+        return true;
+    }
+}
+
+/**
+ * Evalúa en tiempo real si el nombre ya existe en el catálogo
+ */
+function evaluarNombreDuplicadoEnVivo(nuevoNombre) {
+    const feedback = document.getElementById("feedbackNombreTipo");
+    const idActual = document.getElementById("tipoEditId")?.value;
+    if (!feedback) return true;
+
+    const nombreNorm = normalizarTextoLocal(nuevoNombre);
+    if (nombreNorm.length < 3) {
+        feedback.style.display = "none";
+        return true;
+    }
+
+    const duplicado = allTipos.find(t => {
+        if (idActual && String(t.idtipoincidente) === String(idActual)) return false;
+        return normalizarTextoLocal(t.nametipoincidente) === nombreNorm;
+    });
+
+    if (duplicado) {
+        feedback.style.display = "block";
+        feedback.style.color = "#ef4444";
+        feedback.innerText = `Ya existe un tipo de incidente registrado con el nombre "${duplicado.nametipoincidente}".`;
+        return false;
+    } else {
+        feedback.style.display = "none";
+        return true;
+    }
+}
+
+// Event listeners interactivos del modal de tipos
+document.getElementById("tipoColorPicker")?.addEventListener("input", (e) => {
+    const hex = e.target.value.toUpperCase();
+    const hexInput = document.getElementById("tipoColorHex");
+    if (hexInput) hexInput.value = hex;
+    actualizarPrevisualizacionColor(hex);
+    evaluarSimilitudColorEnVivo(hex);
+});
+
+document.getElementById("tipoColorHex")?.addEventListener("input", (e) => {
+    let hex = e.target.value.trim();
+    if (!hex.startsWith('#') && hex.length > 0) hex = '#' + hex;
+    e.target.value = hex.toUpperCase();
+    if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+        const picker = document.getElementById("tipoColorPicker");
+        if (picker) picker.value = hex;
+        actualizarPrevisualizacionColor(hex);
+        evaluarSimilitudColorEnVivo(hex);
+    }
+});
+
+document.getElementById("tipoNombreInput")?.addEventListener("input", (e) => {
+    evaluarNombreDuplicadoEnVivo(e.target.value);
+});
+
+/**
+ * Abrir modal para crear nuevo tipo de incidente
+ */
+function abrirModalCrearTipo() {
+    const modal = document.getElementById("modalTipoIncidente");
+    const titulo = document.getElementById("tituloModalTipo");
+    const form = document.getElementById("formTipoIncidente");
+    const alertBox = document.getElementById("modalTipoAlert");
+    const editIdInput = document.getElementById("tipoEditId");
+
+    if (form) form.reset();
+    if (editIdInput) editIdInput.value = "";
+    if (alertBox) {
+        alertBox.style.display = "none";
+        alertBox.innerText = "";
+    }
+    if (titulo) titulo.innerText = "Nuevo Tipo de Incidente";
+
+    inicializarPaletaSugeridaModal();
+    seleccionarColorModal("#06B6D4");
+
+    if (modal) modal.style.display = "flex";
+}
+
+/**
+ * Abrir modal para editar un tipo de incidente existente
+ */
+function abrirModalEditarTipo(id) {
+    const tipo = allTipos.find(t => t.idtipoincidente === parseInt(id));
+    if (!tipo) {
+        mostrarToast("No se encontró el tipo de incidente seleccionado", "error");
+        return;
+    }
+
+    const modal = document.getElementById("modalTipoIncidente");
+    const titulo = document.getElementById("tituloModalTipo");
+    const alertBox = document.getElementById("modalTipoAlert");
+    const editIdInput = document.getElementById("tipoEditId");
+    const nombreInput = document.getElementById("tipoNombreInput");
+    const catSelect = document.getElementById("tipoCategoriaSelect");
+    const riesgoSelect = document.getElementById("tipoRiesgoSelect");
+    const descInput = document.getElementById("tipoDescripcionInput");
+
+    if (alertBox) {
+        alertBox.style.display = "none";
+        alertBox.innerText = "";
+    }
+    if (titulo) titulo.innerText = `Editar Tipo: ${tipo.nametipoincidente}`;
+    if (editIdInput) editIdInput.value = tipo.idtipoincidente;
+    if (nombreInput) nombreInput.value = tipo.nametipoincidente;
+    if (catSelect && tipo.id_categoria) catSelect.value = tipo.id_categoria;
+    if (riesgoSelect) riesgoSelect.value = (tipo.nivel_riesgo_base || "media").toLowerCase();
+    if (descInput) descInput.value = tipo.descripcion || "";
+
+    inicializarPaletaSugeridaModal();
+    const colorInicial = (tipo.color || "#3b82f6").toUpperCase();
+    seleccionarColorModal(colorInicial);
+
+    if (modal) modal.style.display = "flex";
+}
+
+function cerrarModalTipo() {
+    const modal = document.getElementById("modalTipoIncidente");
+    if (modal) modal.style.display = "none";
+}
+
+/**
+ * Guardar tipo de incidente (Crear o Actualizar)
+ */
+async function guardarTipoIncidente(e) {
+    e.preventDefault();
+    const alertBox = document.getElementById("modalTipoAlert");
+    const btnSubmit = document.getElementById("btnGuardarTipoSubmit");
+    const editId = document.getElementById("tipoEditId")?.value;
+
+    const nombre = document.getElementById("tipoNombreInput")?.value.trim();
+    const id_categoria = document.getElementById("tipoCategoriaSelect")?.value;
+    const nivel_riesgo_base = document.getElementById("tipoRiesgoSelect")?.value;
+    const descripcion = document.getElementById("tipoDescripcionInput")?.value.trim();
+    const color = (document.getElementById("tipoColorHex")?.value || document.getElementById("tipoColorPicker")?.value || "").trim().toLowerCase();
+
+    // 1. Validaciones de cliente
+    if (!nombre || nombre.length < 3) {
+        mostrarAlertaModalTipo("El nombre debe tener al menos 3 caracteres.");
+        return;
+    }
+    if (!id_categoria) {
+        mostrarAlertaModalTipo("Debe seleccionar una categoría macro para el tipo.");
+        return;
+    }
+    if (!/^#([0-9a-fA-F]{6})$/.test(color)) {
+        mostrarAlertaModalTipo("El color debe tener un formato hexadecimal válido (ej: #06B6D4).");
+        return;
+    }
+
+    // Verificar similitud de color
+    const colorEsValido = evaluarSimilitudColorEnVivo(color);
+    if (!colorEsValido) {
+        mostrarAlertaModalTipo("El color elegido es demasiado similar al de otro tipo existente. Seleccione un color diferente.");
+        return;
+    }
+
+    // Verificar nombre duplicado
+    const nombreEsUnico = evaluarNombreDuplicadoEnVivo(nombre);
+    if (!nombreEsUnico) {
+        mostrarAlertaModalTipo(`Ya existe un tipo de incidente registrado con el nombre "${nombre}".`);
+        return;
+    }
+
+    const payload = {
+        nametipoincidente: nombre,
+        id_categoria: parseInt(id_categoria),
+        nivel_riesgo_base,
+        color,
+        descripcion
+    };
+
+    const textoOriginal = btnSubmit ? btnSubmit.innerText : "Guardar";
+    if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerText = "Guardando…";
+    }
+
+    try {
+        const url = editId ? `/api/catalogos/tipos/${editId}` : "/api/catalogos/tipos";
+        const method = editId ? "PUT" : "POST";
+
+        const res = await fetch(url, {
+            method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data.mensaje || `Error al guardar tipo (HTTP ${res.status})`);
+        }
+
+        mostrarToast(data.mensaje || "Tipo de incidente guardado exitosamente", "success");
+        cerrarModalTipo();
+        await cargarTiposIncidentes();
+        if (typeof cargarTipos === "function") cargarTipos();
+
+    } catch (err) {
+        console.error("Error al guardar tipo de incidente:", err);
+        mostrarAlertaModalTipo(err.message || "Error al procesar la solicitud.");
+    } finally {
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerText = textoOriginal;
+        }
+    }
+}
+
+function mostrarAlertaModalTipo(mensaje) {
+    const alertBox = document.getElementById("modalTipoAlert");
+    if (!alertBox) return;
+    alertBox.style.display = "block";
+    alertBox.style.background = "rgba(239, 68, 68, 0.15)";
+    alertBox.style.border = "1px solid rgba(239, 68, 68, 0.4)";
+    alertBox.style.color = "#f87171";
+    alertBox.innerText = mensaje;
+}
+
+/**
+ * Cambiar estado de activación del tipo de incidente
+ */
+async function cambiarEstadoTipoIncidente(id, nuevoEstado) {
+    try {
+        const res = await fetch(`/api/catalogos/tipos/${id}/estado`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ activo: nuevoEstado })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.mensaje || "Error al cambiar estado");
+
+        mostrarToast(data.mensaje || "Estado actualizado exitosamente", "success");
+        await cargarTiposIncidentes();
+        if (typeof cargarTipos === "function") cargarTipos();
+
+    } catch (err) {
+        console.error("Error al cambiar estado de tipo:", err);
+        mostrarToast(err.message || "Error al actualizar estado", "error");
+    }
+}
+
 
 
 

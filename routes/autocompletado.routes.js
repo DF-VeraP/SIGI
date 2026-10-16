@@ -37,8 +37,10 @@ router.get("/buscarVeredas", async (req, res) => {
 router.get("/tiposIncidente", async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT idtipoincidente, nametipoincidente
+      SELECT idtipoincidente, nametipoincidente, color, activo, id_categoria
       FROM tipo_incidente
+      WHERE activo = true
+      ORDER BY idtipoincidente ASC
     `);
 
     res.json(result.rows);

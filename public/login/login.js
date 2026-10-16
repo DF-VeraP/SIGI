@@ -64,12 +64,14 @@ document.addEventListener("DOMContentLoaded", () => {
     function showModalAlert(box, icon, textEl, message, type = "danger") {
         box.className = `alert-box ${type}`;
         textEl.textContent = message;
-        if (type === "danger") {
-            icon.className = "bi bi-exclamation-triangle-fill";
-        } else if (type === "success") {
-            icon.className = "bi bi-check-circle-fill";
-        } else if (type === "warning") {
-            icon.className = "bi bi-exclamation-circle-fill";
+        if (icon) {
+            if (type === "danger") {
+                icon.className = "bi bi-exclamation-triangle-fill";
+            } else if (type === "success") {
+                icon.className = "bi bi-check-circle-fill";
+            } else if (type === "warning") {
+                icon.className = "bi bi-exclamation-circle-fill";
+            }
         }
         box.style.display = "flex";
     }
@@ -268,7 +270,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 showModalAlert(alertRecuperar, alertIconRecuperar, respRecuperar, "Ocurrió un error al enviar la solicitud. Intenta más tarde.", "danger");
             } finally {
                 btnSubmitRecuperar.disabled = false;
-                btnSubmitRecuperar.innerHTML = `<span>Enviar Enlace</span> <i class="bi bi-send-fill" style="font-size: 0.8rem;"></i>`;
+                btnSubmitRecuperar.innerHTML = `<span>Enviar Enlace</span>`;
             }
         });
     }
@@ -343,4 +345,37 @@ document.addEventListener("DOMContentLoaded", () => {
     [nameInput, passInput].forEach(input => {
         if (input) input.addEventListener("input", hideAlert);
     });
+
+    // ── Control de Tema Claro / Oscuro Sincronizado con SIGI ──
+    const btnTemaLogin = document.getElementById("btnTemaLogin");
+
+    function inicializarTemaLogin() {
+        const temaGuardado = localStorage.getItem("tema_sigi_dashboard") || localStorage.getItem("tema_sigi_admin");
+        if (temaGuardado === "claro") {
+            document.body.classList.add("tema-claro");
+        } else {
+            document.body.classList.remove("tema-claro");
+        }
+        actualizarMetaThemeLogin();
+    }
+
+    function actualizarMetaThemeLogin() {
+        const esClaro = document.body.classList.contains("tema-claro");
+        const metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (metaTheme) {
+            metaTheme.setAttribute("content", esClaro ? "#f4f6f9" : "#090d16");
+        }
+    }
+
+    if (btnTemaLogin) {
+        btnTemaLogin.addEventListener("click", () => {
+            document.body.classList.toggle("tema-claro");
+            const esClaro = document.body.classList.contains("tema-claro");
+            localStorage.setItem("tema_sigi_dashboard", esClaro ? "claro" : "oscuro");
+            localStorage.setItem("tema_sigi_admin", esClaro ? "claro" : "oscuro");
+            actualizarMetaThemeLogin();
+        });
+    }
+
+    inicializarTemaLogin();
 });

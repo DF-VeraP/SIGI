@@ -71,11 +71,12 @@ const exportarInformePDF = async (req, res) => {
     const totalVictimas = parseInt(totalesRes.rows[0]?.victimas || 0);
     const totalVehiculos = parseInt(totalesRes.rows[0]?.vehiculos || 0);
 
-    // 2. Configurar cabeceras de respuesta HTTP para descarga de PDF
+    // 2. Configurar cabeceras de respuesta HTTP para visualización inline o descarga
+    const disposition = req.query.download === '1' ? 'attachment' : 'inline';
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader(
       'Content-Disposition',
-      `attachment; filename="Informe_Ejecutivo_SIGI_${nombreMes}_${targetAnio}.pdf"`
+      `${disposition}; filename="Informe_Ejecutivo_SIGI_${nombreMes}_${targetAnio}.pdf"`
     );
 
     // 3. Crear documento PDF

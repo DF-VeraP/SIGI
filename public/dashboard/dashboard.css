@@ -3119,20 +3119,12 @@ body.tema-claro .sidebar-logo-img {
     overflow: hidden;
 }
 
+/* Eliminado border-left / ::before decorativo para diseño 100% limpio y simétrico */
 .detalle-hero::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
-    background: var(--acento);
+    display: none !important;
+    content: none !important;
+    width: 0 !important;
 }
-
-.detalle-hero.hero-robo::before { background: #ef4444; }
-.detalle-hero.hero-agresion::before { background: #f59e0b; }
-.detalle-hero.hero-pique::before { background: #a855f7; }
-.detalle-hero.hero-accidente::before { background: #10b981; }
 
 .detalle-hero-icon {
     width: 46px;
@@ -5132,7 +5124,7 @@ body.tema-claro .mic-type-text[data-tipo*="accidente"] {
         justify-content: center !important;
         padding-left: 8px !important;
         padding-right: 2px !important;
-        border-left: 1px solid var(--borde) !important;
+        border-left: none !important;
         margin-left: 4px !important;
         align-self: stretch !important;
     }
@@ -5358,12 +5350,33 @@ body.tema-claro .mic-type-text[data-tipo*="accidente"] {
     /* Botón Filtros en móvil */
     .map-actions-group #btnFiltros {
         order: 1 !important;
-        color: #e2e8f0 !important;
+        color: var(--texto, #f1f5f9) !important;
         border-color: var(--borde) !important;
     }
     .map-actions-group #btnFiltros:active {
         color: var(--acento) !important;
         border-color: var(--acento) !important;
+    }
+
+    body.tema-claro .map-actions-group #btnFiltros,
+    body.tema-claro .map-actions-group .fab-filtros {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    body.tema-claro .map-actions-group #btnFiltros .btn-label,
+    body.tema-claro .map-actions-group .fab-filtros .btn-label {
+        color: #0f172a !important;
+        font-weight: 700 !important;
+    }
+
+    body.tema-claro .map-actions-group #btnFiltros:active,
+    body.tema-claro .map-actions-group #btnFiltros:hover {
+        background: #f1f5f9 !important;
+        color: #0284c7 !important;
+        border-color: #0284c7 !important;
     }
 
     /* Botón Tiempo en móvil */
@@ -7537,6 +7550,224 @@ body.tema-claro .map-actions-group::-webkit-scrollbar,
 body.tema-claro .ai-nav-tabs::-webkit-scrollbar,
 body.tema-claro .leyenda::-webkit-scrollbar {
     display: none !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CONTENEDOR DE FILTROS EN EL PANEL DE INCIDENTES (MÓVIL)
+   ══════════════════════════════════════════════════════════════ */
+.incidentes-acciones-mobile,
+#contenedorAccionesIncidentesMobile {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: visible;
+}
+
+#contenedorAccionesIncidentesMobile .map-actions-group {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    -webkit-transform: none !important;
+    width: auto !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    overflow: visible !important;
+}
+
+#contenedorAccionesIncidentesMobile .map-actions-group .fab {
+    min-width: unset !important;
+    height: 34px !important;
+    padding: 0 12px !important;
+    border-radius: 8px !important;
+    font-size: 0.78rem !important;
+    gap: 6px !important;
+    box-shadow: none !important;
+}
+
+#contenedorAccionesIncidentesMobile .map-actions-group #btnFiltros {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid var(--borde) !important;
+    color: var(--texto, #f1f5f9) !important;
+}
+
+body.tema-claro #contenedorAccionesIncidentesMobile .map-actions-group #btnFiltros {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+body.tema-claro #contenedorAccionesIncidentesMobile .map-actions-group #btnFiltros .btn-label {
+    color: #0f172a !important;
+    font-weight: 700 !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   POPUP HOTSPOTS ML (DBSCAN CLUSTERING) — MINIMALISTA, SUAVE Y CERO ICONOS
+   ══════════════════════════════════════════════════════════════ */
+.dbscan-popup-wrapper .leaflet-popup-content-wrapper {
+    background: var(--bg-card, #131722) !important;
+    border: 1px solid var(--borde, rgba(255, 255, 255, 0.08)) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45) !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+.dbscan-popup-wrapper .leaflet-popup-tip {
+    background: var(--bg-card, #131722) !important;
+    border: 1px solid var(--borde, rgba(255, 255, 255, 0.08)) !important;
+}
+
+.dbscan-popup-wrapper .leaflet-popup-content {
+    margin: 0 !important;
+    width: 280px !important;
+    border-left: none !important;
+}
+
+.dbscan-popup-card {
+    padding: 13px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    background: transparent;
+    font-family: inherit;
+    border-left: none !important;
+}
+
+.dbscan-popup-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    padding-right: 16px;
+    border-left: none !important;
+}
+
+.dbscan-popup-title {
+    font-size: 0.90rem;
+    font-weight: 700;
+    color: var(--texto, #f8fafc);
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    margin: 0;
+    border-left: none !important;
+}
+
+.dbscan-risk-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2.5px 8px;
+    border-radius: 9999px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--risk-accent, #ef4444);
+    background: color-mix(in srgb, var(--risk-accent, #ef4444) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--risk-accent, #ef4444) 28%, transparent);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.dbscan-metrics-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--borde, rgba(255, 255, 255, 0.07));
+    border-radius: 9px;
+    padding: 9px 11px;
+    border-left: 1px solid var(--borde, rgba(255, 255, 255, 0.07)) !important;
+}
+
+.dbscan-metric-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.77rem;
+    border-left: none !important;
+}
+
+.dbscan-metric-label {
+    color: var(--texto-suave, #94a3b8);
+    font-weight: 500;
+}
+
+.dbscan-metric-val {
+    color: var(--texto, #f1f5f9);
+    font-weight: 600;
+}
+
+.dbscan-metric-val small {
+    color: var(--texto-suave, #94a3b8);
+    font-weight: 400;
+    font-size: 0.7rem;
+}
+
+.dbscan-popup-footer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.69rem;
+    color: var(--texto-suave, #64748b);
+    padding-top: 4px;
+    border-top: 1px solid var(--borde, rgba(255, 255, 255, 0.08));
+    border-left: none !important;
+}
+
+.dbscan-param-dot {
+    color: var(--texto-suave, #64748b);
+    opacity: 0.5;
+}
+
+/* Adaptación Modo Claro para Hotspots ML */
+body.tema-claro .dbscan-popup-wrapper .leaflet-popup-content-wrapper {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
+}
+
+body.tema-claro .dbscan-popup-wrapper .leaflet-popup-tip {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+}
+
+body.tema-claro .dbscan-popup-title {
+    color: #0f172a !important;
+}
+
+body.tema-claro .dbscan-metrics-grid {
+    background: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+    border-left-color: #e2e8f0 !important;
+}
+
+body.tema-claro .dbscan-metric-label {
+    color: #64748b !important;
+}
+
+body.tema-claro .dbscan-metric-val {
+    color: #0f172a !important;
+}
+
+body.tema-claro .dbscan-metric-val small {
+    color: #94a3b8 !important;
+}
+
+body.tema-claro .dbscan-popup-footer {
+    border-top-color: #e2e8f0 !important;
+    color: #64748b !important;
 }
 
 

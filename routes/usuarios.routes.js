@@ -17,4 +17,8 @@ router.put('/api/usuarios/:id', verificarRol('superadmin'), usuariosController.a
 router.patch('/api/usuarios/:id/estado', verificarRol('superadmin'), usuariosController.cambiarEstadoUsuario);
 router.delete('/api/usuarios/:id', verificarRol('superadmin'), usuariosController.eliminarUsuario);
 
+// Rutas de perfil personal (accesible para cualquier rol autenticado: superadmin, admin, reportero)
+router.get('/api/perfil', verificarSesion, verificarEstadoActivo, usuariosController.getPerfil);
+router.put('/api/perfil', verificarSesion, verificarEstadoActivo, usuariosController.actualizarPerfil);
+
 module.exports = router;

@@ -118,7 +118,7 @@ function renderizarResultadosNLP(data) {
       const cfg = paleta[d.id] || { color: '#3b82f6', grad: 'linear-gradient(90deg, #2563eb, #60a5fa)' };
       const esLider = d.probabilidad === maxProb && d.probabilidad > 0;
       return `
-        <div class="ai-prob-row ${esLider ? 'is-winner' : ''}" style="${esLider ? `border-left-color: ${cfg.color};` : ''}">
+        <div class="ai-prob-row ${esLider ? 'is-winner' : ''}">
           <div class="ai-prob-header">
             <div class="ai-prob-meta">
               <span class="ai-prob-dot" style="background: ${cfg.color};"></span>
