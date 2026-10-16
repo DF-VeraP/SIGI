@@ -72,7 +72,8 @@ const exportarInformePDF = async (req, res) => {
     const totalVehiculos = parseInt(totalesRes.rows[0]?.vehiculos || 0);
 
     // 2. Configurar cabeceras de respuesta HTTP para visualización inline o descarga
-    const disposition = req.query.download === '1' ? 'attachment' : 'inline';
+    const isInline = req.query?.preview === '1' || req.query?.inline === '1' || req.query?.preview === 'true';
+    const disposition = isInline ? 'inline' : 'attachment';
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader(
       'Content-Disposition',

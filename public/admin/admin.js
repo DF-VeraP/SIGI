@@ -3124,7 +3124,7 @@ async function abrirVisorPDF() {
     }
 
     try {
-        const previewUrl = `/api/reportes/pdf?mes=${mes}&anio=${anio}&t=${Date.now()}`;
+        const previewUrl = `/api/reportes/pdf?preview=1&mes=${mes}&anio=${anio}&t=${Date.now()}`;
         const res = await fetch(previewUrl);
         if (!res.ok) {
             throw new Error(`Error en el servidor al generar el PDF (${res.status})`);

@@ -1,10 +1,15 @@
+// Mock del pool de base de datos para entorno de pruebas/CI
+jest.mock('../db', () => ({
+  query: jest.fn()
+}));
+
 const pool = require('../db');
 const CatalogosModel = require('../models/catalogos.model');
 const { normalizarTexto, calcularDistanciaColor } = require('../controllers/catalogos.controller');
 
 describe('Gestión y Control de Redundancia de Tipos de Incidentes', () => {
-  afterAll(async () => {
-    await pool.end();
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
   test('normalizarTexto detecta variaciones de mayúsculas, espacios y tildes', () => {
@@ -36,6 +41,14 @@ describe('Gestión y Control de Redundancia de Tipos de Incidentes', () => {
   });
 
   test('CatalogosModel.obtenerTiposConDetalle retorna datos con colores y conteo de incidentes', async () => {
+    const mockRows = [
+      { idtipoincidente: 1, nametipoincidente: 'Robo', color: '#ef4444', total_incidentes: 5, activo: true },
+      { idtipoincidente: 2, nametipoincidente: 'Accidente vial', color: '#f59e0b', total_incidentes: 2, activo: true },
+      { idtipoincidente: 3, nametipoincidente: 'Incendio', color: '#ef4444', total_incidentes: 0, activo: true },
+      { idtipoincidente: 4, nametipoincidente: 'Inundación', color: '#06b6d4', total_incidentes: 1, activo: true }
+    ];
+    pool.query.mockResolvedValueOnce({ rows: mockRows });
+
     const tipos = await CatalogosModel.obtenerTiposConDetalle();
     expect(Array.isArray(tipos)).toBe(true);
     expect(tipos.length).toBeGreaterThanOrEqual(4);
@@ -48,12 +61,9 @@ describe('Gestión y Control de Redundancia de Tipos de Incidentes', () => {
   });
 
   test('CatalogosModel.contarIncidentesPorTipo previene eliminación de tipos con historial', async () => {
+    pool.query.mockResolvedValueOnce({ rows: [{ total: 5 }] });
     const conteo = await CatalogosModel.contarIncidentesPorTipo(1);
     expect(typeof conteo).toBe('number');
-    if (conteo > 0) {
-      // Si tiene incidentes, la regla de negocio bloquea la eliminación
-      expect(conteo).toBeGreaterThan(0);
-    }
+    expect(conteo).toBe(5);
   });
-
 });
