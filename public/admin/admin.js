@@ -2473,7 +2473,6 @@ function renderizarTablaUsuarios() {
 
         const esMismoUsuario = usuarioActual && (parseInt(usuarioActual.idusuario) === parseInt(u.idusuario));
         const toggleDisabledAttr = esMismoUsuario ? 'disabled style="opacity: 0.35; cursor: not-allowed;" title="No puedes inactivar o bloquear tu propia cuenta en sesión"' : `title="${u.estado === 'activo' ? 'Bloquear acceso' : 'Activar acceso'}"`;
-        const deleteDisabledAttr = esMismoUsuario ? 'disabled style="opacity: 0.35; cursor: not-allowed;" title="No puedes eliminar tu propia cuenta en sesión"' : 'title="Eliminar usuario"';
 
         const tr = document.createElement("tr");
         tr.className = "fila-incidente-hover";
@@ -2493,9 +2492,6 @@ function renderizarTablaUsuarios() {
                     </button>
                     <button type="button" class="btn-icon-usr btn-toggle-estado ${u.estado === 'activo' ? 'btn-usr-bloquear' : 'btn-usr-activar'}" data-id="${u.idusuario}" data-estado="${u.estado}" ${toggleDisabledAttr} aria-label="${u.estado === 'activo' ? 'Bloquear usuario' : 'Activar usuario'}">
                         <i class="bi ${u.estado === 'activo' ? 'bi-slash-circle' : 'bi-check-circle'}" aria-hidden="true"></i>
-                    </button>
-                    <button type="button" class="btn-icon-usr btn-delete-user" data-id="${u.idusuario}" data-nombre="${u.nombreusuario}" ${deleteDisabledAttr} aria-label="Eliminar usuario">
-                        <i class="bi bi-trash3" aria-hidden="true"></i>
                     </button>
                 </div>
             </td>
@@ -2566,19 +2562,6 @@ function asignarEventosAccionesUsuarios() {
                 const id = parseInt(btnEdit.dataset.id);
                 const userObj = allUsuarios.find(u => u.idusuario === id);
                 if (userObj) abrirModalEditarUsuario(userObj);
-                return;
-            }
-
-            const btnDel = e.target.closest(".btn-delete-user");
-            if (btnDel) {
-                if (btnDel.disabled) return;
-                const id = parseInt(btnDel.dataset.id);
-                if (usuarioActual && parseInt(usuarioActual.idusuario) === id) {
-                    mostrarToast("⚠️ No puedes eliminar tu propia cuenta en sesión", "advertencia");
-                    return;
-                }
-                const nombre = btnDel.dataset.nombre;
-                abrirModalEliminarUsuario(id, nombre);
                 return;
             }
         };
