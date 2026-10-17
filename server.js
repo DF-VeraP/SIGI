@@ -106,6 +106,33 @@ io.on('connection', (socket) => {
 module.exports = app;
 app.server = server;
 
+async function asegurarEsquemaBaseDatos() {
+  if (process.env.NODE_ENV === 'test') return;
+  try {
+    await pool.query(`
+      ALTER TABLE IF EXISTS public.tipo_incidente 
+        ADD COLUMN IF NOT EXISTS color character varying(20),
+        ADD COLUMN IF NOT EXISTS descripcion text,
+        ADD COLUMN IF NOT EXISTS activo boolean DEFAULT true,
+        ADD COLUMN IF NOT EXISTS id_categoria integer,
+        ADD COLUMN IF NOT EXISTS codigo character varying(10),
+        ADD COLUMN IF NOT EXISTS nivel_riesgo_base character varying(20) DEFAULT 'media',
+        ADD COLUMN IF NOT EXISTS fecha_creacion timestamp without time zone DEFAULT CURRENT_TIMESTAMP;
+
+      UPDATE public.tipo_incidente SET color = '#ef4444' WHERE idtipoincidente = 1 AND (color IS NULL OR color = '');
+      UPDATE public.tipo_incidente SET color = '#f59e0b' WHERE idtipoincidente = 2 AND (color IS NULL OR color = '');
+      UPDATE public.tipo_incidente SET color = '#f59e0b' WHERE idtipoincidente = 3 AND (color IS NULL OR color = '');
+      UPDATE public.tipo_incidente SET color = '#8b5cf6' WHERE idtipoincidente = 4 AND (color IS NULL OR color = '');
+      UPDATE public.tipo_incidente SET color = '#10b981' WHERE (idtipoincidente = 5 OR idtipoincidente = 6) AND (color IS NULL OR color = '');
+      UPDATE public.tipo_incidente SET color = '#3b82f6' WHERE color IS NULL OR color = '';
+      UPDATE public.tipo_incidente SET activo = true WHERE activo IS NULL;
+    `);
+    console.log('✅ Esquema y compatibilidad de tipos de incidente verificados con éxito.');
+  } catch (err) {
+    console.warn('Aviso al verificar esquema de tipos de incidente:', err.message);
+  }
+}
+
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
   server.on('error', (err) => {
@@ -116,7 +143,8 @@ if (require.main === module) {
     }
   });
 
-  server.listen(PORT, () => {
+  server.listen(PORT, async () => {
     console.log(`Servidor corriendo en el puerto ${PORT} con WebSockets (Socket.io) y Machine Learning activos 🚀`);
+    await asegurarEsquemaBaseDatos();
   });
 }

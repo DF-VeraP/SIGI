@@ -964,36 +964,48 @@ btnImportar.addEventListener("click", function (e) {
 });
 
 async function cargarTipos() {
-    const res = await fetch("/tiposIncidente");
-    const data = await res.json();
+    try {
+        const res = await fetch("/tiposIncidente");
+        if (!res.ok) {
+            console.error("Error al consultar /tiposIncidente:", res.status);
+            return;
+        }
+        const data = await res.json();
+        if (!Array.isArray(data)) {
+            console.error("Respuesta no válida de /tiposIncidente (se esperaba array):", data);
+            return;
+        }
 
-    const select = document.getElementById("tipoIncidente");
-    const select2 = document.getElementById("tipoIncidenteFiltro");
-
-    if (select) {
-        select.innerHTML = '<option value="" disabled selected>Seleccione el tipo de incidente</option>';
-    }
-    if (select2) {
-        select2.innerHTML = '<option value="">Todos los tipos</option>';
-    }
-
-    data.forEach(tipo => {
-        catalogoTiposMap[tipo.idtipoincidente] = tipo;
+        const select = document.getElementById("tipoIncidente");
+        const select2 = document.getElementById("tipoIncidenteFiltro");
 
         if (select) {
-            const option1 = document.createElement("option");
-            option1.value = tipo.idtipoincidente;
-            option1.textContent = tipo.nametipoincidente;
-            select.appendChild(option1);
+            select.innerHTML = '<option value="" disabled selected>Seleccione el tipo de incidente</option>';
+        }
+        if (select2) {
+            select2.innerHTML = '<option value="">Todos los tipos</option>';
         }
 
-        if (select2) {
-            const option2 = document.createElement("option");
-            option2.value = tipo.idtipoincidente;
-            option2.textContent = tipo.nametipoincidente;
-            select2.appendChild(option2);
-        }
-    });
+        data.forEach(tipo => {
+            catalogoTiposMap[tipo.idtipoincidente] = tipo;
+
+            if (select) {
+                const option1 = document.createElement("option");
+                option1.value = tipo.idtipoincidente;
+                option1.textContent = tipo.nametipoincidente;
+                select.appendChild(option1);
+            }
+
+            if (select2) {
+                const option2 = document.createElement("option");
+                option2.value = tipo.idtipoincidente;
+                option2.textContent = tipo.nametipoincidente;
+                select2.appendChild(option2);
+            }
+        });
+    } catch (err) {
+        console.error("Error al cargarTipos:", err);
+    }
 
     // Inicializar Asistente Predictivo de Inteligencia Artificial (SIGI ML)
     if (window.SigiMLAssistant) {

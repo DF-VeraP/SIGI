@@ -30,30 +30,57 @@ class CatalogosModel {
    * Obtiene la lista completa de tipos de incidentes con su categoría y conteo de incidentes asociados
    */
   static async obtenerTiposConDetalle() {
-    const query = `
-      SELECT 
-        t.idtipoincidente,
-        t.nametipoincidente,
-        t.id_categoria,
-        c.nombre as categoria_nombre,
-        t.codigo,
-        COALESCE(t.nivel_riesgo_base, 'media') as nivel_riesgo_base,
-        COALESCE(t.color, '#3b82f6') as color,
-        t.descripcion,
-        t.activo,
-        t.fecha_creacion,
-        COALESCE(sub.conteo_incidentes, 0)::int as total_incidentes
-      FROM tipo_incidente t
-      LEFT JOIN categoria_incidente c ON t.id_categoria = c.id_categoria
-      LEFT JOIN (
-        SELECT idtipoincidente, COUNT(*) as conteo_incidentes
-        FROM incidente
-        GROUP BY idtipoincidente
-      ) sub ON t.idtipoincidente = sub.idtipoincidente
-      ORDER BY t.idtipoincidente ASC
-    `;
-    const res = await pool.query(query);
-    return res.rows;
+    try {
+      const query = `
+        SELECT 
+          t.idtipoincidente,
+          t.nametipoincidente,
+          t.id_categoria,
+          c.nombre as categoria_nombre,
+          t.codigo,
+          COALESCE(t.nivel_riesgo_base, 'media') as nivel_riesgo_base,
+          COALESCE(t.color, '#3b82f6') as color,
+          t.descripcion,
+          COALESCE(t.activo, true) as activo,
+          t.fecha_creacion,
+          COALESCE(sub.conteo_incidentes, 0)::int as total_incidentes
+        FROM tipo_incidente t
+        LEFT JOIN categoria_incidente c ON t.id_categoria = c.id_categoria
+        LEFT JOIN (
+          SELECT idtipoincidente, COUNT(*) as conteo_incidentes
+          FROM incidente
+          GROUP BY idtipoincidente
+        ) sub ON t.idtipoincidente = sub.idtipoincidente
+        ORDER BY t.idtipoincidente ASC
+      `;
+      const res = await pool.query(query);
+      return res.rows;
+    } catch (err) {
+      console.warn("Aviso en obtenerTiposConDetalle, ejecutando consulta de contingencia:", err.message);
+      const fallbackQuery = `
+        SELECT 
+          t.idtipoincidente,
+          t.nametipoincidente,
+          NULL::integer as id_categoria,
+          'General' as categoria_nombre,
+          NULL as codigo,
+          'media' as nivel_riesgo_base,
+          '#3b82f6' as color,
+          NULL as descripcion,
+          true as activo,
+          NOW() as fecha_creacion,
+          COALESCE(sub.conteo_incidentes, 0)::int as total_incidentes
+        FROM tipo_incidente t
+        LEFT JOIN (
+          SELECT idtipoincidente, COUNT(*) as conteo_incidentes
+          FROM incidente
+          GROUP BY idtipoincidente
+        ) sub ON t.idtipoincidente = sub.idtipoincidente
+        ORDER BY t.idtipoincidente ASC
+      `;
+      const fallbackRes = await pool.query(fallbackQuery);
+      return fallbackRes.rows;
+    }
   }
 
   /**

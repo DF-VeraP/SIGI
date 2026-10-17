@@ -37,16 +37,37 @@ router.get("/buscarVeredas", async (req, res) => {
 router.get("/tiposIncidente", async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT idtipoincidente, nametipoincidente, color, activo, id_categoria
+      SELECT 
+        idtipoincidente, 
+        nametipoincidente, 
+        COALESCE(color, '#3b82f6') AS color, 
+        COALESCE(activo, true) AS activo, 
+        id_categoria
       FROM tipo_incidente
-      WHERE activo = true
+      WHERE COALESCE(activo, true) = true
       ORDER BY idtipoincidente ASC
     `);
 
     res.json(result.rows);
 
   } catch (error) {
-    res.status(500).json({ error: "Error en servidor" });
+    console.warn("Aviso en /tiposIncidente, ejecutando consulta de contingencia:", error.message);
+    try {
+      const fallback = await pool.query(`
+        SELECT 
+          idtipoincidente, 
+          nametipoincidente, 
+          '#3b82f6' AS color, 
+          true AS activo, 
+          NULL::integer AS id_categoria
+        FROM tipo_incidente
+        ORDER BY idtipoincidente ASC
+      `);
+      res.json(fallback.rows);
+    } catch (fallbackError) {
+      console.error("Error definitivo en /tiposIncidente:", fallbackError);
+      res.status(500).json({ error: "Error en servidor" });
+    }
   }
 });
 
