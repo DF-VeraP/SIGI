@@ -159,6 +159,39 @@ class CatalogosModel {
     `, [parseInt(id)]);
     return res.rows[0];
   }
+
+  /**
+   * Obtiene los tipos de incidentes activos para autocompletado y selectores
+   */
+  static async obtenerTiposActivos() {
+    try {
+      const result = await pool.query(`
+        SELECT 
+          idtipoincidente, 
+          nametipoincidente, 
+          COALESCE(color, '#3b82f6') AS color, 
+          COALESCE(activo, true) AS activo, 
+          id_categoria
+        FROM tipo_incidente
+        WHERE COALESCE(activo, true) = true
+        ORDER BY idtipoincidente ASC
+      `);
+      return result.rows;
+    } catch (error) {
+      console.warn("Aviso en obtenerTiposActivos, ejecutando consulta de contingencia:", error.message);
+      const fallback = await pool.query(`
+        SELECT 
+          idtipoincidente, 
+          nametipoincidente, 
+          '#3b82f6' AS color, 
+          true AS activo, 
+          NULL::integer AS id_categoria
+        FROM tipo_incidente
+        ORDER BY idtipoincidente ASC
+      `);
+      return fallback.rows;
+    }
+  }
 }
 
 module.exports = CatalogosModel;

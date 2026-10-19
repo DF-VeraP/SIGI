@@ -199,6 +199,7 @@ class IncidenteModel {
         ST_X(i.geom) as lng,
         i.idtipoincidente,
         ti.nametipoincidente as tipo_nombre,
+        COALESCE(ti.color, '#3b82f6') as tipo_color,
         i.id_estado,
         ei.nombre as estado_nombre,
         ei.color as estado_color,
@@ -368,7 +369,7 @@ class IncidenteModel {
   /**
    * Liberar incidente en cola compartida (regresa a Estado 1: Reportado)
    */
-  static async liberarIncidente(idIncidente, idAdmin) {
+  static async liberarIncidente(idIncidente, idAdmin, rolAdmin = null) {
     return pool.query(`
       UPDATE incidente
       SET id_estado = 1,
@@ -376,7 +377,7 @@ class IncidenteModel {
       WHERE idincidente = $1
         AND (id_admin_revisor = $2 OR $3 = 'superadmin')
       RETURNING idincidente, id_estado;
-    `, [idIncidente, idAdmin, idAdmin]);
+    `, [idIncidente, idAdmin, rolAdmin]);
   }
 
   /**
@@ -414,6 +415,266 @@ class IncidenteModel {
    */
   static async eliminar(idIncidente) {
     return pool.query("DELETE FROM incidente WHERE idincidente = $1", [idIncidente]);
+  }
+
+  /**
+   * Obtener creador, estado y metadatos básicos de un incidente
+   */
+  static async obtenerCreadorYEstado(idIncidente) {
+    return pool.query(
+      "SELECT idincidente, codigoincidente, idusuario, id_usuario_creador, id_estado, imagen_url FROM incidente WHERE idincidente = $1",
+      [idIncidente]
+    );
+  }
+
+  /**
+   * Actualizar estado y clasificación de un incidente
+   */
+  static async actualizarEstado({ idIncidente, idEstado, idGravedad, idModalidad, comentariosAdicionales, idUsuarioEditor }) {
+    return pool.query(`
+      UPDATE incidente SET
+        id_estado = $1,
+        id_gravedad = COALESCE($2, id_gravedad),
+        id_modalidad = COALESCE($3, id_modalidad),
+        comentarios_adicionales = COALESCE($4, comentarios_adicionales),
+        id_usuario_editor = $5,
+        fecha_edicion = CURRENT_TIMESTAMP
+      WHERE idincidente = $6
+      RETURNING idincidente, codigoincidente, id_estado, id_gravedad
+    `, [idEstado, idGravedad, idModalidad, comentariosAdicionales || null, idUsuarioEditor, idIncidente]);
+  }
+
+  /**
+   * Consultar nombre de un estado de incidente
+   */
+  static async obtenerNombreEstado(idEstado) {
+    return pool.query("SELECT nombre FROM estado_incidente WHERE id_estado = $1", [idEstado]);
+  }
+
+  /**
+   * Crear notificación para el usuario creador
+   */
+  static async crearNotificacion({ idUsuario, tipo = 'alerta', asunto, mensaje }) {
+    return pool.query(`
+      INSERT INTO notificaciones (id_usuario, tipo, asunto, mensaje)
+      VALUES ($1, $2, $3, $4)
+    `, [idUsuario, tipo, asunto, mensaje]);
+  }
+
+  /**
+   * Actualizar detalles y campos editables de un incidente
+   */
+  static async actualizarDetalles({ idIncidente, fechaincidente, horaincidente, descripcionincidente, direccion, idGravedad, idModalidad, nuevaImagenUrl, idUsuarioEditor }) {
+    return pool.query(`
+      UPDATE incidente SET
+        fechaincidente = COALESCE($1, fechaincidente),
+        horaincidente = COALESCE($2, horaincidente),
+        descripcionincidente = COALESCE($3, descripcionincidente),
+        direccion = COALESCE($4, direccion),
+        id_gravedad = COALESCE($5, id_gravedad),
+        id_modalidad = COALESCE($6, id_modalidad),
+        imagen_url = COALESCE($7, imagen_url),
+        id_usuario_editor = $8,
+        fecha_edicion = CURRENT_TIMESTAMP
+      WHERE idincidente = $9
+    `, [
+      fechaincidente || null,
+      horaincidente || null,
+      descripcionincidente !== undefined ? descripcionincidente : null,
+      direccion || null,
+      idGravedad,
+      idModalidad,
+      nuevaImagenUrl !== undefined ? nuevaImagenUrl : null,
+      idUsuarioEditor,
+      idIncidente
+    ]);
+  }
+
+  /**
+   * Insertar registro individual durante importación masiva CSV
+   */
+  static async insertarFilaMasiva({ codigo, desc, tipo, fecha, hora, lng, lat, idUsuario, idLote }) {
+    return pool.query(`
+      INSERT INTO incidente
+      (
+        codigoincidente, descripcionincidente, idtipoincidente, fechaincidente, horaincidente,
+        geom, idusuario, id_usuario_creador, id_estado, id_gravedad, origen, id_lote
+      )
+      VALUES (
+        $1, $2, $3, $4, $5,
+        ST_SetSRID(ST_MakePoint($6, $7), 4326),
+        $8, $8, 1, 3, 'masivo', $9
+      )
+    `, [codigo, desc, parseInt(tipo), fecha, hora, lng, lat, idUsuario, idLote]);
+  }
+
+  /**
+   * Obtener el id_lote de la importación masiva más reciente
+   */
+  static async obtenerUltimoLoteMasivo() {
+    return pool.query(
+      `SELECT id_lote FROM incidente 
+       WHERE origen = 'masivo' AND id_lote IS NOT NULL
+       ORDER BY fecharegistro DESC LIMIT 1`
+    );
+  }
+
+  /**
+   * Eliminar todos los incidentes asociados a un id_lote
+   */
+  static async eliminarPorLote(idLote) {
+    return pool.query("DELETE FROM incidente WHERE id_lote = $1", [idLote]);
+  }
+
+  /**
+   * Consultar puntos geográficos para algoritmo de clustering DBSCAN (Hotspots)
+   */
+  static async obtenerPuntosParaHotspots(idTipo = null) {
+    let query = `
+      SELECT 
+        i.idincidente as id,
+        ST_Y(i.geom) as lat,
+        ST_X(i.geom) as lng,
+        i.idtipoincidente,
+        ti.nametipoincidente as tipo_nombre,
+        i.fechaincidente,
+        i.horaincidente,
+        COALESCE(i.id_gravedad, 3) as gravedad
+      FROM incidente i
+      LEFT JOIN tipo_incidente ti ON i.idtipoincidente = ti.idtipoincidente
+      WHERE i.geom IS NOT NULL
+    `;
+    const params = [];
+
+    if (idTipo) {
+      params.push(idTipo);
+      query += ` AND i.idtipoincidente = $${params.length}`;
+    }
+
+    query += ` ORDER BY i.fechaincidente DESC LIMIT 2000`;
+    return pool.query(query, params);
+  }
+
+  /**
+   * Contar incidentes con descripción válida para calibración de Machine Learning
+   */
+  static async contarConDescripcionValida() {
+    return pool.query(`
+      SELECT COUNT(*) as count 
+      FROM incidente 
+      WHERE descripcionincidente IS NOT NULL AND LENGTH(descripcionincidente) > 10
+    `);
+  }
+
+  /**
+   * Consultar incidentes en formato tabla para un usuario específico
+   */
+  static async obtenerIncidentesTablaUsuario(nombreUsuario) {
+    const query = `
+      SELECT 
+        i.idincidente,
+        i.idtipoincidente,
+        i.codigoincidente,
+        ST_Y(i.geom) AS lat,
+        ST_X(i.geom) AS lng,
+        i.descripcionincidente,
+        tp.nametipoincidente,
+        i.fechaincidente,
+        i.horaincidente,
+        b.namebarrio,
+        v.nombre,
+        u.nombreusuario
+      FROM incidente i
+      LEFT JOIN barrio b
+        ON i.idbarrio = b.gid
+      JOIN tipo_incidente tp
+        ON i.idtipoincidente = tp.idtipoincidente
+      JOIN usuario u 
+        ON i.idusuario = u.idusuario
+      LEFT JOIN vereda v
+        ON i.idvereda = v.id
+      WHERE u.nombreusuario = $1
+    `;
+    return pool.query(query, [nombreUsuario]);
+  }
+
+  /**
+   * Consultar incidentes con filtros administrativos dinámicos
+   */
+  static async obtenerIncidentesFiltroAdmin({ usuarioLogueado, rolLogueado = 'reportero', idtipoincidente, fechaincidente, fechaDesde, fechaHasta, id_estado }) {
+    let query = `
+      SELECT 
+        i.idincidente,
+        i.idtipoincidente,
+        i.codigoincidente,
+        ST_Y(i.geom) AS lat,
+        ST_X(i.geom) AS lng,
+        i.descripcionincidente,
+        tp.nametipoincidente,
+        i.fechaincidente,
+        i.horaincidente,
+        b.namebarrio,
+        v.nombre,
+        COALESCE(u.nombreusuario, 'Sistema') as nombreusuario,
+        i.id_estado,
+        COALESCE(ei.nombre, 'Reportado') as estado_nombre,
+        COALESCE(ei.color, '#ffc107') as estado_color,
+        i.id_admin_revisor,
+        ar.nombreusuario as admin_revisor_nombre,
+        i.fecha_toma_revision,
+        i.fecharegistro,
+        i.imagen_url
+      FROM incidente i
+      LEFT JOIN barrio b 
+        ON i.idbarrio = b.gid
+      LEFT JOIN tipo_incidente tp 
+        ON i.idtipoincidente = tp.idtipoincidente
+      LEFT JOIN usuario u 
+        ON i.idusuario = u.idusuario
+      LEFT JOIN vereda v 
+        ON i.idvereda = v.id
+      LEFT JOIN estado_incidente ei
+        ON i.id_estado = ei.id_estado
+      LEFT JOIN usuario ar
+        ON i.id_admin_revisor = ar.idusuario
+      WHERE 1=1
+    `;
+
+    const values = [];
+
+    if (rolLogueado !== 'superadmin' && rolLogueado !== 'admin') {
+      values.push(usuarioLogueado);
+      query += ` AND u.nombreusuario = $${values.length}`;
+    }
+
+    if (idtipoincidente) {
+      values.push(idtipoincidente);
+      query += ` AND i.idtipoincidente = $${values.length}`;
+    }
+
+    if (id_estado) {
+      values.push(parseInt(id_estado));
+      query += ` AND i.id_estado = $${values.length}`;
+    }
+
+    if (fechaincidente) {
+      values.push(fechaincidente);
+      query += ` AND DATE(i.fechaincidente) = $${values.length}`;
+    }
+
+    if (fechaDesde) {
+      values.push(fechaDesde);
+      query += ` AND DATE(i.fechaincidente) >= $${values.length}`;
+    }
+
+    if (fechaHasta) {
+      values.push(fechaHasta);
+      query += ` AND DATE(i.fechaincidente) <= $${values.length}`;
+    }
+
+    query += ` ORDER BY i.idincidente DESC`;
+
+    return pool.query(query, values);
   }
 }
 

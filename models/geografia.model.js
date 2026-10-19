@@ -22,6 +22,7 @@ class GeografiaModel {
         i.fechaincidente,
         i.horaincidente,
         tp.nametipoincidente,
+        COALESCE(tp.color, '#3b82f6') AS color,
         b.namebarrio,
         v.nombre AS nombrevereda
       FROM incidente i
@@ -120,6 +121,33 @@ class GeografiaModel {
     }
     return pool.query(query, valores);
   }
+
+  /**
+   * Buscar barrios por coincidencia de texto para autocompletado
+   */
+  static async buscarBarrios(q, limit = 10) {
+    const res = await pool.query(`
+      SELECT namebarrio
+      FROM barrio
+      WHERE LOWER(namebarrio) LIKE LOWER($1)
+      LIMIT $2;
+    `, [`%${q || ''}%`, limit]);
+    return res.rows;
+  }
+
+  /**
+   * Buscar veredas por coincidencia de texto para autocompletado
+   */
+  static async buscarVeredas(q, limit = 10) {
+    const res = await pool.query(`
+      SELECT nombre
+      FROM vereda
+      WHERE nombre ILIKE $1
+      LIMIT $2;
+    `, [`%${q || ''}%`, limit]);
+    return res.rows;
+  }
 }
 
 module.exports = GeografiaModel;
+

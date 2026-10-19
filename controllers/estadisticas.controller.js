@@ -1,19 +1,23 @@
 const EstadisticasModel = require('../models/estadisticas.model');
+const logger = require('../utils/logger');
 
 const getConteoIncidente = async (req, res) => {
   try {
     const result = await EstadisticasModel.obtenerConteoTotal();
     res.json(result.rows);
   } catch (error) {
+    logger.error('Error en getConteoIncidente:', error);
     res.status(500).json({ error: "Error en servidor" });
   }
 };
+
 
 const getConteoPorTipo = async (req, res) => {
   try {
     const result = await EstadisticasModel.obtenerConteoPorTipo();
     res.json(result.rows);
   } catch (error) {
+    logger.error('Error en getConteoPorTipo:', error);
     res.status(500).json({ error: "Error en servidor" });
   }
 };
@@ -25,7 +29,7 @@ const getResumen = async (req, res) => {
     const result = await EstadisticasModel.obtenerResumen(fechaDesde, fechaHasta);
     res.json(result.rows[0]);
   } catch (error) {
-    console.error(error);
+    logger.error('Error en getResumen:', error);
     res.status(500).json({ error: "Error en resumen" });
   }
 };
@@ -37,7 +41,7 @@ const getTopZonas = async (req, res) => {
     const zonas = await EstadisticasModel.obtenerTopZonas(fechaDesde, fechaHasta);
     res.json(zonas);
   } catch (error) {
-    console.error(error);
+    logger.error('Error en getTopZonas:', error);
     res.status(500).json({ error: "Error en top zonas" });
   }
 };
@@ -59,12 +63,12 @@ const getTopIncidentes = async (req, res) => {
     const data = result.rows.map(r => ({
       tipo: r.tipo,
       cantidad: parseInt(r.cantidad),
-      color: colores[r.tipo] || "#3498db"
+      color: r.color || colores[r.tipo] || "#3498db"
     }));
 
     res.json(data);
   } catch (error) {
-    console.error(error);
+    logger.error('Error en getTopIncidentes:', error);
     res.status(500).json({ error: "Error en top incidentes" });
   }
 };
@@ -74,7 +78,7 @@ const getUltimaActualizacion = async (req, res) => {
     const result = await EstadisticasModel.obtenerUltimaActualizacion();
     res.json(result.rows[0]);
   } catch (error) {
-    console.error(error);
+    logger.error('Error en getUltimaActualizacion:', error);
     res.status(500).json({ error: "Error en última actualización" });
   }
 };

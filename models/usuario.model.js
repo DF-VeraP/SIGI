@@ -188,6 +188,83 @@ class UsuarioModel {
     );
     return res.rows[0]?.total || 0;
   }
+
+  /**
+   * Verificar si un username ya existe para otro usuario
+   */
+  static async verificarUsernameDuplicado(nombreusuario, idExcluir) {
+    return pool.query(
+      'SELECT idusuario FROM usuario WHERE LOWER(nombreusuario) = LOWER($1) AND idusuario != $2',
+      [nombreusuario.trim(), idExcluir]
+    );
+  }
+
+  /**
+   * Verificar si un email ya existe para otro usuario
+   */
+  static async verificarEmailDuplicado(email, idExcluir) {
+    return pool.query(
+      'SELECT idusuario FROM usuario WHERE LOWER(email) = LOWER($1) AND idusuario != $2',
+      [email.trim(), idExcluir]
+    );
+  }
+
+  /**
+   * Consultar hash de contraseña actual por ID
+   */
+  static async obtenerPasswordHash(id) {
+    return pool.query('SELECT contraseniausuario FROM usuario WHERE idusuario = $1', [id]);
+  }
+
+  /**
+   * Actualizar usuario con contraseña opcional y rol/estado
+   */
+  static async actualizarCompleto(id, { nombreusuario, email, hashedPassword, rol, estado, dependencia, telefono }) {
+    return pool.query(`
+      UPDATE usuario SET
+        nombreusuario = COALESCE($1, nombreusuario),
+        email = COALESCE($2, email),
+        contraseniausuario = $3,
+        rol = COALESCE($4, rol),
+        estado = COALESCE($5, estado),
+        dependencia = COALESCE($6, dependencia),
+        telefono = COALESCE($7, telefono),
+        fecha_actualizacion = CURRENT_TIMESTAMP
+      WHERE idusuario = $8
+      RETURNING idusuario, nombreusuario, email, rol, estado, dependencia, debe_cambiar_password
+    `, [
+      nombreusuario ? nombreusuario.trim() : null,
+      email ? email.trim() : null,
+      hashedPassword,
+      rol || null,
+      estado || null,
+      dependencia || null,
+      telefono ? telefono.trim() : null,
+      id
+    ]);
+  }
+
+  /**
+   * Obtener registros de auditoría de actividad
+   */
+  static async obtenerLogsAuditoria(limite = 100) {
+    return pool.query(`
+      SELECT 
+        l.id_log,
+        l.id_usuario,
+        u.nombreusuario,
+        l.accion,
+        l.tabla_afectada,
+        l.id_registro,
+        l.descripcion,
+        l.ip AS ip_origen,
+        l.fecha AS fecha_hora
+      FROM logs_actividad l
+      LEFT JOIN usuario u ON l.id_usuario = u.idusuario
+      ORDER BY l.id_log DESC
+      LIMIT $1
+    `, [limite]);
+  }
 }
 
 module.exports = UsuarioModel;

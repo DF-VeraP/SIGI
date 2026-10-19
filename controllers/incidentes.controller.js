@@ -1,8 +1,8 @@
-const pool = require('../db');
 const csv = require('csv-parser');
 const stream = require('stream');
 const IncidenteModel = require('../models/incidente.model');
-const { registrarLogActividad } = require('../utils/logger');
+const logger = require('../utils/logger');
+const { registrarLogActividad } = logger;
 const { subirImagenCloudinary, eliminarImagenCloudinary } = require('../utils/cloudinary');
 
 // Registrar un incidente (Abierto a Reportero, Admin y Superadmin)
@@ -52,7 +52,7 @@ const registrarIncidente = async (req, res) => {
       try {
         imagenUrl = await subirImagenCloudinary(req.file.buffer, codigoincidente, req.file.originalname);
       } catch (imgErr) {
-        console.error("Error al subir foto de evidencia:", imgErr.message);
+        logger.error("Error al subir foto de evidencia:", imgErr.message);
       }
     }
 
@@ -143,7 +143,7 @@ const registrarIncidente = async (req, res) => {
         });
       }
     } catch (wsErr) {
-      console.warn("Aviso Socket.io:", wsErr.message);
+      logger.warn("Aviso Socket.io:", wsErr.message);
     }
 
     res.status(201).json({
@@ -152,7 +152,7 @@ const registrarIncidente = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error al registrar incidente:", error);
+    logger.error("Error al registrar incidente:", error);
     res.status(500).json({ mensaje: "Error en el servidor al registrar incidente" });
   }
 };
@@ -193,7 +193,7 @@ const obtenerIncidentes = async (req, res) => {
     // Respuesta en array directo (100% retrocompatible con Leaflet y vistas actuales)
     res.json(result.rows);
   } catch (error) {
-    console.error("Error al obtener incidentes:", error);
+    logger.error("Error al obtener incidentes:", error);
     res.status(500).json({ mensaje: "Error al consultar incidentes" });
   }
 };
@@ -209,7 +209,7 @@ const obtenerMisReportes = async (req, res) => {
     const result = await IncidenteModel.obtenerMisReportes(idusuarioLogueado);
     res.json(result.rows);
   } catch (error) {
-    console.error("Error al obtener mis reportes:", error);
+    logger.error("Error al obtener mis reportes:", error);
     res.status(500).json({ mensaje: "Error en servidor" });
   }
 };
@@ -220,7 +220,7 @@ const obtenerPendientes = async (req, res) => {
     const result = await IncidenteModel.obtenerPendientes();
     res.json(result.rows);
   } catch (error) {
-    console.error("Error al obtener incidentes pendientes:", error);
+    logger.error("Error al obtener incidentes pendientes:", error);
     res.status(500).json({ mensaje: "Error al obtener pendientes" });
   }
 };
@@ -235,10 +235,7 @@ const cambiarEstadoIncidente = async (req, res) => {
   }
 
   try {
-    const incCheck = await pool.query(
-      "SELECT idincidente, codigoincidente, id_usuario_creador FROM incidente WHERE idincidente = $1",
-      [parseInt(id)]
-    );
+    const incCheck = await IncidenteModel.obtenerCreadorYEstado(parseInt(id));
 
     if (incCheck.rows.length === 0) {
       return res.status(404).json({ mensaje: "Incidente no encontrado ❌" });
@@ -249,19 +246,16 @@ const cambiarEstadoIncidente = async (req, res) => {
     const gravedadVal = id_gravedad ? parseInt(id_gravedad) : null;
     const modalidadVal = id_modalidad ? parseInt(id_modalidad) : null;
 
-    const result = await pool.query(`
-      UPDATE incidente SET
-        id_estado = $1,
-        id_gravedad = COALESCE($2, id_gravedad),
-        id_modalidad = COALESCE($3, id_modalidad),
-        comentarios_adicionales = COALESCE($4, comentarios_adicionales),
-        id_usuario_editor = $5,
-        fecha_edicion = CURRENT_TIMESTAMP
-      WHERE idincidente = $6
-      RETURNING idincidente, codigoincidente, id_estado, id_gravedad
-    `, [estadoVal, gravedadVal, modalidadVal, comentarios_adicionales || null, req.session.idusuario, parseInt(id)]);
+    const result = await IncidenteModel.actualizarEstado({
+      idIncidente: parseInt(id),
+      idEstado: estadoVal,
+      idGravedad: gravedadVal,
+      idModalidad: modalidadVal,
+      comentariosAdicionales: comentarios_adicionales,
+      idUsuarioEditor: req.session.idusuario
+    });
 
-    const estadoNombreRes = await pool.query("SELECT nombre FROM estado_incidente WHERE id_estado = $1", [estadoVal]);
+    const estadoNombreRes = await IncidenteModel.obtenerNombreEstado(estadoVal);
     const estadoNombre = estadoNombreRes.rows[0]?.nombre || 'Nuevo Estado';
 
     await registrarLogActividad(
@@ -274,13 +268,12 @@ const cambiarEstadoIncidente = async (req, res) => {
     );
 
     if (incidente.id_usuario_creador) {
-      await pool.query(`
-        INSERT INTO notificaciones (id_usuario, tipo, asunto, mensaje)
-        VALUES ($1, 'alerta', 'Actualización de Reporte', $2)
-      `, [
-        incidente.id_usuario_creador,
-        `Tu reporte ${incidente.codigoincidente || id} ha sido actualizado a estado: "${estadoNombre}".`
-      ]);
+      await IncidenteModel.crearNotificacion({
+        idUsuario: incidente.id_usuario_creador,
+        tipo: 'alerta',
+        asunto: 'Actualización de Reporte',
+        mensaje: `Tu reporte ${incidente.codigoincidente || id} ha sido actualizado a estado: "${estadoNombre}".`
+      });
     }
 
     res.json({
@@ -289,7 +282,7 @@ const cambiarEstadoIncidente = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error al cambiar estado del incidente:", error);
+    logger.error("Error al cambiar estado del incidente:", error);
     res.status(500).json({ mensaje: "Error al actualizar estado del incidente" });
   }
 };
@@ -304,7 +297,7 @@ const eliminarIncidente = async (req, res) => {
 
   try {
     const incId = parseInt(req.params.id);
-    const checkOwner = await pool.query("SELECT idusuario, id_usuario_creador, imagen_url, id_estado FROM incidente WHERE idincidente = $1", [incId]);
+    const checkOwner = await IncidenteModel.obtenerCreadorYEstado(incId);
     if (checkOwner.rows.length === 0) {
       return res.status(404).json({ mensaje: "Incidente no encontrado ❌" });
     }
@@ -326,7 +319,7 @@ const eliminarIncidente = async (req, res) => {
       try {
         await eliminarImagenCloudinary(inc.imagen_url);
       } catch (errImg) {
-        console.warn("No se pudo eliminar la imagen asociada:", errImg.message);
+        logger.warn("No se pudo eliminar la imagen asociada:", errImg.message);
       }
     }
 
@@ -343,7 +336,7 @@ const eliminarIncidente = async (req, res) => {
 
     res.json({ mensaje: "Incidente eliminado exitosamente ✅" });
   } catch (error) {
-    console.error("Error al eliminar incidente:", error);
+    logger.error("Error al eliminar incidente:", error);
     res.status(500).json({ mensaje: "Error al eliminar incidente" });
   }
 };
@@ -359,7 +352,7 @@ const obtenerIncidente = async (req, res) => {
 
     res.json(result.rows[0]);
   } catch (error) {
-    console.error("Error al obtener incidente:", error);
+    logger.error("Error al obtener incidente:", error);
     res.status(500).json({ mensaje: "Error al consultar incidente" });
   }
 };
@@ -374,10 +367,7 @@ const actualizarIncidente = async (req, res) => {
 
   try {
     const incId = parseInt(req.params.id);
-    const checkOwner = await pool.query(
-      "SELECT idusuario, id_usuario_creador, id_estado, codigoincidente, imagen_url FROM incidente WHERE idincidente = $1",
-      [incId]
-    );
+    const checkOwner = await IncidenteModel.obtenerCreadorYEstado(incId);
     if (checkOwner.rows.length === 0) {
       return res.status(404).json({ mensaje: "Incidente no encontrado ❌" });
     }
@@ -407,7 +397,7 @@ const actualizarIncidente = async (req, res) => {
         try {
           await eliminarImagenCloudinary(inc.imagen_url);
         } catch (errDel) {
-          console.warn("No se pudo eliminar la imagen anterior:", errDel.message);
+          logWarn("No se pudo eliminar la imagen anterior:", { error: errDel.message });
         }
       }
       try {
@@ -417,33 +407,21 @@ const actualizarIncidente = async (req, res) => {
           req.file.originalname
         );
       } catch (errSubir) {
-        console.error("Error al subir nueva imagen:", errSubir.message);
+        logError("Error al subir nueva imagen:", { error: errSubir.message });
       }
     }
 
-    await pool.query(`
-      UPDATE incidente SET
-        fechaincidente = COALESCE($1, fechaincidente),
-        horaincidente = COALESCE($2, horaincidente),
-        descripcionincidente = COALESCE($3, descripcionincidente),
-        direccion = COALESCE($4, direccion),
-        id_gravedad = COALESCE($5, id_gravedad),
-        id_modalidad = COALESCE($6, id_modalidad),
-        imagen_url = COALESCE($7, imagen_url),
-        id_usuario_editor = $8,
-        fecha_edicion = CURRENT_TIMESTAMP
-      WHERE idincidente = $9
-    `, [
-      fechaincidente || null,
-      horaincidente || null,
-      descripcionincidente !== undefined ? descripcionincidente : null,
-      direccion || null,
-      gravedadVal,
-      modalidadVal,
-      nuevaImagenUrl !== undefined ? nuevaImagenUrl : null,
-      idusuarioLogueado,
-      incId
-    ]);
+    await IncidenteModel.actualizarDetalles({
+      idIncidente: incId,
+      fechaincidente,
+      horaincidente,
+      descripcionincidente,
+      direccion,
+      idGravedad: gravedadVal,
+      idModalidad: modalidadVal,
+      nuevaImagenUrl,
+      idUsuarioEditor: idusuarioLogueado
+    });
 
     await registrarLogActividad(
       idusuarioLogueado,
@@ -460,7 +438,7 @@ const actualizarIncidente = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error actualizando incidente:", error);
+    logger.error("Error actualizando incidente:", error);
     res.status(500).json({ mensaje: "Error actualizando incidente" });
   }
 };
@@ -518,21 +496,20 @@ const importarIncidentesMasivo = async (req, res) => {
         }
 
         try {
-          await pool.query(`
-            INSERT INTO incidente
-            (
-              codigoincidente, descripcionincidente, idtipoincidente, fechaincidente, horaincidente,
-              geom, idusuario, id_usuario_creador, id_estado, id_gravedad, origen, id_lote
-            )
-            VALUES (
-              $1, $2, $3, $4, $5,
-              ST_SetSRID(ST_MakePoint($6, $7), 4326),
-              $8, $8, 1, 3, 'masivo', $9
-            )
-          `, [codigo, desc, parseInt(tipo), fecha, hora, lng, lat, idusuarioLogueado, idLote]);
+          await IncidenteModel.insertarFilaMasiva({
+            codigo,
+            desc,
+            tipo,
+            fecha,
+            hora,
+            lng,
+            lat,
+            idUsuario: idusuarioLogueado,
+            idLote
+          });
           exitos++;
         } catch (err) {
-          console.error("Error insertando fila CSV:", err);
+          logError("Error insertando fila CSV:", { error: err.message });
           fallidos++;
         }
       }
@@ -568,11 +545,7 @@ const deshacerUltimaImportacion = async (req, res) => {
   }
 
   try {
-    const resultLote = await pool.query(
-      `SELECT id_lote FROM incidente 
-       WHERE origen = 'masivo' AND id_lote IS NOT NULL
-       ORDER BY fecharegistro DESC LIMIT 1`
-    );
+    const resultLote = await IncidenteModel.obtenerUltimoLoteMasivo();
 
     if (resultLote.rows.length === 0) {
       return res.status(404).json({ mensaje: "No se encontraron importaciones masivas para deshacer." });
@@ -580,10 +553,7 @@ const deshacerUltimaImportacion = async (req, res) => {
 
     const ultimoLote = resultLote.rows[0].id_lote;
 
-    const resultDelete = await pool.query(
-      "DELETE FROM incidente WHERE id_lote = $1",
-      [ultimoLote]
-    );
+    const resultDelete = await IncidenteModel.eliminarPorLote(ultimoLote);
 
     await registrarLogActividad(
       idusuarioLogueado,
@@ -599,7 +569,7 @@ const deshacerUltimaImportacion = async (req, res) => {
       eliminados: resultDelete.rowCount 
     });
   } catch (error) {
-    console.error("Error deshaciendo importación:", error);
+    logger.error("Error deshaciendo importación:", error);
     res.status(500).json({ mensaje: "Error al deshacer importación" });
   }
 };
@@ -619,12 +589,7 @@ const tomarIncidente = async (req, res) => {
     const result = await IncidenteModel.tomarIncidente(incId, idAdmin);
 
     if (result.rows.length === 0) {
-      const checkRes = await pool.query(`
-        SELECT i.idincidente, u.nombreusuario 
-        FROM incidente i 
-        LEFT JOIN usuario u ON i.id_admin_revisor = u.idusuario 
-        WHERE i.idincidente = $1
-      `, [incId]);
+      const checkRes = await IncidenteModel.obtenerAdminAsignado(incId);
 
       const adminAsignado = checkRes.rows.length > 0 ? (checkRes.rows[0].nombreusuario || 'otro administrador') : 'otro administrador';
       return res.status(409).json({
@@ -632,7 +597,7 @@ const tomarIncidente = async (req, res) => {
       });
     }
 
-    registrarLogActividad(idAdmin, 'TOMAR_REVISION', 'incidente', incId, `Tomó la revisión del incidente #${incId}`, req).catch(err => console.error("Error en log:", err.message));
+    registrarLogActividad(idAdmin, 'TOMAR_REVISION', 'incidente', incId, `Tomó la revisión del incidente #${incId}`, req).catch(err => logger.error("Error en log:", err.message));
 
     res.json({
       mensaje: `Has tomado la revisión del incidente #${incId} ✅`,
@@ -641,7 +606,7 @@ const tomarIncidente = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error en tomarIncidente:", error);
+    logger.error("Error en tomarIncidente:", error);
     res.status(500).json({ mensaje: "Error en el servidor al tomar el incidente" });
   }
 };
@@ -658,34 +623,18 @@ const liberarIncidente = async (req, res) => {
 
   try {
     const incId = parseInt(id);
-    let query = `
-      UPDATE incidente
-      SET id_admin_revisor = NULL,
-          id_estado = 1, -- 1 = Reportado / Pendiente
-          fecha_toma_revision = NULL
-      WHERE idincidente = $1
-    `;
-    const params = [incId];
-
-    if (rolAdmin !== 'superadmin') {
-      query += ` AND id_admin_revisor = $2`;
-      params.push(idAdmin);
-    }
-
-    query += ` RETURNING idincidente;`;
-
-    const result = await pool.query(query, params);
+    const result = await IncidenteModel.liberarIncidente(incId, idAdmin, rolAdmin);
 
     if (result.rows.length === 0) {
       return res.status(403).json({ mensaje: "No tienes permisos para liberar este incidente o ya no está asignado a ti ⛔" });
     }
 
-    registrarLogActividad(idAdmin, 'LIBERAR_REVISION', 'incidente', incId, `Liberó el incidente #${incId} devolviéndolo a la cola pública`, req).catch(err => console.error("Error en log:", err.message));
+    registrarLogActividad(idAdmin, 'LIBERAR_REVISION', 'incidente', incId, `Liberó el incidente #${incId} devolviéndolo a la cola pública`, req).catch(err => logger.error("Error en log:", err.message));
 
     res.json({ mensaje: `Incidente #${incId} devuelto a la cola pública de verificación ↩️` });
 
   } catch (error) {
-    console.error("Error en liberarIncidente:", error);
+    logger.error("Error en liberarIncidente:", error);
     res.status(500).json({ mensaje: "Error al liberar el incidente" });
   }
 };
@@ -708,12 +657,12 @@ const resolverIncidente = async (req, res) => {
       return res.status(404).json({ mensaje: "Incidente no encontrado" });
     }
 
-    registrarLogActividad(idAdmin, 'APROBAR_INCIDENTE', 'incidente', incId, `Aprobó y resolvió el incidente #${incId}`, req).catch(err => console.error("Error en log:", err.message));
+    registrarLogActividad(idAdmin, 'APROBAR_INCIDENTE', 'incidente', incId, `Aprobó y resolvió el incidente #${incId}`, req).catch(err => logger.error("Error en log:", err.message));
 
     res.json({ mensaje: `Incidente #${incId} verificado y aprobado exitosamente ✅` });
 
   } catch (error) {
-    console.error("Error en resolverIncidente:", error);
+    logger.error("Error en resolverIncidente:", error);
     res.status(500).json({ mensaje: "Error al resolver el incidente" });
   }
 };
@@ -736,12 +685,12 @@ const cerrarIncidente = async (req, res) => {
       return res.status(404).json({ mensaje: "Incidente no encontrado" });
     }
 
-    registrarLogActividad(idAdmin, 'DESESTIMAR_INCIDENTE', 'incidente', incId, `Desestimó/cerró el incidente #${incId}`, req).catch(err => console.error("Error en log:", err.message));
+    registrarLogActividad(idAdmin, 'DESESTIMAR_INCIDENTE', 'incidente', incId, `Desestimó/cerró el incidente #${incId}`, req).catch(err => logger.error("Error en log:", err.message));
 
     res.json({ mensaje: `Incidente #${incId} desestimado / cerrado exitosamente ❌` });
 
   } catch (error) {
-    console.error("Error en cerrarIncidente:", error);
+    logger.error("Error en cerrarIncidente:", error);
     res.status(500).json({ mensaje: "Error al cerrar el incidente" });
   }
 };

@@ -1194,6 +1194,21 @@ function actualizarBadgePendientes(incidentes) {
     if (badgeMobile) badgeMobile.style.display = "none";
 }
 
+function actualizarKpisIncidentes(lista) {
+    const data = lista || todosLosIncidentes || [];
+    const pend = document.getElementById("kpiIncidentesPendientes");
+    const eval = document.getElementById("kpiIncidentesEvaluacion");
+    const aprob = document.getElementById("kpiIncidentesAprobados");
+    const desest = document.getElementById("kpiIncidentesDesestimados");
+    const total = document.getElementById("conteoTotalVerificacion");
+
+    if (total && data.length > 0) total.textContent = data.length;
+    if (pend) pend.textContent = data.filter(i => parseInt(i.id_estado || 1) === 1).length;
+    if (eval) eval.textContent = data.filter(i => parseInt(i.id_estado) === 2).length;
+    if (aprob) aprob.textContent = data.filter(i => parseInt(i.id_estado) === 5).length;
+    if (desest) desest.textContent = data.filter(i => parseInt(i.id_estado) === 6).length;
+}
+
 let ultimosIdsConocidos = new Set();
 let primerCargaRealizada = false;
 
@@ -1217,6 +1232,7 @@ async function cargarTabla(silencioso = false) {
             ultimosIdsConocidos = new Set(data.map(i => i.idincidente));
             primerCargaRealizada = true;
             todosLosIncidentes = data;
+            actualizarKpisIncidentes(data);
             aplicarFiltrosIncidentes(false);
         }
     } catch (error) {

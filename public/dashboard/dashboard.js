@@ -355,12 +355,15 @@ function llenarTablaIncidentes(resetPagina = false) {
         if (inc.idtipoincidente === 3) badgeClass = "badge-pique";
         if (inc.idtipoincidente === 4) badgeClass = "badge-accidente";
 
+        const colTipo = inc.color || (typeof obtenerColor === 'function' ? obtenerColor(inc.idtipoincidente, inc) : '#3b82f6');
+        const customStyleBadge = badgeClass === "badge-default" ? `style="background-color: ${colTipo}22; color: ${colTipo}; border: 1px solid ${colTipo}44;"` : '';
+
         const tr = document.createElement("tr");
         tr.className = "fila-incidente-hover";
         tr.innerHTML = `
             <td style="color: var(--texto-suave); font-weight: bold;">${consecutivo}</td>
             <td><strong>${inc.codigoincidente || 'N/A'}</strong></td>
-            <td><span class="badge-tipo ${badgeClass}">${inc.nametipoincidente || 'N/A'}</span></td>
+            <td><span class="badge-tipo ${badgeClass}" ${customStyleBadge}>${inc.nametipoincidente || 'N/A'}</span></td>
             <td>${zona}</td>
             <td>${fecha}</td>
             <td>${hora}</td>
@@ -437,7 +440,7 @@ function renderizarFeedIncidentesMobile(datos = incidentesData) {
         const zona = inc.namebarrio || inc.nombrevereda || 'Sin zona';
         const tipoName = inc.nametipoincidente || 'Incidente';
 
-        let colorClass = "var(--acento)";
+        let colorClass = inc.color || (typeof obtenerColor === 'function' ? obtenerColor(inc.idtipoincidente, inc) : "var(--acento)");
 
         const tipoLower = String(tipoName).toLowerCase();
         if (inc.idtipoincidente === 1 || tipoLower.includes("robo")) {
@@ -1788,11 +1791,72 @@ function desmarcarTiposInput() {
     actualizarBadgeFiltros();
 }
 
-function obtenerColor(tipo) {
-    if (tipo === 1) return "red";
-    if (tipo === 2) return "yellow";
-    if (tipo === 3) return "magenta";
-    if (tipo === 4) return "limegreen";
+let catalogoTiposMapDashboard = {};
+
+function sincronizarBotonesFiltroTipos(tipos) {
+    const contenedorTipos = document.querySelector(".tiposIncidente");
+    if (!contenedorTipos || !Array.isArray(tipos)) return;
+
+    tipos.forEach(t => {
+        const idStr = String(t.idtipoincidente);
+        const yaExiste = contenedorTipos.querySelector(`.incidente[data-id="${idStr}"]`);
+        if (!yaExiste && t.estado !== 'inactivo') {
+            const btn = document.createElement("button");
+            btn.className = "incidente";
+            btn.dataset.id = idStr;
+            btn.type = "button";
+            btn.innerHTML = `<span class="punto" style="background-color: ${t.color || '#3b82f6'};"></span> ${t.nametipoincidente}`;
+            btn.addEventListener("click", function () {
+                const id = btn.dataset.id;
+                if (btn.classList.contains("resaltarBtnFiltro")) {
+                    btn.classList.remove("resaltarBtnFiltro");
+                    tiposId = tiposId.filter(tipo => tipo !== id);
+                } else {
+                    btn.classList.add("resaltarBtnFiltro");
+                    tiposId.push(id);
+                }
+                actualizarBadgeFiltros();
+            });
+            contenedorTipos.appendChild(btn);
+        }
+    });
+}
+
+async function cargarCatalogoTiposDashboard() {
+    try {
+        const resp = await fetch("/tiposIncidente");
+        if (resp.ok) {
+            const data = await resp.json();
+            if (Array.isArray(data)) {
+                data.forEach(t => {
+                    const id = parseInt(t.idtipoincidente);
+                    catalogoTiposMapDashboard[id] = {
+                        idtipoincidente: id,
+                        nametipoincidente: t.nametipoincidente,
+                        color: t.color || '#3b82f6',
+                        estado: t.estado || 'activo'
+                    };
+                });
+                sincronizarBotonesFiltroTipos(data);
+            }
+        }
+    } catch (e) {
+        console.warn("No se pudo cargar catálogo completo en dashboard:", e.message);
+    }
+}
+cargarCatalogoTiposDashboard();
+
+function obtenerColor(tipo, incidente) {
+    if (incidente && incidente.color) return incidente.color;
+    const t = parseInt(tipo);
+    if (catalogoTiposMapDashboard && catalogoTiposMapDashboard[t] && catalogoTiposMapDashboard[t].color) {
+        return catalogoTiposMapDashboard[t].color;
+    }
+    if (t === 1) return "#ef4444";
+    if (t === 2) return "#f59e0b";
+    if (t === 3) return "#8b5cf6";
+    if (t === 4) return "#10b981";
+    return "#3b82f6";
 }
 
 let lugarSeleccionado = { nombre: '', tipo: '' };
@@ -1838,12 +1902,13 @@ function renderizarIncidentes() {
         map.addLayer(capaIncidentes);
 
         incidentesData.forEach(incidente => {
+            const markerColor = incidente.color || obtenerColor(incidente.idtipoincidente, incidente);
             const marker = L.circleMarker([incidente.lat, incidente.lng], {
                 pane: 'incidentesPane',
                 radius: esMobile() ? 6 : 5,
-                color: obtenerColor(incidente.idtipoincidente),
-                fillColor: obtenerColor(incidente.idtipoincidente),
-                fillOpacity: 0.7
+                color: markerColor,
+                fillColor: markerColor,
+                fillOpacity: 0.75
             }).addTo(capaIncidentes);
 
             if (incidente.codigoincidente) {
@@ -1906,7 +1971,7 @@ function renderizarIncidentes() {
             const contenido = `
                 <div class="popup-card">
                     <div class="popup-card-header">
-                        <span class="popup-badge ${tipoClase}" title="${incidente.nametipoincidente || 'Incidente'}">${incidente.nametipoincidente || 'Incidente'}</span>
+                        <span class="popup-badge ${tipoClase}" style="${tipoClase === 'tipo-default' ? `background-color: ${markerColor}26; color: ${markerColor}; border: 1px solid ${markerColor}55;` : ''}" title="${incidente.nametipoincidente || 'Incidente'}">${incidente.nametipoincidente || 'Incidente'}</span>
                         <span class="popup-code" title="${incidente.codigoincidente || 'N/A'}">${incidente.codigoincidente || 'N/A'}</span>
                     </div>
                     
@@ -2643,11 +2708,15 @@ async function cargarIncidentesBarra() {
             "Piques": "#9b59b6",
             "Accidentes de transito": "#2ecc71"
         };
-        data = Object.entries(conteo).map(([tipo, cantidad]) => ({
-            tipo,
-            cantidad,
-            color: colores[tipo] || "#3b82f6"
-        }));
+        data = Object.entries(conteo).map(([tipo, cantidad]) => {
+            const matchInc = incidentesData.find(i => (i.nametipoincidente || '') === tipo);
+            const colorTipo = matchInc?.color || (typeof obtenerColor === 'function' ? obtenerColor(matchInc?.idtipoincidente, matchInc) : (colores[tipo] || "#3b82f6"));
+            return {
+                tipo,
+                cantidad,
+                color: colorTipo
+            };
+        });
         data.sort((a, b) => b.cantidad - a.cantidad);
     } else {
         const q = `?fechaDesde=${filtroFechaDesde}&fechaHasta=${filtroFechaHasta}`;

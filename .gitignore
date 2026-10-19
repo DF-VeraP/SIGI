@@ -24,5 +24,6 @@ backup_sigi.sql
 
 # AI Agents & IDE tools
 .agents/
+.clean/
 skills-lock.json
 

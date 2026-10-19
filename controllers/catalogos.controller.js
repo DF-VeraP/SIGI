@@ -1,5 +1,6 @@
 const CatalogosModel = require('../models/catalogos.model');
-const { registrarLogActividad } = require('../utils/logger');
+const logger = require('../utils/logger');
+const { registrarLogActividad } = logger;
 
 /**
  * Normaliza una cadena de texto para comparaciones estrictas anti-duplicados:
@@ -121,7 +122,7 @@ const getCatalogos = async (req, res) => {
     const catalogos = await CatalogosModel.obtenerTodos();
     res.json(catalogos);
   } catch (error) {
-    console.error('Error al obtener catálogos:', error);
+    logger.error('Error al obtener catálogos:', error);
     res.status(500).json({ mensaje: 'Error al obtener catálogos del sistema' });
   }
 };
@@ -136,7 +137,7 @@ const getTiposConDetalle = async (req, res) => {
     const tipos = await CatalogosModel.obtenerTiposConDetalle();
     res.json(tipos);
   } catch (error) {
-    console.error('Error al obtener tipos de incidentes con detalle:', error);
+    logger.error('Error al obtener tipos de incidentes con detalle:', error);
     res.status(500).json({ mensaje: 'Error al obtener lista de tipos de incidentes' });
   }
 };
@@ -166,7 +167,7 @@ const crearTipo = async (req, res) => {
       tipo: nuevoTipo
     });
   } catch (error) {
-    console.warn('Validación al crear tipo de incidente:', error.message);
+    logger.warn('Validación al crear tipo de incidente:', error.message);
     res.status(400).json({ mensaje: error.message });
   }
 };
@@ -202,7 +203,7 @@ const actualizarTipo = async (req, res) => {
       tipo: tipoActualizado
     });
   } catch (error) {
-    console.warn('Validación al actualizar tipo de incidente:', error.message);
+    logger.warn('Validación al actualizar tipo de incidente:', error.message);
     res.status(400).json({ mensaje: error.message });
   }
 };
@@ -244,7 +245,7 @@ const cambiarEstadoTipo = async (req, res) => {
       tipo: tipoModificado
     });
   } catch (error) {
-    console.error('Error al cambiar estado de tipo de incidente:', error);
+    logger.error('Error al cambiar estado de tipo de incidente:', error);
     res.status(500).json({ mensaje: 'Error al cambiar estado del tipo de incidente' });
   }
 };
@@ -285,7 +286,7 @@ const eliminarTipo = async (req, res) => {
       mensaje: `Tipo de incidente "${tipoExistente.nametipoincidente}" eliminado exitosamente`
     });
   } catch (error) {
-    console.error('Error al eliminar tipo de incidente:', error);
+    logger.error('Error al eliminar tipo de incidente:', error);
     res.status(500).json({ mensaje: 'Error al eliminar el tipo de incidente' });
   }
 };

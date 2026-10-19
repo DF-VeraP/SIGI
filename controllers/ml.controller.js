@@ -1,5 +1,7 @@
-const pool = require('../db');
+const IncidenteModel = require('../models/incidente.model');
+const EstadisticasModel = require('../models/estadisticas.model');
 const mlService = require('../services/ml.service');
+const { warn: logWarn } = require('../utils/logger');
 
 /**
  * Controlador de Machine Learning y Analítica Predictiva para SIGI
@@ -48,35 +50,12 @@ class MLController {
       const minPts = Math.max(2, Math.min(50, parseInt(req.query.minPts, 10) || 3));
       const idTipo = req.query.tipo ? parseInt(req.query.tipo, 10) : null;
 
-      let query = `
-        SELECT 
-          i.idincidente as id,
-          ST_Y(i.geom) as lat,
-          ST_X(i.geom) as lng,
-          i.idtipoincidente,
-          ti.nametipoincidente as tipo_nombre,
-          i.fechaincidente,
-          i.horaincidente,
-          COALESCE(i.id_gravedad, 3) as gravedad
-        FROM incidente i
-        LEFT JOIN tipo_incidente ti ON i.idtipoincidente = ti.idtipoincidente
-        WHERE i.geom IS NOT NULL
-      `;
-      const params = [];
-
-      if (idTipo) {
-        params.push(idTipo);
-        query += ` AND i.idtipoincidente = $${params.length}`;
-      }
-
-      query += ` ORDER BY i.fechaincidente DESC LIMIT 2000`;
-
       let incidentes = [];
       try {
-        const result = await pool.query(query, params);
+        const result = await IncidenteModel.obtenerPuntosParaHotspots(idTipo);
         incidentes = result.rows || [];
       } catch (dbErr) {
-        console.warn('Advertencia DB en hotspots ML, usando dataset de memoria si aplica:', dbErr.message);
+        logWarn('Advertencia DB en hotspots ML, usando dataset de memoria si aplica:', { error: dbErr.message });
       }
 
       const resultadoClustering = mlService.clusterDBSCAN(incidentes, eps, minPts);
@@ -100,20 +79,9 @@ class MLController {
 
       let historico = [];
       try {
-        const query = `
-          SELECT 
-            TO_CHAR(fechaincidente, 'YYYY-MM') as mes,
-            COUNT(*)::int as total
-          FROM incidente
-          WHERE fechaincidente IS NOT NULL
-          GROUP BY TO_CHAR(fechaincidente, 'YYYY-MM')
-          ORDER BY mes ASC
-          LIMIT 36
-        `;
-        const result = await pool.query(query);
-        historico = result.rows || [];
+        historico = await EstadisticasModel.obtenerHistoricoMensualParaML(36);
       } catch (dbErr) {
-        console.warn('Advertencia DB en forecast ML:', dbErr.message);
+        logWarn('Advertencia DB en forecast ML:', { error: dbErr.message });
       }
 
       const pronostico = mlService.proyectarTendencia(historico, mesesProyeccion);
@@ -135,15 +103,10 @@ class MLController {
     try {
       let totalRegistros = 0;
       try {
-        const query = `
-          SELECT COUNT(*) as count 
-          FROM incidente 
-          WHERE descripcionincidente IS NOT NULL AND LENGTH(descripcionincidente) > 10
-        `;
-        const result = await pool.query(query);
+        const result = await IncidenteModel.contarConDescripcionValida();
         totalRegistros = parseInt(result.rows[0]?.count || 0, 10);
       } catch (dbErr) {
-        console.warn('Aviso DB en reentrenar ML:', dbErr.message);
+        logWarn('Aviso DB en reentrenar ML:', { error: dbErr.message });
       }
 
       return res.status(200).json({

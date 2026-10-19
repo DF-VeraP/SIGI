@@ -25,6 +25,28 @@ async function registrarLogActividad(id_usuario, accion, tabla_afectada = null, 
   }
 }
 
+/**
+ * Métodos estructurados de logging operativo
+ */
+function info(msg, meta = {}) {
+  if (process.env.NODE_ENV !== 'test') {
+    console.log(`[INFO] ${msg}`, Object.keys(meta).length ? meta : '');
+  }
+}
+
+function warn(msg, meta = {}) {
+  if (process.env.NODE_ENV !== 'test') {
+    console.warn(`[WARN] ${msg}`, Object.keys(meta).length ? meta : '');
+  }
+}
+
+function error(msg, meta = {}) {
+  console.error(`[ERROR] ${msg}`, Object.keys(meta).length ? meta : '');
+}
+
 module.exports = {
-  registrarLogActividad
+  registrarLogActividad,
+  info,
+  warn,
+  error
 };

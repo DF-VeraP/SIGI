@@ -2,7 +2,8 @@ const path = require('path');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const AuthModel = require('../models/auth.model');
-const { registrarLogActividad } = require('../utils/logger');
+const logger = require('../utils/logger');
+const { registrarLogActividad } = logger;
 const { enviarEmailRecuperacion } = require('../utils/mailer');
 
 // Validación de complejidad de contraseña (mínimo 8 caracteres, al menos 1 mayúscula, 1 minúscula y 1 número)
@@ -122,7 +123,7 @@ const login = async (req, res) => {
     if (typeof req.session.regenerate === 'function') {
       req.session.regenerate((err) => {
         if (err) {
-          console.error('Error regenerando sesión:', err);
+          logger.error('Error regenerando sesión:', err);
           return res.status(500).json({ mensaje: "Error en el servidor" });
         }
         setupSession();
@@ -132,7 +133,7 @@ const login = async (req, res) => {
     }
 
   } catch (error) {
-    console.error('Error en login:', error);
+    logger.error('Error en login:', error);
     res.status(500).json({ mensaje: "Error en el servidor" });
   }
 };
@@ -186,7 +187,7 @@ const recuperarPassword = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error en recuperarPassword:', error);
+    logger.error('Error en recuperarPassword:', error);
     res.status(500).json({ mensaje: 'Error al procesar la solicitud de recuperación' });
   }
 };
@@ -225,7 +226,7 @@ const validarTokenReset = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error en validarTokenReset:', error);
+    logger.error('Error en validarTokenReset:', error);
     res.status(500).json({ valido: false, mensaje: 'Error al validar token' });
   }
 };
@@ -284,7 +285,7 @@ const resetPassword = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error en resetPassword:', error);
+    logger.error('Error en resetPassword:', error);
     res.status(500).json({ mensaje: 'Error al restablecer contraseña en el servidor' });
   }
 };
@@ -348,7 +349,7 @@ const cambiarPasswordPrimerIngreso = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error en cambiarPasswordPrimerIngreso:', error);
+    logger.error('Error en cambiarPasswordPrimerIngreso:', error);
     res.status(500).json({ mensaje: 'Error al cambiar contraseña' });
   }
 };

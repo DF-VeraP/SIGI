@@ -3,179 +3,211 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#0d1117">
+    <meta name="theme-color" content="#0e0f12">
     <title>SIGI — Captura en Terreno</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="reportero.css">
+    <link rel="stylesheet" href="reportero.css?v=7">
+    <script>
+        (function () {
+            const tema = localStorage.getItem("tema_sigi_reportero") || localStorage.getItem("tema_sigi_admin") || localStorage.getItem("tema_sigi_dashboard");
+            if (tema === "claro") {
+                document.documentElement.classList.add("tema-claro");
+            }
+        })();
+    </script>
 </head>
 <body>
-    <!-- HEADER APP MÓVIL -->
+    <!-- HEADER INSTITUCIONAL CON TABS INTEGRADAS -->
     <header class="app-header">
-        <div class="header-brand" style="display: flex; align-items: center; gap: 10px;">
-            <img src="../assets/img/logo_sigi.png" alt="SIGI Logo" style="height: 32px; width: auto; border-radius: 6px; box-shadow: 0 0 8px rgba(70, 214, 247, 0.4);">
+        <div class="header-brand">
+            <img src="../assets/img/logo_sigi.png" alt="Logo institucional SIGI" class="header-logo-img" width="28" height="28">
             <div>
                 <h1>SIGI Terreno</h1>
                 <span class="sub-brand">Captura de Incidentes</span>
             </div>
         </div>
+
+        <!-- PESTAÑAS CENTRADAS EN EL HEADER (EVITA CONTENEDOR EXTRA) -->
+        <nav class="header-tab-nav" aria-label="Navegación de reportero">
+            <div class="tab-segmented-group">
+                <button id="tabCrear" class="tab-btn active">
+                    <span>Nuevo Reporte</span>
+                </button>
+                <button id="tabMisReportes" class="tab-btn">
+                    <span>Mis Reportes</span>
+                    <span id="countReportes" class="badge-count">0</span>
+                </button>
+            </div>
+        </nav>
+
         <div class="header-user">
-            <span id="userBadge" class="user-badge"><i class="bi bi-person-badge"></i> ...</span>
-            <!-- Toggle Claro / Oscuro Tipo iPhone (mismo diseño que Dashboard y Admin) -->
-            <button id="btnTemaReportero" class="toggle-iphone-header toggle-tema-reportero" title="Cambiar modo Claro / Oscuro">
-                <span class="icono-sol"><i class="bi bi-sun-fill"></i></span>
-                <div class="sw-slider"></div>
-                <span class="icono-luna"><i class="bi bi-moon-stars-fill"></i></span>
+            <span id="userBadge" class="user-badge">...</span>
+            <!-- Toggle Modo Claro / Oscuro Tipo iPhone (Idéntico a Admin y Dashboard) -->
+            <button id="btnTemaReportero" class="toggle-iphone-header" title="Cambiar modo Claro / Oscuro para comodidad visual" aria-label="Cambiar tema claro u oscuro">
+                <span class="icono-sol" aria-hidden="true"><i class="bi bi-sun-fill" aria-hidden="true"></i></span>
+                <div class="sw-slider" aria-hidden="true"></div>
+                <span class="icono-luna" aria-hidden="true"><i class="bi bi-moon-stars-fill" aria-hidden="true"></i></span>
             </button>
-            <button id="btnLogout" class="btn-logout" title="Cerrar Sesión">
-                <i class="bi bi-box-arrow-right"></i>
+            <button id="btnLogout" class="btn-logout" title="Cerrar sesión">
+                <span class="logout-text-desktop">Cerrar sesión</span>
+                <span class="logout-text-mobile">Salir</span>
             </button>
         </div>
     </header>
 
-    <!-- NAVEGACIÓN MÓVIL (PESTAÑAS) -->
-    <nav class="tab-nav">
-        <button id="tabCrear" class="tab-btn active">
-            <i class="bi bi-plus-circle-fill"></i>
-            <span>Nuevo Reporte</span>
-        </button>
-        <button id="tabMisReportes" class="tab-btn">
-            <i class="bi bi-list-task"></i>
-            <span>Mis Reportes</span>
-            <span id="countReportes" class="badge-count">0</span>
-        </button>
-    </nav>
+    <!-- TOAST FLOTANTE CONTROLADO (NO DESPLAZA CONTENEDORES) -->
+    <div id="alertContainer" class="toast-container-flotante" aria-live="polite"></div>
 
-    <!-- CONTENEDOR PRINCIPAL -->
+    <!-- CONTENEDOR PRINCIPAL (VIEWPORT COMPLETO SIN SCROLL EN ESCRITORIO) -->
     <main class="app-container">
-        <div id="alertContainer"></div>
 
-        <!-- SECCIÓN 1: FORMULARIO DE NUEVO REPORTE -->
+        <!-- SECCIÓN 1: FORMULARIO DE NUEVO REPORTE EN 2 CONTENEDORES PARALELOS -->
         <section id="secNuevoReporte" class="tab-content active">
-            <div class="card-form">
-                <div class="card-header">
-                    <h2><i class="bi bi-geo-alt-fill text-danger"></i> Capturar Incidente</h2>
-                    <p class="card-sub">Completa los datos del hecho presenciado en terreno.</p>
-                </div>
-
-                <form id="formReporte">
-                    <!-- BOTÓN GPS DE 1-CLIC -->
-                    <div class="gps-box">
-                        <button type="button" id="btnGps" class="btn-gps">
-                            <i class="bi bi-crosshair"></i>
-                            <span>Obtener mi ubicación GPS actual</span>
+            <form id="formReporte" class="reportero-grid-dos-columnas">
+                <!-- CONTENEDOR 1: MAPA Y GEOLOCALIZACIÓN -->
+                <div class="card-reportero card-mapa-columna">
+                    <div class="card-header-compacta">
+                        <div>
+                            <h2 class="card-titulo">Ubicación Geográfica</h2>
+                            <span id="gpsStatus" class="gps-status-badge">Arrastra el marcador o usa el mapa</span>
+                        </div>
+                        <button type="button" id="btnGps" class="btn-gps-compacto" title="Fijar coordenadas con el GPS del dispositivo">
+                            Mi GPS
                         </button>
-                        <div id="gpsStatus" class="gps-status">GPS no inicializado</div>
                     </div>
 
-                    <!-- MINIMAPA DE CONFIRMACIÓN -->
+                    <!-- VISOR DEL MAPA LEAFLET -->
                     <div class="map-mini-wrapper">
                         <div id="mapaMini" class="mapa-mini"></div>
-                        <span class="map-hint">Puedes tocar el mapa para ajustar el punto exacto.</span>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group half">
-                            <label for="lat">Latitud *</label>
-                            <input type="number" step="any" id="lat" required readonly>
+                    <!-- FILA DE COORDENADAS NUMÉRICAS Y BARRIO/VEREDA DETECTADO POR POLÍGONO -->
+                    <div class="form-row fila-geo-info">
+                        <div class="form-group campo-geo">
+                            <label for="lat">Latitud <span class="campo-obligatorio">*</span></label>
+                            <input type="number" step="any" id="lat" name="lat" required readonly placeholder="0.000000">
                         </div>
-                        <div class="form-group half">
-                            <label for="lng">Longitud *</label>
-                            <input type="number" step="any" id="lng" required readonly>
+                        <div class="form-group campo-geo">
+                            <label for="lng">Longitud <span class="campo-obligatorio">*</span></label>
+                            <input type="number" step="any" id="lng" name="lng" required readonly placeholder="0.000000">
+                        </div>
+                        <div class="form-group campo-geo campo-barrio-flex">
+                            <label for="barrio">Barrio / Vereda (Polígono)</label>
+                            <input type="text" id="barrio" name="barrio" placeholder="Detectando zona..." readonly class="input-barrio-detectado">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONTENEDOR 2: DATOS DEL INCIDENTE (5 FILAS BALANCEADAS SIN SCROLL) -->
+                <div class="card-reportero card-formulario-columna">
+                    <div class="card-header-compacta">
+                        <div>
+                            <h2 class="card-titulo">Detalles del Incidente</h2>
+                            <span class="card-sub-badge">Formulario de terreno</span>
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="tipoIncidente">Tipo de Incidente *</label>
-                        <select id="tipoIncidente" required>
-                            <option value="">Cargando tipos de incidente...</option>
-                        </select>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group half">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                <label for="fecha" style="margin: 0;">Fecha del Hecho *</label>
-                                <button type="button" id="btnAhoraReportero" class="btn-ahora-reportero" title="Establecer fecha y hora actual">
-                                    <i class="bi bi-clock-history"></i> Ahora
-                                </button>
+                    <div class="card-body-formulario">
+                        <!-- FILA 1: TIPO DE INCIDENTE & MODALIDAD -->
+                        <div class="form-row fila-compacta">
+                            <div class="form-group half">
+                                <label for="tipoIncidente">Tipo de Incidente <span class="campo-obligatorio">*</span></label>
+                                <select id="tipoIncidente" name="tipoIncidente" required>
+                                    <option value="">Seleccione el Tipo de Incidente *</option>
+                                </select>
                             </div>
-                            <input type="date" id="fecha" required>
+                            <div class="form-group half">
+                                <label for="modalidad">Modalidad</label>
+                                <select id="modalidad" name="modalidad">
+                                    <option value="">Sin especificar</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="form-group half">
-                            <label for="hora" style="margin-bottom: 4px;">Hora aproximada *</label>
-                            <input type="time" id="hora" required>
+
+                        <!-- FILA 2: FECHA, HORA Y GRAVEDAD (3 COLUMNAS COMPACTAS) -->
+                        <div class="form-row fila-compacta fila-tres-col">
+                            <div class="form-group col-fecha">
+                                <div class="tiempo-hora-head">
+                                    <label for="fecha">Fecha <span class="campo-obligatorio">*</span></label>
+                                    <button type="button" id="btnAhoraReportero" class="btn-ahora-reportero" title="Fijar al momento actual">
+                                        Ahora
+                                    </button>
+                                </div>
+                                <input type="date" id="fecha" name="fecha" required>
+                            </div>
+
+                            <div class="form-group col-hora">
+                                <label for="hora">Hora <span class="campo-obligatorio">*</span></label>
+                                <input type="time" id="hora" name="hora" required>
+                            </div>
+
+                            <div class="form-group col-gravedad">
+                                <label for="gravedad">Gravedad</label>
+                                <select id="gravedad" name="gravedad">
+                                    <option value="1">1 - Muy Baja</option>
+                                    <option value="2">2 - Baja</option>
+                                    <option value="3" selected>3 - Media</option>
+                                    <option value="4">4 - Alta</option>
+                                    <option value="5">5 - Crítica</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- FILA 3: DIRECCIÓN Y ASISTENCIAS EN SITIO -->
+                        <div class="form-row fila-compacta fila-dir-asist">
+                            <div class="form-group col-direccion">
+                                <label for="direccion">Dirección / Referencia</label>
+                                <input type="text" id="direccion" name="direccion" placeholder="Ej: Calle 15 con Cra 4, parque principal">
+                            </div>
+
+                            <div class="form-group col-asistencias">
+                                <label>Asistencia en Sitio</label>
+                                <div class="checkbox-pills-row">
+                                    <label class="pill-check"><input type="checkbox" id="chkPolicia" checked> Policía</label>
+                                    <label class="pill-check"><input type="checkbox" id="chkAmbulancia"> Ambulancia</label>
+                                    <label class="pill-check"><input type="checkbox" id="chkBomberos"> Bomberos</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FILA 4: DESCRIPCIÓN (COMPACTA) -->
+                        <div class="form-group fila-compacta">
+                            <label for="descripcion">Descripción del incidente <span class="label-opcional">(Opcional)</span></label>
+                            <textarea id="descripcion" name="descripcion" rows="2" placeholder="Observaciones breves de lo sucedido en el terreno..."></textarea>
+                        </div>
+
+                        <!-- FILA 5: FOTO DE EVIDENCIA Y BOTÓN DE REGISTRAR -->
+                        <div class="form-row fila-compacta fila-acciones-final">
+                            <div class="box-foto-adjunta">
+                                <input type="file" id="fotoInput" accept="image/*" capture="environment" style="display:none">
+                                <button type="button" id="btnTomarFoto" class="btn-foto-upload">
+                                    <span>Adjuntar Foto de Evidencia</span>
+                                </button>
+                                <div id="previewContainer" class="preview-container" style="display:none;">
+                                    <img id="imgPreview" src="" alt="Previsualización de evidencia">
+                                    <button type="button" id="btnQuitarFoto" title="Quitar foto">&times;</button>
+                                </div>
+                            </div>
+
+                            <button type="submit" id="btnSubmit" class="btn-submit">
+                                Registrar Incidente
+                            </button>
                         </div>
                     </div>
-
-                    <div class="form-row">
-                        <div class="form-group half">
-                            <label for="gravedad">Gravedad Percibida</label>
-                            <select id="gravedad">
-                                <option value="1">1 - Muy Baja</option>
-                                <option value="2">2 - Baja</option>
-                                <option value="3" selected>3 - Media</option>
-                                <option value="4">4 - Alta</option>
-                                <option value="5">5 - Crítica</option>
-                            </select>
-                        </div>
-                        <div class="form-group half">
-                            <label for="modalidad">Modalidad</label>
-                            <select id="modalidad">
-                                <option value="">Sin especificar</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="direccion">Dirección / Referencia de Ubicación</label>
-                        <input type="text" id="direccion" placeholder="Ej: Calle 15 con Cra 4, cerca al parque">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="descripcion">Descripción del incidente <span style="font-weight:400; color: var(--text-muted);">(Opcional)</span></label>
-                        <textarea id="descripcion" rows="3" placeholder="Describe brevemente lo ocurrido..."></textarea>
-                    </div>
-
-                    <!-- ASISTENCIAS NECESARIAS -->
-                    <div class="form-group">
-                        <label>Asistencia requerida en el sitio:</label>
-                        <div class="checkbox-group">
-                            <label class="chk-label"><input type="checkbox" id="chkPolicia" checked> 👮 Policía</label>
-                            <label class="chk-label"><input type="checkbox" id="chkAmbulancia"> 🚑 Ambulancia</label>
-                            <label class="chk-label"><input type="checkbox" id="chkBomberos"> 🚒 Bomberos</label>
-                        </div>
-                    </div>
-
-                    <!-- FOTO DE EVIDENCIA -->
-                    <div class="form-group">
-                        <label><i class="bi bi-camera-fill text-primary"></i> Foto de Evidencia (Opcional)</label>
-                        <input type="file" id="fotoInput" accept="image/*" capture="environment" style="display:none">
-                        <button type="button" id="btnTomarFoto" class="btn-foto-upload">
-                            <i class="bi bi-camera"></i> <span>Adjuntar / Tomar Foto de Terreno</span>
-                        </button>
-                        <div id="previewContainer" class="preview-container" style="display:none;">
-                            <img id="imgPreview" src="" alt="Previsualización de evidencia">
-                            <button type="button" id="btnQuitarFoto" title="Quitar foto">&times;</button>
-                        </div>
-                    </div>
-
-                    <button type="submit" id="btnSubmit" class="btn-submit">
-                        <i class="bi bi-send-fill"></i> Registrar Incidente
-                    </button>
-                </form>
-            </div>
+                </div>
+            </form>
         </section>
 
         <!-- SECCIÓN 2: LISTA DE MIS REPORTES -->
         <section id="secMisReportes" class="tab-content">
             <div class="section-header">
                 <h2>Mis Reportes Registrados</h2>
-                <button id="btnRefreshReports" class="btn-refresh"><i class="bi bi-arrow-clockwise"></i> Actualizar</button>
+                <button id="btnRefreshReports" class="btn-refresh">Actualizar</button>
             </div>
             <div id="reportsList" class="reports-list">
                 <div class="loading-spinner">Cargando mis reportes...</div>
@@ -189,25 +221,27 @@
     <script src="../js/sigi-realtime.js"></script>
     <script src="../js/pwa-offline.js"></script>
     <script src="../js/sigi-ml-assistant.js"></script>
-    <script src="reportero.js"></script>
+    <script src="reportero.js?v=7"></script>
 
-    <!-- MODAL EDITAR REPORTE -->
+    <!-- MODAL EDITAR REPORTE (0 ICONOS) -->
     <div id="modalEditarReporte" class="modal-reporte-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="tituloModalEditar">
         <div class="modal-reporte-card">
             <div class="modal-reporte-header">
-                <h3 id="tituloModalEditar"><i class="bi bi-pencil-square"></i> Editar Reporte</h3>
+                <h3 id="tituloModalEditar">Editar Reporte</h3>
                 <button type="button" id="btnCerrarModalEditar" class="modal-reporte-close" aria-label="Cerrar">&times;</button>
             </div>
             <p class="modal-reporte-sub">Solo puedes editar reportes en estado <strong>Reportado</strong> (pendiente de revisión).</p>
             <input type="hidden" id="editReporteId">
             <div class="modal-reporte-body">
-                <div class="form-group">
-                    <label for="editFechaReporte">Fecha del Hecho</label>
-                    <input type="date" id="editFechaReporte">
-                </div>
-                <div class="form-group">
-                    <label for="editHoraReporte">Hora aproximada</label>
-                    <input type="time" id="editHoraReporte">
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label for="editFechaReporte">Fecha del Hecho</label>
+                        <input type="date" id="editFechaReporte">
+                    </div>
+                    <div class="form-group half">
+                        <label for="editHoraReporte">Hora aproximada</label>
+                        <input type="time" id="editHoraReporte">
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="editGravedadReporte">Gravedad</label>
@@ -224,11 +258,11 @@
                     <input type="text" id="editDireccionReporte" placeholder="Ej: Calle 15 con Cra 4">
                 </div>
                 <div class="form-group">
-                    <label for="editDescripcionReporte">Descripción <span style="font-weight:400; color: var(--text-muted);">(Opcional)</span></label>
+                    <label for="editDescripcionReporte">Descripción <span class="label-opcional">(Opcional)</span></label>
                     <textarea id="editDescripcionReporte" rows="3" placeholder="Describe lo ocurrido..."></textarea>
                 </div>
                 <div class="form-group">
-                    <label>Foto de Evidencia <span style="font-weight:400; color: var(--text-muted);">(Opcional)</span></label>
+                    <label>Foto de Evidencia <span class="label-opcional">(Opcional)</span></label>
                     <!-- Vista previa de foto actual si la tiene -->
                     <div id="editFotoActualContainer" style="display:none; margin-bottom:8px;">
                         <span style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:4px;">Foto actual en la nube:</span>
@@ -239,12 +273,12 @@
                     <!-- Botón para seleccionar o tomar nueva foto -->
                     <input type="file" id="editFotoInput" accept="image/*" style="display:none;">
                     <button type="button" id="btnEditCambiarFoto" class="btn-foto-upload" style="margin-top:2px;">
-                        <i class="bi bi-camera"></i> <span>Reemplazar / Cambiar Foto</span>
+                        <span>Reemplazar / Cambiar Foto</span>
                     </button>
                     <!-- Vista previa de la nueva foto seleccionada -->
                     <div id="editFotoNuevaContainer" style="display:none; margin-top:8px; position:relative;">
                         <span style="font-size:0.75rem; color:var(--accent); font-weight:600; display:block; margin-bottom:4px;">
-                            <i class="bi bi-arrow-repeat"></i> Nueva foto seleccionada:
+                            Nueva foto seleccionada:
                         </span>
                         <div style="position:relative; display:inline-block; border-radius:8px; overflow:hidden; border:1.5px solid var(--accent);">
                             <img id="editImgNuevaPreview" style="max-width:100%; max-height:140px; display:block; object-fit:cover;" alt="Nueva foto">
@@ -255,12 +289,9 @@
             </div>
             <div class="modal-reporte-actions">
                 <button type="button" id="btnCancelarEditar" class="modal-btn-cancel">Cancelar</button>
-                <button type="button" id="btnGuardarEditar" class="modal-btn-save">
-                    <i class="bi bi-check2-circle"></i> Guardar Cambios
-                </button>
+                <button type="button" id="btnGuardarEditar" class="modal-btn-save">Guardar Cambios</button>
             </div>
         </div>
     </div>
-
 </body>
 </html>

@@ -1,8 +1,8 @@
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
-const pool = require('../db');
 const UsuarioModel = require('../models/usuario.model');
-const { registrarLogActividad } = require('../utils/logger');
+const logger = require('../utils/logger');
+const { registrarLogActividad } = logger;
 const { enviarEmailBienvenida } = require('../utils/mailer');
 
 // Expresión regular para validación de formato de correo
@@ -14,7 +14,7 @@ const getUsuarios = async (req, res) => {
     const result = await UsuarioModel.obtenerTodos();
     res.json(result.rows);
   } catch (error) {
-    console.error('Error al obtener usuarios:', error);
+    logger.error('Error al obtener usuarios:', error);
     res.status(500).json({ mensaje: 'Error al obtener usuarios' });
   }
 };
@@ -31,7 +31,7 @@ const getUsuarioById = async (req, res) => {
 
     res.json(result.rows[0]);
   } catch (error) {
-    console.error('Error al obtener usuario:', error);
+    logger.error('Error al obtener usuario:', error);
     res.status(500).json({ mensaje: 'Error en el servidor' });
   }
 };
@@ -94,7 +94,7 @@ const crearUsuario = async (req, res) => {
     try {
       await enviarEmailBienvenida(cleanEmail, cleanNombre, passwordTemporal, req);
     } catch (mailError) {
-      console.error('Aviso: No se pudo enviar el correo de bienvenida:', mailError);
+      logger.warn('Aviso: No se pudo enviar el correo de bienvenida:', mailError);
     }
 
     await registrarLogActividad(
@@ -111,7 +111,7 @@ const crearUsuario = async (req, res) => {
       usuario: nuevoUsuario
     });
   } catch (error) {
-    console.error('Error al crear usuario:', error);
+    logger.error('Error al crear usuario:', error);
     res.status(500).json({ mensaje: 'Error al crear usuario en el servidor' });
   }
 };
@@ -129,10 +129,7 @@ const actualizarUsuario = async (req, res) => {
 
     // Validación de duplicidad si se actualiza el nombre de usuario
     if (nombreusuario && nombreusuario.trim() !== '') {
-      const dupUser = await pool.query(
-        'SELECT idusuario FROM usuario WHERE LOWER(nombreusuario) = LOWER($1) AND idusuario != $2',
-        [nombreusuario.trim(), id]
-      );
+      const dupUser = await UsuarioModel.verificarUsernameDuplicado(nombreusuario.trim(), id);
       if (dupUser.rows.length > 0) {
         return res.status(400).json({ mensaje: 'El nombre de usuario ya se encuentra registrado por otro usuario ⚠️' });
       }
@@ -143,10 +140,7 @@ const actualizarUsuario = async (req, res) => {
       if (!EMAIL_REGEX.test(email.trim())) {
         return res.status(400).json({ mensaje: 'El correo electrónico no tiene un formato válido ⚠️' });
       }
-      const dupEmail = await pool.query(
-        'SELECT idusuario FROM usuario WHERE LOWER(email) = LOWER($1) AND idusuario != $2',
-        [email.trim(), id]
-      );
+      const dupEmail = await UsuarioModel.verificarEmailDuplicado(email.trim(), id);
       if (dupEmail.rows.length > 0) {
         return res.status(400).json({ mensaje: 'El correo electrónico ya se encuentra registrado por otro usuario ⚠️' });
       }
@@ -178,28 +172,15 @@ const actualizarUsuario = async (req, res) => {
       hashedPassword = await bcrypt.hash(contrasenia, 10);
     }
 
-    const updatedUser = await pool.query(`
-      UPDATE usuario SET
-        nombreusuario = COALESCE($1, nombreusuario),
-        email = COALESCE($2, email),
-        contraseniausuario = $3,
-        rol = COALESCE($4, rol),
-        estado = COALESCE($5, estado),
-        dependencia = COALESCE($6, dependencia),
-        telefono = COALESCE($7, telefono),
-        fecha_actualizacion = CURRENT_TIMESTAMP
-      WHERE idusuario = $8
-      RETURNING idusuario, nombreusuario, email, rol, estado, dependencia, debe_cambiar_password
-    `, [
-      nombreusuario ? nombreusuario.trim() : null,
-      email ? email.trim() : null,
+    const updatedUser = await UsuarioModel.actualizarCompleto(id, {
+      nombreusuario,
+      email,
       hashedPassword,
-      rol || null,
-      estado || null,
-      dependencia || null,
-      telefono ? telefono.trim() : null,
-      id
-    ]);
+      rol,
+      estado,
+      dependencia,
+      telefono
+    });
 
     await registrarLogActividad(
       req.session.idusuario,
@@ -215,7 +196,7 @@ const actualizarUsuario = async (req, res) => {
       usuario: updatedUser.rows[0]
     });
   } catch (error) {
-    console.error('Error al actualizar usuario:', error);
+    logger.error('Error al actualizar usuario:', error);
     res.status(500).json({ mensaje: 'Error al actualizar usuario' });
   }
 };
@@ -271,7 +252,7 @@ const cambiarEstadoUsuario = async (req, res) => {
       usuario: result.rows[0]
     });
   } catch (error) {
-    console.error('Error al cambiar estado de usuario:', error);
+    logger.error('Error al cambiar estado de usuario:', error);
     res.status(500).json({ mensaje: 'Error al cambiar estado de usuario' });
   }
 };
@@ -279,26 +260,10 @@ const cambiarEstadoUsuario = async (req, res) => {
 // Obtener logs de auditoría del sistema (Solo Superadmin)
 const getAuditoriaLogs = async (req, res) => {
   try {
-    const result = await pool.query(`
-      SELECT 
-        l.id_log,
-        l.id_usuario,
-        u.nombreusuario,
-        l.accion,
-        l.tabla_afectada,
-        l.id_registro,
-        l.descripcion,
-        l.ip AS ip_origen,
-        l.fecha AS fecha_hora
-      FROM logs_actividad l
-      LEFT JOIN usuario u ON l.id_usuario = u.idusuario
-      ORDER BY l.id_log DESC
-      LIMIT 100
-    `);
-
+    const result = await UsuarioModel.obtenerLogsAuditoria(100);
     res.json(result.rows);
   } catch (error) {
-    console.error('Error al obtener logs de auditoría:', error);
+    logError('Error al obtener logs de auditoría:', { error: error.message });
     res.status(500).json({ mensaje: 'Error al obtener logs de auditoría' });
   }
 };
@@ -343,7 +308,7 @@ const eliminarUsuario = async (req, res) => {
 
     res.json({ mensaje: `Usuario ${nombreEliminado} eliminado correctamente ✅` });
   } catch (error) {
-    console.error('Error al eliminar usuario:', error);
+    logger.error('Error al eliminar usuario:', error);
     res.status(500).json({ mensaje: 'Error al eliminar usuario. Puede tener registros o incidentes asociados.' });
   }
 };
@@ -374,7 +339,7 @@ const getPerfil = async (req, res) => {
       ultimo_acceso: u.ultimo_acceso
     });
   } catch (error) {
-    console.error('Error al obtener perfil:', error);
+    logger.error('Error al obtener perfil:', error);
     res.status(500).json({ mensaje: 'Error al obtener datos del perfil' });
   }
 };
@@ -402,10 +367,7 @@ const actualizarPerfil = async (req, res) => {
       if (!EMAIL_REGEX.test(cleanEmail)) {
         return res.status(400).json({ mensaje: 'El correo electrónico no tiene un formato válido ⚠️' });
       }
-      const dupEmail = await pool.query(
-        'SELECT idusuario FROM usuario WHERE LOWER(email) = LOWER($1) AND idusuario != $2',
-        [cleanEmail, id]
-      );
+      const dupEmail = await UsuarioModel.verificarEmailDuplicado(cleanEmail, id);
       if (dupEmail.rows.length > 0) {
         return res.status(400).json({ mensaje: 'El correo electrónico ya se encuentra registrado por otro usuario ⚠️' });
       }
@@ -419,7 +381,7 @@ const actualizarPerfil = async (req, res) => {
       }
 
       // Obtener hash actual de la BD
-      const authQuery = await pool.query('SELECT contraseniausuario FROM usuario WHERE idusuario = $1', [id]);
+      const authQuery = await UsuarioModel.obtenerPasswordHash(id);
       const validCurrent = await bcrypt.compare(password_actual, authQuery.rows[0].contraseniausuario);
       if (!validCurrent) {
         return res.status(400).json({ mensaje: 'La contraseña actual ingresada es incorrecta ❌' });
@@ -470,7 +432,7 @@ const actualizarPerfil = async (req, res) => {
       usuario: updated
     });
   } catch (error) {
-    console.error('Error al actualizar perfil:', error);
+    logger.error('Error al actualizar perfil:', error);
     res.status(500).json({ mensaje: 'Error al actualizar información del perfil' });
   }
 };

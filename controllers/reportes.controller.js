@@ -1,6 +1,7 @@
 const PDFDocument = require('pdfkit');
-const pool = require('../db');
 const mlService = require('../services/ml.service');
+const EstadisticasModel = require('../models/estadisticas.model');
+const logger = require('../utils/logger');
 
 /**
  * Generador de Informes Ejecutivos en PDF con PDFKit
@@ -25,51 +26,15 @@ const exportarInformePDF = async (req, res) => {
     ];
     const nombreMes = nombreMeses[targetMes - 1] || 'Mes actual';
 
-    // 1. Consultar métricas del período
-    const [totalesRes, tiposRes, zonasRes, estadosRes] = await Promise.all([
-      // Total general del período
-      pool.query(`
-        SELECT COUNT(*) AS total,
-               COALESCE(SUM(numero_victimas), 0) AS victimas,
-               COALESCE(SUM(numero_vehiculos_afectados), 0) AS vehiculos
-        FROM incidente
-        WHERE fechaincidente >= $1 AND fechaincidente <= $2
-      `, [fechaInicio, fechaFin]),
-
-      // Distribución por tipos de incidente
-      pool.query(`
-        SELECT tp.nametipoincidente AS tipo, COUNT(*) AS cantidad
-        FROM incidente i
-        JOIN tipo_incidente tp ON i.idtipoincidente = tp.idtipoincidente
-        WHERE i.fechaincidente >= $1 AND i.fechaincidente <= $2
-        GROUP BY tp.nametipoincidente
-        ORDER BY cantidad DESC
-      `, [fechaInicio, fechaFin]),
-
-      // Top 5 barrios con mayor incidencia
-      pool.query(`
-        SELECT b.namebarrio, COUNT(*) AS total
-        FROM incidente i
-        JOIN barrio b ON i.idbarrio = b.gid
-        WHERE i.fechaincidente >= $1 AND i.fechaincidente <= $2
-        GROUP BY b.namebarrio
-        ORDER BY total DESC
-        LIMIT 5
-      `, [fechaInicio, fechaFin]),
-
-      // Conteo por estado de resolución
-      pool.query(`
-        SELECT ei.nombre AS estado, COUNT(*) AS total
-        FROM incidente i
-        JOIN estado_incidente ei ON i.id_estado = ei.id_estado
-        WHERE i.fechaincidente >= $1 AND i.fechaincidente <= $2
-        GROUP BY ei.nombre
-      `, [fechaInicio, fechaFin])
-    ]);
-
-    const totalIncidentes = parseInt(totalesRes.rows[0]?.total || 0);
-    const totalVictimas = parseInt(totalesRes.rows[0]?.victimas || 0);
-    const totalVehiculos = parseInt(totalesRes.rows[0]?.vehiculos || 0);
+    // 1. Consultar métricas del período encapsuladas en el modelo
+    const {
+      tiposRes,
+      zonasRes,
+      estadosRes,
+      totalIncidentes,
+      totalVictimas,
+      totalVehiculos
+    } = await EstadisticasModel.obtenerMetricasPeriodo(fechaInicio, fechaFin);
 
     // 2. Configurar cabeceras de respuesta HTTP para visualización inline o descarga
     const isInline = req.query?.preview === '1' || req.query?.inline === '1' || req.query?.preview === 'true';
@@ -193,17 +158,10 @@ const exportarInformePDF = async (req, res) => {
     // Obtener proyección de ML para el informe
     let historicoMl = [];
     try {
-      const histQuery = `
-        SELECT TO_CHAR(fechaincidente, 'YYYY-MM') as mes, COUNT(*)::int as total
-        FROM incidente
-        WHERE fechaincidente IS NOT NULL
-        GROUP BY TO_CHAR(fechaincidente, 'YYYY-MM')
-        ORDER BY mes ASC
-        LIMIT 12
-      `;
-      const histRes = await pool.query(histQuery);
-      historicoMl = histRes.rows || [];
-    } catch (e) {}
+      historicoMl = await EstadisticasModel.obtenerHistoricoMensualParaML(12);
+    } catch (err) {
+      logger.warn('No se pudo obtener el histórico para proyección ML en informe PDF:', { error: err.message });
+    }
 
     const forecastMl = mlService.proyectarTendencia(historicoMl, 1);
     const estimadoMes = forecastMl.proyeccion && forecastMl.proyeccion[0] ? forecastMl.proyeccion[0].cantidad_estimada : 'N/A';
@@ -228,8 +186,8 @@ const exportarInformePDF = async (req, res) => {
     doc.end();
 
   } catch (error) {
-    console.error('Error al generar informe PDF:', error);
-    if (!res.headersSent) {
+    logger.error('Error al generar informe PDF:', { error: error.message });
+    if (!res.headersSent && typeof res.status === 'function') {
       res.status(500).json({ mensaje: 'Error al generar el reporte PDF en el servidor' });
     }
   }

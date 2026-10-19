@@ -1,4 +1,5 @@
 const GeografiaModel = require('../models/geografia.model');
+const logger = require('../utils/logger');
 
 const getIncidentes = async (req, res) => {
   const nombre = req.query.lugar || req.query.barrio;
@@ -16,7 +17,7 @@ const getIncidentes = async (req, res) => {
     });
     res.json(result.rows);
   } catch (error) {
-    console.error("Error en getIncidentes:", error);
+    logger.error("Error en getIncidentes:", error);
     res.status(500).json({ error: "Error en el servidor" });
   }
 };
@@ -27,7 +28,7 @@ const getPoligonoBarrio = async (req, res) => {
     const result = await GeografiaModel.obtenerPoligonoBarrio(nombre);
     res.json(result.rows);
   } catch (error) {
-    console.error("Error en getPoligonoBarrio:", error);
+    logger.error("Error en getPoligonoBarrio:", error);
     res.status(500).json({ error: "Error en el servidor" });
   }
 };
@@ -39,7 +40,7 @@ const buscarBarrioPorCoordenada = async (req, res) => {
     const ubicacion = await GeografiaModel.buscarPorCoordenada(lat, lng);
     res.json(ubicacion);
   } catch (error) {
-    console.error("Error en buscarBarrioPorCoordenada:", error);
+    logger.error("Error en buscarBarrioPorCoordenada:", error);
     res.status(500).json({ error: "Error en servidor" });
   }
 };
@@ -50,7 +51,7 @@ const getPoligonoVereda = async (req, res) => {
     const result = await GeografiaModel.obtenerPoligonoVereda(nombre);
     res.json(result.rows);
   } catch (error) {
-    console.error("Error en getPoligonoVereda:", error);
+    logger.error("Error en getPoligonoVereda:", error);
     res.status(500).json({ error: "Error en el servidor" });
   }
 };
@@ -61,3 +62,4 @@ module.exports = {
   buscarBarrioPorCoordenada,
   getPoligonoVereda
 };
+

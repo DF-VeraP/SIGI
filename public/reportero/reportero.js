@@ -49,7 +49,7 @@ function comprimirImagen(file, maxWidth = 1280, maxHeight = 1280, quality = 0.75
                         type: "image/jpeg",
                         lastModified: Date.now()
                     });
-                    console.log(`📸 Foto optimizada: ${(file.size / (1024 * 1024)).toFixed(2)} MB -> ${(compressedFile.size / 1024).toFixed(1)} KB`);
+                    console.log(`Foto optimizada: ${(file.size / (1024 * 1024)).toFixed(2)} MB -> ${(compressedFile.size / 1024).toFixed(1)} KB`);
                     resolve(compressedFile);
                 }, "image/jpeg", quality);
             };
@@ -60,19 +60,49 @@ function comprimirImagen(file, maxWidth = 1280, maxHeight = 1280, quality = 0.75
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-    // 0. Toggle Tema Claro / Oscuro (Tipo iPhone) — igual que el panel Admin
+    // 0. Toggle Tema Claro / Oscuro (Tipo iPhone) — Sincronizado con Admin y Dashboard
     const btnTemaReportero = document.getElementById("btnTemaReportero");
-    if (localStorage.getItem("tema_sigi_reportero") === "claro") {
-        document.body.classList.add("tema-claro");
+    const temaGuardado = localStorage.getItem("tema_sigi_reportero")
+                      || localStorage.getItem("tema_sigi_admin")
+                      || localStorage.getItem("tema_sigi_dashboard")
+                      || "oscuro";
+
+    function aplicarTema(tema) {
+        const esClaro = tema === "claro";
+        document.documentElement.classList.toggle("tema-claro", esClaro);
+        document.body.classList.toggle("tema-claro", esClaro);
+        localStorage.setItem("tema_sigi_reportero", tema);
+        localStorage.setItem("tema_sigi_admin", tema);
+        localStorage.setItem("tema_sigi_dashboard", tema);
+        setTimeout(() => {
+            if (mapMini) mapMini.invalidateSize();
+        }, 150);
     }
+
+    aplicarTema(temaGuardado);
+
     if (btnTemaReportero) {
         btnTemaReportero.addEventListener("click", function (e) {
             e.stopPropagation();
+            document.documentElement.classList.toggle("tema-claro");
             document.body.classList.toggle("tema-claro");
             const esClaro = document.body.classList.contains("tema-claro");
-            localStorage.setItem("tema_sigi_reportero", esClaro ? "claro" : "oscuro");
+            const nuevoTema = esClaro ? "claro" : "oscuro";
+            localStorage.setItem("tema_sigi_reportero", nuevoTema);
+            localStorage.setItem("tema_sigi_admin", nuevoTema);
+            localStorage.setItem("tema_sigi_dashboard", nuevoTema);
+            setTimeout(() => {
+                if (mapMini) mapMini.invalidateSize();
+            }, 150);
         });
     }
+
+    // Responsiveness automático del mapa Leaflet al redimensionar ventana
+    window.addEventListener("resize", () => {
+        if (mapMini) {
+            mapMini.invalidateSize();
+        }
+    });
 
     // 1. Verificar sesión de usuario
     await cargarSesion();
@@ -113,11 +143,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     fijarFechaHoraActual();
 
+    let ultimoToastAhora = 0;
+    const COOLDOWN_TOAST_MS = 2500; // 2.5 segundos de protección anti-spam
+
     const btnAhoraRep = document.getElementById("btnAhoraReportero");
     if (btnAhoraRep) {
         btnAhoraRep.addEventListener("click", () => {
             fijarFechaHoraActual();
-            mostrarToastReportero("Fecha y hora actualizadas al momento actual ⏱️", "info");
+            const ahoraMs = Date.now();
+            if (ahoraMs - ultimoToastAhora >= COOLDOWN_TOAST_MS) {
+                ultimoToastAhora = ahoraMs;
+                mostrarToastReportero("Fecha y hora actualizadas al momento actual", "info");
+            }
         });
     }
 
@@ -196,7 +233,10 @@ async function cargarSesion() {
         }
         const data = await res.json();
         usuarioSesion = data;
-        document.getElementById("userBadge").innerHTML = `<i class="bi bi-person-circle"></i> ${data.usuario} (${data.dependencia || data.rol})`;
+        const badge = document.getElementById("userBadge");
+        if (badge) {
+            badge.innerHTML = `<span>${data.usuario}</span> <small style="opacity:0.75; font-size:0.75rem; font-weight:500;">(${data.dependencia || data.rol})</small>`;
+        }
     } catch (e) {
         console.error("Error verificando sesión:", e);
         window.location.href = "/login/index.html";
@@ -269,20 +309,50 @@ function initMiniMapa() {
         markerMini.setLatLng(e.latlng);
         actualizarCoordenadas(e.latlng.lat, e.latlng.lng);
     });
+
+    // Detectar barrio o vereda inicial
+    consultarBarrioPorCoordenada(latDef, lngDef);
+}
+
+async function consultarBarrioPorCoordenada(lat, lng) {
+    const elBarrio = document.getElementById("barrio");
+    if (!elBarrio) return;
+    elBarrio.value = "Detectando zona por polígono...";
+    try {
+        const res = await fetch(`/buscarBarrioPorCoordenada?lat=${lat}&lng=${lng}`);
+        if (!res.ok) throw new Error("Error en consulta espacial");
+        const data = await res.json();
+        let texto = "Ubicación sin asignar (Fuera de polígono)";
+        if (data.barrio && data.vereda) {
+            texto = `${data.barrio} - ${data.vereda}`;
+        } else if (data.barrio) {
+            texto = data.barrio;
+        } else if (data.vereda) {
+            texto = data.vereda;
+        }
+        elBarrio.value = texto;
+    } catch (err) {
+        console.warn("No se pudo detectar el barrio por coordenadas:", err);
+        elBarrio.value = "Coordenadas fijadas";
+    }
 }
 
 function actualizarCoordenadas(lat, lng) {
     document.getElementById("lat").value = parseFloat(lat).toFixed(6);
     document.getElementById("lng").value = parseFloat(lng).toFixed(6);
-    document.getElementById("gpsStatus").innerText = `📍 Ubicación fijada: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    const status = document.getElementById("gpsStatus");
+    if (status) {
+        status.innerText = `Fijado: ${parseFloat(lat).toFixed(4)}, ${parseFloat(lng).toFixed(4)}`;
+    }
+    consultarBarrioPorCoordenada(lat, lng);
 }
 
 function obtenerGpsActual() {
     const status = document.getElementById("gpsStatus");
-    status.innerText = "⏳ Obteniendo señal GPS del dispositivo...";
+    if (status) status.innerText = "Obteniendo señal GPS del dispositivo...";
 
     if (!navigator.geolocation) {
-        status.innerText = "❌ Tu navegador no soporta geolocalización GPS.";
+        if (status) status.innerText = "Tu navegador no soporta geolocalización GPS.";
         return;
     }
 
@@ -293,11 +363,11 @@ function obtenerGpsActual() {
             actualizarCoordenadas(lat, lng);
             mapMini.setView([lat, lng], 17);
             markerMini.setLatLng([lat, lng]);
-            status.innerText = `✅ Ubicación GPS obtenida (Precisión: ±${Math.round(pos.coords.accuracy)}m)`;
+            if (status) status.innerText = `Ubicación GPS obtenida (Precisión: ±${Math.round(pos.coords.accuracy)}m)`;
         },
         (err) => {
             console.error(err);
-            status.innerText = "⚠️ No se pudo obtener la ubicación GPS automáticamente. Puedes tocar el mapa.";
+            if (status) status.innerText = "No se pudo obtener la ubicación GPS automáticamente. Puedes pulsar en el mapa.";
         },
         { enableHighAccuracy: true, timeout: 10000 }
     );
@@ -316,7 +386,9 @@ function setupTabs() {
         secCrear.classList.add("active");
         secMis.classList.remove("active");
         if (appContainer) appContainer.classList.remove("view-mis-reportes");
-        setTimeout(() => mapMini.invalidateSize(), 200);
+        setTimeout(() => {
+            if (mapMini) mapMini.invalidateSize();
+        }, 200);
     });
 
     tabMis.addEventListener("click", () => {
@@ -334,7 +406,7 @@ async function enviarReporte(e) {
 
     const btnSubmit = document.getElementById("btnSubmit");
     btnSubmit.disabled = true;
-    btnSubmit.innerHTML = `<i class="bi bi-hourglass-split"></i> Registrando...`;
+    btnSubmit.innerHTML = `Registrando reporte...`;
 
     const formData = new FormData();
     formData.append("tipo", document.getElementById("tipoIncidente").value);
@@ -348,6 +420,7 @@ async function enviarReporte(e) {
     }
     formData.append("direccion", document.getElementById("direccion").value);
     formData.append("descripcion", document.getElementById("descripcion").value);
+    formData.append("barrio", document.getElementById("barrio")?.value || "");
     formData.append("requiere_policia", document.getElementById("chkPolicia")?.checked ?? false);
     formData.append("requiere_ambulancia", document.getElementById("chkAmbulancia")?.checked ?? false);
     formData.append("requiere_bomberos", document.getElementById("chkBomberos")?.checked ?? false);
@@ -375,14 +448,14 @@ async function enviarReporte(e) {
         }
 
         if (res.ok) {
-            showAlert(`✅ ${data.mensaje} (Código: ${data.incidente.codigoincidente})`, "success");
+            showAlert(`${data.mensaje} (Código: ${data.incidente.codigoincidente})`, "success");
             document.getElementById("formReporte").reset();
             fotoComprimida = null;
             if (document.getElementById("previewContainer")) {
                 document.getElementById("previewContainer").style.display = "none";
             }
-            const spanBtn = btnTomarFoto?.querySelector("span");
-            if (spanBtn) spanBtn.innerText = "Adjuntar / Tomar Foto de Terreno";
+            const spanBtn = document.getElementById("btnTomarFoto")?.querySelector("span");
+            if (spanBtn) spanBtn.innerText = "Adjuntar Foto de Evidencia";
 
             // Restablecer fecha y hora
             const hoy = new Date();
@@ -392,14 +465,14 @@ async function enviarReporte(e) {
             // Cambiar a la pestaña de mis reportes
             document.getElementById("tabMisReportes").click();
         } else {
-            showAlert(`❌ ${data.mensaje || "Error registrando reporte"}`, "error");
+            showAlert(`${data.mensaje || "Error registrando reporte"}`, "error");
         }
 
     } catch (err) {
         console.warn("Fallo de conexión al enviar reporte:", err);
         if (window.SIGI_PWA) {
             const offlinePayload = {
-                tipo: document.getElementById("tipo").value,
+                tipo: document.getElementById("tipoIncidente").value,
                 fecha: document.getElementById("fecha").value,
                 hora: document.getElementById("hora").value,
                 lat: document.getElementById("lat").value,
@@ -408,12 +481,13 @@ async function enviarReporte(e) {
                 id_modalidad: document.getElementById("modalidad").value,
                 direccion: document.getElementById("direccion").value,
                 descripcion: document.getElementById("descripcion").value,
+                barrio: document.getElementById("barrio")?.value || "",
                 requiere_policia: document.getElementById("chkPolicia")?.checked ?? false,
                 requiere_ambulancia: document.getElementById("chkAmbulancia")?.checked ?? false,
                 requiere_bomberos: document.getElementById("chkBomberos")?.checked ?? false
             };
             window.SIGI_PWA.guardarEnColaOffline(offlinePayload);
-            showAlert("💾 Modo Offline: Tu reporte ha sido guardado de forma segura en tu teléfono/PC y se enviará automáticamente al recuperar conexión.", "warning");
+            showAlert("Modo Offline: Tu reporte ha sido guardado localmente y se enviará automáticamente al recuperar conexión.", "warning");
             document.getElementById("formReporte").reset();
             fotoComprimida = null;
             if (document.getElementById("previewContainer")) {
@@ -421,10 +495,10 @@ async function enviarReporte(e) {
             }
             return;
         }
-        showAlert("❌ Error de conexión al registrar el incidente", "error");
+        showAlert("Error de conexión al registrar el incidente", "error");
     } finally {
         btnSubmit.disabled = false;
-        btnSubmit.innerHTML = `<i class="bi bi-send-fill"></i> Registrar Incidente`;
+        btnSubmit.innerHTML = `Registrar Incidente`;
     }
 }
 
@@ -440,7 +514,7 @@ async function cargarMisReportes() {
         document.getElementById("countReportes").innerText = reportes.length;
 
         if (reportes.length === 0) {
-            list.innerHTML = '<div style="text-align: center; color: #64748b; padding: 20px;">No has registrado ningún reporte aún.</div>';
+            list.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 24px;">No has registrado ningún reporte aún.</div>';
             return;
         }
 
@@ -455,13 +529,13 @@ async function cargarMisReportes() {
             const htmlAcciones = esPendiente
                 ? `<div class="report-actions">
                        <button class="btn-report-edit" onclick="abrirModalEditarReporte(${r.idincidente}, '${r.fechaincidente?.split('T')[0]}', '${r.horaincidente?.slice(0,5)}', ${r.id_gravedad || 3}, '${(r.direccion||'').replace(/'/g,"\\'")}', '${(r.descripcionincidente||'').replace(/'/g,"\\'")}', '${(r.imagen_url||'').replace(/'/g,"\\'")}')">
-                           <i class="bi bi-pencil"></i> Editar
+                           Editar
                        </button>
                        <button class="btn-report-delete" onclick="confirmarEliminarReporte(${r.idincidente}, '${r.codigoincidente || 'INC-'+r.idincidente}')">
-                           <i class="bi bi-trash3"></i> Eliminar
+                           Eliminar
                        </button>
                    </div>`
-                : `<div class="report-actions-locked"><i class="bi bi-lock-fill"></i> En revisión — no editable</div>`;
+                : `<div class="report-actions-locked">En revisión — no editable</div>`;
 
             list.innerHTML += `
                 <div class="report-card">
@@ -475,8 +549,8 @@ async function cargarMisReportes() {
                     <div class="report-desc">${r.descripcionincidente || '<em style="opacity:0.5">Sin descripción</em>'}</div>
                     ${htmlFoto}
                     <div class="report-meta" style="margin-top: 8px;">
-                        <span><i class="bi bi-calendar-event"></i> ${fechaFmt} ${r.horaincidente.slice(0, 5)}</span>
-                        <span><i class="bi bi-geo-alt"></i> ${r.barrio_nombre || r.vereda_nombre || 'Sin Zona'}</span>
+                        <span>${fechaFmt} ${r.horaincidente.slice(0, 5)}</span>
+                        <span>${r.barrio_nombre || r.vereda_nombre || 'Sin Zona'}</span>
                     </div>
                     ${htmlAcciones}
                 </div>
@@ -485,20 +559,44 @@ async function cargarMisReportes() {
 
     } catch (err) {
         console.error("Error cargando mis reportes:", err);
-        list.innerHTML = '<div style="text-align: center; color: #dc3545; padding: 15px;">Error al cargar mis reportes.</div>';
+        list.innerHTML = '<div style="text-align: center; color: var(--danger); padding: 15px;">Error al cargar mis reportes.</div>';
     }
 }
 
-function showAlert(mensaje, tipo = "success") {
+let timerAlerta = null;
+
+function mostrarToastReportero(mensaje, tipo = "info", duracion = 2200) {
+    showAlert(mensaje, tipo, duracion);
+}
+
+function showAlert(mensaje, tipo = "success", duracion = 2400) {
     const cont = document.getElementById("alertContainer");
+    if (!cont) return;
+
+    if (timerAlerta) {
+        clearTimeout(timerAlerta);
+        timerAlerta = null;
+    }
+
     cont.innerHTML = `
         <div class="alert-box alert-${tipo}">
             ${mensaje}
         </div>
     `;
-    setTimeout(() => {
-        cont.innerHTML = "";
-    }, 4000);
+
+    timerAlerta = setTimeout(() => {
+        const box = cont.querySelector(".alert-box");
+        if (box) {
+            box.style.opacity = "0";
+            box.style.transform = "translateY(-6px)";
+            box.style.transition = "opacity 0.22s ease, transform 0.22s ease";
+            setTimeout(() => {
+                cont.innerHTML = "";
+            }, 220);
+        } else {
+            cont.innerHTML = "";
+        }
+    }, duracion);
 }
 
 /* ═══════════════════════════════════════════
@@ -551,7 +649,7 @@ async function guardarEdicionReporte() {
     if (!id) return;
 
     btnSave.disabled = true;
-    btnSave.innerHTML = '<i class="bi bi-hourglass-split"></i> Guardando...';
+    btnSave.innerHTML = 'Guardando...';
 
     const formData = new FormData();
     const fecha = document.getElementById("editFechaReporte").value;
@@ -585,17 +683,17 @@ async function guardarEdicionReporte() {
 
         if (res.ok) {
             cerrarModalEditarReporte();
-            showAlert('✅ Reporte actualizado correctamente', 'success');
+            showAlert('Reporte actualizado correctamente', 'success');
             cargarMisReportes();
         } else {
-            showAlert(`❌ ${data.mensaje || 'Error al actualizar'}`, 'error');
+            showAlert(`${data.mensaje || 'Error al actualizar'}`, 'error');
         }
     } catch (err) {
         console.error('Error editando reporte:', err);
-        showAlert('❌ Error de conexión', 'error');
+        showAlert('Error de conexión', 'error');
     } finally {
         btnSave.disabled = false;
-        btnSave.innerHTML = '<i class="bi bi-check2-circle"></i> Guardar Cambios';
+        btnSave.innerHTML = 'Guardar Cambios';
     }
 }
 
@@ -610,14 +708,14 @@ async function confirmarEliminarReporte(id, codigo) {
         const data = await res.json();
 
         if (res.ok) {
-            showAlert('🗑️ Reporte eliminado correctamente', 'success');
+            showAlert('Reporte eliminado correctamente', 'success');
             cargarMisReportes();
         } else {
-            showAlert(`❌ ${data.mensaje || 'No se pudo eliminar'}`, 'error');
+            showAlert(`${data.mensaje || 'No se pudo eliminar'}`, 'error');
         }
     } catch (err) {
         console.error('Error eliminando reporte:', err);
-        showAlert('❌ Error de conexión', 'error');
+        showAlert('Error de conexión', 'error');
     }
 }
 

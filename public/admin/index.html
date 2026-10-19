@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="admin.css?v=71">
+    <link rel="stylesheet" href="admin.css?v=77">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script>
@@ -260,15 +260,13 @@
             <section class="verificacion">
                 <!-- Panel Superior Unificado: Header de Gestión + Filtros Racionales -->
                 <div class="panel-verificacion-card">
-                    <!-- Fila Superior: Título, KPIs y Acciones de Filtro -->
+                    <!-- Fila Superior: Título y Acciones de Filtro -->
                     <div class="panel-header-toolbar" id="headerFiltrosIncidentes">
                         <div class="panel-header-info">
                             <div class="panel-titulo-fila">
-                                <h2 class="panel-titulo-principal">Verificación de Incidentes</h2>
-                                <span class="badge-kpi-total" title="Total de reportes en el sistema">
-                                    <span class="label-kpi">Total</span>
-                                    <span class="numero badge-total-incidentes numero-kpi" id="conteoTotalVerificacion">0</span>
-                                </span>
+                                <h2 class="panel-titulo-principal">
+                                    <i class="bi bi-shield-check phtu-icono" aria-hidden="true"></i> Verificación de Incidentes
+                                </h2>
                             </div>
                             <p class="panel-subtitulo-info">Auditoría, validación y control operativo de incidentes georreferenciados.</p>
                         </div>
@@ -282,6 +280,34 @@
                             <button type="button" id="btnToggleFiltrosIncidentes" class="btn-toggle-desplegar" aria-label="Mostrar u ocultar filtros" title="Plegar / desplegar filtros">
                                 <i class="bi bi-chevron-down" id="iconoDesplegarFiltros" aria-hidden="true"></i>
                             </button>
+                        </div>
+                    </div>
+
+                    <!-- Fila de Chips KPIs con colores suaves y armónicos -->
+                    <div class="phtu-kpis-row" style="margin-top: 12px; margin-bottom: 12px;">
+                        <div class="kpi-chip-suave total" title="Total de reportes en el sistema">
+                            <span class="chip-label">Total</span>
+                            <span class="numero badge-total-incidentes chip-num" id="conteoTotalVerificacion">0</span>
+                        </div>
+                        <div class="kpi-chip-suave pendiente" title="Incidentes en cola pendientes">
+                            <span class="chip-dot"></span>
+                            <span class="chip-label">En Cola</span>
+                            <span id="kpiIncidentesPendientes" class="chip-num">0</span>
+                        </div>
+                        <div class="kpi-chip-suave evaluacion" title="Incidentes tomados en evaluación">
+                            <span class="chip-dot"></span>
+                            <span class="chip-label">En Evaluación</span>
+                            <span id="kpiIncidentesEvaluacion" class="chip-num">0</span>
+                        </div>
+                        <div class="kpi-chip-suave activo" title="Incidentes aprobados o resueltos">
+                            <span class="chip-dot"></span>
+                            <span class="chip-label">Aprobados</span>
+                            <span id="kpiIncidentesAprobados" class="chip-num">0</span>
+                        </div>
+                        <div class="kpi-chip-suave inactivo" title="Incidentes desestimados o cerrados">
+                            <span class="chip-dot"></span>
+                            <span class="chip-label">Desestimados</span>
+                            <span id="kpiIncidentesDesestimados" class="chip-num">0</span>
                         </div>
                     </div>
 
@@ -387,80 +413,83 @@
 
         <!-- SECCIÓN 3: GESTIÓN DE USUARIOS (SUPERADMIN / ADMIN) -->
             <section class="sec-usuarios esconder" id="secUsuarios">
-                <!-- Contenedores Superiores: Info + KPIs (Izquierda) + Filtros (Derecha) -->
-                <div class="grid-superior-usuarios">
-                    
-                    <!-- Contenedor Izquierdo: Título, Acción & KPIs -->
-                    <div style="background: var(--bg-card); border: 1px solid var(--borde); border-radius: 8px; padding: 12px 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-                            <h2 style="font-size: 1.1rem; color: var(--texto); font-weight: 700; margin: 0; line-height: 1.2;">
-                                Gestión de Usuarios
-                            </h2>
-                            <button type="button" id="btnNuevoUsuario" class="btn-nuevo-usuario" onclick="abrirModalCrearUsuario()">
-                                + Nuevo usuario
-                            </button>
+                <!-- Encabezado Ejecutivo Unificado: Título, Métricas Suaves & Filtros Espaciosos -->
+                <div class="panel-header-toolbar-unificado">
+                    <!-- Fila 1: Título e Info a la izquierda, Acción primaria a la derecha -->
+                    <div class="phtu-top-row">
+                        <div class="phtu-brand">
+                            <div class="phtu-titulo-wrap">
+                                <h2 class="phtu-titulo">
+                                    <i class="bi bi-people-fill phtu-icono" aria-hidden="true"></i> Gestión de Usuarios
+                                </h2>
+                                <p class="phtu-subtitulo">Directorio institucional de operadores, roles y control de acceso (Superadmin)</p>
+                            </div>
                         </div>
-
-                        <!-- Mini Badges de KPIs -->
-                        <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
-                            <div class="kpi-mini-badge total">
-                                <span>Total:</span>
-                                <span id="kpiTotalUsuarios" class="kpi-num">0</span>
-                            </div>
-                            <div class="kpi-mini-badge superadmin">
-                                <span>Superadmin:</span>
-                                <span id="kpiSuperadmins" class="kpi-num">0</span>
-                            </div>
-                            <div class="kpi-mini-badge admin">
-                                <span>Admin:</span>
-                                <span id="kpiAdmins" class="kpi-num">0</span>
-                            </div>
-                            <div class="kpi-mini-badge reportero">
-                                <span>Reportero:</span>
-                                <span id="kpiReporteros" class="kpi-num">0</span>
-                            </div>
-                            <div class="kpi-mini-badge inactivo">
-                                <span>Inactivos:</span>
-                                <span id="kpiBloqueados" class="kpi-num">0</span>
-                            </div>
+                        <div class="phtu-acciones-top">
+                            <button type="button" id="btnNuevoUsuario" class="btn-nuevo-registro-unificado" onclick="abrirModalCrearUsuario()">
+                                <i class="bi bi-person-plus-fill" aria-hidden="true"></i> Nuevo usuario
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Contenedor Derecho: Filtros de Búsqueda y Gestión -->
-                    <div style="background: var(--bg-card); border: 1px solid var(--borde); border-radius: 8px; padding: 12px 16px; display: flex; flex-direction: column; justify-content: center; gap: 8px;">
-                        <div style="font-size: 0.74rem; font-weight: 700; color: var(--texto-suave); text-transform: uppercase; letter-spacing: 0.05em;">
-                            Filtros de Búsqueda y Gestión
+                    <!-- Fila 2: Chips de Métricas / KPIs con colores armónicos y suaves -->
+                    <div class="phtu-kpis-row">
+                        <div class="kpi-chip-suave total" title="Total de cuentas">
+                            <span class="chip-label">Total</span>
+                            <span id="kpiTotalUsuarios" class="chip-num">0</span>
+                        </div>
+                        <div class="kpi-chip-suave superadmin" title="Superadministradores">
+                            <span class="chip-dot"></span>
+                            <span class="chip-label">Superadmin</span>
+                            <span id="kpiSuperadmins" class="chip-num">0</span>
+                        </div>
+                        <div class="kpi-chip-suave admin" title="Administradores">
+                            <span class="chip-dot"></span>
+                            <span class="chip-label">Admin</span>
+                            <span id="kpiAdmins" class="chip-num">0</span>
+                        </div>
+                        <div class="kpi-chip-suave reportero" title="Reporteros">
+                            <span class="chip-dot"></span>
+                            <span class="chip-label">Reportero</span>
+                            <span id="kpiReporteros" class="chip-num">0</span>
+                        </div>
+                        <div class="kpi-chip-suave inactivo" title="Usuarios inactivos o bloqueados">
+                            <span class="chip-dot"></span>
+                            <span class="chip-label">Inactivos</span>
+                            <span id="kpiBloqueados" class="chip-num">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Fila 3: Barra de Búsqueda y Filtros Espaciosa -->
+                    <div class="phtu-filtros-row">
+                        <div class="phtu-buscador-wrapper">
+                            <i class="bi bi-search phtu-search-icon" aria-hidden="true"></i>
+                            <input type="text" id="buscarUsuarioInput" name="buscarUsuario" class="phtu-input-buscar" placeholder="Buscar por usuario, correo electrónico o dependencia…" autocomplete="off" spellcheck="false" aria-label="Buscar por usuario, email o dependencia">
                         </div>
 
-                        <div class="user-filter-bar" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                            <div style="flex: 1; min-width: 180px;">
-                                <input type="text" id="buscarUsuarioInput" name="buscarUsuario" placeholder="Buscar por usuario, email o dependencia…" autocomplete="off" spellcheck="false" aria-label="Buscar por usuario, email o dependencia" style="width: 100%; padding: 6px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.78rem;">
-                            </div>
-
-                            <div style="display: flex; gap: 6px; align-items: center;">
-                                <label for="filtroRolUsuario" style="font-size: 0.75rem; color: var(--texto-suave); font-weight: 500;">Rol:</label>
-                                <select id="filtroRolUsuario" name="filtroRolUsuario" style="padding: 6px 8px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.78rem; cursor: pointer;">
-                                    <option value="todos">Todos los roles</option>
-                                    <option value="superadmin">Superadmin</option>
-                                    <option value="admin">Administrador</option>
-                                    <option value="reportero">Reportero</option>
-                                </select>
-                            </div>
-
-                            <div style="display: flex; gap: 6px; align-items: center;">
-                                <label for="filtroEstadoUsuario" style="font-size: 0.75rem; color: var(--texto-suave); font-weight: 500;">Estado:</label>
-                                <select id="filtroEstadoUsuario" name="filtroEstadoUsuario" style="padding: 6px 8px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.78rem; cursor: pointer;">
-                                    <option value="todos">Todos los estados</option>
-                                    <option value="activo">Activo</option>
-                                    <option value="bloqueado">Bloqueado</option>
-                                    <option value="inactivo">Inactivo</option>
-                                </select>
-                            </div>
-
-                            <button type="button" id="btnResetFiltrosUsuarios" style="padding: 6px 10px; background: transparent; border: 1px solid var(--borde); border-radius: 6px; color: var(--texto-suave); font-size: 0.76rem; cursor: pointer;" title="Restablecer filtros" aria-label="Restablecer filtros de usuarios">
-                                Limpiar
-                            </button>
+                        <div class="phtu-filtro-item">
+                            <label for="filtroRolUsuario">Rol:</label>
+                            <select id="filtroRolUsuario" name="filtroRolUsuario" class="filtro-select-control select-espacioso">
+                                <option value="todos">Todos los roles</option>
+                                <option value="superadmin">Superadmin</option>
+                                <option value="admin">Administrador</option>
+                                <option value="reportero">Reportero</option>
+                            </select>
                         </div>
+
+                        <div class="phtu-filtro-item">
+                            <label for="filtroEstadoUsuario">Estado:</label>
+                            <select id="filtroEstadoUsuario" name="filtroEstadoUsuario" class="filtro-select-control select-espacioso">
+                                <option value="todos">Todos los estados</option>
+                                <option value="activo">Activo</option>
+                                <option value="bloqueado">Bloqueado</option>
+                                <option value="inactivo">Inactivo</option>
+                            </select>
+                        </div>
+
+                        <button type="button" id="btnResetFiltrosUsuarios" class="btn-limpiar-filtros-unificado" title="Restablecer filtros" aria-label="Restablecer filtros de usuarios">
+                            <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Limpiar
+                        </button>
                     </div>
                 </div>
 
@@ -576,75 +605,74 @@
         
             <!-- SECCIÓN 4.5: GESTIÓN DE TIPOS DE INCIDENTES (EXCLUSIVO SUPERADMIN) -->
             <section class="sec-tipos-incidentes esconder" id="secTiposIncidentes">
-                <!-- Contenedores Superiores: Info + KPIs (Izquierda) + Filtros (Derecha) -->
-                <div class="grid-superior-usuarios">
-                    
-                    <!-- Contenedor Izquierdo: Título, Acción & KPIs -->
-                    <div style="background: var(--bg-card); border: 1px solid var(--borde); border-radius: 8px; padding: 12px 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-                            <div>
-                                <h2 style="font-size: 1.1rem; color: var(--texto); font-weight: 700; margin: 0; line-height: 1.2;">
-                                    Catálogo de Tipos de Incidentes
+                <!-- Encabezado Ejecutivo Unificado: Título, Métricas Suaves & Filtros Espaciosos -->
+                <div class="panel-header-toolbar-unificado">
+                    <!-- Fila 1: Título e Info a la izquierda, Acción primaria a la derecha -->
+                    <div class="phtu-top-row">
+                        <div class="phtu-brand">
+                            <div class="phtu-titulo-wrap">
+                                <h2 class="phtu-titulo">
+                                    <i class="bi bi-tags-fill phtu-icono" aria-hidden="true"></i> Catálogo de Tipos de Incidentes
                                 </h2>
-                                <span style="font-size: 0.73rem; color: var(--texto-suave);">Clasificación oficial y codificación de colores para mapas y reportes (Superadmin)</span>
+                                <p class="phtu-subtitulo">Clasificación oficial y codificación de colores para mapas y reportes (Superadmin)</p>
                             </div>
-                            <button type="button" id="btnNuevoTipo" class="btn-nuevo-usuario" onclick="abrirModalCrearTipo()">
-                                + Nuevo tipo
-                            </button>
                         </div>
-
-                        <!-- Mini Badges de KPIs -->
-                        <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
-                            <div class="kpi-mini-badge total">
-                                <span>Total:</span>
-                                <span id="kpiTotalTipos" class="kpi-num">0</span>
-                            </div>
-                            <div class="kpi-mini-badge" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981;">
-                                <span>Activos:</span>
-                                <span id="kpiTiposActivos" class="kpi-num">0</span>
-                            </div>
-                            <div class="kpi-mini-badge inactivo">
-                                <span>Inactivos:</span>
-                                <span id="kpiTiposInactivos" class="kpi-num">0</span>
-                            </div>
-                            <div class="kpi-mini-badge" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: #3b82f6;">
-                                <span>Con incidentes:</span>
-                                <span id="kpiTiposConIncidentes" class="kpi-num">0</span>
-                            </div>
+                        <div class="phtu-acciones-top">
+                            <button type="button" id="btnNuevoTipo" class="btn-nuevo-registro-unificado" onclick="abrirModalCrearTipo()">
+                                <i class="bi bi-plus-lg" aria-hidden="true"></i> Nuevo tipo
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Contenedor Derecho: Filtros y Búsqueda -->
-                    <div style="background: var(--bg-card); border: 1px solid var(--borde); border-radius: 8px; padding: 12px 16px; display: flex; flex-direction: column; justify-content: center; gap: 8px;">
-                        <div style="font-size: 0.74rem; font-weight: 700; color: var(--texto-suave); text-transform: uppercase; letter-spacing: 0.05em;">
-                            Búsqueda y Filtros de Catálogo
+                    <!-- Fila 2: Chips de Métricas / KPIs con colores armónicos y suaves -->
+                    <div class="phtu-kpis-row">
+                        <div class="kpi-chip-suave total" title="Total de tipos catalogados">
+                            <span class="chip-label">Total</span>
+                            <span id="kpiTotalTipos" class="chip-num">0</span>
+                        </div>
+                        <div class="kpi-chip-suave activo" title="Tipos activos habilitados">
+                            <span class="chip-dot"></span>
+                            <span class="chip-label">Activos</span>
+                            <span id="kpiTiposActivos" class="chip-num">0</span>
+                        </div>
+                        <div class="kpi-chip-suave inactivo" title="Tipos inactivos">
+                            <span class="chip-dot"></span>
+                            <span class="chip-label">Inactivos</span>
+                            <span id="kpiTiposInactivos" class="chip-num">0</span>
+                        </div>
+                        <div class="kpi-chip-suave info" title="Tipos con incidentes registrados">
+                            <span class="chip-dot"></span>
+                            <span class="chip-label">Con incidentes</span>
+                            <span id="kpiTiposConIncidentes" class="chip-num">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Fila 3: Barra de Búsqueda y Filtros Espaciosa -->
+                    <div class="phtu-filtros-row">
+                        <div class="phtu-buscador-wrapper">
+                            <i class="bi bi-search phtu-search-icon" aria-hidden="true"></i>
+                            <input type="text" id="buscarTipoInput" class="phtu-input-buscar" placeholder="Buscar por tipo, categoría o descripción…" autocomplete="off" spellcheck="false">
                         </div>
 
-                        <div class="user-filter-bar" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                            <div style="flex: 1; min-width: 170px;">
-                                <input type="text" id="buscarTipoInput" placeholder="Buscar por tipo o descripción…" autocomplete="off" spellcheck="false" style="width: 100%; padding: 6px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.78rem;">
-                            </div>
-
-                            <div style="display: flex; gap: 6px; align-items: center;">
-                                <label for="filtroCategoriaTipo" style="font-size: 0.75rem; color: var(--texto-suave); font-weight: 500;">Categoría:</label>
-                                <select id="filtroCategoriaTipo" style="padding: 6px 8px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.78rem; cursor: pointer;">
-                                    <option value="todas">Todas las categorías</option>
-                                </select>
-                            </div>
-
-                            <div style="display: flex; gap: 6px; align-items: center;">
-                                <label for="filtroEstadoTipo" style="font-size: 0.75rem; color: var(--texto-suave); font-weight: 500;">Estado:</label>
-                                <select id="filtroEstadoTipo" style="padding: 6px 8px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.78rem; cursor: pointer;">
-                                    <option value="todos">Todos</option>
-                                    <option value="activo">Solo activos</option>
-                                    <option value="inactivo">Solo inactivos</option>
-                                </select>
-                            </div>
-
-                            <button type="button" id="btnResetFiltrosTipos" style="padding: 6px 10px; background: transparent; border: 1px solid var(--borde); border-radius: 6px; color: var(--texto-suave); font-size: 0.76rem; cursor: pointer;" title="Restablecer filtros" aria-label="Restablecer filtros de tipos">
-                                Limpiar
-                            </button>
+                        <div class="phtu-filtro-item">
+                            <label for="filtroCategoriaTipo">Categoría:</label>
+                            <select id="filtroCategoriaTipo" class="filtro-select-control select-espacioso">
+                                <option value="todas">Todas las categorías</option>
+                            </select>
                         </div>
+
+                        <div class="phtu-filtro-item">
+                            <label for="filtroEstadoTipo">Estado:</label>
+                            <select id="filtroEstadoTipo" class="filtro-select-control select-espacioso">
+                                <option value="todos">Todos los estados</option>
+                                <option value="activo">Solo activos</option>
+                                <option value="inactivo">Solo inactivos</option>
+                            </select>
+                        </div>
+
+                        <button type="button" id="btnResetFiltrosTipos" class="btn-limpiar-filtros-unificado" title="Restablecer filtros" aria-label="Restablecer filtros de tipos">
+                            <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Limpiar
+                        </button>
                     </div>
                 </div>
 
@@ -838,81 +866,73 @@
 
     <!-- MODAL FILTRO DE TIEMPO -->
     <div id="modalFiltroTiempo" class="modal">
-        <div class="modal-contenido modal-tiempo" style="max-width: 480px; background: var(--bg-card); border: 1px solid var(--borde-acento); border-radius: 10px; padding: 22px;">
-            <div class="modal-cabecera" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; position: relative;">
-                <h3 style="color: var(--texto); font-size: 1.1rem; font-weight: 600; margin: 0;">Filtrar por tiempo</h3>
-                <button type="button" class="btn-cerrar-modal" id="btnCerrarFiltroTiempo" aria-label="Cerrar filtro de tiempo">
-                    <i class="bi bi-x-lg" aria-hidden="true"></i>
-                </button>
+        <div class="modal-contenido modal-tiempo">
+            <div class="modal-cabecera">
+                <h3><i class="bi bi-calendar-event"></i> Filtrar por tiempo</h3>
+                <button type="button" class="cerrar-modal-tiempo" id="btnCerrarFiltroTiempo" title="Cerrar" aria-label="Cerrar filtro de tiempo"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
             </div>
             
-            <div class="modal-cuerpo" style="display: flex; flex-direction: column; gap: 16px;">
+            <div class="modal-cuerpo">
                 <!-- BOTONES RÁPIDOS -->
                 <div class="seccion-filtro-modal">
-                    <span class="titulo-seccion-modal" style="display: block; font-size: 0.75rem; text-transform: uppercase; color: var(--texto-suave); margin-bottom: 8px; font-weight: 600; letter-spacing: 0.04em;">Acceso rápido</span>
-                    <div class="botones-rapidos-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
-                        <button type="button" class="btn-rapido-modal" data-rango="hoy" style="padding: 7px; background: var(--bg-card); border: 1px solid var(--borde); color: var(--texto); border-radius: 6px; font-size: 0.8rem; cursor: pointer;">Hoy</button>
-                        <button type="button" class="btn-rapido-modal" data-rango="semana" style="padding: 7px; background: var(--bg-card); border: 1px solid var(--borde); color: var(--texto); border-radius: 6px; font-size: 0.8rem; cursor: pointer;">Última semana</button>
-                        <button type="button" class="btn-rapido-modal" data-rango="15dias" style="padding: 7px; background: var(--bg-card); border: 1px solid var(--borde); color: var(--texto); border-radius: 6px; font-size: 0.8rem; cursor: pointer;">15 días</button>
-                        <button type="button" class="btn-rapido-modal" data-rango="mes" style="padding: 7px; background: var(--bg-card); border: 1px solid var(--borde); color: var(--texto); border-radius: 6px; font-size: 0.8rem; cursor: pointer;">Último mes</button>
-                        <button type="button" class="btn-rapido-modal activo" data-rango="3meses" style="padding: 7px; background: var(--bg-card); border: 1px solid var(--borde); color: var(--texto); border-radius: 6px; font-size: 0.8rem; cursor: pointer;">3 meses</button>
-                        <button type="button" class="btn-rapido-modal" data-rango="1anio" style="padding: 7px; background: var(--bg-card); border: 1px solid var(--borde); color: var(--texto); border-radius: 6px; font-size: 0.8rem; cursor: pointer;">1 año</button>
-                        <button type="button" class="btn-rapido-modal" data-rango="todo" style="grid-column: span 3; padding: 7px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--borde); color: var(--texto); border-radius: 6px; font-size: 0.8rem; cursor: pointer;">Todo el historial</button>
+                    <span class="titulo-seccion-modal">Filtros rápidos</span>
+                    <div class="botones-rapidos-grid">
+                        <button type="button" class="btn-rapido-modal" data-rango="hoy">Hoy</button>
+                        <button type="button" class="btn-rapido-modal" data-rango="semana">7 días</button>
+                        <button type="button" class="btn-rapido-modal" data-rango="15dias">15 días</button>
+                        <button type="button" class="btn-rapido-modal" data-rango="mes">1 mes</button>
+                        <button type="button" class="btn-rapido-modal activo" data-rango="3meses">3 meses</button>
+                        <button type="button" class="btn-rapido-modal" data-rango="1anio">1 año</button>
+                        <button type="button" class="btn-rapido-modal" data-rango="todo" style="grid-column: span 3;">Todo el historial</button>
                     </div>
                 </div>
 
                 <!-- RANGO PERSONALIZADO -->
                 <div class="seccion-filtro-modal">
-                    <span class="titulo-seccion-modal" style="display: block; font-size: 0.75rem; text-transform: uppercase; color: var(--texto-suave); margin-bottom: 8px; font-weight: 600; letter-spacing: 0.04em;">Rango personalizado</span>
+                    <span class="titulo-seccion-modal">Rango personalizado</span>
                     <div class="rango-personalizado-modal">
-                        <div class="inputs-rango-modal" style="display: flex; gap: 10px; margin-bottom: 8px;">
-                            <div class="campo-modal" style="flex: 1;">
-                                <label for="fechaDesdeModal" style="display: block; font-size: 0.75rem; color: var(--texto-suave); margin-bottom: 4px;">Desde</label>
-                                <input type="date" id="fechaDesdeModal" name="fechaDesdeModal" class="input-modal-fecha" style="width: 100%; padding: 7px 8px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.8rem;">
+                        <div class="inputs-rango-modal">
+                            <div class="campo-modal">
+                                <label for="fechaDesdeModal">Desde</label>
+                                <input type="date" id="fechaDesdeModal" name="fechaDesdeModal" class="input-modal-fecha">
                             </div>
-                            <div class="campo-modal" style="flex: 1;">
-                                <label for="fechaHastaModal" style="display: block; font-size: 0.75rem; color: var(--texto-suave); margin-bottom: 4px;">Hasta</label>
-                                <input type="date" id="fechaHastaModal" name="fechaHastaModal" class="input-modal-fecha" style="width: 100%; padding: 7px 8px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.8rem;">
+                            <div class="campo-modal">
+                                <label for="fechaHastaModal">Hasta</label>
+                                <input type="date" id="fechaHastaModal" name="fechaHastaModal" class="input-modal-fecha">
                             </div>
                         </div>
-                        <div class="botones-rango-modal" style="display: flex; gap: 8px;">
-                            <button type="button" id="btnAplicarRangoModal" style="flex: 1; padding: 7px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: 600;">Aplicar</button>
-                            <button type="button" id="btnLimpiarRangoModal" style="padding: 7px 12px; background: transparent; border: 1px solid var(--borde); color: var(--texto-suave); border-radius: 6px; font-size: 0.8rem; cursor: pointer;">Limpiar</button>
+                        <div class="botones-rango-modal">
+                            <button type="button" id="btnAplicarRangoModal" class="btn-primario-modal">Aplicar</button>
+                            <button type="button" id="btnLimpiarRangoModal" class="btn-secundario-modal">Limpiar</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- MES ESPECÍFICO -->
-                <div class="seccion-filtro-modal">
-                    <span class="titulo-seccion-modal" style="display: block; font-size: 0.75rem; text-transform: uppercase; color: var(--texto-suave); margin-bottom: 8px; font-weight: 600; letter-spacing: 0.04em;">Mes específico</span>
-                    <div class="mes-especifico-modal" style="display: flex; gap: 8px; align-items: flex-end;">
-                        <div class="campo-modal" style="flex: 1;">
-                            <label for="mesFiltroModal" style="display: block; font-size: 0.75rem; color: var(--texto-suave); margin-bottom: 4px;">Mes y año</label>
-                            <input type="month" id="mesFiltroModal" name="mesFiltroModal" class="input-modal-month" style="width: 100%; padding: 7px 8px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.8rem;">
+                <!-- MES Y AÑO EN 2 COLUMNAS (Mismo diseño ejecutivo del dashboard) -->
+                <div class="seccion-filtro-modal grid-dos-columnas" style="border-bottom: none; padding-bottom: 0;">
+                    <div class="campo-modal">
+                        <label for="mesFiltroModal">Por Mes</label>
+                        <div class="input-con-boton">
+                            <input type="month" id="mesFiltroModal" name="mesFiltroModal" class="input-modal-month">
+                            <button type="button" id="btnFiltrarMesModal" class="btn-acento-modal" title="Filtrar mes">Filtrar</button>
                         </div>
-                        <button type="button" id="btnFiltrarMesModal" style="padding: 7px 16px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: 600;">Filtrar</button>
                     </div>
-                </div>
-
-                <!-- AÑO ESPECÍFICO -->
-                <div class="seccion-filtro-modal">
-                    <span class="titulo-seccion-modal" style="display: block; font-size: 0.75rem; text-transform: uppercase; color: var(--texto-suave); margin-bottom: 8px; font-weight: 600; letter-spacing: 0.04em;">Año específico</span>
-                    <div class="mes-especifico-modal" style="display: flex; gap: 8px; align-items: flex-end;">
-                        <div class="campo-modal" style="flex: 1;">
-                            <label for="anioFiltroModal" style="display: block; font-size: 0.75rem; color: var(--texto-suave); margin-bottom: 4px;">Seleccionar año</label>
-                            <select id="anioFiltroModal" name="anioFiltroModal" class="input-modal-fecha" style="width: 100%; padding: 7px 8px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.8rem; cursor: pointer;">
-                                <option value="">Seleccionar año…</option>
+                    <div class="campo-modal">
+                        <label for="anioFiltroModal">Por Año</label>
+                        <div class="input-con-boton">
+                            <select id="anioFiltroModal" name="anioFiltroModal" class="input-modal-fecha">
+                                <option value="">---</option>
                             </select>
+                            <button type="button" id="btnFiltrarAnioModal" class="btn-acento-modal" title="Filtrar año">Filtrar</button>
                         </div>
-                        <button type="button" id="btnFiltrarAnioModal" style="padding: 7px 16px; background: #10b981; color: white; border: none; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: 600;">Filtrar</button>
                     </div>
                 </div>
             </div>
 
             <!-- FOOTER CON LIMPIEZA GENERAL -->
-            <div class="modal-pie" style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--borde); text-align: center;">
-                <button type="button" id="btnLimpiarTodoModal" style="width: 100%; padding: 8px; background: transparent; border: 1px solid var(--borde); color: var(--texto-suave); border-radius: 6px; font-size: 0.8rem; cursor: pointer;">
-                    Limpiar todos los filtros
+            <div class="modal-pie">
+                <button type="button" id="btnLimpiarTodoModal" class="btn-limpiar-general">
+                    Restablecer filtros
                 </button>
             </div>
         </div>
@@ -1324,22 +1344,22 @@
         </div>
     </div>
 
-    <!-- MODAL CREAR / EDITAR TIPO DE INCIDENTE (Estructurado, Sin Iconos) -->
+    <!-- MODAL CREAR / EDITAR TIPO DE INCIDENTE (Estructurado, Espacioso, Sin Iconos Innecesarios) -->
     <div id="modalTipoIncidente" class="modal" style="display: none;">
-        <div class="modal-contenido modal-scroll" style="max-width: 530px; background: var(--bg-card); border: 1px solid var(--borde-acento); border-radius: 12px; padding: 24px; position: relative; box-shadow: 0 16px 40px rgba(0,0,0,0.45);">
+        <div class="modal-contenido modal-scroll" style="max-width: 640px; width: min(640px, 94vw); background: var(--bg-card); border: 1px solid var(--borde-acento); border-radius: 16px; padding: 26px 28px; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
             <button type="button" class="btn-cerrar-modal" id="cerrarModalTipo" onclick="cerrarModalTipo()" aria-label="Cerrar ventana">
                 <i class="bi bi-x-lg" aria-hidden="true"></i>
             </button>
 
             <!-- Encabezado Estructural Limpio -->
-            <div style="margin-bottom: 18px; border-bottom: 1px solid var(--borde); padding-bottom: 12px;">
-                <span style="display: inline-block; font-size: 0.68rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;">
+            <div style="margin-bottom: 20px; border-bottom: 1px solid var(--borde); padding-bottom: 14px;">
+                <span style="display: inline-block; font-size: 0.7rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px;">
                     Catálogo Oficial SIGI
                 </span>
-                <h3 id="tituloModalTipo" style="color: var(--texto); font-size: 1.15rem; font-weight: 700; margin: 0 0 4px 0; line-height: 1.2;">
+                <h3 id="tituloModalTipo" style="color: var(--texto); font-size: 1.25rem; font-weight: 700; margin: 0 0 6px 0; line-height: 1.25;">
                     Nuevo tipo de incidente
                 </h3>
-                <p style="font-size: 0.78rem; color: var(--texto-suave); margin: 0; line-height: 1.35;">
+                <p style="font-size: 0.82rem; color: var(--texto-suave); margin: 0; line-height: 1.4;">
                     Estructura la clasificación, categoría macro y codificación cromática oficial para reportes y visualización.
                 </p>
             </div>
@@ -1348,35 +1368,35 @@
                 <input type="hidden" id="tipoEditId">
 
                 <!-- Bloque 1: Clasificación y Alcance -->
-                <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--borde); border-radius: 8px; padding: 14px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px;">
-                    <div style="font-size: 0.72rem; font-weight: 700; color: var(--texto-suave); text-transform: uppercase; letter-spacing: 0.05em;">
+                <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--borde); border-radius: 10px; padding: 18px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 14px;">
+                    <div style="font-size: 0.74rem; font-weight: 700; color: var(--texto-suave); text-transform: uppercase; letter-spacing: 0.05em;">
                         Información y Clasificación
                     </div>
 
                     <!-- Nombre del Tipo -->
                     <div class="form-grupo-modal">
-                        <label for="tipoNombreInput" class="form-label-modal" style="display: block; font-size: 0.76rem; font-weight: 600; color: var(--texto); margin-bottom: 5px;">
+                        <label for="tipoNombreInput" class="form-label-modal" style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--texto); margin-bottom: 6px;">
                             Nombre del tipo de incidente <span style="color: #ef4444;">*</span>
                         </label>
-                        <input type="text" id="tipoNombreInput" required minlength="3" maxlength="80" placeholder="Ej: Inundación o Desbordamiento" autocomplete="off" spellcheck="false" class="filtro-input-control" style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem;">
-                        <div id="feedbackNombreTipo" style="font-size: 0.72rem; margin-top: 4px; display: none;"></div>
+                        <input type="text" id="tipoNombreInput" required minlength="3" maxlength="80" placeholder="Ej: Inundación o Desbordamiento" autocomplete="off" spellcheck="false" class="filtro-input-control" style="width: 100%; padding: 10px 14px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 8px; color: var(--texto); font-size: 0.84rem;">
+                        <div id="feedbackNombreTipo" style="font-size: 0.74rem; margin-top: 5px; display: none;"></div>
                     </div>
 
-                    <!-- Fila Doble: Categoría y Nivel de Riesgo -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <!-- Fila Doble: Categoría y Nivel de Riesgo (Espaciosa) -->
+                    <div style="display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr); gap: 14px;">
                         <div class="form-grupo-modal">
-                            <label for="tipoCategoriaSelect" class="form-label-modal" style="display: block; font-size: 0.76rem; font-weight: 600; color: var(--texto); margin-bottom: 5px;">
+                            <label for="tipoCategoriaSelect" class="form-label-modal" style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--texto); margin-bottom: 6px;">
                                 Categoría Macro <span style="color: #ef4444;">*</span>
                             </label>
-                            <select id="tipoCategoriaSelect" required class="filtro-select-control" style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; cursor: pointer;">
+                            <select id="tipoCategoriaSelect" required class="filtro-select-control" style="width: 100%; padding: 10px 32px 10px 14px;">
                                 <!-- Opciones pobladas dinámicamente -->
                             </select>
                         </div>
                         <div class="form-grupo-modal">
-                            <label for="tipoRiesgoSelect" class="form-label-modal" style="display: block; font-size: 0.76rem; font-weight: 600; color: var(--texto); margin-bottom: 5px;">
+                            <label for="tipoRiesgoSelect" class="form-label-modal" style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--texto); margin-bottom: 6px;">
                                 Nivel de Riesgo Base
                             </label>
-                            <select id="tipoRiesgoSelect" class="filtro-select-control" style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; cursor: pointer;">
+                            <select id="tipoRiesgoSelect" class="filtro-select-control" style="width: 100%; padding: 10px 32px 10px 14px;">
                                 <option value="baja">Baja</option>
                                 <option value="media" selected>Media</option>
                                 <option value="alta">Alta</option>
@@ -1387,10 +1407,10 @@
 
                     <!-- Descripción -->
                     <div class="form-grupo-modal">
-                        <label for="tipoDescripcionInput" class="form-label-modal" style="display: block; font-size: 0.76rem; font-weight: 600; color: var(--texto); margin-bottom: 5px;">
+                        <label for="tipoDescripcionInput" class="form-label-modal" style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--texto); margin-bottom: 6px;">
                             Descripción / Criterio Operativo
                         </label>
-                        <textarea id="tipoDescripcionInput" rows="2" maxlength="250" placeholder="Breve descripción del alcance operativo de este incidente..." class="filtro-input-control" style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; resize: vertical;"></textarea>
+                        <textarea id="tipoDescripcionInput" rows="3" maxlength="250" placeholder="Breve descripción del alcance operativo de este incidente..." class="filtro-input-control" style="width: 100%; padding: 10px 14px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 8px; color: var(--texto); font-size: 0.84rem; resize: vertical; line-height: 1.45;"></textarea>
                     </div>
                 </div>
 
@@ -1466,7 +1486,7 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="../js/sigi-realtime.js"></script>
     <script src="../js/sigi-ml-assistant.js"></script>
-    <script src="admin.js?v=75"></script>
+    <script src="admin.js?v=76"></script>
 </body>
 
 </html>
