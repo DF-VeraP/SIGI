@@ -24,13 +24,13 @@
       toastContainer.id = 'sigi-toast-container';
       toastContainer.style.cssText = `
         position: fixed;
-        top: 24px;
-        right: 24px;
-        z-index: 999999;
+        top: calc(48px + env(safe-area-inset-top, 0px) + 16px);
+        right: 16px;
+        z-index: 99999999;
         display: flex;
         flex-direction: column;
         gap: 12px;
-        max-width: 380px;
+        max-width: min(380px, calc(100vw - 32px));
         pointer-events: none;
       `;
       document.body.appendChild(toastContainer);
@@ -84,12 +84,12 @@
       `;
 
       toast.innerHTML = `
-        <div style="font-size: 1.4rem; line-height: 1;">${icon}</div>
-        <div style="flex: 1;">
-          <div style="font-weight: 700; color: #fff; margin-bottom: 2px;">${titulo}</div>
-          <div style="font-size: 0.78rem; color: #94a3b8; line-height: 1.3;">${subtitulo}</div>
+        <div style="font-size: 1.4rem; line-height: 1; flex-shrink: 0;">${icon}</div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-weight: 700; color: #fff; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${titulo}</div>
+          <div style="font-size: 0.78rem; color: #94a3b8; line-height: 1.35; max-height: 2.8em; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; word-break: break-word;">${subtitulo}</div>
         </div>
-        <button style="background: none; border: none; color: #64748b; font-size: 1.1rem; cursor: pointer; padding: 0 0 0 8px;">&times;</button>
+        <button style="background: none; border: none; color: #64748b; font-size: 1.1rem; cursor: pointer; padding: 0 0 0 8px; flex-shrink: 0;">&times;</button>
       `;
 
       const btnCerrar = toast.querySelector('button');
@@ -117,20 +117,35 @@
 
     // ── 1. Evento: Nuevo Incidente Registrado ──
     socket.on('nuevo_incidente', (incidente) => {
-      mostrarToast({
-        titulo: `Nuevo Reporte: ${incidente.codigoincidente || 'Incidente'}`,
-        subtitulo: `${incidente.descripcion || 'Sin descripción'} — ${incidente.hora || 'Ahora'}`,
-        icon: '🚨',
-        color: '#ef4444'
-      });
-
-      // Disparar evento DOM para que admin.js o dashboard.js actúen
+      // Disparar evento DOM para que admin.js o dashboard.js actúen siempre
       window.dispatchEvent(new CustomEvent('sigi:nuevo_incidente', { detail: incidente }));
 
       // Si existe función global de recargar o agregar punto en mapa
       if (typeof window.sigiRefrescarMapa === 'function') {
         window.sigiRefrescarMapa(incidente);
       }
+
+      // Si el usuario en esta misma pestaña acaba de registrar este incidente,
+      // no mostrar toast redundante con la descripción (ya vio "Incidente registrado")
+      if (window._ultimoIncidenteCreadoCodigo && window._ultimoIncidenteCreadoCodigo === incidente.codigoincidente) {
+        return;
+      }
+
+      // Preparar descripción resumida para que nunca invada la pantalla
+      let descBreve = (incidente.descripcion || '').trim();
+      if (descBreve.length > 55) {
+        descBreve = descBreve.slice(0, 52) + '...';
+      }
+      const subtituloTexto = descBreve
+        ? `${descBreve} — ${incidente.hora || 'Ahora'}`
+        : `Radicado a las ${incidente.hora || 'Ahora'}`;
+
+      mostrarToast({
+        titulo: `Nuevo Reporte: ${incidente.codigoincidente || 'Incidente'}`,
+        subtitulo: subtituloTexto,
+        icon: '🚨',
+        color: '#ef4444'
+      });
     });
 
     // ── 2. Evento: Incidente Actualizado o Resuelto ──
@@ -143,6 +158,15 @@
       });
 
       window.dispatchEvent(new CustomEvent('sigi:incidente_actualizado', { detail: data }));
+    });
+
+    // ── 3. Eventos de Seguridad IP (Bloqueo y Desbloqueo en Vivo) ──
+    socket.on('ip_bloqueada', (data) => {
+      window.dispatchEvent(new CustomEvent('sigi:ip_bloqueada', { detail: data }));
+    });
+
+    socket.on('ip_desbloqueada', (data) => {
+      window.dispatchEvent(new CustomEvent('sigi:ip_desbloqueada', { detail: data }));
     });
   }
 })();

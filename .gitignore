@@ -21,6 +21,7 @@ coverage/
 backup_*.sql
 backup_sigi.sql
 *.tar
+*.bak
 
 # AI Agents & IDE tools
 .agents/

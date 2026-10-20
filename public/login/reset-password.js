@@ -21,9 +21,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     const respReset = document.getElementById("respReset");
     const btnSubmitReset = document.getElementById("btnSubmitReset");
 
+    function limpiarEmojis(texto) {
+        if (typeof texto !== 'string') return '';
+        return texto
+            .replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{1F1E0}-\u{1F1FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{231A}-\u{23F3}]/gu, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
     function showAlert(msg, type = "danger") {
         alertReset.className = `alert-box ${type}`;
-        respReset.textContent = msg;
+        respReset.textContent = limpiarEmojis(msg);
         if (alertIconReset) {
             if (type === "danger") {
                 alertIconReset.className = "bi bi-exclamation-triangle-fill";

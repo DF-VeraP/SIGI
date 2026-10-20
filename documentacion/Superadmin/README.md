@@ -11,9 +11,11 @@ graph TD
     SA[Superadmin] --> M1[Módulo 01: Gestión de Usuarios]
     SA --> M2[Módulo 02: Auditoría y Trazabilidad]
     SA --> M3[Módulo 03: Gobernanza del Sistema]
+    SA --> M4[Módulo 04: Seguridad Perimetral e IPs]
     M1 -->|Crea y Asigna Roles| Roles[Superadmin / Admin / Reportero]
     Roles -->|Ejecutan Acciones| M2
     M3 -->|Políticas de Sesión y DoS| Platform[Plataforma SIGI Completa]
+    M4 -->|Desbloqueo de IPs y Rate Limiting| Platform
 ```
 
 ---
@@ -25,6 +27,7 @@ graph TD
 | **[Módulo 01: Gestión Integral de Usuarios y RBAC](01_gestion_usuarios.md)** | CRUD maestro de usuarios, correo de bienvenida con credenciales y obligatoriedad de primer cambio de clave. | [`diagramas/01_gestion_usuarios.drawio`](diagramas/01_gestion_usuarios.drawio) |
 | **[Módulo 02: Auditoría y Trazabilidad Forense](02_auditoria_seguridad.md)** | Bitácora de accesos (`LOGIN_EXITOSO`, `FALLIDO`, `BLOQUEADO`), trazabilidad de cambios y metadatos de IP/User-Agent. | [`diagramas/02_auditoria_seguridad.drawio`](diagramas/02_auditoria_seguridad.drawio) |
 | **[Módulo 03: Gobernanza del Sistema y Parámetros Globales](03_gobernanza_sistema.md)** | Políticas de sesión de 40 min, perimetral con Helmet y Rate Limiter, integración con Cloudinary, Gmail y PostGIS. | [`diagramas/03_gobernanza_sistema.drawio`](diagramas/03_gobernanza_sistema.drawio) |
+| **[Módulo 04: Seguridad Perimetral y Control de IPs Bloqueadas](04_seguridad_ips_bloqueadas.md)** | Monitoreo en tiempo real de IPs suspendidas por fuerza bruta, cuenta regresiva dinámica (15 min), desbloqueo manual y WebSocket. | [`diagramas/04_seguridad_ips_bloqueadas.drawio`](diagramas/04_seguridad_ips_bloqueadas.drawio) |
 
 ---
 

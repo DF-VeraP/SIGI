@@ -51,11 +51,25 @@ function csrfProtection(req, res, next) {
                       (req.body && req.body._csrf);
 
   if (!token || !clientToken || clientToken !== token) {
-    // Si viene encabezado X-Requested-With desde el mismo origen XMLHttpRequest/Fetch nativo
-    const isCustomHeader = req.headers['x-requested-with'] === 'XMLHttpRequest';
-    const sameOrigin = req.headers.origin && req.headers.host && req.headers.origin.includes(req.headers.host);
+    // Verificación estricta de mismo origen legítimo (Exact Host Match con URL parser)
+    let sameOrigin = false;
+    if (req.headers.origin && req.headers.host) {
+      try {
+        const originUrl = new URL(req.headers.origin);
+        sameOrigin = (originUrl.host === req.headers.host);
+      } catch (_) {
+        sameOrigin = false;
+      }
+    } else if (req.headers.referer && req.headers.host) {
+      try {
+        const refererUrl = new URL(req.headers.referer);
+        sameOrigin = (refererUrl.host === req.headers.host);
+      } catch (_) {
+        sameOrigin = false;
+      }
+    }
 
-    if (isCustomHeader || sameOrigin) {
+    if (sameOrigin) {
       return next();
     }
 

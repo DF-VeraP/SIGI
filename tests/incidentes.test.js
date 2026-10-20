@@ -100,6 +100,71 @@ describe('Incidentes Controller', () => {
       expect(resSinTipo.body.mensaje).toContain('Faltan campos obligatorios');
     });
 
+    it('debería retornar 400 si el año es inválido (ej: año 403 o menor a 2000)', async () => {
+      const res = await request(app)
+        .post('/registrarIncidente')
+        .send({
+          tipo: 1,
+          fecha: '0403-05-12',
+          hora: '14:30',
+          lat: 2.4419,
+          lng: -76.6063
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.mensaje).toContain('año');
+    });
+
+    it('debería retornar 400 si el mes es inválido (ej: mes 22)', async () => {
+      const res = await request(app)
+        .post('/registrarIncidente')
+        .send({
+          tipo: 1,
+          fecha: '2024-22-10',
+          hora: '14:30',
+          lat: 2.4419,
+          lng: -76.6063
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.mensaje).toContain('mes');
+    });
+
+    it('debería retornar 400 si el día es inválido (ej: día 44)', async () => {
+      const res = await request(app)
+        .post('/registrarIncidente')
+        .send({
+          tipo: 1,
+          fecha: '2024-05-44',
+          hora: '14:30',
+          lat: 2.4419,
+          lng: -76.6063
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.mensaje).toContain('día');
+    });
+
+    it('debería retornar 400 si la fecha es futura', async () => {
+      const hoy = new Date();
+      const anioActual = hoy.getFullYear();
+      // Usar fecha del año siguiente o fecha futura del mismo año
+      const fechaFutura = `${anioActual + 1}-01-01`;
+
+      const res = await request(app)
+        .post('/registrarIncidente')
+        .send({
+          tipo: 1,
+          fecha: fechaFutura,
+          hora: '14:30',
+          lat: 2.4419,
+          lng: -76.6063
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.mensaje).toMatch(/no es válido|futura/);
+    });
+
     it('debería retornar 500 si la BD falla al registrar', async () => {
       pool.query.mockRejectedValue(new Error('DB Error'));
 
@@ -116,6 +181,29 @@ describe('Incidentes Controller', () => {
 
       expect(res.status).toBe(500);
       expect(res.body.mensaje).toContain('Error');
+    });
+
+    it('debería rechazar la subida de archivos no permitidos (ej: .html o script) con código 400', async () => {
+      const res = await request(app)
+        .post('/registrarIncidente')
+        .field('tipo', '1')
+        .field('fecha', '2026-08-01')
+        .field('hora', '14:30')
+        .field('lat', '2.4419')
+        .field('lng', '-76.6063')
+        .attach('foto', Buffer.from('<script>alert(1)</script>'), 'exploit.html');
+
+      expect(res.status).toBe(400);
+      expect(res.body.mensaje).toContain('Formato de imagen no permitido');
+    });
+
+    it('debería rechazar la importación masiva si el archivo no tiene extensión .csv', async () => {
+      const res = await request(app)
+        .post('/importar-incidentes')
+        .attach('archivo', Buffer.from('dato1,dato2'), 'malicioso.exe');
+
+      expect(res.status).toBe(400);
+      expect(res.body.mensaje).toContain('Solo se aceptan archivos con extensión .csv');
     });
   });
 

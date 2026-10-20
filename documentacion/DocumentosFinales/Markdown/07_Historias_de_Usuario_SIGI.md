@@ -10,9 +10,10 @@
 - **Programa:** Análisis y Desarrollo de Software (ADSO) - Ficha 3142784
 - **Autor:** Daniel Felipe Vera Perdomo
 - **Localización:** Florencia, Caquetá, Colombia
-- **Versión del Documento:** 2.0 (Desglose Exhaustivo por Roles con Criterios de Aceptación)
-- **Fecha:** Septiembre 2026
-- **Total de Historias de Usuario:** 33 Historias Formalizadas
+- **Despliegue Oficial en Producción:** [https://sigi.verapd.xyz](https://sigi.verapd.xyz)
+- **Versión del Documento:** 2.1 (Ampliación Exhaustiva con Machine Learning, WebSockets en Tiempo Real, Resiliencia PWA Offline y Reportes Ejecutivos PDF)
+- **Fecha:** Octubre 2026
+- **Total de Historias de Usuario:** 42 Historias Formalizadas
 
 ---
 
@@ -39,6 +40,8 @@
    - [HU-REP-06: Radicación de Incidente y Autolocalización de Barrio/Vereda](#hu-rep-06-radicación-de-incidente-y-autolocalización-de-barriovereda)
    - [HU-REP-07: Seguimiento de Estados en el Módulo "Mis Reportes"](#hu-rep-07-seguimiento-de-estados-en-el-módulo-mis-reportes)
    - [HU-REP-08: Transición Animada de Autenticación en Interfaz Móvil](#hu-rep-08-transición-animada-de-autenticación-en-interfaz-móvil)
+   - [HU-REP-09: Asistencia Predictiva por IA en Tiempo Real en Redacción de Incidentes](#hu-rep-09-asistencia-predictiva-por-ia-en-tiempo-real-en-redacción-de-incidentes)
+   - [HU-REP-10: Radicación en Terreno en Modo Desconectado (PWA Offline)](#hu-rep-10-radicación-en-terreno-en-modo-desconectado-pwa-offline)
 4. [ÉPICA 3: MESA DE VALIDACIÓN Y GESTIÓN DE CASOS (ROL ADMINISTRADOR)](#4-épica-3-mesa-de-validación-y-gestión-de-casos-rol-administrador)
    - [HU-ADM-01: Consulta de la Cola Compartida de Casos Pendientes](#hu-adm-01-consulta-de-la-cola-compartida-de-casos-pendientes)
    - [HU-ADM-02: Adquisición de Candado Concurrente (Locking de 10 min)](#hu-adm-02-adquisición-de-candado-concurrente-locking-de-10-min)
@@ -51,6 +54,10 @@
    - [HU-ADM-09: Reversión Atómica (Rollback) de la Última Carga Masiva](#hu-adm-09-reversión-atómica-rollback-de-la-última-carga-masiva)
    - [HU-ADM-10: Alternancia de Modo Claro / Oscuro y Capa Satelital en Mapa](#hu-adm-10-alternancia-de-modo-claro--oscuro-y-capa-satelital-en-mapa)
    - [HU-ADM-11: Búsqueda y Autocompletado Predictivo de Barrios y Veredas](#hu-adm-11-búsqueda-y-autocompletado-predictivo-de-barrios-y-veredas)
+   - [HU-ADM-12: Sugerencias del Modelo de IA en la Mesa de Validación y Reclasificación](#hu-adm-12-sugerencias-del-modelo-de-ia-en-la-mesa-de-validación-y-reclasificación)
+   - [HU-ADM-13: Recepción de Alertas Push en Vivo por WebSockets en Mapa y Tablero](#hu-adm-13-recepción-de-alertas-push-en-vivo-por-websockets-en-mapa-y-tablero)
+   - [HU-ADM-14: Exportación de Informe Técnico Mensual en Formato PDF Oficial](#hu-adm-14-exportación-de-informe-técnico-mensual-en-formato-pdf-oficial)
+   - [HU-ADM-15: Análisis de Concentración Delictiva con DBSCAN y Forecast Temporal](#hu-adm-15-análisis-de-concentración-delictiva-con-dbscan-y-forecast-temporal)
 5. [ÉPICA 4: GOBERNANZA, AUDITORÍA Y SEGURIDAD (ROL SUPERADMINISTRADOR)](#5-épica-4-gobernanza-auditoría-y-seguridad-rol-superadministrador)
    - [HU-SUP-01: Registro de Usuarios Institucionales y Despacho de Correo](#hu-sup-01-registro-de-usuarios-institucionales-y-despacho-de-correo)
    - [HU-SUP-02: Modificación de Roles y Privilegios en el Modelo RBAC](#hu-sup-02-modificación-de-roles-y-privilegios-en-el-modelo-rbac)
@@ -59,6 +66,9 @@
    - [HU-SUP-05: Liberación Forzosa de Candados Concurrente Abandonados](#hu-sup-05-liberación-forzosa-de-candados-concurrente-abandonados)
    - [HU-SUP-06: Inspección y Filtrado Forense de la Bitácora de Auditoría](#hu-sup-06-inspección-y-filtrado-forense-de-la-bitácora-de-auditoría)
    - [HU-SUP-07: Parametrización y Mantenimiento de Catálogos Maestros](#hu-sup-07-parametrización-y-mantenimiento-de-catálogos-maestros)
+   - [HU-SUP-08: Parametrización Cromática Perceptual y Control de Duplicados en Catálogos](#hu-sup-08-parametrización-cromática-perceptual-y-control-de-duplicados-en-catálogos)
+   - [HU-SUP-09: Blindaje de Disponibilidad Institucional de la Cuenta Superadministrador](#hu-sup-09-blindaje-de-disponibilidad-institucional-de-la-cuenta-superadministrador)
+   - [HU-SUP-10: Reentrenamiento Supervisado del Modelo Predictivo de Inteligencia Artificial](#hu-sup-10-reentrenamiento-supervisado-del-modelo-predictivo-de-inteligencia-artificial)
 6. [MATRIZ DE TRAZABILIDAD (HISTORIAS DE USUARIO VS REQUISITOS ERS)](#6-matriz-de-trazabilidad-historias-de-usuario-vs-requisitos-ers)
 
 ---
@@ -423,6 +433,50 @@ Cada Historia de Usuario (HU) responde a la estructura estándar de la metodolog
 
 ---
 
+### HU-REP-09: Asistencia Predictiva por IA en Tiempo Real en Redacción de Incidentes
+- **Rol:** Reportero de Campo
+- **Prioridad:** Should Have
+- **Estimación:** 5 Story Points
+- **Requisito ERS:** `RF-ML-01`, `RF-ML-02`
+- **Narrativa:**
+  - **Como** reportero en campo que redacta la descripción de los hechos en el formulario móvil,
+  - **Quiero** recibir recomendaciones automáticas de tipología delictiva, severidad y servicios de emergencia sugeridos,
+  - **Para** acelerar la radicación de novedades y evitar clasificaciones erróneas bajo situaciones de estrés o urgencia operativa.
+- **Precondiciones:** Acceso al formulario de reporte móvil en `/reportero/index.html`.
+- **Criterios de Aceptación:**
+  - **Escenario 1 (Inferencia automática por NLP supervisado):**
+    *Dado* que el reportero redacta en el campo de descripción: "Sujetos en motocicleta negra intimidaron con arma de fuego y hurtaron celular y morral a joven",
+    *Cuando* se activa el analizador debounced (600 ms) del cliente `sigi-ml-assistant.js`,
+    *Entonces* el sistema consulta en segundo plano `/api/ml/predecir-incidente` y proyecta una tarjeta con la tipología sugerida ("Robo / Hurto") con confianza superior al 80% y severidad calculada (Nivel 4).
+  - **Escenario 2 (Detección de despacho de auxilio y prellenado asistido):**
+    *Dado* que la IA identifica requerimientos de asistencia interinstitucional,
+    *Cuando* evalúa los disparadores críticos de riesgo,
+    *Entonces* resalta insignias visuales para "Policía Nacional" y ofrece el botón "Aplicar Sugerencia" que preselecciona el tipo de incidente y nivel de riesgo con un solo toque sin forzar al usuario.
+
+---
+
+### HU-REP-10: Radicación en Terreno en Modo Desconectado (PWA Offline)
+- **Rol:** Reportero de Campo
+- **Prioridad:** Must Have
+- **Estimación:** 8 Story Points
+- **Requisito ERS:** `RF-RT-02`
+- **Narrativa:**
+  - **Como** agente en campo patrullando veredas rurales o sectores urbanos con baja o nula cobertura celular,
+  - **Quiero** capturar y radicar incidentes en mi dispositivo móvil sin que el sistema rechace el formulario por falta de internet,
+  - **Para** garantizar que ninguna novedad quede sin registrar y se sincronice automáticamente cuando retorne la señal de red.
+- **Precondiciones:** Dispositivo móvil con navegador compatible con Service Worker y almacenamiento local (`localStorage`).
+- **Criterios de Aceptación:**
+  - **Escenario 1 (Encolamiento local seguro sin conexión):**
+    *Dado* que el agente se encuentra en una zona sin cobertura celular (`navigator.onLine === false`),
+    *Cuando* completa los datos del incidente y presiona "Radicar Incidente",
+    *Entonces* el gestor `pwa-offline.js` intercepta el envío, encapsula el paquete en `sigi_cola_incidentes_offline` y muestra un badge distintivo: "Reporte guardado en tu teléfono (Modo sin conexión)".
+  - **Escenario 2 (Sincronización automática desatendida al recuperar red):**
+    *Dado* que existen incidentes encolados localmente,
+    *Cuando* el teléfono recupera conectividad móvil o Wi-Fi (evento `online`),
+    *Entonces* el sistema despacha los reportes pendientes de forma secuencial al endpoint `/api/incidentes`, confirma la persistencia con HTTP 201 y emite un toast de éxito limpiando la memoria temporal.
+
+---
+
 ## 4. ÉPICA 3: MESA DE VALIDACIÓN Y GESTIÓN DE CASOS (ROL ADMINISTRADOR)
 
 ### HU-ADM-01: Consulta de la Cola Compartida de Casos Pendientes
@@ -651,6 +705,94 @@ Cada Historia de Usuario (HU) responde a la estructura estándar de la metodolog
 
 ---
 
+### HU-ADM-12: Sugerencias del Modelo de IA en la Mesa de Validación y Reclasificación
+- **Rol:** Administrador (Analista)
+- **Prioridad:** Should Have
+- **Estimación:** 5 Story Points
+- **Requisito ERS:** `RF-ML-01`, `RF-ML-02`
+- **Narrativa:**
+  - **Como** analista que examina un caso pendiente en la mesa de validación,
+  - **Quiero** ver la sugerencia automática del modelo de Machine Learning sobre la categoría y severidad inferida a partir de la narrativa y evidencia,
+  - **Para** contrastar el criterio del reportero y corregir inconsistencias o tipificaciones erróneas antes de emitir el dictamen final.
+- **Precondiciones:** Incidente tomado con candado concurrente en `/admin/index.html`.
+- **Criterios de Aceptación:**
+  - **Escenario 1 (Recomendación IA en modal de revisión):**
+    *Dado* que el analista abre el modal de validación de un caso pendiente,
+    *Cuando* el sistema procesa el texto descriptivo con el clasificador NLP Naive Bayes,
+    *Entonces* despliega una tarjeta analítica con la tipología inferida y una barra de confianza porcentual junto a la clasificación remitida por el agente de terreno.
+  - **Escenario 2 (Detección de agravantes de riesgo no tipificados):**
+    *Dado* que el reportero catalogó el caso como "Hurto simple" pero la descripción relata el empleo de arma de fuego y lesiones personales,
+    *Cuando* el modelo de IA estima severidad nivel 4/5 con alerta crítica de violencia,
+    *Entonces* el sistema proyecta una advertencia de contraste: "Atención: La IA identificó factores agravantes que sugieren reclasificación a Nivel de Riesgo Superior".
+
+---
+
+### HU-ADM-13: Recepción de Alertas Push en Vivo por WebSockets en Mapa y Tablero
+- **Rol:** Administrador (Analista)
+- **Prioridad:** Must Have
+- **Estimación:** 5 Story Points
+- **Requisito ERS:** `RF-RT-01`
+- **Narrativa:**
+  - **Como** analista de guardia monitoreando la plataforma en tiempo real,
+  - **Quiero** que los nuevos reportes y cambios de estado se reflejen inmediatamente en la pantalla y en el mapa con una señal sonoro-visual,
+  - **Para** coordinar la respuesta operativa sin necesidad de refrescar manualmente el navegador.
+- **Precondiciones:** Consola administrativa abierta y conexión WebSocket bidireccional activa.
+- **Criterios de Aceptación:**
+  - **Escenario 1 (Notificación sonora y visual de nuevo incidente):**
+    *Dado* que un reportero radica un caso en terreno,
+    *Cuando* el servidor emite el evento WebSocket `nuevo_incidente`,
+    *Entonces* la consola del analista reproduce un tono sonoro sintetizado (Web Audio API frecuencias D5 a A5), despliega un toast flotante no intrusivo y coloca el nuevo marcador pulsante en el mapa Leaflet.
+  - **Escenario 2 (Sincronización reactiva de estado concurrente):**
+    *Dado* que otro operador toma el bloqueo de un caso o lo aprueba,
+    *Cuando* el servidor emite `incidente_actualizado`,
+    *Entonces* la interfaz actualiza el estado y el badge del caso a "En Revisión" o "Aprobado" en todas las pantallas de administradores en menos de 400 ms.
+
+---
+
+### HU-ADM-14: Exportación de Informe Técnico Mensual en Formato PDF Oficial
+- **Rol:** Administrador (Analista)
+- **Prioridad:** Must Have
+- **Estimación:** 5 Story Points
+- **Requisito ERS:** `RF-REP-EXP-01`
+- **Narrativa:**
+  - **Como** analista o coordinador de seguridad,
+  - **Quiero** generar un informe ejecutivo mensual vectorizado en formato PDF con métricas, gráficos, zonas críticas y resumen analítico,
+  - **Para** remitirlo formalmente al consejo de seguridad municipal, comandancia de policía o comité interinstitucional.
+- **Precondiciones:** Sesión autenticada con rol `admin` o `superadmin`.
+- **Criterios de Aceptación:**
+  - **Escenario 1 (Descarga de PDF con parámetros de mes y año):**
+    *Dado* que el analista selecciona el período de interés y presiona "Descargar Informe Ejecutivo PDF",
+    *Cuando* el backend atiende la petición `GET /api/reportes/pdf?mes=X&anio=Y`,
+    *Entonces* genera dinámicamente con PDFKit un documento con membrete institucional `#0f172a`, métricas consolidadas (víctimas, vehículos, tipos de delito) y lo entrega como descarga con nombre normalizado `Informe_Ejecutivo_SIGI_[Mes]_[Año].pdf`.
+  - **Escenario 2 (Previsualización integrada en navegador):**
+    *Dado* que el analista requiere auditar el documento antes de archivarlo,
+    *Cuando* activa la bandera de previsualización (`preview=1`),
+    *Entonces* el archivo se abre en una pestaña embebida del visor PDF del navegador sin forzar la descarga en disco local.
+
+---
+
+### HU-ADM-15: Análisis de Concentración Delictiva con DBSCAN y Forecast Temporal
+- **Rol:** Administrador (Analista)
+- **Prioridad:** Should Have
+- **Estimación:** 5 Story Points
+- **Requisito ERS:** `RF-ML-04`
+- **Narrativa:**
+  - **Como** analista de planeación y estrategia policial,
+  - **Quiero** visualizar núcleos de concentración espacial (hotspots) calculados mediante el algoritmo no supervisado DBSCAN y proyecciones de tendencias para el siguiente mes,
+  - **Para** focalizar los cuadrantes de patrullaje preventivo en las zonas de mayor vulnerabilidad de Florencia.
+- **Precondiciones:** Acceso al panel analítico avanzado de SIGI.
+- **Criterios de Aceptación:**
+  - **Escenario 1 (Cálculo y demarcación de clústeres espaciales densos):**
+    *Dado* que el analista activa la capa analítica de "Hotspots DBSCAN",
+    *Cuando* el sistema consulta `GET /api/ml/hotspots`,
+    *Entonces* proyecta sobre Leaflet los polígonos convexos de los clústeres con mayor aglomeración de hechos, separando los eventos aislados considerados ruido estadístico.
+  - **Escenario 2 (Proyección temporal de series de tiempo con suavizado exponencial):**
+    *Dado* que el analista consulta la pestaña de pronósticos en `GET /api/ml/forecast`,
+    *Cuando* el algoritmo procesa la serie histórica acumulada,
+    *Entonces* calcula y grafica la curva de tendencia esperada de incidentes para el mes siguiente junto a sus límites de confianza.
+
+---
+
 ## 5. ÉPICA 4: GOBERNANZA, AUDITORÍA Y SEGURIDAD (ROL SUPERADMINISTRADOR)
 
 ### HU-SUP-01: Registro de Usuarios Institucionales y Despacho de Correo
@@ -787,6 +929,96 @@ Cada Historia de Usuario (HU) responde a la estructura estándar de la metodolog
 
 ---
 
+### HU-SUP-08: Parametrización Cromática Perceptual y Control de Duplicados en Catálogos
+- **Rol:** Superadministrador (Gobernanza)
+- **Prioridad:** Should Have
+- **Estimación:** 5 Story Points
+- **Requisito ERS:** `RF-CAT-01`
+- **Narrativa:**
+  - **Como** Superadministrador que parametriza tipologías delictivas,
+  - **Quiero** que el sistema valide la distancia cromática perceptual (algoritmo Redmean $\Delta C < 85$) y la similitud léxica antes de guardar un nuevo tipo de incidente,
+  - **Para** impedir duplicidades ambiguas y asegurar que los marcadores en el mapa sean nítidamente distinguibles.
+- **Precondiciones:** Acceso al módulo de catálogos en `/admin/index.html`.
+- **Criterios de Aceptación:**
+  - **Escenario 1 (Rechazo de colores perceptualmente confusos):**
+    *Dado* que el Superadmin crea un tipo de incidente y asigna un color `#ff0010`,
+    *Cuando* en el sistema ya existe un tipo con color `#ff0000` cuya distancia perceptual Redmean es $\Delta C < 85$,
+    *Entonces* el sistema rechaza la operación con una alerta: "El color seleccionado es perceptualmente indistinguible de un tipo existente. Por favor seleccione un tono con mayor contraste cromático".
+  - **Escenario 2 (Protección de integridad referencial en borrado):**
+    *Dado* que un tipo de incidente ya cuenta con reportes históricos asociados en la base de datos,
+    *Cuando* el Superadmin intenta eliminarlo,
+    *Entonces* el backend rechaza la eliminación con HTTP 400 y mensaje: "No es posible eliminar este tipo porque existen incidentes asociados en el histórico municipal".
+
+---
+
+### HU-SUP-09: Blindaje de Disponibilidad Institucional de la Cuenta Superadministrador
+- **Rol:** Superadministrador (Gobernanza)
+- **Prioridad:** Must Have
+- **Estimación:** 3 Story Points
+- **Requisito ERS:** `RF-ADM-04`
+- **Narrativa:**
+  - **Como** auditor institucional y custodio de la plataforma,
+  - **Quiero** que el sistema impida degradar o inactivar al último superadministrador activo existente,
+  - **Para** blindar la gobernanza tecnológica del municipio y asegurar que nunca se pierda el acceso al control total de la plataforma.
+- **Precondiciones:** Existe únicamente un usuario con rol `superadmin` y estado `activo` en la base de datos.
+- **Criterios de Aceptación:**
+  - **Escenario 1 (Bloqueo de orfandad administrativa):**
+    *Dado* que en el sistema existe un único Superadministrador activo,
+    *Cuando* se intenta cambiar su rol a "Administrador" o marcar su estado como "Inactivo",
+    *Entonces* la base de datos y el modelo `UsuarioModel.contarSuperadminsActivos()` bloquean la transacción emitiendo HTTP 400: "Operación rechazada: No es posible dejar el sistema sin al menos un Superadministrador activo".
+  - **Escenario 2 (Permisión controlada con múltiples superadministradores):**
+    *Dado* que existen 2 o más superadministradores activos,
+    *Cuando* se inactiva uno de ellos,
+    *Entonces* el sistema permite la actualización registrando la auditoría forense con la IP y el usuario responsable.
+
+---
+
+### HU-SUP-10: Reentrenamiento Supervisado del Modelo Predictivo de Inteligencia Artificial
+- **Rol:** Superadministrador (Gobernanza)
+- **Prioridad:** Should Have
+- **Estimación:** 5 Story Points
+- **Requisito ERS:** `RF-ML-03`
+- **Narrativa:**
+  - **Como** Superadministrador,
+  - **Quiero** ejecutar el reentrenamiento del modelo de Machine Learning en caliente desde la consola de gobernanza,
+  - **Para** actualizar el clasificador NLP y las probabilidades condicionales a partir de los incidentes formalmente dictaminados sin interrumpir la operación del servidor.
+- **Precondiciones:** Sesión activa como Superadministrador y existencia de incidentes aprobados o resueltos.
+- **Criterios de Aceptación:**
+  - **Escenario 1 (Reentrenamiento en caliente sin caída de servicio):**
+    *Dado* que el Superadmin presiona "Reentrenar Modelo Predictivo",
+    *Cuando* el backend atiende `POST /api/ml/reentrenar`,
+    *Entonces* consulta los incidentes calificados en PostgreSQL, recalcula la matriz de probabilidades léxicas en memoria y responde en menos de 1.5 segundos con las estadísticas del vocabulario actualizado.
+  - **Escenario 2 (Restricción de acceso a usuarios no autorizados):**
+    *Dado* que un usuario sin privilegios administrativos intenta invocar la ruta de reentrenamiento,
+    *Cuando* envía la solicitud HTTP,
+    *Entonces* el middleware RBAC bloquea la petición con HTTP 403 Forbidden y asienta un registro de auditoría.
+
+### HU-SUP-11: Monitoreo en Tiempo Real y Desbloqueo Preventivo de Direcciones IP Bloqueadas por Fuerza Bruta
+- **Rol:** Superadministrador (Gobernanza)
+- **Prioridad:** Must Have
+- **Estimación:** 5 Story Points
+- **Requisito ERS:** `RF-SEC-02` / `RNF-06`
+- **Narrativa:**
+  - **Como** Superadministrador y custodio perimetral de la plataforma,
+  - **Quiero** disponer de una tabla en tiempo real con las direcciones IP bloqueadas por exceso de intentos fallidos de inicio de sesión, visualizando su temporizador dinámico de expiración y pudiendo desbloquearlas manualmente de inmediato,
+  - **Para** restablecer el acceso a funcionarios legítimos ante falsos positivos sin comprometer la seguridad contra ataques automatizados de fuerza bruta.
+- **Precondiciones:** Sesión iniciada con rol `superadmin`.
+- **Criterios de Aceptación:**
+  - **Escenario 1 (Monitoreo con cuenta regresiva dinámica en vivo):**
+    *Dado* que una dirección IP excede 5 intentos fallidos en 15 minutos en `/login`,
+    *Cuando* el Superadministrador consulta el panel "Seguridad IP",
+    *Entonces* la tabla muestra la dirección IP, el motivo del bloqueo, la hora de registro y un temporizador en vivo decreciente (`MM:SS`) que se actualiza cada segundo.
+  - **Escenario 2 (Desbloqueo manual con purga de caché y trazabilidad forense):**
+    *Dado* que el Superadmin pulsa el botón de acción con icono de candado cerrado en una IP bloqueada,
+    *Cuando* confirma la operación en la ventana emergente institucional (sin emojis),
+    *Entonces* el backend procesa `POST /api/seguridad/desbloquear-ip/:ip`, purga las claves de limitación en memoria (`127.0.0.1`, `::1`, `::/56`), asienta el evento `DESBLOQUEAR_IP` en la auditoría inmutable y remueve la fila de la interfaz de inmediato.
+  - **Escenario 3 (Sincronización reactiva por WebSockets):**
+    *Dado* que una IP es bloqueada o desbloqueada en el sistema,
+    *Cuando* el servidor emite `ip_bloqueada` o `ip_desbloqueada` vía Socket.io,
+    *Entonces* todas las consolas administrativas abiertas actualizan la tabla y despliegan notificaciones toast de manera automática sin necesidad de recargar la página.
+
+---
+
 ## 6. MATRIZ DE TRAZABILIDAD (HISTORIAS DE USUARIO VS REQUISITOS ERS)
 
 | Código HU | Título Sintético | Rol Responsable | Prioridad MoSCoW | Story Points | Requisito ERS Asociado |
@@ -806,6 +1038,8 @@ Cada Historia de Usuario (HU) responde a la estructura estándar de la metodolog
 | **HU-REP-06** | Radicación con autolocalización PostGIS| Reportero | Must Have | 5 SP | `RF-REP-03` |
 | **HU-REP-07** | Seguimiento en "Mis Reportes" | Reportero | Should Have | 3 SP | `RF-REP-04` |
 | **HU-REP-08** | Transición animada radar móvil | Reportero | Could Have | 2 SP | `RF-REP-05` |
+| **HU-REP-09** | Asistencia predictiva por IA en texto | Reportero | Should Have | 5 SP | `RF-ML-01` / `02` |
+| **HU-REP-10** | Radicación en modo PWA offline | Reportero | Must Have | 8 SP | `RF-RT-02` |
 | **HU-ADM-01** | Consulta cola compartida de casos | Administrador | Must Have | 5 SP | `RF-VAL-01` |
 | **HU-ADM-02** | Adquisición candado concurrente | Administrador | Must Have | 8 SP | `RF-VAL-02` |
 | **HU-ADM-03** | Liberación voluntaria de candado | Administrador | Should Have | 2 SP | `RF-VAL-04` |
@@ -817,6 +1051,10 @@ Cada Historia de Usuario (HU) responde a la estructura estándar de la metodolog
 | **HU-ADM-09** | Rollback atómico de última importación| Administrador | Should Have | 5 SP | `RF-DAT-02` |
 | **HU-ADM-10** | Alternancia modo mapa y satelital admin | Administrador | Should Have | 3 SP | `RF-GIS-04` |
 | **HU-ADM-11** | Búsqueda y autocompletado predictivo | Administrador | Must Have | 3 SP | `RF-GIS-05` |
+| **HU-ADM-12** | Recomendaciones IA en mesa de validación| Administrador | Should Have | 5 SP | `RF-ML-01` / `02` |
+| **HU-ADM-13** | Alertas push WebSocket en tiempo real | Administrador | Must Have | 5 SP | `RF-RT-01` |
+| **HU-ADM-14** | Exportación de informe mensual PDF | Administrador | Must Have | 5 SP | `RF-REP-EXP-01` |
+| **HU-ADM-15** | Hotspots espaciales DBSCAN y Forecast | Administrador | Should Have | 5 SP | `RF-ML-04` |
 | **HU-SUP-01** | Creación usuarios y envío credenciales | Superadmin | Must Have | 5 SP | `RF-ADM-01` |
 | **HU-SUP-02** | Modificación de roles en modelo RBAC | Superadmin | Must Have | 3 SP | `RF-ADM-02` |
 | **HU-SUP-03** | Inactivación y revocación de sesión | Superadmin | Must Have | 5 SP | `RF-ADM-02` / `AUTH-04` |
@@ -824,9 +1062,14 @@ Cada Historia de Usuario (HU) responde a la estructura estándar de la metodolog
 | **HU-SUP-05** | Liberación forzosa de candados | Superadmin | Should Have | 3 SP | `RF-VAL-04` |
 | **HU-SUP-06** | Inspección forense de auditoría (logs) | Superadmin | Must Have | 5 SP | `RF-SEC-01` / `ADM-03` |
 | **HU-SUP-07** | Parametrización catálogos delictivos | Superadmin | Should Have | 5 SP | `RF-GIS-03` |
-| **TOTALES** | **33 Historias de Usuario Formalizadas**| — | — | **143 SP** | **100% Cobertura ERS** |
+| **HU-SUP-08** | Catálogo cromático Redmean anti-duplicados| Superadmin | Should Have | 5 SP | `RF-CAT-01` |
+| **HU-SUP-09** | Blindaje de último Superadmin activo | Superadmin | Must Have | 3 SP | `RF-ADM-04` |
+| **HU-SUP-10** | Reentrenamiento de modelo de IA | Superadmin | Should Have | 5 SP | `RF-ML-03` |
+| **HU-SUP-11** | Monitoreo y desbloqueo de IPs | Superadmin | Must Have | 5 SP | `RF-SEC-02` / `RNF-06` |
+| **TOTALES** | **43 Historias de Usuario Formalizadas**| — | — | **192 SP** | **100% Cobertura ERS** |
 
 ---
 
 ### Dictamen de Conformidad y Calidad Ágil
-Este documento formaliza la totalidad de los flujos de interacción del usuario con el software SIGI, garantizando trazabilidad completa con los requisitos de la ERS IEEE 830 y sirviendo como guía de aceptación para las pruebas de entrega y evaluación del SENA.
+Este documento formaliza la totalidad de los flujos de interacción del usuario con el software SIGI versión 2.1, garantizando trazabilidad bidireccional completa con los requisitos de la ERS IEEE 830 y sirviendo como guía de aceptación para las pruebas de entrega y evaluación del SENA. Despliegue de producción verificado en **https://sigi.verapd.xyz**.
+

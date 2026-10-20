@@ -128,6 +128,7 @@ function cambiarPestana(pestañaNombre) {
     const secUsuarios = document.getElementById("secUsuarios");
     const secAuditoria = document.getElementById("secAuditoria");
     const secTiposIncidentes = document.getElementById("secTiposIncidentes");
+    const secSeguridadIps = document.getElementById("secSeguridadIps");
     const secPerfil = document.getElementById("secPerfil");
 
     // Sincronizar resaltado de botones de navegación (Sidebar y Móvil)
@@ -149,6 +150,9 @@ function cambiarPestana(pestañaNombre) {
     } else if (pestañaNombre === 'tipos') {
         document.getElementById("btnTiposIncidentes")?.classList.add("pintarBotonNav");
         document.getElementById("btnTiposIncidentesMobile")?.classList.add("pintarBotonNav");
+    } else if (pestañaNombre === 'seguridadIps') {
+        document.getElementById("btnSeguridadIps")?.classList.add("pintarBotonNav");
+        document.getElementById("btnSeguridadIpsMobile")?.classList.add("pintarBotonNav");
     } else if (pestañaNombre === 'perfil') {
         document.getElementById("btnPerfil")?.classList.add("pintarBotonNav");
         document.getElementById("btnPerfilMobile")?.classList.add("pintarBotonNav");
@@ -158,6 +162,7 @@ function cambiarPestana(pestañaNombre) {
         if (secUsuarios) secUsuarios.style.display = 'none';
         if (secAuditoria) secAuditoria.style.display = 'none';
         if (secTiposIncidentes) secTiposIncidentes.style.display = 'none';
+        if (secSeguridadIps) secSeguridadIps.style.display = 'none';
         if (secPerfil) secPerfil.style.display = 'none';
 
         if (contMain) {
@@ -204,6 +209,9 @@ function cambiarPestana(pestañaNombre) {
         if (secTiposIncidentes) {
             secTiposIncidentes.style.display = pestañaNombre === 'tipos' ? 'block' : 'none';
         }
+        if (secSeguridadIps) {
+            secSeguridadIps.style.display = pestañaNombre === 'seguridadIps' ? 'block' : 'none';
+        }
         if (secPerfil) {
             secPerfil.style.display = pestañaNombre === 'perfil' ? 'block' : 'none';
         }
@@ -212,6 +220,7 @@ function cambiarPestana(pestañaNombre) {
     if (pestañaNombre === 'usuarios') cargarUsuarios();
     if (pestañaNombre === 'auditoria') cargarAuditoriaLogs();
     if (pestañaNombre === 'tipos') cargarTiposIncidentes();
+    if (pestañaNombre === 'seguridadIps') cargarIpsBloqueadas();
     if (pestañaNombre === 'perfil') cargarDatosPerfil();
 }
 
@@ -233,6 +242,9 @@ if (btnAuditoriaEl) btnAuditoriaEl.addEventListener("click", () => cambiarPestan
 const btnTiposIncidentesEl = document.getElementById("btnTiposIncidentes");
 if (btnTiposIncidentesEl) btnTiposIncidentesEl.addEventListener("click", () => cambiarPestana('tipos'));
 
+const btnSeguridadIpsEl = document.getElementById("btnSeguridadIps");
+if (btnSeguridadIpsEl) btnSeguridadIpsEl.addEventListener("click", () => cambiarPestana('seguridadIps'));
+
 const btnPerfilEl = document.getElementById("btnPerfil");
 if (btnPerfilEl) btnPerfilEl.addEventListener("click", () => cambiarPestana('perfil'));
 
@@ -244,6 +256,7 @@ document.getElementById("btnVerifMobile")?.addEventListener("click", () => cambi
 document.getElementById("btnUsuariosMobile")?.addEventListener("click", () => cambiarPestana('usuarios'));
 document.getElementById("btnAuditoriaMobile")?.addEventListener("click", () => cambiarPestana('auditoria'));
 document.getElementById("btnTiposIncidentesMobile")?.addEventListener("click", () => cambiarPestana('tipos'));
+document.getElementById("btnSeguridadIpsMobile")?.addEventListener("click", () => cambiarPestana('seguridadIps'));
 document.getElementById("btnPerfilMobile")?.addEventListener("click", () => cambiarPestana('perfil'));
 document.getElementById("btnReportePDFMobile")?.addEventListener("click", (e) => {
     e.preventDefault();
@@ -253,7 +266,12 @@ document.getElementById("cerrarSesionMobile")?.addEventListener("click", () => {
     window.location.href = "/logout";
 });
 
-// --- SISTEMA DE TOASTS ---
+function limpiarEmojis(texto) {
+    if (!texto || typeof texto !== 'string') return '';
+    return texto.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}]/gu, '').replace(/\s{2,}/g, ' ').trim();
+}
+
+// --- SISTEMA DE TOASTS INSTITUCIONAL (Sin emojis, paleta SIGI) ---
 function mostrarToast(mensaje, tipo = "info") {
     let contenedor = document.getElementById("contenedorToast");
     if (!contenedor) {
@@ -262,6 +280,8 @@ function mostrarToast(mensaje, tipo = "info") {
         document.body.appendChild(contenedor);
     }
 
+    if (tipo === "success") tipo = "exito";
+
     const toast = document.createElement("div");
     toast.className = `toast ${tipo}`;
     
@@ -269,8 +289,10 @@ function mostrarToast(mensaje, tipo = "info") {
     let icono = "bi-info-circle-fill";
     if (tipo === "exito") icono = "bi-check-circle-fill";
     if (tipo === "error") icono = "bi-x-circle-fill";
+    if (tipo === "advertencia") icono = "bi-exclamation-triangle-fill";
 
-    toast.innerHTML = `<i class="bi ${icono}"></i><span>${mensaje}</span>`;
+    const textoLimpio = limpiarEmojis(mensaje);
+    toast.innerHTML = `<i class="bi ${icono}" aria-hidden="true"></i><span>${textoLimpio}</span>`;
     
     contenedor.appendChild(toast);
 
@@ -284,8 +306,8 @@ function mostrarToast(mensaje, tipo = "info") {
         toast.classList.remove("mostrar");
         setTimeout(() => {
             toast.remove();
-        }, 400); // Tiempo de la transición CSS
-    }, 4000);
+        }, 350); // Tiempo de la transición CSS
+    }, 3800);
 }
 
 // Crear el mapa
@@ -631,27 +653,58 @@ async function cargarUsuario() {
             if (headerBrandTag) headerBrandTag.innerText = rolTagLabel;
 
             // Mostrar u ocultar pestañas según el rol (Escritorio y Móvil)
+            const btnInicio = document.getElementById("btnInicio");
+            const btnVerif = document.getElementById("btnVerif");
+            const btnInicioMobile = document.getElementById("btnInicioMobile");
+            const btnVerifMobile = document.getElementById("btnVerifMobile");
+
             const btnUsuarios = document.getElementById("btnUsuarios");
             const btnAuditoria = document.getElementById("btnAuditoria");
             const btnTiposIncidentes = document.getElementById("btnTiposIncidentes");
+            const btnSeguridadIps = document.getElementById("btnSeguridadIps");
+
             const btnUsuariosMobile = document.getElementById("btnUsuariosMobile");
             const btnAuditoriaMobile = document.getElementById("btnAuditoriaMobile");
             const btnTiposIncidentesMobile = document.getElementById("btnTiposIncidentesMobile");
+            const btnSeguridadIpsMobile = document.getElementById("btnSeguridadIpsMobile");
 
             if (data.rol === 'superadmin') {
+                // Quitar vista de incidentes y mapa al Superadmin (responsabilidad operativa de Administradores)
+                if (btnInicio) btnInicio.style.display = "none";
+                if (btnVerif) btnVerif.style.display = "none";
+                if (btnInicioMobile) btnInicioMobile.style.display = "none";
+                if (btnVerifMobile) btnVerifMobile.style.display = "none";
+
+                // Mostrar módulos de gobernanza, auditoría, catálogos y seguridad IP
                 if (btnUsuarios) btnUsuarios.style.display = "flex";
                 if (btnAuditoria) btnAuditoria.style.display = "flex";
                 if (btnTiposIncidentes) btnTiposIncidentes.style.display = "flex";
+                if (btnSeguridadIps) btnSeguridadIps.style.display = "flex";
+
                 if (btnUsuariosMobile) btnUsuariosMobile.style.display = "flex";
                 if (btnAuditoriaMobile) btnAuditoriaMobile.style.display = "flex";
                 if (btnTiposIncidentesMobile) btnTiposIncidentesMobile.style.display = "flex";
+                if (btnSeguridadIpsMobile) btnSeguridadIpsMobile.style.display = "flex";
+
+                // Abrir directamente la pestaña de Usuarios para el Superadmin
+                cambiarPestana('usuarios');
             } else if (data.rol === 'admin') {
+                // Mostrar mapa e incidentes al Administrador
+                if (btnInicio) btnInicio.style.display = "flex";
+                if (btnVerif) btnVerif.style.display = "flex";
+                if (btnInicioMobile) btnInicioMobile.style.display = "flex";
+                if (btnVerifMobile) btnVerifMobile.style.display = "flex";
+
+                // Ocultar módulos exclusivos de Superadmin
                 if (btnUsuarios) btnUsuarios.style.display = "none";
                 if (btnAuditoria) btnAuditoria.style.display = "none";
                 if (btnTiposIncidentes) btnTiposIncidentes.style.display = "none";
+                if (btnSeguridadIps) btnSeguridadIps.style.display = "none";
+
                 if (btnUsuariosMobile) btnUsuariosMobile.style.display = "none";
                 if (btnAuditoriaMobile) btnAuditoriaMobile.style.display = "none";
                 if (btnTiposIncidentesMobile) btnTiposIncidentesMobile.style.display = "none";
+                if (btnSeguridadIpsMobile) btnSeguridadIpsMobile.style.display = "none";
             } else {
                 window.location.href = "/reportero/index.html";
             }
@@ -1027,40 +1080,96 @@ function configurarLimitesFechaHora() {
     const mes = String(hoy.getMonth() + 1).padStart(2, "0");
     const dia = String(hoy.getDate()).padStart(2, "0");
     const fechaActualStr = `${anio}-${mes}-${dia}`;
+    const fechaMinimaStr = "2000-01-01";
 
     if (inputFechaInc) {
+        inputFechaInc.min = fechaMinimaStr;
         inputFechaInc.max = fechaActualStr;
+    }
+
+    const editFecha = document.getElementById("editFecha");
+    if (editFecha) {
+        editFecha.min = fechaMinimaStr;
+        editFecha.max = fechaActualStr;
     }
 }
 configurarLimitesFechaHora();
 
-function esFechaHoraFutura(fechaVal, horaVal) {
-    if (!fechaVal) return false;
-    const ahora = new Date();
-    const anio = ahora.getFullYear();
-    const mes = String(ahora.getMonth() + 1).padStart(2, "0");
-    const dia = String(ahora.getDate()).padStart(2, "0");
-    const hoyStr = `${anio}-${mes}-${dia}`;
+/**
+ * Valida de forma rigurosa fecha y hora:
+ * - Evita años inválidos (mínimo 2000, máximo año actual)
+ * - Evita meses inválidos (01 a 12)
+ * - Evita días fuera de rango según el mes y año (hasta 28/29/30/31)
+ * - Bloquea fechas futuras y horas futuras para la fecha de hoy
+ */
+function validarFechaHora(fechaVal, horaVal) {
+    if (!fechaVal) {
+        return { invalido: true, mensaje: "Debe ingresar una fecha válida para el incidente." };
+    }
 
-    if (fechaVal > hoyStr) {
+    const regexFecha = /^(\d{4})-(\d{2})-(\d{2})$/;
+    const match = String(fechaVal).trim().match(regexFecha);
+    if (!match) {
+        return { invalido: true, mensaje: "Formato de fecha inválido. Debe ser AAAA-MM-DD." };
+    }
+
+    const anio = parseInt(match[1], 10);
+    const mes = parseInt(match[2], 10);
+    const dia = parseInt(match[3], 10);
+
+    const anioMinimo = 2000;
+    const ahora = new Date();
+    const anioActual = ahora.getFullYear();
+
+    if (anio < anioMinimo || anio > anioActual) {
+        return { invalido: true, mensaje: `El año (${anio}) no es válido. Debe estar entre ${anioMinimo} y ${anioActual}.` };
+    }
+
+    if (mes < 1 || mes > 12) {
+        return { invalido: true, mensaje: `El mes (${mes}) es inválido (debe ser entre 01 y 12).` };
+    }
+
+    const diasEnMes = new Date(anio, mes, 0).getDate();
+    if (dia < 1 || dia > diasEnMes) {
+        return { invalido: true, mensaje: `El día (${dia}) no es válido para el mes ${mes} (máximo ${diasEnMes} días).` };
+    }
+
+    const mesActualStr = String(ahora.getMonth() + 1).padStart(2, "0");
+    const diaActualStr = String(ahora.getDate()).padStart(2, "0");
+    const hoyStr = `${anioActual}-${mesActualStr}-${diaActualStr}`;
+
+    if (fechaVal.trim() > hoyStr) {
         return { invalido: true, mensaje: "La fecha del incidente no puede ser futura." };
     }
 
-    if (fechaVal === hoyStr && horaVal) {
-        const [horas, minutos] = horaVal.split(":").map(Number);
-        const horaActual = ahora.getHours();
-        const minActual = ahora.getMinutes();
+    if (horaVal) {
+        const regexHora = /^([01]\d|2[0-3]):([0-5]\d)(:([0-5]\d))?$/;
+        if (!regexHora.test(horaVal.trim())) {
+            return { invalido: true, mensaje: "Formato de hora inválido. Ingrese HH:MM (00:00 a 23:59)." };
+        }
 
-        if (horas > horaActual || (horas === horaActual && minutos > minActual)) {
-            return { invalido: true, mensaje: "Si la fecha es hoy, la hora no puede ser mayor a la hora actual." };
+        if (fechaVal.trim() === hoyStr) {
+            const [horas, minutos] = horaVal.split(":").map(Number);
+            const horaActual = ahora.getHours();
+            const minActual = ahora.getMinutes();
+
+            if (horas > horaActual || (horas === horaActual && minutos > minActual)) {
+                return { invalido: true, mensaje: "Si la fecha es hoy, la hora no puede ser mayor a la hora actual." };
+            }
         }
     }
+
     return { invalido: false };
+}
+
+// Mantener compatibilidad con llamadas existentes
+function esFechaHoraFutura(fechaVal, horaVal) {
+    return validarFechaHora(fechaVal, horaVal);
 }
 
 if (inputFechaInc) {
     inputFechaInc.addEventListener("change", () => {
-        const val = esFechaHoraFutura(inputFechaInc.value, inputHoraInc ? inputHoraInc.value : null);
+        const val = validarFechaHora(inputFechaInc.value, inputHoraInc ? inputHoraInc.value : null);
         if (val.invalido) {
             mostrarToast(val.mensaje, "error");
         }
@@ -1069,7 +1178,7 @@ if (inputFechaInc) {
 
 if (inputHoraInc) {
     inputHoraInc.addEventListener("change", () => {
-        const val = esFechaHoraFutura(inputFechaInc ? inputFechaInc.value : null, inputHoraInc.value);
+        const val = validarFechaHora(inputFechaInc ? inputFechaInc.value : null, inputHoraInc.value);
         if (val.invalido) {
             mostrarToast(val.mensaje, "error");
         }
@@ -1107,8 +1216,8 @@ document.querySelector(".registrarD").addEventListener("click", async (e) => {
         return;
     }
 
-    // Validación estricta de fecha y hora futura
-    const validacionTiempo = esFechaHoraFutura(fechaInc, horaInc);
+    // Validación estricta de fecha y hora
+    const validacionTiempo = validarFechaHora(fechaInc, horaInc);
     if (validacionTiempo.invalido) {
         mostrarToast(validacionTiempo.mensaje, "error");
         return;
@@ -1136,7 +1245,13 @@ document.querySelector(".registrarD").addEventListener("click", async (e) => {
             mostrarToast(result.mensaje || result.error || "Error en el servidor", "error");
             return;
         }
-        mostrarToast(result.mensaje || "Incidente registrado exitosamente.", "exito");
+
+        // Registrar código para evitar toast duplicado con descripción desde Socket.io
+        if (result.incidente && result.incidente.codigoincidente) {
+            window._ultimoIncidenteCreadoCodigo = result.incidente.codigoincidente;
+        }
+
+        mostrarToast("Incidente registrado", "exito");
         limpiarFormulario();
         cargarTabla();
         contar();
@@ -1444,7 +1559,11 @@ function renderTabla(data) {
 
         if (estadoId === 1) { // 1 = En cola
             estadoBadge = `<span class="badge-estado badge-estado-cola" title="Pendiente en cola de revisión">En Cola</span>`;
-            botonAccionRapida = `<button type="button" class="btnTomarIncidente btn-secundario-accion" data-id="${incidente.idincidente}" title="Tomar reporte para revisión">Tomar</button>`;
+            botonAccionRapida = `
+                <button type="button" class="btn-icon-usr btn-tomar-incidente btnTomarIncidente" data-id="${incidente.idincidente}" title="Tomar reporte para revisión" aria-label="Tomar reporte">
+                    <i class="bi bi-inbox" aria-hidden="true"></i>
+                </button>
+            `;
         } else if (estadoId === 2) { // 2 = En evaluación
             estadoBadge = `<span class="badge-estado badge-estado-proceso" title="Tomado para revisión">En Evaluación</span>`;
         } else if (estadoId === 5) { // 5 = Aprobado
@@ -1480,9 +1599,11 @@ function renderTabla(data) {
             <td class="celda-centrada">${tipoBadge}</td>
             <td class="celda-centrada">${estadoBadge}</td>
             <td class="celda-barrio" title="${barrioNombre}">${barrioNombre}</td>
-            <td class="celda-acciones">
-                <div class="acciones-celda-wrap">
-                    <button type="button" onclick="verDetalleIncidente(${incidente.idincidente})" class="btn-primario-detalle" title="Ver detalle completo y opciones">Detalle</button>
+            <td class="celda-acciones celda-centrada">
+                <div class="acciones-iconos-wrap">
+                    <button type="button" onclick="verDetalleIncidente(${incidente.idincidente})" class="btn-icon-usr btn-detalle-incidente" title="Ver detalle completo del reporte" aria-label="Detalle">
+                        <i class="bi bi-eye" aria-hidden="true"></i>
+                    </button>
                     ${botonAccionRapida}
                 </div>
             </td>
@@ -1951,6 +2072,14 @@ document.getElementById("btnGuardar").addEventListener("click", async () => {
     const hora = document.getElementById("editHora").value;
     const descripcion = document.getElementById("editDescripcion").value;
 
+    if (fecha || hora) {
+        const valEdit = validarFechaHora(fecha, hora);
+        if (valEdit.invalido) {
+            mostrarToast(valEdit.mensaje, "error");
+            return;
+        }
+    }
+
     try {
         const res = await fetch(`/incidente/${id}`, {
             method: "PUT",
@@ -1964,15 +2093,19 @@ document.getElementById("btnGuardar").addEventListener("click", async () => {
             })
         });
 
+        const resData = await res.json().catch(() => ({}));
+
         if (res.ok) {
             cerrarModal();
             filtrar(); // refresca tabla
+            mostrarToast("Incidente actualizado correctamente.", "exito");
         } else {
-            console.error("Error al actualizar incidente");
+            mostrarToast(resData.mensaje || "Error al actualizar incidente", "error");
         }
 
     } catch (error) {
         console.error("Error:", error);
+        mostrarToast("Error de conexión al actualizar incidente", "error");
     }
 });
 
@@ -2551,6 +2684,11 @@ function asignarEventosAccionesUsuarios() {
                 const data = await res.json();
                 if (res.ok) {
                     mostrarToast(`✅ Estado actualizado a '${nuevoEstado}'`, "exito");
+                    // Sincronizar en memoria de forma inmediata
+                    const uIdx = allUsuarios.findIndex(x => parseInt(x.idusuario) === parseInt(id));
+                    if (uIdx !== -1) {
+                        allUsuarios[uIdx].estado = nuevoEstado;
+                    }
                     cargarUsuarios();
                 } else {
                     mostrarToast(`❌ ${data.mensaje || "Error actualizando estado"}`, "error");
@@ -2657,6 +2795,12 @@ function abrirModalCrearUsuario() {
     if (editUserId) editUserId.value = "";
     if (title) title.innerHTML = "Crear nuevo usuario";
 
+    const elEstado = document.getElementById("newEstado");
+    if (elEstado) {
+        elEstado.value = "Activo";
+        elEstado.dataset.valor = "activo";
+    }
+
     modal.classList.add("active");
     modal.style.setProperty("display", "flex", "important");
     modal.style.setProperty("visibility", "visible", "important");
@@ -2691,7 +2835,16 @@ function abrirModalEditarUsuario(u) {
     document.getElementById("newNombreUsuario").value = u.nombreusuario || "";
     document.getElementById("newEmail").value = u.email || "";
     document.getElementById("newRol").value = u.rol || "reportero";
-    document.getElementById("newEstado").value = u.estado || "activo";
+    
+    // Configurar estado de cuenta (solo lectura / visualización)
+    const elEstado = document.getElementById("newEstado");
+    if (elEstado) {
+        const rawEstado = (u.estado || "activo").toLowerCase();
+        const textoEstado = rawEstado === 'activo' ? 'Activo' : (rawEstado === 'bloqueado' ? 'Bloqueado' : 'Inactivo');
+        elEstado.value = textoEstado;
+        elEstado.dataset.valor = rawEstado;
+    }
+
     document.getElementById("newDependencia").value = u.dependencia || u.entidadusuario || "";
     document.getElementById("newTelefono").value = u.telefono || "";
 
@@ -2763,11 +2916,14 @@ if (formCrearUsuario) {
         const editId = document.getElementById("editUserId").value;
         const isEditing = !!editId;
 
+        const elEstado = document.getElementById("newEstado");
+        const estadoValor = elEstado?.dataset?.valor || (elEstado?.value ? elEstado.value.toLowerCase() : "activo");
+
         const payload = {
             nombreusuario: document.getElementById("newNombreUsuario").value,
             email: document.getElementById("newEmail").value,
             rol: document.getElementById("newRol").value,
-            estado: document.getElementById("newEstado").value,
+            estado: estadoValor,
             dependencia: document.getElementById("newDependencia").value,
             telefono: document.getElementById("newTelefono").value
         };
@@ -3015,10 +3171,12 @@ function renderizarTablaAuditoria() {
             <td style="font-weight: 600; color: var(--texto); text-align: center;">${l.nombreusuario || 'Sistema'}</td>
             <td style="text-align: center;">${accionBadge}</td>
             <td style="text-align: center;">${l.tabla_afectada || 'General'}</td>
-            <td style="text-align: center;" class="celda-acciones">
-                <button type="button" class="btn-primario-detalle btn-view-log" onclick="verDetalleLog(${l.id_log})" title="Ver todos los detalles del registro de auditoría">
-                    <i class="bi bi-eye" aria-hidden="true"></i> Detalle
-                </button>
+            <td class="celda-acciones celda-centrada" style="text-align: center;">
+                <div class="acciones-iconos-wrap">
+                    <button type="button" class="btn-icon-usr btn-view-log" onclick="verDetalleLog(${l.id_log})" title="Ver detalles del registro de auditoría" aria-label="Ver detalles">
+                        <i class="bi bi-eye" aria-hidden="true"></i>
+                    </button>
+                </div>
             </td>
         `;
         tbody.appendChild(tr);
@@ -3147,7 +3305,10 @@ async function abrirVisorPDF() {
 
     if (loader) {
         loader.classList.remove("oculto");
-        loader.innerText = "Generando vista previa del documento…";
+        loader.innerHTML = `
+            <div class="visor-pdf-spinner"></div>
+            <span class="visor-pdf-loader-texto">Generando vista previa del informe ejecutivo…</span>
+        `;
         loader.style.removeProperty("display");
     }
 
@@ -3168,7 +3329,7 @@ async function abrirVisorPDF() {
         blobUrlActualPDF = URL.createObjectURL(blob);
 
         if (iframe) {
-            iframe.src = blobUrlActualPDF;
+            iframe.src = `${blobUrlActualPDF}#toolbar=1&navpanes=0&view=FitH`;
         }
 
         if (btnDescargar) {
@@ -3191,9 +3352,9 @@ async function abrirVisorPDF() {
             loader.classList.remove("oculto");
             loader.style.removeProperty("display");
             loader.innerHTML = `
-                <div style="text-align: center; padding: 20px;">
-                    <p style="color: #f87171; margin-bottom: 12px; font-weight: 600;">No se pudo previsualizar el documento automáticamente.</p>
-                    <a href="/api/reportes/pdf?download=1" class="btn-modal-op btn-modal-tomar" style="text-decoration: none;">Descargar PDF directamente</a>
+                <div style="text-align: center; padding: 24px; max-width: 420px;">
+                    <p style="color: #f87171; margin-bottom: 14px; font-weight: 600; font-size: 0.88rem;">No se pudo previsualizar el documento de forma interactiva.</p>
+                    <a href="/api/reportes/pdf?preview=0" class="btn-pdf-modal-primario" style="text-decoration: none;">Descargar archivo PDF</a>
                 </div>
             `;
         }
@@ -3420,12 +3581,72 @@ let paginaActualTipos = 1;
 const registrosPorPaginaTipos = 10;
 let tipoAEliminarId = null;
 
-// Paleta institucional de colores recomendados (altamente contrastantes)
-const PALETA_SUGERIDA = [
-    '#06B6D4', '#2563EB', '#EC4899', '#6366F1', 
-    '#64748B', '#EA580C', '#84CC16', '#0D9488', 
-    '#E11D48', '#8B5CF6', '#D97706', '#14B8A6'
+// Paleta completa y variada de 45 colores categorizada por familias cromáticas y luminosidad (claros, medios y oscuros)
+const PALETA_COMPLETA_TIPOS = [
+    // Rojos y Rosas
+    { hex: '#F87171', familia: 'Rojo', tono: 'claro', nombre: 'Rojo Claro' },
+    { hex: '#DC2626', familia: 'Rojo', tono: 'medio', nombre: 'Rojo Vibrante' },
+    { hex: '#991B1B', familia: 'Rojo', tono: 'oscuro', nombre: 'Rojo Oscuro' },
+    { hex: '#FB7185', familia: 'Rosa', tono: 'claro', nombre: 'Rosa Claro' },
+    { hex: '#E11D48', familia: 'Rosa', tono: 'medio', nombre: 'Carmesí' },
+    { hex: '#881337', familia: 'Rosa', tono: 'oscuro', nombre: 'Vino Oscuro' },
+
+    // Naranjas y Ámbar
+    { hex: '#FB923C', familia: 'Naranja', tono: 'claro', nombre: 'Naranja Claro' },
+    { hex: '#EA580C', familia: 'Naranja', tono: 'medio', nombre: 'Naranja Fuego' },
+    { hex: '#9A3412', familia: 'Naranja', tono: 'oscuro', nombre: 'Naranja Tostado' },
+    { hex: '#FBBF24', familia: 'Ámbar', tono: 'claro', nombre: 'Ámbar Claro' },
+    { hex: '#D97706', familia: 'Ámbar', tono: 'medio', nombre: 'Ámbar Dorado' },
+    { hex: '#78350F', familia: 'Ámbar', tono: 'oscuro', nombre: 'Bronce Oscuro' },
+
+    // Amarillos y Limas
+    { hex: '#FDE047', familia: 'Amarillo', tono: 'claro', nombre: 'Amarillo Claro' },
+    { hex: '#CA8A04', familia: 'Amarillo', tono: 'medio', nombre: 'Mostaza' },
+    { hex: '#713F12', familia: 'Amarillo', tono: 'oscuro', nombre: 'Ocre Oscuro' },
+    { hex: '#A3E635', familia: 'Lima', tono: 'claro', nombre: 'Lima Claro' },
+    { hex: '#65A30D', familia: 'Lima', tono: 'medio', nombre: 'Lima Vibrante' },
+    { hex: '#365314', familia: 'Lima', tono: 'oscuro', nombre: 'Oliva Profundo' },
+
+    // Verdes y Teal
+    { hex: '#34D399', familia: 'Verde', tono: 'claro', nombre: 'Menta Claro' },
+    { hex: '#059669', familia: 'Verde', tono: 'medio', nombre: 'Esmeralda' },
+    { hex: '#064E3B', familia: 'Verde', tono: 'oscuro', nombre: 'Verde Bosque' },
+    { hex: '#2DD4BF', familia: 'Teal', tono: 'claro', nombre: 'Teal Claro' },
+    { hex: '#0D9488', familia: 'Teal', tono: 'medio', nombre: 'Verde Azulado' },
+    { hex: '#134E4A', familia: 'Teal', tono: 'oscuro', nombre: 'Petróleo Oscuro' },
+
+    // Cianes y Celestes
+    { hex: '#38BDF8', familia: 'Cian', tono: 'claro', nombre: 'Celeste Claro' },
+    { hex: '#0284C7', familia: 'Cian', tono: 'medio', nombre: 'Cian Profundo' },
+    { hex: '#075985', familia: 'Cian', tono: 'oscuro', nombre: 'Azul Marino' },
+
+    // Azules e Índigos
+    { hex: '#60A5FA', familia: 'Azul', tono: 'claro', nombre: 'Azul Cielo' },
+    { hex: '#2563EB', familia: 'Azul', tono: 'medio', nombre: 'Azul Eléctrico' },
+    { hex: '#1E3A8A', familia: 'Azul', tono: 'oscuro', nombre: 'Azul Noche' },
+    { hex: '#818CF8', familia: 'Índigo', tono: 'claro', nombre: 'Índigo Claro' },
+    { hex: '#4F46E5', familia: 'Índigo', tono: 'medio', nombre: 'Índigo Real' },
+    { hex: '#312E81', familia: 'Índigo', tono: 'oscuro', nombre: 'Índigo Profundo' },
+
+    // Púrpuras y Violetas
+    { hex: '#C084FC', familia: 'Púrpura', tono: 'claro', nombre: 'Lavanda' },
+    { hex: '#7C3AED', familia: 'Púrpura', tono: 'medio', nombre: 'Violeta' },
+    { hex: '#4C1D95', familia: 'Púrpura', tono: 'oscuro', nombre: 'Púrpura Imperial' },
+    { hex: '#F472B6', familia: 'Fucsia', tono: 'claro', nombre: 'Fucsia Claro' },
+    { hex: '#DB2777', familia: 'Fucsia', tono: 'medio', nombre: 'Magenta' },
+    { hex: '#831843', familia: 'Fucsia', tono: 'oscuro', nombre: 'Ciruela Oscura' },
+
+    // Tierras y Neutros
+    { hex: '#A8A29E', familia: 'Tierra', tono: 'claro', nombre: 'Arena Clara' },
+    { hex: '#78716C', familia: 'Tierra', tono: 'medio', nombre: 'Tierra Café' },
+    { hex: '#44403C', familia: 'Tierra', tono: 'oscuro', nombre: 'Chocolate' },
+    { hex: '#94A3B8', familia: 'Pizarra', tono: 'claro', nombre: 'Pizarra Clara' },
+    { hex: '#475569', familia: 'Pizarra', tono: 'medio', nombre: 'Gris Acero' },
+    { hex: '#0F172A', familia: 'Pizarra', tono: 'oscuro', nombre: 'Antracita' }
 ];
+
+// Compatibilidad con código previo
+const PALETA_SUGERIDA = PALETA_COMPLETA_TIPOS.map(c => c.hex);
 
 /**
  * Normaliza texto para comparaciones estrictas anti-duplicados
@@ -3455,6 +3676,31 @@ function hexToRgbLocal(hex) {
         g: (num >> 8) & 255,
         b: num & 255
     };
+}
+
+/**
+ * Clasifica si un color es tono claro, medio u oscuro según su luminosidad relativa (0 a 255)
+ */
+function clasificarTonoColorLocal(hex) {
+    const rgb = hexToRgbLocal(hex);
+    const lum = 0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b;
+    if (lum >= 145) return 'claro';
+    if (lum <= 75) return 'oscuro';
+    return 'medio';
+}
+
+/**
+ * Compara dos colores para determinar si uno es una variación más clara, más oscura o idéntica
+ */
+function compararRelacionTonoLocal(hex1, hex2) {
+    const rgb1 = hexToRgbLocal(hex1);
+    const rgb2 = hexToRgbLocal(hex2);
+    const lum1 = 0.299 * rgb1.r + 0.587 * rgb1.g + 0.114 * rgb1.b;
+    const lum2 = 0.299 * rgb2.r + 0.587 * rgb2.g + 0.114 * rgb2.b;
+    const diff = lum1 - lum2;
+    if (diff > 12) return 'una variante más clara casi idéntica';
+    if (diff < -12) return 'una variante más oscura casi idéntica';
+    return 'visualmente casi idéntico';
 }
 
 /**
@@ -3790,20 +4036,82 @@ document.getElementById("btnConfirmarAccionEstadoTipo")?.addEventListener("click
 });
 
 /**
- * Construye la paleta sugerida de colores en el modal
+ * Construye la paleta variada de colores en el modal con filtrado por tono
  */
-function inicializarPaletaSugeridaModal() {
+let filtroTonoPaletaActual = 'todos';
+
+function inicializarPaletaSugeridaModal(filtroTono = null) {
+    if (filtroTono !== null) {
+        filtroTonoPaletaActual = filtroTono;
+    }
+
     const cont = document.getElementById("paletaSugeridaTipos");
     if (!cont) return;
     cont.innerHTML = "";
-    PALETA_SUGERIDA.forEach(colorHex => {
+
+    const idActual = document.getElementById("tipoEditId")?.value;
+    const colorActual = (document.getElementById("tipoColorHex")?.value || '').toUpperCase();
+
+    // Actualizar botones de filtro
+    document.querySelectorAll(".btn-tono-chip").forEach(btn => {
+        if (btn.getAttribute("data-filtro") === filtroTonoPaletaActual) {
+            btn.classList.add("activo");
+        } else {
+            btn.classList.remove("activo");
+        }
+        btn.onclick = () => {
+            const f = btn.getAttribute("data-filtro");
+            inicializarPaletaSugeridaModal(f);
+        };
+    });
+
+    const coloresFiltrados = PALETA_COMPLETA_TIPOS.filter(c => {
+        if (filtroTonoPaletaActual === 'todos') return true;
+        return c.tono === filtroTonoPaletaActual;
+    });
+
+    coloresFiltrados.forEach(c => {
         const chip = document.createElement("span");
         chip.className = "chip-color-sugerido";
-        chip.style.backgroundColor = colorHex;
-        chip.title = `Seleccionar ${colorHex}`;
+        chip.style.backgroundColor = c.hex;
+
+        // Evaluar si está en uso por un tipo activo
+        const tipoEnUso = allTipos.find(t => {
+            if (idActual && String(t.idtipoincidente) === String(idActual)) return false;
+            return t.activo && t.color && t.color.toUpperCase() === c.hex.toUpperCase();
+        });
+
+        // Evaluar si presenta colisión cromática con algún tipo activo
+        let tipoConflicto = null;
+        if (!tipoEnUso) {
+            for (const t of allTipos) {
+                if (idActual && String(t.idtipoincidente) === String(idActual)) continue;
+                if (!t.activo || !t.color) continue;
+                if (calcularDistanciaColorLocal(c.hex, t.color) < 85) {
+                    tipoConflicto = t;
+                    break;
+                }
+            }
+        }
+
+        if (tipoEnUso) {
+            chip.classList.add("en-uso");
+            chip.title = `${c.nombre} (${c.hex}) — Tono ${c.tono} | En uso por "${tipoEnUso.nametipoincidente}"`;
+        } else if (tipoConflicto) {
+            chip.classList.add("conflicto");
+            chip.title = `${c.nombre} (${c.hex}) — Tono ${c.tono} | Muy similar a "${tipoConflicto.nametipoincidente}"`;
+        } else {
+            chip.title = `${c.nombre} (${c.hex}) — Tono ${c.tono} disponible con buen contraste`;
+        }
+
+        if (colorActual === c.hex.toUpperCase()) {
+            chip.classList.add("activo");
+        }
+
         chip.onclick = () => {
-            seleccionarColorModal(colorHex);
+            seleccionarColorModal(c.hex);
         };
+
         cont.appendChild(chip);
     });
 }
@@ -3811,23 +4119,48 @@ function inicializarPaletaSugeridaModal() {
 function seleccionarColorModal(colorHex) {
     const picker = document.getElementById("tipoColorPicker");
     const hexInput = document.getElementById("tipoColorHex");
+    const hexNorm = colorHex.toUpperCase();
+
     if (picker) picker.value = colorHex;
-    if (hexInput) hexInput.value = colorHex.toUpperCase();
+    if (hexInput) hexInput.value = hexNorm;
+
     actualizarPrevisualizacionColor(colorHex);
     evaluarSimilitudColorEnVivo(colorHex);
+
+    // Actualizar clase activa en los chips de la paleta
+    document.querySelectorAll(".chip-color-sugerido").forEach(chip => {
+        const chipColor = chip.style.backgroundColor;
+        const rgb = hexToRgbLocal(hexNorm);
+        const rgbStr = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+        if (chipColor === rgbStr || chip.style.backgroundColor.toUpperCase() === hexNorm) {
+            chip.classList.add("activo");
+        } else {
+            chip.classList.remove("activo");
+        }
+    });
 }
 
 function actualizarPrevisualizacionColor(colorHex) {
     const preview = document.getElementById("tipoBadgePreview");
+    const infoTono = document.getElementById("tipoColorInfoTono");
+
     if (preview) {
         preview.style.background = `${colorHex}22`;
         preview.style.color = colorHex;
         preview.style.borderColor = `${colorHex}66`;
     }
+
+    if (infoTono) {
+        const tono = clasificarTonoColorLocal(colorHex);
+        const tonoTexto = tono === 'claro' ? 'Tono Claro' : (tono === 'oscuro' ? 'Tono Oscuro' : 'Tono Medio');
+        infoTono.innerText = `Tono: ${tonoTexto}`;
+        infoTono.style.color = colorHex;
+    }
 }
 
 /**
  * Evalúa en tiempo real si el color elegido es casi igual o idéntico a un tipo existente
+ * identificando explícitamente si se trata de una variación más clara o más oscura.
  */
 function evaluarSimilitudColorEnVivo(nuevoHex) {
     const alerta = document.getElementById("alertaColorTipo");
@@ -3849,6 +4182,7 @@ function evaluarSimilitudColorEnVivo(nuevoHex) {
 
     // Comparar contra todos los tipos existentes activos
     let tipoColision = null;
+    let tipoMasCercano = null;
     let menorDistancia = 999;
 
     for (const t of allTipos) {
@@ -3858,6 +4192,7 @@ function evaluarSimilitudColorEnVivo(nuevoHex) {
         const dist = calcularDistanciaColorLocal(nuevoHex, t.color);
         if (dist < menorDistancia) {
             menorDistancia = dist;
+            tipoMasCercano = t;
             if (dist < 85) {
                 tipoColision = t;
             }
@@ -3865,19 +4200,28 @@ function evaluarSimilitudColorEnVivo(nuevoHex) {
     }
 
     if (tipoColision) {
+        const relacionTono = compararRelacionTonoLocal(nuevoHex, tipoColision.color);
         alerta.style.display = "block";
         alerta.style.background = "rgba(239, 68, 68, 0.15)";
         alerta.style.border = "1px solid rgba(239, 68, 68, 0.45)";
         alerta.style.color = "#f87171";
-        alerta.innerHTML = `<b>Color muy similar</b> al tipo existente <b>"${tipoColision.nametipoincidente}"</b> (${(tipoColision.color || '').toUpperCase()}). Por favor elija un tono con mayor contraste para diferenciar los puntos en el mapa.`;
+        alerta.innerHTML = `<b>⚠️ Conflicto cromático detectado:</b> El color elegido (<b>${nuevoHex.toUpperCase()}</b>) es <b>${relacionTono}</b> al tipo existente <b>"${tipoColision.nametipoincidente}"</b> (${(tipoColision.color || '').toUpperCase()}). En el mapa cartográfico no se diferenciarán con claridad. Por favor elija un tono con mayor contraste o una gama cromática distinta.`;
         if (btnSubmit) btnSubmit.disabled = true;
         return false;
+    } else if (tipoMasCercano && menorDistancia < 120) {
+        alerta.style.display = "block";
+        alerta.style.background = "rgba(234, 179, 8, 0.12)";
+        alerta.style.border = "1px solid rgba(234, 179, 8, 0.35)";
+        alerta.style.color = "#fbbf24";
+        alerta.innerHTML = `<b>ℹ️ Contraste moderado:</b> El tono presenta suficiente separación cromática respecto a <b>"${tipoMasCercano.nametipoincidente}"</b> para ser diferenciado en el mapa.`;
+        if (btnSubmit) btnSubmit.disabled = false;
+        return true;
     } else {
         alerta.style.display = "block";
         alerta.style.background = "rgba(16, 185, 129, 0.12)";
         alerta.style.border = "1px solid rgba(16, 185, 129, 0.35)";
         alerta.style.color = "#10b981";
-        alerta.innerHTML = `<b>Color contrastante</b>: Tono con excelente diferenciación visual para cartografía.`;
+        alerta.innerHTML = `<b>✓ Contraste óptimo:</b> Tono con excelente diferenciación visual para cartografía y análisis espacial.`;
         if (btnSubmit) btnSubmit.disabled = false;
         return true;
     }
@@ -4125,6 +4469,341 @@ async function cambiarEstadoTipoIncidente(id, nuevoEstado) {
         mostrarToast(err.message || "Error al actualizar estado", "error");
     }
 }
+
+/**
+ * ════════════════════════════════════════════════════════
+ * GESTIÓN DE SEGURIDAD DE RED Y DIRECCIONES IP (SUPERADMIN)
+ * ════════════════════════════════════════════════════════
+ */
+let allIps = [];
+let ipsFiltradas = [];
+let paginaActualIps = 1;
+const registrosPorPaginaIps = 10;
+let intervaloConteoIps = null;
+
+async function cargarIpsBloqueadas() {
+    const tbody = document.getElementById("cuerpoTablaIps");
+    const kpiActivas = document.getElementById("kpiIpsActivas");
+    const kpiHistorico = document.getElementById("kpiIpsHistorico");
+
+    if (!tbody) return;
+
+    try {
+        const res = await fetch("/api/seguridad/ips-bloqueadas");
+        if (res.status === 401 || res.status === 403) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #f87171; padding: 24px;">Acceso restringido: Solo el Superadministrador puede gestionar la seguridad de red.</td></tr>';
+            return;
+        }
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        allIps = Array.isArray(data.ips) ? data.ips : [];
+
+        if (kpiActivas) kpiActivas.innerText = data.estadisticas?.activas ?? allIps.length;
+        if (kpiHistorico) kpiHistorico.innerText = data.estadisticas?.totalHistorico ?? 0;
+
+        aplicarFiltrosIps();
+        iniciarTemporizadorIps();
+    } catch (err) {
+        console.error("Error al cargar IPs bloqueadas:", err);
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #f87171; padding: 24px;">Error al consultar direcciones IP bloqueadas.</td></tr>';
+    }
+}
+
+function aplicarFiltrosIps() {
+    const query = normalizarTextoLocal(document.getElementById("buscarIpInput")?.value || "");
+
+    ipsFiltradas = allIps.filter(item => {
+        const ipNorm = normalizarTextoLocal(item.ip || "");
+        const motivoNorm = normalizarTextoLocal(item.motivo || "");
+        return !query || ipNorm.includes(query) || motivoNorm.includes(query);
+    });
+
+    paginaActualIps = 1;
+    renderizarTablaIps();
+}
+
+function renderizarTablaIps() {
+    const tbody = document.getElementById("cuerpoTablaIps");
+    const infoPag = document.getElementById("infoPaginacionIps");
+    const labelPag = document.getElementById("labelPaginaIps");
+    const btnAnt = document.getElementById("btnPagAntIps");
+    const btnSig = document.getElementById("btnPagSigIps");
+
+    if (!tbody) return;
+
+    if (ipsFiltradas.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 36px 20px; color: var(--texto-suave);">
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+                        <span style="font-weight: 600; font-size: 0.92rem; color: var(--texto);">No hay direcciones IP bloqueadas en este momento</span>
+                        <span style="font-size: 0.8rem; color: var(--texto-suave);">La red opera con total normalidad y sin bloqueos de fuerza bruta activos.</span>
+                    </div>
+                </td>
+            </tr>
+        `;
+        if (infoPag) infoPag.innerText = "Mostrando 0 de 0 IPs";
+        if (labelPag) labelPag.innerText = "Página 1 de 1";
+        if (btnAnt) btnAnt.disabled = true;
+        if (btnSig) btnSig.disabled = true;
+        return;
+    }
+
+    const totalRegistros = ipsFiltradas.length;
+    const totalPaginas = Math.ceil(totalRegistros / registrosPorPaginaIps) || 1;
+    if (paginaActualIps > totalPaginas) paginaActualIps = totalPaginas;
+
+    const inicio = (paginaActualIps - 1) * registrosPorPaginaIps;
+    const fin = Math.min(inicio + registrosPorPaginaIps, totalRegistros);
+    const paginaIps = ipsFiltradas.slice(inicio, fin);
+
+    let html = "";
+    paginaIps.forEach((item, index) => {
+        const consecutivo = inicio + index + 1;
+        const horaTexto = item.fecha_bloqueo ? new Date(item.fecha_bloqueo).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '--';
+        const minutos = Math.floor(item.segundos_restantes / 60);
+        const segundos = item.segundos_restantes % 60;
+        const tiempoFormateado = `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
+
+        html += `
+            <tr id="fila-ip-${item.ip.replace(/[^a-zA-Z0-9_-]/g, '_')}" class="fila-incidente-hover" style="border-bottom: 1px solid var(--borde);">
+                <td class="celda-consecutivo" style="text-align: center; font-weight: 700; color: var(--texto-suave); font-size: 0.8rem;">
+                    ${consecutivo}
+                </td>
+                <td>
+                    <span class="badge-ip-address">
+                        <code>${item.ip}</code>
+                    </span>
+                </td>
+                <td style="font-size: 0.82rem; color: var(--texto);">
+                    ${item.motivo || 'Exceso de intentos de inicio de sesión'}
+                    <div style="font-size: 0.72rem; color: var(--texto-suave); margin-top: 2px;">
+                        ${item.intentos} intentos registrados
+                    </div>
+                </td>
+                <td style="text-align: center; font-size: 0.8rem; color: var(--texto-suave);">
+                    ${horaTexto}
+                </td>
+                <td style="text-align: center;">
+                    <span class="badge-tiempo-ip" id="tiempo-ip-${item.ip.replace(/[^a-zA-Z0-9_-]/g, '_')}">
+                        <span class="contador-segundos">${tiempoFormateado}</span>
+                    </span>
+                </td>
+                <td class="celda-acciones celda-centrada" style="text-align: center;">
+                    <div class="acciones-iconos-wrap">
+                        <button type="button" class="btn-icon-usr btn-desbloquear-ip" onclick="solicitarDesbloqueoIp('${item.ip}')" title="Desbloquear dirección IP ${item.ip}" aria-label="Desbloquear dirección IP ${item.ip}">
+                            <i class="bi bi-lock-fill" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+
+    if (infoPag) infoPag.innerText = `Mostrando ${inicio + 1} a ${fin} de ${totalRegistros} IPs`;
+    if (labelPag) labelPag.innerText = `Página ${paginaActualIps} de ${totalPaginas}`;
+    if (btnAnt) btnAnt.disabled = paginaActualIps <= 1;
+    if (btnSig) btnSig.disabled = paginaActualIps >= totalPaginas;
+}
+
+// Event Listeners para Paginación y Filtros de IPs
+document.getElementById("btnPagAntIps")?.addEventListener("click", () => {
+    if (paginaActualIps > 1) {
+        paginaActualIps--;
+        renderizarTablaIps();
+    }
+});
+
+document.getElementById("btnPagSigIps")?.addEventListener("click", () => {
+    const totalPaginas = Math.ceil(ipsFiltradas.length / registrosPorPaginaIps) || 1;
+    if (paginaActualIps < totalPaginas) {
+        paginaActualIps++;
+        renderizarTablaIps();
+    }
+});
+
+document.getElementById("buscarIpInput")?.addEventListener("input", aplicarFiltrosIps);
+document.getElementById("btnResetFiltrosIps")?.addEventListener("click", () => {
+    const input = document.getElementById("buscarIpInput");
+    if (input) input.value = "";
+    aplicarFiltrosIps();
+});
+
+function iniciarTemporizadorIps() {
+    if (intervaloConteoIps) clearInterval(intervaloConteoIps);
+
+    intervaloConteoIps = setInterval(() => {
+        if (allIps.length === 0) {
+            clearInterval(intervaloConteoIps);
+            return;
+        }
+
+        let huboCambios = false;
+
+        allIps.forEach((item) => {
+            if (item.segundos_restantes > 0) {
+                item.segundos_restantes--;
+                const min = Math.floor(item.segundos_restantes / 60);
+                const seg = item.segundos_restantes % 60;
+                const txt = `${String(min).padStart(2, '0')}:${String(seg).padStart(2, '0')}`;
+                const elem = document.querySelector(`#tiempo-ip-${item.ip.replace(/[^a-zA-Z0-9_-]/g, '_')} .contador-segundos`);
+                if (elem) elem.innerText = txt;
+            } else {
+                huboCambios = true;
+            }
+        });
+
+        if (huboCambios) {
+            allIps = allIps.filter(item => item.segundos_restantes > 0);
+            const kpiActivas = document.getElementById("kpiIpsActivas");
+            if (kpiActivas) kpiActivas.innerText = allIps.length;
+            aplicarFiltrosIps();
+        }
+    }, 1000);
+}
+
+let ipPendienteDesbloqueo = null;
+
+/**
+ * Muestra ventana emergente intuitiva y estructurada (sin alertas nativas y sin iconos)
+ * con colores armónicos y sobrios acordes a la paleta institucional
+ */
+function solicitarDesbloqueoIp(ip) {
+    if (!ip) return;
+    ipPendienteDesbloqueo = ip;
+
+    const modal = document.getElementById("modalConfirmarDesbloqueoIp");
+    const titulo = document.getElementById("tituloConfirmarDesbloqueoIp");
+    const mensaje = document.getElementById("mensajeConfirmarDesbloqueoIp");
+
+    if (titulo) titulo.innerText = "Desbloquear dirección IP";
+    if (mensaje) {
+        mensaje.innerHTML = `
+            <p style="margin: 0 0 14px 0; color: var(--texto); font-size: 0.9rem; line-height: 1.45;">
+                ¿Deseas desbloquear de inmediato el acceso para la dirección IP <span class="badge-ip-address" style="margin-left: 4px;"><code>${ip}</code></span>?
+            </p>
+            <div class="modal-info-card-suave">
+                <div style="font-weight: 700; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.05em; margin-bottom: 5px; color: var(--texto);">Restablecimiento inmediato</div>
+                Esta acción eliminará la restricción de seguridad antes de los 15 minutos estándar y permitirá nuevos intentos de autenticación desde este equipo o red.
+            </div>
+        `;
+    }
+
+    if (modal) modal.style.display = "flex";
+}
+
+function cerrarModalDesbloqueoIp() {
+    ipPendienteDesbloqueo = null;
+    const modal = document.getElementById("modalConfirmarDesbloqueoIp");
+    if (modal) modal.style.display = "none";
+}
+
+document.getElementById("btnConfirmarDesbloqueoIp")?.addEventListener("click", async () => {
+    if (!ipPendienteDesbloqueo) return;
+    const ip = ipPendienteDesbloqueo;
+    cerrarModalDesbloqueoIp();
+    await ejecutarDesbloqueoIp(ip);
+});
+
+document.getElementById("modalConfirmarDesbloqueoIp")?.addEventListener("click", (e) => {
+    if (e.target.id === "modalConfirmarDesbloqueoIp") {
+        cerrarModalDesbloqueoIp();
+    }
+});
+
+async function ejecutarDesbloqueoIp(ip) {
+    try {
+        const res = await fetch(`/api/seguridad/ips/${encodeURIComponent(ip)}/desbloquear`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" }
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            mostrarToast(data.mensaje || `Dirección IP ${ip} desbloqueada exitosamente`, "exito");
+            allIps = allIps.filter(item => item.ip !== ip);
+            const kpiActivas = document.getElementById("kpiIpsActivas");
+            if (kpiActivas) kpiActivas.innerText = allIps.length;
+            aplicarFiltrosIps();
+        } else {
+            mostrarToast(data.mensaje || "Error al desbloquear IP", "error");
+        }
+    } catch (err) {
+        console.error("Error al desbloquear IP:", err);
+        mostrarToast("Error de conexión al desbloquear IP", "error");
+    }
+}
+
+// ── SINCRONIZACIÓN EN TIEMPO REAL DE SEGURIDAD IP (SIN RECARGAR LA PÁGINA) ──
+
+window.addEventListener("sigi:ip_bloqueada", (e) => {
+    const item = e.detail;
+    if (!item || !item.ip) return;
+
+    const index = allIps.findIndex(x => x.ip === item.ip);
+    if (index >= 0) {
+        allIps[index] = { ...allIps[index], ...item };
+    } else {
+        allIps.unshift(item);
+    }
+
+    const kpiActivas = document.getElementById("kpiIpsActivas");
+    const kpiHistorico = document.getElementById("kpiIpsHistorico");
+    if (kpiActivas) kpiActivas.innerText = allIps.length;
+    if (kpiHistorico) {
+        const actual = parseInt(kpiHistorico.innerText) || 0;
+        kpiHistorico.innerText = actual + 1;
+    }
+
+    aplicarFiltrosIps();
+    iniciarTemporizadorIps();
+});
+
+window.addEventListener("sigi:ip_desbloqueada", (e) => {
+    const data = e.detail;
+    if (!data || !data.ip) return;
+    allIps = allIps.filter(x => x.ip !== data.ip);
+    const kpiActivas = document.getElementById("kpiIpsActivas");
+    if (kpiActivas) kpiActivas.innerText = allIps.length;
+    aplicarFiltrosIps();
+});
+
+/**
+ * Consulta periódica silenciosa en segundo plano (cada 4 segundos)
+ * Mantiene la tabla de IPs bloqueadas actualizada automáticamente sin intervención del usuario
+ */
+async function sincronizarIpsSilencioso() {
+    const sec = document.getElementById("secSeguridadIps");
+    if (!sec || sec.style.display === "none" || document.hidden) return;
+
+    try {
+        const res = await fetch("/api/seguridad/ips-bloqueadas");
+        if (!res.ok) return;
+        const data = await res.json();
+        const nuevasIps = Array.isArray(data.ips) ? data.ips : [];
+
+        // Detectar si hay cambios en las IPs bloqueadas
+        const hayCambios = nuevasIps.length !== allIps.length ||
+            nuevasIps.some((n, idx) => !allIps[idx] || allIps[idx].ip !== n.ip || allIps[idx].intentos !== n.intentos);
+
+        if (hayCambios) {
+            allIps = nuevasIps;
+            const kpiActivas = document.getElementById("kpiIpsActivas");
+            const kpiHistorico = document.getElementById("kpiIpsHistorico");
+            if (kpiActivas) kpiActivas.innerText = data.estadisticas?.activas ?? allIps.length;
+            if (kpiHistorico) kpiHistorico.innerText = data.estadisticas?.totalHistorico ?? 0;
+            aplicarFiltrosIps();
+            iniciarTemporizadorIps();
+        }
+    } catch (e) {
+        // Silencioso
+    }
+}
+
+setInterval(sincronizarIpsSilencioso, 4000);
 
 
 

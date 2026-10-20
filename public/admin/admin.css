@@ -2771,33 +2771,7 @@ body.tema-claro select option:focus {
     box-shadow: var(--sombra-glow);
 }
 
-/* Toast */
-#contenedorToast {
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    z-index: 9999999;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
 
-.toastMensaje {
-    background: var(--rojo);
-    color: #fff;
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-size: 0.82rem;
-    box-shadow: var(--sombra);
-    opacity: 0;
-    transform: translateY(-12px);
-    transition: all 0.35s ease;
-}
-
-.toastMostrar {
-    opacity: 1;
-    transform: translateY(0);
-}
 
 /* ════════════════════════════════
    SECCIÓN VERIFICACIÓN DE DATOS
@@ -5310,10 +5284,17 @@ body.tema-claro .user-pagination-bar,
     border-top: none !important;
 }
 
+.paginacion-controles {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
 #infoPaginacionIncidentes,
 #infoPaginacionUsuarios,
 #infoPaginacionLogs,
-#infoPaginacionTipos {
+#infoPaginacionTipos,
+#infoPaginacionIps {
     font-size: 0.82rem;
     color: var(--texto-suave);
     font-weight: 500;
@@ -5323,17 +5304,20 @@ body.tema-claro #infoPaginacionIncidentes,
 body.tema-claro #infoPaginacionUsuarios,
 body.tema-claro #infoPaginacionLogs,
 body.tema-claro #infoPaginacionTipos,
+body.tema-claro #infoPaginacionIps,
 .tema-claro #infoPaginacionIncidentes,
 .tema-claro #infoPaginacionUsuarios,
 .tema-claro #infoPaginacionLogs,
-.tema-claro #infoPaginacionTipos {
+.tema-claro #infoPaginacionTipos,
+.tema-claro #infoPaginacionIps {
     color: #526176 !important;
 }
 
 #labelPaginaIncidente,
 #labelPaginaUsuario,
 #labelPaginaLog,
-#labelPaginaTipos {
+#labelPaginaTipos,
+#labelPaginaIps {
     font-size: 0.82rem;
     color: var(--texto);
     font-weight: 600;
@@ -5344,10 +5328,12 @@ body.tema-claro #labelPaginaIncidente,
 body.tema-claro #labelPaginaUsuario,
 body.tema-claro #labelPaginaLog,
 body.tema-claro #labelPaginaTipos,
+body.tema-claro #labelPaginaIps,
 .tema-claro #labelPaginaIncidente,
 .tema-claro #labelPaginaUsuario,
 .tema-claro #labelPaginaLog,
-.tema-claro #labelPaginaTipos {
+.tema-claro #labelPaginaTipos,
+.tema-claro #labelPaginaIps {
     color: #172033 !important;
 }
 
@@ -5360,6 +5346,8 @@ body.tema-claro #labelPaginaTipos,
 #btnPagSigLog,
 #btnPagAntTipos,
 #btnPagSigTipos,
+#btnPagAntIps,
+#btnPagSigIps,
 .btn-pag-incidente {
     padding: 6px 14px;
     background: rgba(255, 255, 255, 0.05);
@@ -5381,6 +5369,10 @@ body.tema-claro #labelPaginaTipos,
 #btnPagSigUsuario:hover:not(:disabled),
 #btnPagAntLog:hover:not(:disabled),
 #btnPagSigLog:hover:not(:disabled),
+#btnPagAntTipos:hover:not(:disabled),
+#btnPagSigTipos:hover:not(:disabled),
+#btnPagAntIps:hover:not(:disabled),
+#btnPagSigIps:hover:not(:disabled),
 .btn-pag-incidente:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.12);
     border-color: rgba(255, 255, 255, 0.25);
@@ -5393,6 +5385,10 @@ body.tema-claro #labelPaginaTipos,
 #btnPagSigUsuario:disabled,
 #btnPagAntLog:disabled,
 #btnPagSigLog:disabled,
+#btnPagAntTipos:disabled,
+#btnPagSigTipos:disabled,
+#btnPagAntIps:disabled,
+#btnPagSigIps:disabled,
 .btn-pag-incidente:disabled {
     background: rgba(255, 255, 255, 0.03) !important;
     border-color: rgba(255, 255, 255, 0.08) !important;
@@ -5408,6 +5404,10 @@ body.tema-claro #btnPagAntUsuario,
 body.tema-claro #btnPagSigUsuario,
 body.tema-claro #btnPagAntLog,
 body.tema-claro #btnPagSigLog,
+body.tema-claro #btnPagAntTipos,
+body.tema-claro #btnPagSigTipos,
+body.tema-claro #btnPagAntIps,
+body.tema-claro #btnPagSigIps,
 body.tema-claro .btn-pag-incidente,
 .tema-claro #btnPagAntIncidente,
 .tema-claro #btnPagSigIncidente,
@@ -5415,6 +5415,10 @@ body.tema-claro .btn-pag-incidente,
 .tema-claro #btnPagSigUsuario,
 .tema-claro #btnPagAntLog,
 .tema-claro #btnPagSigLog,
+.tema-claro #btnPagAntTipos,
+.tema-claro #btnPagSigTipos,
+.tema-claro #btnPagAntIps,
+.tema-claro #btnPagSigIps,
 .tema-claro .btn-pag-incidente {
     background: #FFFFFF;
     border: 1px solid #cbd5e1;
@@ -5427,6 +5431,10 @@ body.tema-claro #btnPagAntUsuario:hover:not(:disabled),
 body.tema-claro #btnPagSigUsuario:hover:not(:disabled),
 body.tema-claro #btnPagAntLog:hover:not(:disabled),
 body.tema-claro #btnPagSigLog:hover:not(:disabled),
+body.tema-claro #btnPagAntTipos:hover:not(:disabled),
+body.tema-claro #btnPagSigTipos:hover:not(:disabled),
+body.tema-claro #btnPagAntIps:hover:not(:disabled),
+body.tema-claro #btnPagSigIps:hover:not(:disabled),
 body.tema-claro .btn-pag-incidente:hover:not(:disabled),
 .tema-claro #btnPagAntIncidente:hover:not(:disabled),
 .tema-claro #btnPagSigIncidente:hover:not(:disabled),
@@ -5434,6 +5442,10 @@ body.tema-claro .btn-pag-incidente:hover:not(:disabled),
 .tema-claro #btnPagSigUsuario:hover:not(:disabled),
 .tema-claro #btnPagAntLog:hover:not(:disabled),
 .tema-claro #btnPagSigLog:hover:not(:disabled),
+.tema-claro #btnPagAntTipos:hover:not(:disabled),
+.tema-claro #btnPagSigTipos:hover:not(:disabled),
+.tema-claro #btnPagAntIps:hover:not(:disabled),
+.tema-claro #btnPagSigIps:hover:not(:disabled),
 .tema-claro .btn-pag-incidente:hover:not(:disabled) {
     background: #0f172a;
     border-color: #0f172a;
@@ -5446,6 +5458,10 @@ body.tema-claro #btnPagAntUsuario:disabled,
 body.tema-claro #btnPagSigUsuario:disabled,
 body.tema-claro #btnPagAntLog:disabled,
 body.tema-claro #btnPagSigLog:disabled,
+body.tema-claro #btnPagAntTipos:disabled,
+body.tema-claro #btnPagSigTipos:disabled,
+body.tema-claro #btnPagAntIps:disabled,
+body.tema-claro #btnPagSigIps:disabled,
 body.tema-claro .btn-pag-incidente:disabled,
 .tema-claro #btnPagAntIncidente:disabled,
 .tema-claro #btnPagSigIncidente:disabled,
@@ -5453,11 +5469,14 @@ body.tema-claro .btn-pag-incidente:disabled,
 .tema-claro #btnPagSigUsuario:disabled,
 .tema-claro #btnPagAntLog:disabled,
 .tema-claro #btnPagSigLog:disabled,
+.tema-claro #btnPagAntTipos:disabled,
+.tema-claro #btnPagSigTipos:disabled,
+.tema-claro #btnPagAntIps:disabled,
+.tema-claro #btnPagSigIps:disabled,
 .tema-claro .btn-pag-incidente:disabled {
     background: #F5F7FA !important;
     border-color: #DCE3EC !important;
     color: #9AA5B5 !important;
-}
 }
 
 /* ════════════════════════════════════════════════════════
@@ -5899,13 +5918,13 @@ body.tema-claro .btn-pag-incidente:disabled,
 }
 
 /* --------------------------
-   SISTEMA DE TOASTS
+   SISTEMA DE TOASTS INSTITUCIONAL
 ---------------------------*/
 #contenedorToast {
     position: fixed;
-    top: 24px;
+    top: 72px;
     right: 24px;
-    z-index: 9999999;
+    z-index: 99999999 !important;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -5914,24 +5933,24 @@ body.tema-claro .btn-pag-incidente:disabled,
 
 .toast {
     pointer-events: auto;
-    min-width: 280px;
-    max-width: 420px;
-    background: #111827;
-    color: #f3f4f6;
-    padding: 14px 20px;
-    border-radius: 12px;
-    border: none !important;
-    outline: none !important;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+    min-width: 260px;
+    max-width: 440px;
+    background: #16171b;
+    color: #f4f4f5;
+    padding: 12px 18px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.04);
     display: flex;
     align-items: center;
-    gap: 14px;
-    font-size: 0.9rem;
+    gap: 12px;
+    font-size: 0.86rem;
     font-weight: 500;
     line-height: 1.4;
-    transform: translateX(110%) scale(0.95);
+    word-break: break-word;
+    transform: translateX(110%) scale(0.96);
     opacity: 0;
-    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
 }
 
 .toast.mostrar {
@@ -5939,40 +5958,109 @@ body.tema-claro .btn-pag-incidente:disabled,
     opacity: 1;
 }
 
+@media (max-width: 820px) {
+    #contenedorToast {
+        top: calc(48px + env(safe-area-inset-top, 0px) + 14px);
+        right: 14px;
+        left: 14px;
+        align-items: center;
+        max-width: calc(100vw - 28px);
+    }
+
+    .toast {
+        width: 100%;
+        max-width: 380px;
+        box-sizing: border-box;
+        transform: translateY(-16px) scale(0.96);
+    }
+
+    .toast.mostrar {
+        transform: translateY(0) scale(1);
+    }
+}
+
 .toast i {
-    font-size: 1.35rem;
+    font-size: 1.15rem;
     flex-shrink: 0;
 }
 
-/* Variantes con fondo distinguible, limpio y sin bordes */
-.toast.exito {
-    background: #10b981;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: #ffffff;
-    border: none !important;
-    outline: none !important;
-    box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.35), 0 8px 10px -6px rgba(16, 185, 129, 0.2);
+/* Variantes con fondo distinguible acorde a la paleta ejecutiva SIGI */
+.toast.exito,
+.toast.success {
+    background: #141b18;
+    color: #f4f4f5;
+    border: 1px solid rgba(16, 185, 129, 0.35) !important;
+    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.55), 0 0 18px rgba(16, 185, 129, 0.12);
 }
-.toast.exito i {
-    color: #ffffff;
-    font-size: 1.25rem;
+.toast.exito i,
+.toast.success i {
+    color: #34d399;
 }
 
 .toast.error {
-    background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
-    color: #fef2f2;
+    background: #1c1517;
+    color: #f4f4f5;
+    border: 1px solid rgba(239, 68, 68, 0.35) !important;
+    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.55), 0 0 18px rgba(239, 68, 68, 0.12);
 }
 .toast.error i {
     color: #f87171;
 }
 
-.toast.info {
-    background: linear-gradient(135deg, #27272a 0%, #18181b 100%);
+.toast.advertencia {
+    background: #1c1a14;
     color: #f4f4f5;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.35) !important;
+    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.55), 0 0 18px rgba(245, 158, 11, 0.12);
+}
+.toast.advertencia i {
+    color: #fbbf24;
+}
+
+.toast.info {
+    background: #16171b;
+    color: #f4f4f5;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.55);
 }
 .toast.info i {
     color: #e4e4e7;
+}
+
+body.tema-claro .toast {
+    background: #ffffff;
+    color: #0f172a;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+}
+
+body.tema-claro .toast.exito,
+body.tema-claro .toast.success {
+    background: #f0fdf4;
+    border-color: #86efac !important;
+    color: #14532d;
+}
+body.tema-claro .toast.exito i,
+body.tema-claro .toast.success i {
+    color: #16a34a;
+}
+
+body.tema-claro .toast.error {
+    background: #fef2f2;
+    border-color: #fca5a5 !important;
+    color: #7f1d1d;
+}
+body.tema-claro .toast.error i {
+    color: #dc2626;
+}
+
+body.tema-claro .toast.advertencia {
+    background: #fffbeb;
+    border-color: #fde68a !important;
+    color: #78350f;
+}
+body.tema-claro .toast.advertencia i {
+    color: #d97706;
 }
 
 /* ============================================================
@@ -6649,24 +6737,59 @@ body.tema-claro .contFormulario::-webkit-scrollbar-thumb:hover {
 }
 
 /* Paleta de colores sugeridos en modal tipo incidente */
+.btn-tono-chip {
+    background: transparent;
+    border: 1px solid var(--borde);
+    color: var(--texto-suave);
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.btn-tono-chip:hover {
+    color: var(--texto);
+    border-color: var(--texto-suave);
+}
+.btn-tono-chip.activo {
+    background: #06b6d4;
+    color: #ffffff;
+    border-color: #06b6d4;
+}
+
 .chip-color-sugerido {
     width: 22px;
     height: 22px;
-    border-radius: 50%;
+    border-radius: 6px;
     cursor: pointer;
-    border: 2px solid transparent;
+    border: 2px solid rgba(255, 255, 255, 0.12);
     transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
     display: inline-block;
+    position: relative;
+    box-sizing: border-box;
 }
 .chip-color-sugerido:hover {
-    transform: scale(1.2);
+    transform: scale(1.22);
     border-color: #ffffff;
-    box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+    z-index: 5;
 }
 .chip-color-sugerido.activo {
     border-color: #ffffff;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 0 2px #06b6d4, 0 0 10px rgba(6, 182, 212, 0.7);
     transform: scale(1.15);
+    z-index: 6;
+}
+.chip-color-sugerido.en-uso {
+    opacity: 0.38;
+    filter: grayscale(40%);
+    cursor: not-allowed;
+    border-style: dashed;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+.chip-color-sugerido.conflicto {
+    box-shadow: inset 0 0 0 1px #ef4444;
 }
 
 /* ════════════════════════════════════════════════════════
@@ -7257,61 +7380,172 @@ body.tema-claro .modal-alerta-box.alerta-error {
     color: #dc2626 !important;
 }
 
-/* Botón de detalle de auditoría en la tabla */
-.btn-view-log {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 6px !important;
-    font-size: 0.76rem !important;
+/* Botón de detalle de auditoría en la tabla (Unificado con el diseño de iconos de tablas) */
+.btn-icon-usr.btn-view-log:hover {
+    background: rgba(56, 189, 248, 0.16) !important;
+    border-color: rgba(56, 189, 248, 0.45) !important;
+    color: #38bdf8 !important;
+    box-shadow: 0 2px 10px rgba(56, 189, 248, 0.25) !important;
 }
 
-.btn-view-log i {
-    font-size: 0.85rem !important;
+body.tema-claro .btn-icon-usr.btn-view-log:hover {
+    background: #f0f9ff !important;
+    border-color: #38bdf8 !important;
+    color: #0284c7 !important;
+}
+
+.input-readonly {
+    cursor: not-allowed !important;
+    user-select: none;
+    background: rgba(255, 255, 255, 0.04) !important;
+}
+
+body.tema-claro .input-readonly {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
 }
 
 /* ════════════════════════════════════════════════════════════════
-   6. MODAL VISOR DE INFORME EJECUTIVO EN PDF
+   6. MODAL VISOR DE INFORME EJECUTIVO EN PDF (MINIMALISTA Y ERGONÓMICO)
    ════════════════════════════════════════════════════════════════ */
 .modal-pdf-card {
-    max-width: 920px !important;
+    max-width: 1100px !important;
     width: 95vw !important;
-    height: 88vh !important;
-    max-height: 90vh !important;
+    height: 90vh !important;
+    max-height: 92vh !important;
     display: flex !important;
     flex-direction: column !important;
-    padding: 22px 24px !important;
+    padding: 22px 26px !important;
+    border: 1px solid var(--borde) !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45) !important;
+}
+
+.modal-pdf-header-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--borde);
+    flex-wrap: wrap;
+    flex-shrink: 0;
+}
+
+.modal-pdf-subinfo {
+    font-size: 0.78rem;
+    color: var(--texto-suave);
+    margin: 4px 0 0 0;
+    line-height: 1.35;
+}
+
+.modal-pdf-acciones-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-pdf-modal-secundario {
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--texto);
+    background: transparent;
+    border: 1px solid var(--borde);
+    text-decoration: none;
+    transition: all 0.18s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-pdf-modal-secundario:hover {
+    background: var(--bg-hover);
+    border-color: var(--borde-acento);
+    color: var(--texto);
+}
+
+.btn-pdf-modal-primario {
+    padding: 7px 18px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #ffffff;
+    background: #0284c7;
+    border: 1px solid #0284c7;
+    text-decoration: none;
+    transition: all 0.18s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-pdf-modal-primario:hover {
+    background: #0369a1;
+    border-color: #0369a1;
+    color: #ffffff;
+    box-shadow: 0 2px 10px rgba(2, 132, 199, 0.3);
 }
 
 .visor-pdf-marco {
-    flex: 1 !important;
+    flex: 1 1 auto !important;
     width: 100% !important;
+    height: 100% !important;
+    min-height: 520px !important;
+    display: flex !important;
     border-radius: 10px !important;
     overflow: hidden !important;
     border: 1px solid var(--borde) !important;
-    background: #0b0f19 !important;
+    background: #525659 !important;
     position: relative !important;
-    min-height: 340px !important;
-    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+    box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.25) !important;
+}
+
+.visor-pdf-marco iframe,
+#iframeVisorPDF {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 520px !important;
+    flex: 1 1 auto !important;
+    border: none !important;
+    display: block !important;
+    background: #ffffff !important;
 }
 
 body.tema-claro .visor-pdf-marco {
     background: #f8fafc !important;
     border-color: #cbd5e1 !important;
-    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+    box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.05) !important;
 }
 
 .visor-pdf-loader {
     position: absolute;
     inset: 0;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 10px;
     color: var(--texto-suave);
-    font-size: 0.88rem;
+    font-size: 0.84rem;
     background: var(--bg-card);
     z-index: 10;
     font-weight: 500;
+}
+
+.visor-pdf-spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(148, 163, 184, 0.25);
+    border-top-color: #38bdf8;
+    border-radius: 50%;
+    animation: giroVisorPDF 0.85s linear infinite;
+}
+
+@keyframes giroVisorPDF {
+    to { transform: rotate(360deg); }
 }
 
 .visor-pdf-loader.oculto,
@@ -7327,5 +7561,132 @@ body.tema-claro .visor-pdf-marco {
         padding: 16px 14px !important;
         height: 92vh !important;
     }
+}
+
+/* ════════════════════════════════════════════════════════
+   GESTIÓN DE SEGURIDAD DE RED Y DIRECCIONES IP (SUPERADMIN)
+   ════════════════════════════════════════════════════════ */
+.phtu-buscador-wrapper.sin-icono .phtu-input-buscar {
+    padding-left: 14px !important;
+}
+
+.badge-ip-address {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(239, 68, 68, 0.08);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+body.tema-claro .badge-ip-address {
+    background: #fef2f2;
+    color: #b91c1c;
+    border-color: #fecaca;
+}
+
+.badge-tiempo-ip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    font-family: monospace;
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+body.tema-claro .badge-tiempo-ip {
+    background: #fffbeb;
+    color: #b45309;
+    border-color: #fde68a;
+}
+
+/* Botón de desbloqueo de IP unificado con el estilo de iconos de tablas */
+.btn-icon-usr.btn-desbloquear-ip:hover {
+    background: rgba(56, 189, 248, 0.16);
+    border-color: rgba(56, 189, 248, 0.45);
+    color: #38bdf8;
+    box-shadow: 0 2px 10px rgba(56, 189, 248, 0.25);
+}
+
+body.tema-claro .btn-icon-usr.btn-desbloquear-ip:hover {
+    background: #f0f9ff;
+    border-color: #38bdf8;
+    color: #0284c7;
+}
+
+/* Iconos de acciones unificados en la tabla de incidentes (Admin) */
+.btn-icon-usr.btn-detalle-incidente:hover {
+    background: rgba(56, 189, 248, 0.16);
+    border-color: rgba(56, 189, 248, 0.45);
+    color: #38bdf8;
+    box-shadow: 0 2px 10px rgba(56, 189, 248, 0.25);
+}
+
+.btn-icon-usr.btn-tomar-incidente:hover {
+    background: rgba(16, 185, 129, 0.16);
+    border-color: rgba(16, 185, 129, 0.45);
+    color: #34d399;
+    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.25);
+}
+
+/* ════════════════════════════════════════════════════════
+   MODAL CONFIRMACIÓN DESBLOQUEO IP (PALETA EJECUTIVA SIGI)
+   ════════════════════════════════════════════════════════ */
+.modal-info-card-suave {
+    margin-top: 14px;
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+    font-size: 0.82rem;
+    color: var(--texto-suave);
+    line-height: 1.5;
+    text-align: left;
+}
+
+body.tema-claro .modal-info-card-suave {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+    color: #475569;
+}
+
+.btn-modal-confirmar-ip {
+    padding: 8px 22px;
+    background: var(--texto);
+    color: var(--bg-body, #0e0f12);
+    border: 1px solid var(--texto);
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-modal-confirmar-ip:hover {
+    background: #e4e4e7;
+    border-color: #e4e4e7;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15);
+}
+
+body.tema-claro .btn-modal-confirmar-ip {
+    background: #0f172a;
+    color: #ffffff;
+    border-color: #0f172a;
+}
+
+body.tema-claro .btn-modal-confirmar-ip:hover {
+    background: #1e293b;
+    border-color: #1e293b;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
 }
 

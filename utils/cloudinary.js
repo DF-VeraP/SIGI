@@ -60,8 +60,15 @@ async function subirImagenCloudinary(fileBuffer, codigoIncidente, originalName =
  * Guardado local de respaldo si no hay credenciales de Cloudinary
  */
 async function guardarLocalFallback(fileBuffer, codigoIncidente, originalName) {
-  const ext = path.extname(originalName) || '.jpg';
-  const nombreArchivo = `${codigoIncidente || 'INC_' + Date.now()}${ext}`;
+  const extensionesPermitidas = ['.jpg', '.jpeg', '.png', '.webp'];
+  let ext = (path.extname(originalName) || '.jpg').toLowerCase();
+  if (!extensionesPermitidas.includes(ext)) {
+    ext = '.jpg';
+  }
+
+  // Prevenir path traversal saneando el identificador del incidente
+  const safeCodigo = String(codigoIncidente || 'INC_' + Date.now()).replace(/[^a-zA-Z0-9_-]/g, '_');
+  const nombreArchivo = `${safeCodigo}${ext}`;
   const carpetaUploads = path.join(__dirname, '..', 'public', 'uploads', 'incidentes');
 
   if (!fs.existsSync(carpetaUploads)) {
@@ -85,13 +92,17 @@ async function guardarLocalFallback(fileBuffer, codigoIncidente, originalName) {
 async function eliminarImagenCloudinary(imagenUrl) {
   if (!imagenUrl) return true;
 
-  // Si es imagen local (fallback), eliminar del disco
+  // Si es imagen local (fallback), eliminar del disco con validación de ruta segura
   if (!imagenUrl.includes('cloudinary.com')) {
     try {
-      const rutaLocal = path.join(__dirname, '..', 'public', imagenUrl.replace(/^\//, ''));
-      if (fs.existsSync(rutaLocal)) {
+      const carpetaBase = path.resolve(__dirname, '..', 'public', 'uploads', 'incidentes');
+      const nombreLimpio = path.basename(imagenUrl);
+      const rutaLocal = path.join(carpetaBase, nombreLimpio);
+
+      // Verificar que la ruta resuelta esté estrictamente contenida en la carpeta de uploads
+      if (rutaLocal.startsWith(carpetaBase) && fs.existsSync(rutaLocal)) {
         fs.unlinkSync(rutaLocal);
-        console.log('🗑️ Imagen local eliminada:', rutaLocal);
+        console.log('🗑️ Imagen local eliminada de forma segura:', rutaLocal);
       }
       return true;
     } catch (e) {

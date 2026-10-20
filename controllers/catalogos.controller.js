@@ -54,6 +54,31 @@ function calcularDistanciaColor(hex1, hex2) {
 }
 
 /**
+ * Clasifica si un color es tono claro, medio u oscuro según su luminosidad relativa (0 a 255)
+ */
+function clasificarTonoColor(hex) {
+  const rgb = hexToRgb(hex);
+  const luminancia = 0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b;
+  if (luminancia >= 145) return 'claro';
+  if (luminancia <= 75) return 'oscuro';
+  return 'medio';
+}
+
+/**
+ * Compara dos colores para determinar si uno es una variación más clara, más oscura o idéntica
+ */
+function compararRelacionTono(hex1, hex2) {
+  const rgb1 = hexToRgb(hex1);
+  const rgb2 = hexToRgb(hex2);
+  const lum1 = 0.299 * rgb1.r + 0.587 * rgb1.g + 0.114 * rgb1.b;
+  const lum2 = 0.299 * rgb2.r + 0.587 * rgb2.g + 0.114 * rgb2.b;
+  const diff = lum1 - lum2;
+  if (diff > 12) return 'una variante más clara casi idéntica';
+  if (diff < -12) return 'una variante más oscura casi idéntica';
+  return 'visualmente casi idéntico';
+}
+
+/**
  * Valida los parámetros del tipo de incidente para evitar redundancia y colisión de colores
  */
 async function validarTipoIncidente(datos, idActual = null) {
@@ -99,7 +124,8 @@ async function validarTipoIncidente(datos, idActual = null) {
     if (t.activo && t.color) {
       const dist = calcularDistanciaColor(colorNormalizado, t.color.toLowerCase());
       if (dist < 85) {
-        throw new Error(`El color elegido (${color.toUpperCase()}) es visualmente casi idéntico al del tipo existente "${t.nametipoincidente}" (${t.color.toUpperCase()}). Seleccione un tono con mayor contraste para que no se confundan los puntos en el mapa cartográfico.`);
+        const relacionTono = compararRelacionTono(colorNormalizado, t.color.toLowerCase());
+        throw new Error(`El color elegido (${color.toUpperCase()}) es ${relacionTono} al del tipo existente "${t.nametipoincidente}" (${t.color.toUpperCase()}). Seleccione un tono con mayor contraste para que no se confundan los puntos en el mapa cartográfico.`);
       }
     }
   }
@@ -299,5 +325,7 @@ module.exports = {
   cambiarEstadoTipo,
   eliminarTipo,
   calcularDistanciaColor,
+  clasificarTonoColor,
+  compararRelacionTono,
   normalizarTexto
 };

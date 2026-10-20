@@ -38,15 +38,21 @@ if (process.env.NODE_ENV !== 'test') {
   }
 }
 
+const isProd = process.env.NODE_ENV === 'production';
+const sessionSecret = process.env.SESSION_SECRET || (isProd 
+  ? (() => { throw new Error('FATAL: SESSION_SECRET debe estar configurado en entorno de producción'); })() 
+  : "sigi_session_dev_secret_key_8f7b2c9e1a");
+
 app.use(session({
   store: sessionStore,
-  secret: process.env.SESSION_SECRET || "mi_secreto_super_seguro",
+  secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
   cookie: {
     maxAge: 40 * 60 * 1000, // 40 minutos de inactividad
     httpOnly: true,
-    sameSite: 'lax'
+    sameSite: 'lax',
+    secure: isProd
   },
   rolling: true // Renueva automáticamente la sesión en cada petición
 }));
@@ -63,13 +69,21 @@ app.get("/", (req, res) => {
   res.redirect("/dashboard/index.html");
 });
 
+// Endpoint de diagnóstico seguro (solo desarrollo/pruebas o superadmin autenticado)
 app.get("/test-db", async (req, res) => {
+  const esSuperAdmin = req.session && req.session.rol === 'superadmin';
+  const esAmbienteSeguro = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
+
+  if (!esSuperAdmin && !esAmbienteSeguro) {
+    return res.status(403).json({ mensaje: "Acceso denegado a endpoint de diagnóstico 🚫" });
+  }
+
   try {
     const result = await pool.query("SELECT NOW()");
-    res.json(result.rows);
+    res.json({ estado: "Conectado", timestamp: result.rows[0].now });
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Error conectando a la base de datos");
+    console.error("Error en /test-db:", error.message);
+    res.status(500).json({ error: "Error conectando a la base de datos" });
   }
 });
 
@@ -84,6 +98,7 @@ app.use('/', require('./routes/catalogos.routes'));
 app.use('/', require('./routes/filtros.routes'));
 app.use('/', require('./routes/reportes.routes'));
 app.use('/', require('./routes/ml.routes'));
+app.use('/', require('./routes/seguridad.routes'));
 
 app.use(errorHandler);
 
@@ -91,8 +106,15 @@ const http = require("http");
 const { Server } = require("socket.io");
 
 const server = http.createServer(app);
+const allowedOrigins = process.env.APP_URL 
+  ? [process.env.APP_URL, "http://localhost:3000"] 
+  : "*";
+
 const io = new Server(server, {
-  cors: { origin: "*" }
+  cors: { 
+    origin: allowedOrigins,
+    methods: ["GET", "POST"]
+  }
 });
 
 // Guardar instancia de io accesible desde controladores mediante req.app.get('io')

@@ -42,9 +42,17 @@ document.addEventListener("DOMContentLoaded", () => {
     let rolPostLogin = "reportero";
 
     // ── 1. Funciones Auxiliares de Alertas ──
+    function limpiarEmojis(texto) {
+        if (typeof texto !== 'string') return '';
+        return texto
+            .replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{1F1E0}-\u{1F1FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{231A}-\u{23F3}]/gu, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
     function showAlert(message, type = "danger") {
         alertBox.className = `alert-box ${type}`;
-        alertText.textContent = message;
+        alertText.textContent = limpiarEmojis(message);
 
         if (type === "danger") {
             alertIcon.className = "bi bi-exclamation-triangle-fill";
@@ -63,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function showModalAlert(box, icon, textEl, message, type = "danger") {
         box.className = `alert-box ${type}`;
-        textEl.textContent = message;
+        textEl.textContent = limpiarEmojis(message);
         if (icon) {
             if (type === "danger") {
                 icon.className = "bi bi-exclamation-triangle-fill";

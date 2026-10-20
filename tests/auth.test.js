@@ -40,7 +40,7 @@ describe('Auth Controller', () => {
         .send({ usuario: 'admin', contrasenia: 'miPassword123' });
 
       expect(res.status).toBe(200);
-      expect(res.body.mensaje).toBe('Login correcto ✅');
+      expect(res.body.mensaje).toBe('Login correcto.');
       expect(pool.query).toHaveBeenCalledWith(
         'SELECT * FROM usuario WHERE nombreusuario = $1 OR email = $1',
         ['admin']
@@ -63,7 +63,7 @@ describe('Auth Controller', () => {
         .send({ usuario: 'admin', contrasenia: 'wrongPassword' });
 
       expect(res.status).toBe(401);
-      expect(res.body.mensaje).toBe('Usuario o contraseña incorrectos ❌');
+      expect(res.body.mensaje).toBe('Usuario o contraseña incorrectos.');
     });
 
     it('debería retornar 401 con usuario inexistente', async () => {
@@ -74,7 +74,7 @@ describe('Auth Controller', () => {
         .send({ usuario: 'noExiste', contrasenia: 'algo' });
 
       expect(res.status).toBe(401);
-      expect(res.body.mensaje).toBe('Usuario o contraseña incorrectos ❌');
+      expect(res.body.mensaje).toBe('Usuario o contraseña incorrectos.');
     });
 
     it('debería retornar 500 si la BD falla', async () => {

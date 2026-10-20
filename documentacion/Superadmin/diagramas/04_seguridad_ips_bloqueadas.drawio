@@ -1,0 +1,98 @@
+<mxfile host="app.diagrams.net" modified="2026-10-20T21:30:00.000Z" agent="SIGI-Architecture" version="22.0.0" type="device">
+  <diagram id="diag-superadmin-04" name="04_Seguridad_IPs_Bloqueadas">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Actor: Atacante / Usuario con Fallos -->
+        <mxCell id="act_attacker" value="Cliente / IP Externa" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="50" y="100" width="40" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Rate Limit Middleware -->
+        <mxCell id="box_ratelimit" value="Express Rate Limit&#xa;(loginLimiter)&#xa;Umbral: 5 intentos en 15 min&#xa;keyGenerator: gestorIps.normalizarIp()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="150" y="90" width="220" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_rl1" value="POST /login&#xa;(5 intentos fallidos)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="act_attacker" target="box_ratelimit">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Gestor en Memoria -->
+        <mxCell id="box_gestor" value="GestorIpsBloqueadas&#xa;(utils/gestorIps.js)&#xa;- Map&lt;ipNorm, InfoBloqueo&gt;&#xa;- Expiración automática (15 min)&#xa;- Temporizador reactivo&#xa;- Normalización IPv4 / IPv6" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="440" y="80" width="240" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_rl2" value="registrarBloqueo(rawIp)&#xa;HTTP 429 Bloqueo Temporal" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="box_ratelimit" target="box_gestor">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- WebSockets Broadcast -->
+        <mxCell id="box_ws" value="Servidor Socket.io&#xa;io.emit('ip_bloqueada', data)&#xa;io.emit('ip_desbloqueada', data)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="750" y="90" width="220" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_ws1" value="Emite evento en vivo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="box_gestor" target="box_ws">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Actor: Superadmin -->
+        <mxCell id="sup_act_ip" value="Superadmin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="50" y="380" width="40" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- UI Consola Superadmin Seguridad IP -->
+        <mxCell id="ui_seg_ip" value="Consola Seguridad IP (HU-SUP-11)&#xa;1. Tabla de IPs bloqueadas&#xa;2. Temporizador dinámico en vivo (MM:SS)&#xa;3. Botón candado cerrado (.btn-icon-usr)&#xa;4. Modal de confirmación sin emojis" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="150" y="355" width="250" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_sup1" value="Consulta y monitorea&#xa;suspensiones de red" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="sup_act_ip" target="ui_seg_ip">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_ws2" value="Actualiza tabla sin recargar página" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="box_ws" target="ui_seg_ip">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="860" y="320" />
+              <mxPoint x="320" y="320" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Controller Seguridad -->
+        <mxCell id="ctrl_seg" value="SeguridadController&#xa;(controllers/seguridad.controller.js)&#xa;1. obtenerIpsBloqueadas()&#xa;2. desbloquearIp()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="460" y="365" width="220" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_sup2" value="POST /api/seguridad/desbloquear-ip/:ip&#xa;+ Token CSRF" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ui_seg_ip" target="ctrl_seg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Desbloqueo y Purga en Rate Limit -->
+        <mxCell id="e_purge" value="Purga atómica de claves&#xa;127.0.0.1, ::1, ::/56, ::ffff:" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ctrl_seg" target="box_gestor">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Postgres DB Auditoría -->
+        <mxCell id="db_audit_ip" value="PostgreSQL&#xa;Tabla: auditoria_logs&#xa;Acción: DESBLOQUEAR_IP&#xa;Entidad: seguridad&#xa;Detalle: IP desbloqueada por Superadmin" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="760" y="340" width="230" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_audit" value="Asienta evento forense&#xa;inmutable" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ctrl_seg" target="db_audit_ip">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_ws_unblock" value="io.emit('ip_desbloqueada')" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="ctrl_seg" target="box_ws">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="570" y="260" />
+              <mxPoint x="830" y="260" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

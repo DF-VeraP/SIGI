@@ -10,8 +10,9 @@
 - **Programa:** Análisis y Desarrollo de Software (ADSO) - Ficha 3142784
 - **Autor:** Daniel Felipe Vera Perdomo
 - **Localización:** Florencia, Caquetá, Colombia
-- **Versión:** 2.0 (Actualización integral multi-rol, micro-servicios multimedia y persistencia espacial)
-- **Fecha de Emisión:** Septiembre 2026
+- **Despliegue Oficial en Producción:** [https://sigi.verapd.xyz](https://sigi.verapd.xyz)
+- **Versión:** 2.1 (Actualización integral con Arquitectura Limpia, Capa de Modelos, Machine Learning, WebSockets y PWA)
+- **Fecha de Emisión:** Octubre 2026
 - **Clasificación:** Documento Técnico Oficial
 
 ---
@@ -22,13 +23,13 @@
    1.1 [Propósito](#11-propósito)
    1.2 [Alcance de las Especificaciones](#12-alcance-de-las-especificaciones)
 2. [ARQUITECTURA GENERAL DEL SISTEMA](#2-arquitectura-general-del-sistema)
-   2.1 [Estilo Arquitectónico y Desacoplamiento (3-Tier)](#21-estilo-arquitectónico-y-desacoplamiento-3-tier)
+   2.1 [Estilo Arquitectónico y Desacoplamiento (Clean Architecture)](#21-estilo-arquitectónico-y-desacoplamiento-clean-architecture)
    2.2 [Topología de Despliegue Físico y Lógico](#22-topología-de-despliegue-físico-y-lógico)
    2.3 [Interacción de Componentes y Protocolos de Comunicación](#23-interacción-de-componentes-y-protocolos-de-comunicación)
 3. [STACK TECNOLÓGICO DETALLADO](#3-stack-tecnológico-detallado)
-   3.1 [Capa de Presentación (Frontend)](#31-capa-de-presentación-frontend)
-   3.2 [Capa de Lógica de Negocio y API (Backend)](#32-capa-de-lógica-de-negocio-y-api-backend)
-   3.3 [Capa de Datos Espaciales y Persistencia (Database)](#33-capa-de-datos-espaciales-y-persistencia-database)
+   3.1 [Capa de Presentación y PWA (Frontend)](#31-capa-de-presentación-y-pwa-frontend)
+   3.2 [Capa de Lógica de Negocio, Machine Learning y API (Backend)](#32-capa-de-lógica-de-negocio-machine-learning-y-api-backend)
+   3.3 [Capa de Modelos y Datos Espaciales (Database & ORM Layer)](#33-capa-de-modelos-y-datos-espaciales-database--orm-layer)
    3.4 [Servicios Externos y Cloud Integrados](#34-servicios-externos-y-cloud-integrados)
 4. [ESPECIFICACIONES DE INFRAESTRUCTURA Y HARDWARE](#4-especificaciones-de-infraestructura-y-hardware)
    4.1 [Requerimientos del Servidor de Producción](#41-requerimientos-del-servidor-de-producción)
@@ -44,7 +45,7 @@
    6.1 [Diccionario de Variables de Entorno (.env)](#61-diccionario-de-variables-de-entorno-env)
    6.2 [Gestión de Secretos y Fallbacks de Desarrollo](#62-gestión-de-secretos-y-fallbacks-de-desarrollo)
 7. [ESTÁNDARES DE CALIDAD, PRUEBAS Y MANTENIMIENTO](#7-estándares-de-calidad-pruebas-y-mantenimiento)
-   7.1 [Estrategia de Pruebas Automatizadas (Jest & Supertest)](#71-estrategia-de-pruebas-automatizadas-jest--supertest)
+   7.1 [Estrategia de Pruebas Automatizadas (Jest & Supertest - 70/70 Tests)](#71-estrategia-de-pruebas-automatizadas-jest--supertest---7070-tests)
    7.2 [Políticas de Respaldo y Recuperación de la Base de Datos](#72-políticas-de-respaldo-y-recuperación-de-la-base-de-datos)
 
 ---
@@ -56,106 +57,138 @@ El propósito de este documento es definir con rigor técnico y formal los linea
 
 ### 1.2 Alcance de las Especificaciones
 Comprende la totalidad del ciclo de vida técnico del sistema:
-- Definición formal de las tres capas físicas y lógicas del sistema (Frontend, Backend, Database).
-- Modelado de flujos de integración con la nube para ingesta multimedia (Cloudinary) y transporte de mensajería transaccional (SMTP/Nodemailer).
-- Especificación de las medidas de hardening de seguridad (Helmet, Rate Limiting, RBAC, Cifrado Bcrypt).
-- Requerimientos de hardware para despliegue On-Premise o Cloud IaaS/PaaS.
-- Estrategia de pruebas automatizadas y aseguramiento de la calidad del software.
+- Definición formal de las capas físicas y lógicas del sistema bajo principios de Clean Architecture.
+- Modelado de flujos de integración con la nube para ingesta multimedia (Cloudinary), transporte transaccional (SMTP/Nodemailer) y comunicación push (Socket.io).
+- Especificación del motor de Inteligencia Artificial (Naive Bayes, DBSCAN, Series de Tiempo) y generación de reportes (PDFKit).
+- Especificación de las medidas de hardening de seguridad (Helmet, Rate Limiting, RBAC, Cifrado Bcrypt, Redmean).
+- Requerimientos de hardware para despliegue On-Premise y en la nube en **https://sigi.verapd.xyz**.
+- Estrategia de pruebas automatizadas y aseguramiento de la calidad del software (100% pruebas unitarias e integración aprobadas).
 
 ---
 
 ## 2. ARQUITECTURA GENERAL DEL SISTEMA
 
-### 2.1 Estilo Arquitectónico y Desacoplamiento (3-Tier)
-SIGI implementa una arquitectura desacoplada en tres capas (*3-Tier Architecture*):
+### 2.1 Estilo Arquitectónico y Desacoplamiento (Clean Architecture)
+SIGI implementa una arquitectura limpia desacoplada por capas (*Layered Clean Architecture*):
 
-1. **Capa 1: Presentación / Cliente (Frontend):**
-   Aplicación de página web enriquecida construida sobre HTML5 semántico, CSS3 modular y JavaScript nativo asíncrono (Vanilla ES6+). Se comunica con el backend exclusivamente mediante peticiones asíncronas seguras (Fetch API / JSON / Multipart Form-Data).
-2. **Capa 2: Aplicación y Servicios (Backend API REST):**
-   Servidor de alto rendimiento construido sobre **Node.js (v20+)** y el framework **Express (v5.x)**. Implementa enrutamiento modular, control de sesiones, mediación de subida de archivos en memoria (`multer.memoryStorage`), despacho de correos asíncronos y filtros de autorización RBAC.
-3. **Capa 3: Datos y Cómputo Espacial (Database):**
+1. **Capa 1: Presentación y Cliente PWA (Frontend):**
+   Aplicación web responsiva construida con HTML5 semántico, CSS3 modular y JavaScript nativo asíncrono (Vanilla ES6+). Incorpora soporte para Progressive Web App (PWA) con Service Worker (`sw.js`) y cola de almacenamiento local para contingencias sin conexión.
+2. **Capa 2: Aplicación, WebSockets y Servicios (Backend API REST):**
+   Servidor de alto rendimiento construido sobre **Node.js (v20+)** y el framework **Express (v5.x)**, articulado con el motor de eventos en tiempo real **Socket.io**. Desacopla la lógica de negocio en una capa de **Servicios** (`services/ml.service.js`, `utils/mailer.js`, `utils/cloudinary.js`) y orquesta los flujos mediante controladores limpios.
+3. **Capa 3: Modelos de Dominio y Acceso a Datos (Model Layer):**
+   Capa de abstracción que aísla las consultas SQL de los controladores (`models/incidente.model.js`, `models/usuario.model.js`, `models/catalogos.model.js`, `models/estadisticas.model.js`, `models/geografia.model.js`). Gestiona la interacción con el pool centralizado de conexiones PostgreSQL (`config/db.js`).
+4. **Capa 4: Datos y Cómputo Espacial (Database):**
    Motor relacional **PostgreSQL 15+** potenciado por la extensión geoespacial **PostGIS 3.3+**. Gestiona relaciones transaccionales ACID y cálculo de topologías vectoriales (intersecciones de geometrías, cálculo de distancias, contención espacial en barrios y veredas).
 
 ```
-+---------------------------------------------------------------------------------------+
-|                                    CAPA DE CLIENTE                                    |
-|   +--------------------------+  +--------------------------+  +-------------------+   |
-|   |   Módulo Ciudadano       |  |   Módulo Reportero Móvil |  |  Módulo Gestión   |   |
-|   |  - Visor Leaflet / KPIs  |  |  - Formulario GPS/Cámara |  |  - Mesa Admin     |   |
-|   +-------------+------------+  +-------------+------------+  +---------+---------+   |
-+-----------------|-----------------------------|-------------------------|-------------+
-                  |                             |                         |
-                  +-----------------------------+-------------------------+
++---------------------------------------------------------------------------------------------------+
+|                                      CLIENTE (FRONTEND & PWA)                                     |
+|   +--------------------------+  +--------------------------+  +-------------------------------+   |
+|   |   Módulo Ciudadano       |  |   Módulo Reportero Móvil |  |  Módulo Gestión Admin/Super   |   |
+|   |  - Visor Leaflet / KPIs  |  |  - Formulario GPS / PWA  |  |  - Mesa Validación / Candados |   |
+|   |  - Alertas WebSocket     |  |  - Asistente IA Predictivo|  |  - Reportes PDF / Hotspots   |   |
+|   +-------------+------------+  +-------------+------------+  +---------------+---------------+   |
++-----------------|-----------------------------|--------------------------------|------------------+
+                  |                             |                                |
+                  +-----------------------------+--------------------------------+
                                                 |
-                                        HTTPS / JSON / TLS
+                                    HTTPS / WSS / JSON / Multipart
                                                 v
-+---------------------------------------------------------------------------------------+
-|                                    CAPA DE SERVIDOR                                   |
-|   +-------------------------------------------------------------------------------+   |
-|   |                  Node.js Runtime v20+ / Express v5.x Engine                   |   |
-|   +-------------------------------------------------------------------------------+   |
-|   | [Security Stack] Helmet | Express-Rate-Limit | Express-Session (HttpOnly)     |   |
-|   +-------------------------------------------------------------------------------+   |
-|   | [Routing Modular] /api/auth | /api/incidentes | /api/geografia | /api/usuarios|   |
-|   +-------------------------------------------------------------------------------+   |
-|   | [Middlewares] authGuard | verificarRol | verificarEstadoActivo | Multer Mem   |   |
-+-------------------+-----------------------------------+-------------------------------+
-                    |                                   |
-           Pool PG (Puerto 5432)               HTTPS REST API (SDK v2)
-                    v                                   v
-+---------------------------------------+  +--------------------------------------------+
-|            CAPA DE DATOS              |  |              SERVICIOS CLOUD               |
-|  - PostgreSQL 15+ Engine              |  |  - Cloudinary Media CDN (Imágenes)         |
-|  - PostGIS Extension (EPSG:4326)      |  |  - SMTP Relay / Nodemailer (Correos)       |
-|  - Índices GiST (Polígonos & Puntos)  |  +--------------------------------------------+
-+---------------------------------------+
++---------------------------------------------------------------------------------------------------+
+|                                      CAPA DE SERVIDOR BACKEND                                     |
+|   +-------------------------------------------------------------------------------------------+   |
+|   |                  Node.js Runtime v20+ / Express v5.x Engine + Socket.io Server            |   |
+|   +-------------------------------------------------------------------------------------------+   |
+|   | [Security Stack] Helmet | Express-Rate-Limit | Express-Session (HttpOnly) | CORS          |   |
+|   +-------------------------------------------------------------------------------------------+   |
+|   | [Controladores] auth | incidentes | catalogos | estadisticas | geografia | ml | reportes  |   |
+|   +-------------------------------------------------------------------------------------------+   |
+|   | [Servicios] ml.service (Naive Bayes/DBSCAN/Forecast) | mailer | cloudinary | pdfGenerator |   |
+|   +-------------------------------------------------------------------------------------------+   |
+|   | [Capa de Modelos] IncidenteModel | UsuarioModel | CatalogosModel | EstadisticasModel      |   |
+|   +---------------------------------------------+---------------------------------------------+   |
++-------------------------------------------------|-------------------------------------------------+
+                                                  |
+                         Consultas Parametrizadas | Pool config/db.js
+                                                  v
++-------------------------------------------------+   +---------------------------------------------+
+|                  CAPA DE DATOS                  |   |               SERVICIOS CLOUD               |
+|  - PostgreSQL 15+ Engine (Pool pg)              |   |  - Despliegue en https://sigi.verapd.xyz    |
+|  - PostGIS Extension 3.3+ (EPSG:4326)           |   |  - Cloudinary Media CDN (Imágenes WebP)     |
+|  - Índices GiST (Polígonos & Puntos)            |   |  - SMTP Relay / Nodemailer (Correos)        |
++-------------------------------------------------+   +---------------------------------------------+
 ```
 
-
 ### 2.2 Topología de Despliegue Físico y Lógico
-El sistema está diseñado para operar bajo dos escenarios de despliegue:
-- **Despliegue Local / Institucional (On-Premise):** Servidor físico o máquina virtual institucional ejecutando Linux o Windows Server, con PostgreSQL/PostGIS local y Node.js orquestado mediante PM2 o Docker.
-- **Despliegue en la Nube (Cloud PaaS/IaaS):**
-  - Servidor de Aplicación: Render / Railway / AWS EC2 ejecutando el contenedor Node.js.
-  - Base de Datos Gestionada: Supabase / AWS RDS PostgreSQL con PostGIS activado.
-  - Almacenamiento de Evidencias: Cloudinary Media Storage con CDN global.
-  - Pasarela de Correo: SendGrid / Gmail Workspace SMTP.
-
+El sistema opera en producción bajo la siguiente topología de infraestructura:
+- **Despliegue Oficial en Producción:**
+  - **Dominio Público FQDN:** **https://sigi.verapd.xyz**
+  - **Servidor Web y Reverse Proxy:** Nginx con terminación SSL/TLS (Certificado Let's Encrypt), HTTP/2 habilitado y proxy passthrough para WebSockets (`Upgrade: websocket`).
+  - **Servidor de Aplicación:** Node.js administrado como servicio Daemon o mediante PM2 con cluster de reinicio automático.
+  - **Base de Datos:** PostgreSQL 15+ con extensión espacial PostGIS activada y pool optimizado de conexiones en `config/db.js`.
+  - **CDN de Evidencias:** Cloudinary Media Storage con entrega optimizada WebP.
+  - **Pasarela de Correo:** Servidor SMTP seguro con credenciales de aplicación.
 
 ### 2.3 Interacción de Componentes y Protocolos de Comunicación
-- **Frontend <-> Backend:** Protocolo **HTTPS/1.1 o HTTP/2**. Intercambio de datos formateados en `application/json` y cargas binarias bajo `multipart/form-data`.
-- **Backend <-> Base de Datos:** Protocolo nativo de PostgreSQL mediante sockets TCP/IP con pooling persistente gestionado por la librería `pg`.
-- **Backend <-> Cloudinary:** Llamadas HTTPS firmadas mediante HMAC-SHA1/SHA256 para la subida directa de buffers de memoria sin escritura en disco.
-- **Backend <-> Servidor SMTP:** Conexión cifrada **TLS/STARTTLS** sobre los puertos estándar 587 o 465.
+- **Frontend <-> Backend (REST):** Protocolo **HTTPS/1.1 o HTTP/2**. Intercambio de datos formateados en `application/json` y cargas binarias bajo `multipart/form-data`.
+- **Frontend <-> Backend (Tiempo Real):** Protocolo **WSS (WebSocket Seguro)** mediante Socket.io para emisión y escucha de eventos reactivos (`nuevo_incidente`, `incidente_actualizado`).
+- **Backend <-> Base de Datos:** Protocolo nativo PostgreSQL sobre TCP/IP con pooling persistente gestionado por `config/db.js` y clases en `models/`.
+- **Backend <-> Cloudinary:** Llamadas HTTPS firmadas mediante SDK v2 para subida directa de buffers de memoria sin guardado en disco local.
+- **Backend <-> Servidor SMTP:** Conexión cifrada **TLS/STARTTLS** sobre los puertos 587 o 465 mediante Nodemailer.
 
 ---
 
 ## 3. STACK TECNOLÓGICO DETALLADO
 
-### 3.1 Capa de Presentación (Frontend)
+### 3.1 Capa de Presentación y PWA (Frontend)
 - **HTML5:** Marcado semántico para accesibilidad y SEO estructurado.
 - **CSS3 Puro:** Diseño modular responsivo con CSS Custom Properties (variables CSS), Flexbox y CSS Grid. Sistema visual tipo *Glassmorphism* con paletas cromáticas contrastadas.
 - **JavaScript (ES6+):** Programación asíncrona nativa (`async/await`, Fetch API), manipulación del DOM sin dependencia de jQuery ni frameworks pesados.
-- **Motor Cartográfico:** **Leaflet.js v1.9.4**. Biblioteca ligera para representación de capas raster (OpenStreetMap, CartoDB Positron) y vectoriales GeoJSON con listeners de eventos y popups interactivos.
+- **Motor Cartográfico:** **Leaflet.js v1.9.4**. Biblioteca ligera para representación de capas raster (OpenStreetMap, CartoDB Positron, Esri World Imagery) y vectoriales GeoJSON con listeners de eventos y popups interactivos.
 - **Motor de Analítica Visual:** **Chart.js v4.4**. Renderizado en lienzo `<canvas>` de gráficos de barras, líneas y sectores con adaptación a pantallas móviles.
+- **Arquitectura PWA y Modo Desconectado:**
+  - `public/sw.js`: Service Worker que intercepta peticiones de red y cachea activos estáticos esenciales (HTML, CSS, JS, tiles base).
+  - `public/js/pwa-offline.js`: Manejador de estado de red (`navigator.onLine`), persistencia no volátil en `localStorage` (`sigi_cola_incidentes_offline`) y auto-sincronización secuencial al detectar retorno de conectividad.
+  - `public/manifest.json`: Manifiesto de aplicación web instalable en dispositivos móviles con iconos institucionales y orientación responsiva.
+- **Tiempo Real y Síntesis Sonora en Cliente:**
+  - `public/js/sigi-realtime.js`: Cliente Socket.io para escucha reactiva de eventos `nuevo_incidente` e `incidente_actualizado`.
+  - **Web Audio API:** Generación procedural de osciladores de onda senoidal (frecuencias 587.33 Hz [D5] a 880.00 Hz [A5]) con decaimiento de ganancia exponencial para avisos sonoros sutiles sin requerir la descarga de archivos `.mp3` o `.wav`.
+- **Asistente Inteligente en Cliente:**
+  - `public/js/sigi-ml-assistant.js`: Detector de eventos de escritura con debouncing de 600 ms que consulta la API de Machine Learning y proyecta en tiempo real badges de tipología, severidad y servicios de emergencia sugeridos.
 
-### 3.2 Capa de Lógica de Negocio y API (Backend)
+### 3.2 Capa de Lógica de Negocio, Machine Learning y API (Backend)
 - **Entorno de Ejecución:** Node.js (v20.x LTS o v22.x).
 - **Framework Web:** Express v5.2.1.
+- **Motor de Eventos en Tiempo Real:** **Socket.io v4.8+**, implementando WebSockets bidireccionales con canal de broadcast hacia clientes administrativos y mapa cívico.
+- **Motor de Inteligencia Artificial (NLP & Spatial ML):**
+  - `services/ml.service.js`:
+    1. *Clasificador NLP Supervisado:* **Multinomial Naive Bayes** con suavizado de Laplace y análisis léxico ponderado para tipologías delictivas colombianas.
+    2. *Estimador de Gravedad y Heurística de Riesgo:* Detección de disparadores críticos (armas, fuego, sangre, menores de edad) en escala 1 a 5 y sugerencia de auxilio institucional (Policía, Ambulancia, Bomberos).
+    3. *Clustering Espacial No Supervisado:* **DBSCAN** (*Density-Based Spatial Clustering of Applications with Noise*) para identificación matemática de núcleos de concentración (*Hotspots*) ignorando dispersiones aleatorias.
+    4. *Forecasting Temporal:* Suavizado exponencial y análisis de medias móviles para predicción de volumen criminal del siguiente ciclo mensual.
+- **Motor de Generación Documental:**
+  - `pdfkit v0.15+`: Compilador nativo de documentos vectorizados PDF de tamaño carta con membrete institucional, balance estadístico, matrices de delitos y gráficos vectoriales entregados por streaming HTTP.
 - **Seguridad HTTP:**
-  - `helmet v8.3.0`: Establecimiento de directivas HTTP protectoras.
-  - `express-rate-limit v8.7.0`: Prevención de ataques de denegación de servicio y fuerza bruta.
+  - `helmet v8.3.0`: Establecimiento de directivas HTTP protectoras y políticas de cabecera.
+  - `express-rate-limit v8.7.0`: Prevención de ataques de denegación de servicio y fuerza bruta en rutas de autenticación.
   - `cors v2.8.6`: Control granular de intercambio de recursos de origen cruzado.
 - **Manejo de Sesión y Autenticación:**
-  - `express-session v1.19.0`: Manejo de sesiones de usuario persistentes con cookies firmadas.
-  - `bcrypt v6.0.0`: Algoritmo de hash de contraseñas de un solo sentido con salt automático.
+  - `express-session v1.19.0`: Manejo de sesiones de usuario persistentes con cookies firmadas (`HttpOnly`, `SameSite=Lax`).
+  - `bcrypt v6.0.0`: Algoritmo de hash de contraseñas de un solo sentido con salt automático (10 rounds).
 - **Ingesta de Archivos y Parseo:**
   - `multer v2.2.0`: Procesamiento de multipart/form-data mediante almacenamiento en memoria (`memoryStorage`).
   - `csv-parser v3.2.1`: Streaming de alta velocidad para la importación masiva de incidentes.
 - **Mensajería Transaccional:**
-  - `nodemailer v10.0.1`: Cliente SMTP con soporte para plantillas HTML responsivas.
+  - `nodemailer v10.0.1`: Cliente SMTP con soporte para plantillas HTML responsivas y modo simulador de desarrollo.
 
-### 3.3 Capa de Datos Espaciales y Persistencia (Database)
+### 3.3 Capa de Modelos y Datos Espaciales (Database & ORM Layer)
+- **Patrón de Capa de Modelos (Clean Architecture):**
+  - `models/incidente.model.js`: Abstracción de persistencia, filtros geoespaciales, bloqueo concurrente (`id_admin_revisor`), dictamen y conteo de incidentes.
+  - `models/usuario.model.js`: Gestión de usuarios, autenticación Bcrypt, tokens de recuperación, activación/inactivación y protección del último Superadministrador activo (`contarSuperadminsActivos`).
+  - `models/catalogos.model.js`: Mantenimiento de tipos y categorías de incidentes, validación cromática perceptual (Redmean $\Delta C < 85$) e integridad referencial anti-borrado.
+  - `models/estadisticas.model.js`: Consultas de agregación SQL para KPIs, distribución por tipologías y extracción de métricas para informes PDF.
+  - `models/geografia.model.js`: Extracción de polígonos GeoJSON de barrios y veredas mediante funciones espaciales PostGIS.
+  - `config/db.js`: Pool centralizado de conexiones PostgreSQL con proxies de compatibilidad regresiva (`db.js`).
 - **Motor RDBMS:** PostgreSQL v15+ (Compatible con v16).
 - **Extensión Espacial:** PostGIS v3.3+.
 - **Sistemas de Coordenadas de Referencia (CRS):**
@@ -244,10 +277,14 @@ verificarRol('admin', ...) ──► ¿Posee el rol requerido? ─────�
 Ejecución del Controlador
 ```
 
-### 5.4 Estrategia de Mitigación de Ataques
-- **Ataques de Fuerza Bruta:** Limitación de peticiones con `express-rate-limit` en `/api/auth/login` (máximo 5 intentos fallidos consecutivos por IP cada 15 minutos).
+### 5.4 Estrategia de Mitigación de Ataques y Gobernanza de Red
+- **Ataques de Fuerza Bruta y Credential Stuffing:** Limitación de peticiones con `express-rate-limit` en `/login` (máximo 5 intentos fallidos consecutivos por IP cada 15 minutos).
+  - **Normalización de Claves:** El middleware implementa un `keyGenerator` unificado (`gestorIps.normalizarIp()`) que procesa direcciones IPv4 e IPv6 (`::1` y `::ffff:` a `127.0.0.1`), garantizando consistencia determinística entre el limitador y el catálogo de suspensiones.
+  - **Consola de Gobernanza Perimetral (Superadmin):** Monitoreo en vivo de IPs bloqueadas (`GET /api/seguridad/ips-bloqueadas`) con temporizador dinámico decreciente (15 min).
+  - **Desbloqueo Manual con Purga Integral:** El endpoint `POST /api/seguridad/desbloquear-ip/:ip` purga concurrentemente todas las variaciones de clave del limitador (`127.0.0.1`, `::1`, `::/56`, `::ffff:127.0.0.1`), registra la acción en la bitácora de auditoría (`DESBLOQUEAR_IP`) y notifica en tiempo real vía WebSockets (`ip_desbloqueada`).
 - **Inyección SQL:** Ausencia total de concatenación directa de cadenas SQL. El 100% de las consultas se parametrizan (`$1`, `$2`, `$3...`) mediante el driver `pg`.
 - **Carga Maliciosa de Archivos:** Las imágenes no se escriben en disco ni se ejecutan en el servidor web. Se validan extensiones y tipos MIME permitidos y se procesan en streaming directo a Cloudinary.
+- **Protección contra CSRF:** Tokens criptográficos verificados en todas las mutaciones estatales sensibles mediante el middleware `csrfProtection`.
 
 ---
 
@@ -283,15 +320,17 @@ El comportamiento del sistema se parametriza externamente mediante un archivo `.
 
 ## 7. ESTÁNDARES DE CALIDAD, PRUEBAS Y MANTENIMIENTO
 
-### 7.1 Estrategia de Pruebas Automatizadas (Jest & Supertest)
-La estabilidad del backend y la cobertura de endpoints se certifican mediante pruebas automatizadas:
+### 7.1 Estrategia de Pruebas Automatizadas (Jest & Supertest — 70/70 Tests Aprobados)
+La estabilidad del backend, la fiabilidad de los modelos y la cobertura de endpoints se certifican mediante pruebas automatizadas:
 - **Herramientas:** **Jest v30.4+** como ejecutor de pruebas y aserciones, y **Supertest v7.2+** para pruebas de integración sobre peticiones HTTP.
-- **Alcance de Pruebas:**
-  - Pruebas unitarias de encriptación y validación de contraseñas.
-  - Pruebas de integración de autenticación (login exitoso, bloqueo por credenciales erróneas, sesión persistente).
-  - Pruebas de endpoints geográficos (`/api/geografia/barrios`, `/api/geografia/veredas`) verificando la estructura GeoJSON válida.
-  - Pruebas de endpoints de incidentes y control de acceso (verificación de rechazo 401/403 a usuarios sin privilegios).
-- **Comando de Ejecución:** `npm run test` con generación de reporte de cobertura (`--coverage`).
+- **Resultados de Ejecución:** **70 de 70 pruebas superadas exitosamente (100% de efectividad)**, distribuidas en 6 suites:
+  - `tests/unit/models.test.js`: Pruebas exhaustivas de la capa de Modelos (`IncidenteModel`, `UsuarioModel`, `CatalogosModel`, `EstadisticasModel`, `GeografiaModel`).
+  - `tests/unit/ml.service.test.js`: Validación del clasificador Naive Bayes, detección de severidad, extracción de hotspots DBSCAN y proyecciones temporales.
+  - `tests/integration/auth.test.js`: Pruebas de autenticación segura (login, bloqueo de contraseñas erróneas, protección de sesiones).
+  - `tests/integration/geografia.test.js`: Endpoints espaciales (`/api/geografia/barrios`, `/api/geografia/veredas`) y generación de GeoJSON.
+  - `tests/integration/incidentes.test.js`: Ciclo de vida transaccional del incidente, candados de concurrencia y autorización RBAC.
+  - `tests/integration/reportes.test.js`: Generación de informes PDF institucionales mediante streaming.
+- **Comando de Ejecución:** `npm run test` con validación de cobertura (`--coverage`).
 
 ### 7.2 Políticas de Respaldo y Recuperación de la Base de Datos
 - **Frecuencia de Copias de Seguridad:** Copias de seguridad lógicas diarias automatizadas mediante `pg_dump` con compresión `.dump` o `.sql.gz`.

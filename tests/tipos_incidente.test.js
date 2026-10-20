@@ -5,7 +5,7 @@ jest.mock('../db', () => ({
 
 const pool = require('../db');
 const CatalogosModel = require('../models/catalogos.model');
-const { normalizarTexto, calcularDistanciaColor } = require('../controllers/catalogos.controller');
+const { normalizarTexto, calcularDistanciaColor, clasificarTonoColor, compararRelacionTono } = require('../controllers/catalogos.controller');
 
 describe('Gestión y Control de Redundancia de Tipos de Incidentes', () => {
   beforeEach(() => {
@@ -38,6 +38,24 @@ describe('Gestión y Control de Redundancia de Tipos de Incidentes', () => {
     // Colores diferenciados (distancia >= 85)
     expect(calcularDistanciaColor(rojoBase, turquesaDiferente)).toBeGreaterThanOrEqual(85);
     expect(calcularDistanciaColor(rojoBase, azulDiferente)).toBeGreaterThanOrEqual(85);
+  });
+
+  test('clasificarTonoColor clasifica adecuadamente tonos claros, medios y oscuros', () => {
+    expect(clasificarTonoColor('#F87171')).toBe('claro');
+    expect(clasificarTonoColor('#FDE047')).toBe('claro');
+    expect(clasificarTonoColor('#DC2626')).toBe('medio');
+    expect(clasificarTonoColor('#2563EB')).toBe('medio');
+    expect(clasificarTonoColor('#991B1B')).toBe('oscuro');
+    expect(clasificarTonoColor('#1E3A8A')).toBe('oscuro');
+  });
+
+  test('compararRelacionTono detecta si un color es una variación más clara, más oscura o casi idéntica', () => {
+    // #F87171 es más claro que #DC2626
+    expect(compararRelacionTono('#F87171', '#DC2626')).toBe('una variante más clara casi idéntica');
+    // #991B1B es más oscuro que #DC2626
+    expect(compararRelacionTono('#991B1B', '#DC2626')).toBe('una variante más oscura casi idéntica');
+    // #DC2626 y #DD2828 son casi idénticos
+    expect(compararRelacionTono('#DC2626', '#DD2828')).toBe('visualmente casi idéntico');
   });
 
   test('CatalogosModel.obtenerTiposConDetalle retorna datos con colores y conteo de incidentes', async () => {

@@ -11,16 +11,16 @@ const PASSWORD_COMPLEXITY_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 
 function validarSeguridadPassword(password) {
   if (!password || password.length < 8) {
-    return { valido: false, mensaje: 'La nueva contraseña debe tener al menos 8 caracteres ⚠️' };
+    return { valido: false, mensaje: 'La nueva contraseña debe tener al menos 8 caracteres.' };
   }
   if (!/[A-Z]/.test(password)) {
-    return { valido: false, mensaje: 'La contraseña debe incluir al menos una letra mayúscula ⚠️' };
+    return { valido: false, mensaje: 'La contraseña debe incluir al menos una letra mayúscula.' };
   }
   if (!/[a-z]/.test(password)) {
-    return { valido: false, mensaje: 'La contraseña debe incluir al menos una letra minúscula ⚠️' };
+    return { valido: false, mensaje: 'La contraseña debe incluir al menos una letra minúscula.' };
   }
   if (!/\d/.test(password)) {
-    return { valido: false, mensaje: 'La contraseña debe incluir al menos un número ⚠️' };
+    return { valido: false, mensaje: 'La contraseña debe incluir al menos un número.' };
   }
   return { valido: true };
 }
@@ -77,7 +77,7 @@ const login = async (req, res) => {
 
     if (result.rows.length === 0) {
       await registrarLogActividad(null, 'LOGIN_FALLIDO', 'usuario', null, `Intento fallido de login con usuario/correo: ${usuario}`, req);
-      return res.status(401).json({ mensaje: "Usuario o contraseña incorrectos ❌" });
+      return res.status(401).json({ mensaje: "Usuario o contraseña incorrectos." });
     }
 
     const user = result.rows[0];
@@ -85,14 +85,14 @@ const login = async (req, res) => {
     // Verificar si el usuario está activo
     if (user.estado && user.estado !== 'activo') {
       await registrarLogActividad(user.idusuario, 'LOGIN_BLOQUEADO', 'usuario', user.idusuario, `Intento de acceso a cuenta con estado: ${user.estado}`, req);
-      return res.status(403).json({ mensaje: `Cuenta de usuario ${user.estado}. Contacte al administrador. ⛔` });
+      return res.status(403).json({ mensaje: `Cuenta de usuario ${user.estado}. Contacte al administrador.` });
     }
 
     const match = await bcrypt.compare(contrasenia, user.contraseniausuario);
 
     if (!match) {
       await registrarLogActividad(user.idusuario, 'LOGIN_FALLIDO', 'usuario', user.idusuario, `Contraseña incorrecta para el usuario ${user.nombreusuario}`, req);
-      return res.status(401).json({ mensaje: "Usuario o contraseña incorrectos ❌" });
+      return res.status(401).json({ mensaje: "Usuario o contraseña incorrectos." });
     }
 
     // Configurar sesión de usuario protegida contra fijación de sesión (Session Fixation)
@@ -112,7 +112,7 @@ const login = async (req, res) => {
       await registrarLogActividad(user.idusuario, 'LOGIN', 'usuario', user.idusuario, 'Inicio de sesión exitoso', req);
 
       res.json({
-        mensaje: "Login correcto ✅",
+        mensaje: "Login correcto.",
         rol: req.session.rol,
         usuario: req.session.usuario,
         debe_cambiar_password: req.session.debe_cambiar_password
@@ -145,7 +145,7 @@ const recuperarPassword = async (req, res) => {
   const { email } = req.body;
 
   if (!email || !email.includes('@')) {
-    return res.status(400).json({ mensaje: 'Debes proporcionar un correo electrónico válido ⚠️' });
+    return res.status(400).json({ mensaje: 'Debes proporcionar un correo electrónico válido.' });
   }
 
   try {
@@ -154,7 +154,7 @@ const recuperarPassword = async (req, res) => {
     // Por seguridad, damos la misma respuesta genérica aunque el correo no exista
     if (userResult.rows.length === 0) {
       return res.json({
-        mensaje: 'Si el correo electrónico se encuentra registrado en el sistema, recibirás un enlace para restablecer tu contraseña en breve ✉️'
+        mensaje: 'Si el correo electrónico se encuentra registrado en el sistema, recibirás un enlace para restablecer tu contraseña en breve.'
       });
     }
 
@@ -183,7 +183,7 @@ const recuperarPassword = async (req, res) => {
     );
 
     res.json({
-      mensaje: 'Si el correo electrónico se encuentra registrado en el sistema, recibirás un enlace para restablecer tu contraseña en breve ✉️'
+      mensaje: 'Si el correo electrónico se encuentra registrado en el sistema, recibirás un enlace para restablecer tu contraseña en breve.'
     });
 
   } catch (error) {
@@ -206,17 +206,17 @@ const validarTokenReset = async (req, res) => {
     const result = await AuthModel.obtenerTokenReset(token);
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ valido: false, mensaje: 'El enlace de recuperación es inválido ❌' });
+      return res.status(404).json({ valido: false, mensaje: 'El enlace de recuperación es inválido.' });
     }
 
     const tokenData = result.rows[0];
 
     if (tokenData.usado) {
-      return res.status(400).json({ valido: false, mensaje: 'Este enlace de recuperación ya fue utilizado previamente ⚠️' });
+      return res.status(400).json({ valido: false, mensaje: 'Este enlace de recuperación ya fue utilizado previamente.' });
     }
 
     if (new Date() > new Date(tokenData.expiracion)) {
-      return res.status(400).json({ valido: false, mensaje: 'Este enlace de recuperación ha expirado. Por favor solicita uno nuevo ⏳' });
+      return res.status(400).json({ valido: false, mensaje: 'Este enlace de recuperación ha expirado. Por favor solicita uno nuevo.' });
     }
 
     res.json({
@@ -238,7 +238,7 @@ const resetPassword = async (req, res) => {
   const { token, nuevaContrasenia } = req.body;
 
   if (!token || !nuevaContrasenia) {
-    return res.status(400).json({ mensaje: 'El token y la nueva contraseña son obligatorios ⚠️' });
+    return res.status(400).json({ mensaje: 'El token y la nueva contraseña son obligatorios.' });
   }
 
   // Validación de complejidad de contraseña
@@ -251,17 +251,17 @@ const resetPassword = async (req, res) => {
     const result = await AuthModel.obtenerTokenReset(token);
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ mensaje: 'El enlace de recuperación es inválido ❌' });
+      return res.status(404).json({ mensaje: 'El enlace de recuperación es inválido.' });
     }
 
     const tokenData = result.rows[0];
 
     if (tokenData.usado) {
-      return res.status(400).json({ mensaje: 'Este enlace de recuperación ya fue utilizado previamente ⚠️' });
+      return res.status(400).json({ mensaje: 'Este enlace de recuperación ya fue utilizado previamente.' });
     }
 
     if (new Date() > new Date(tokenData.expiracion)) {
-      return res.status(400).json({ mensaje: 'Este enlace de recuperación ha expirado. Solicita uno nuevo ⏳' });
+      return res.status(400).json({ mensaje: 'Este enlace de recuperación ha expirado. Solicita uno nuevo.' });
     }
 
     // Hashear la nueva contraseña con 10 rondas de salt
@@ -281,7 +281,7 @@ const resetPassword = async (req, res) => {
     );
 
     res.json({
-      mensaje: 'Tu contraseña ha sido restablecida exitosamente. Ya puedes iniciar sesión con tu nueva clave ✅'
+      mensaje: 'Tu contraseña ha sido restablecida exitosamente. Ya puedes iniciar sesión con tu nueva clave.'
     });
 
   } catch (error) {
@@ -295,13 +295,13 @@ const resetPassword = async (req, res) => {
  */
 const cambiarPasswordPrimerIngreso = async (req, res) => {
   if (!req.session || !req.session.idusuario) {
-    return res.status(401).json({ mensaje: 'No autenticado 🚫' });
+    return res.status(401).json({ mensaje: 'No autenticado.' });
   }
 
   const { contraseniaActual, nuevaContrasenia } = req.body;
 
   if (!contraseniaActual || !nuevaContrasenia) {
-    return res.status(400).json({ mensaje: 'La contraseña actual y la nueva son obligatorias ⚠️' });
+    return res.status(400).json({ mensaje: 'La contraseña actual y la nueva son obligatorias.' });
   }
 
   // Validación de complejidad de contraseña
@@ -311,21 +311,21 @@ const cambiarPasswordPrimerIngreso = async (req, res) => {
   }
 
   if (contraseniaActual === nuevaContrasenia) {
-    return res.status(400).json({ mensaje: 'La nueva contraseña no puede ser igual a la anterior ⚠️' });
+    return res.status(400).json({ mensaje: 'La nueva contraseña no puede ser igual a la anterior.' });
   }
 
   try {
     const userResult = await AuthModel.obtenerCredencialesPorId(req.session.idusuario);
 
     if (userResult.rows.length === 0) {
-      return res.status(404).json({ mensaje: 'Usuario no encontrado ❌' });
+      return res.status(404).json({ mensaje: 'Usuario no encontrado.' });
     }
 
     const user = userResult.rows[0];
     const match = await bcrypt.compare(contraseniaActual, user.contraseniausuario);
 
     if (!match) {
-      return res.status(400).json({ mensaje: 'La contraseña temporal ingresada no es correcta ❌' });
+      return res.status(400).json({ mensaje: 'La contraseña temporal ingresada no es correcta.' });
     }
 
     const hashedPassword = await bcrypt.hash(nuevaContrasenia, 10);
@@ -344,7 +344,7 @@ const cambiarPasswordPrimerIngreso = async (req, res) => {
     );
 
     res.json({
-      mensaje: 'Contraseña actualizada exitosamente. Bienvenido/a a SIGI ✅',
+      mensaje: 'Contraseña actualizada exitosamente. Bienvenido/a a SIGI.',
       rol: req.session.rol
     });
 

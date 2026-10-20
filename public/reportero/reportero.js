@@ -138,8 +138,81 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const elFecha = document.getElementById("fecha");
         const elHora = document.getElementById("hora");
-        if (elFecha) elFecha.value = `${anio}-${mes}-${dia}`;
+        const hoyStr = `${anio}-${mes}-${dia}`;
+        const fechaMinStr = "2000-01-01";
+
+        if (elFecha) {
+            elFecha.min = fechaMinStr;
+            elFecha.max = hoyStr;
+            elFecha.value = hoyStr;
+        }
         if (elHora) elHora.value = `${horas}:${minutos}`;
+
+        const editFechaRep = document.getElementById("editFechaReporte");
+        if (editFechaRep) {
+            editFechaRep.min = fechaMinStr;
+            editFechaRep.max = hoyStr;
+        }
+    }
+
+    function validarFechaHora(fechaVal, horaVal) {
+        if (!fechaVal) {
+            return { invalido: true, mensaje: "Debe ingresar una fecha válida para el incidente." };
+        }
+
+        const regexFecha = /^(\d{4})-(\d{2})-(\d{2})$/;
+        const match = String(fechaVal).trim().match(regexFecha);
+        if (!match) {
+            return { invalido: true, mensaje: "Formato de fecha inválido. Debe ser AAAA-MM-DD." };
+        }
+
+        const anio = parseInt(match[1], 10);
+        const mes = parseInt(match[2], 10);
+        const dia = parseInt(match[3], 10);
+
+        const anioMinimo = 2000;
+        const ahora = new Date();
+        const anioActual = ahora.getFullYear();
+
+        if (anio < anioMinimo || anio > anioActual) {
+            return { invalido: true, mensaje: `El año (${anio}) no es válido. Debe estar entre ${anioMinimo} y ${anioActual}.` };
+        }
+
+        if (mes < 1 || mes > 12) {
+            return { invalido: true, mensaje: `El mes (${mes}) es inválido (debe ser entre 01 y 12).` };
+        }
+
+        const diasEnMes = new Date(anio, mes, 0).getDate();
+        if (dia < 1 || dia > diasEnMes) {
+            return { invalido: true, mensaje: `El día (${dia}) no es válido para el mes ${mes} (máximo ${diasEnMes} días).` };
+        }
+
+        const mesActualStr = String(ahora.getMonth() + 1).padStart(2, "0");
+        const diaActualStr = String(ahora.getDate()).padStart(2, "0");
+        const hoyStr = `${anioActual}-${mesActualStr}-${diaActualStr}`;
+
+        if (fechaVal.trim() > hoyStr) {
+            return { invalido: true, mensaje: "La fecha del incidente no puede ser futura." };
+        }
+
+        if (horaVal) {
+            const regexHora = /^([01]\d|2[0-3]):([0-5]\d)(:([0-5]\d))?$/;
+            if (!regexHora.test(horaVal.trim())) {
+                return { invalido: true, mensaje: "Formato de hora inválido. Ingrese HH:MM (00:00 a 23:59)." };
+            }
+
+            if (fechaVal.trim() === hoyStr) {
+                const [horas, minutos] = horaVal.split(":").map(Number);
+                const horaActual = ahora.getHours();
+                const minActual = ahora.getMinutes();
+
+                if (horas > horaActual || (horas === horaActual && minutos > minActual)) {
+                    return { invalido: true, mensaje: "Si la fecha es hoy, la hora no puede ser mayor a la hora actual." };
+                }
+            }
+        }
+
+        return { invalido: false };
     }
     fijarFechaHoraActual();
 
@@ -404,14 +477,23 @@ function setupTabs() {
 async function enviarReporte(e) {
     e.preventDefault();
 
+    const fechaVal = document.getElementById("fecha").value;
+    const horaVal = document.getElementById("hora").value;
+
+    const valTiempo = validarFechaHora(fechaVal, horaVal);
+    if (valTiempo.invalido) {
+        showAlert(valTiempo.mensaje, "error");
+        return;
+    }
+
     const btnSubmit = document.getElementById("btnSubmit");
     btnSubmit.disabled = true;
     btnSubmit.innerHTML = `Registrando reporte...`;
 
     const formData = new FormData();
     formData.append("tipo", document.getElementById("tipoIncidente").value);
-    formData.append("fecha", document.getElementById("fecha").value);
-    formData.append("hora", document.getElementById("hora").value);
+    formData.append("fecha", fechaVal);
+    formData.append("hora", horaVal);
     formData.append("lat", document.getElementById("lat").value);
     formData.append("lng", document.getElementById("lng").value);
     formData.append("id_gravedad", document.getElementById("gravedad").value);
@@ -654,6 +736,17 @@ async function guardarEdicionReporte() {
     const formData = new FormData();
     const fecha = document.getElementById("editFechaReporte").value;
     const hora = document.getElementById("editHoraReporte").value;
+
+    if (fecha || hora) {
+        const valEdit = validarFechaHora(fecha, hora);
+        if (valEdit.invalido) {
+            mostrarToastReportero(valEdit.mensaje, "error");
+            btnSave.disabled = false;
+            btnSave.innerHTML = '<i class="bi bi-check2"></i> Guardar Cambios';
+            return;
+        }
+    }
+
     const gravedad = document.getElementById("editGravedadReporte").value;
     const direccion = document.getElementById("editDireccionReporte").value;
     const descripcion = document.getElementById("editDescripcionReporte").value;

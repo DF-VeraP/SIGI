@@ -5,6 +5,70 @@ const logger = require('../utils/logger');
 const { registrarLogActividad } = logger;
 const { subirImagenCloudinary, eliminarImagenCloudinary } = require('../utils/cloudinary');
 
+/**
+ * Valida que la fecha y hora de un incidente sean lógicas y válidas:
+ * - Formato estricto AAAA-MM-DD
+ * - Año entre 2000 y el año actual (evita años como 403 o años negativos)
+ * - Mes entre 01 y 12 (evita mes 22)
+ * - Día válido para el mes y año específico (evita día 44 o 30 de febrero)
+ * - No permite fechas futuras ni horas futuras para el día de hoy
+ */
+const validarFechaHoraIncidente = (fecha, hora) => {
+  if (!fecha || typeof fecha !== 'string') {
+    return { valido: false, mensaje: "La fecha del incidente es obligatoria y debe ser válida." };
+  }
+  const regexFecha = /^(\d{4})-(\d{2})-(\d{2})$/;
+  const match = fecha.trim().match(regexFecha);
+  if (!match) {
+    return { valido: false, mensaje: "Formato de fecha inválido. Debe ser AAAA-MM-DD." };
+  }
+  const anio = parseInt(match[1], 10);
+  const mes = parseInt(match[2], 10);
+  const dia = parseInt(match[3], 10);
+
+  const anioMinimo = 2000;
+  const ahora = new Date();
+  const anioActual = ahora.getFullYear();
+
+  if (anio < anioMinimo || anio > anioActual) {
+    return { valido: false, mensaje: `El año del incidente (${anio}) no es válido. Debe estar entre ${anioMinimo} y ${anioActual}.` };
+  }
+  if (mes < 1 || mes > 12) {
+    return { valido: false, mensaje: `El mes (${mes}) es inválido. Debe estar entre 01 y 12.` };
+  }
+  const diasEnMes = new Date(anio, mes, 0).getDate();
+  if (dia < 1 || dia > diasEnMes) {
+    return { valido: false, mensaje: `El día (${dia}) no es válido para el mes ${mes} (máximo ${diasEnMes} días).` };
+  }
+
+  // Comprobar fecha futura con la fecha local actual
+  const mesPad = String(ahora.getMonth() + 1).padStart(2, '0');
+  const diaPad = String(ahora.getDate()).padStart(2, '0');
+  const hoyStr = `${anioActual}-${mesPad}-${diaPad}`;
+
+  if (fecha.trim() > hoyStr) {
+    return { valido: false, mensaje: "La fecha del incidente no puede ser futura." };
+  }
+
+  // Validar hora si viene presente
+  if (hora) {
+    const regexHora = /^([01]\d|2[0-3]):([0-5]\d)(:([0-5]\d))?$/;
+    if (!regexHora.test(hora.trim())) {
+      return { valido: false, mensaje: "Formato de hora inválido. Debe ser HH:MM (00:00 a 23:59)." };
+    }
+    if (fecha.trim() === hoyStr) {
+      const [horas, minutos] = hora.split(':').map(Number);
+      const horaActual = ahora.getHours();
+      const minActual = ahora.getMinutes();
+      if (horas > horaActual || (horas === horaActual && minutos > minActual)) {
+        return { valido: false, mensaje: "Si la fecha es hoy, la hora no puede ser posterior a la hora actual." };
+      }
+    }
+  }
+
+  return { valido: true };
+};
+
 // Registrar un incidente (Abierto a Reportero, Admin y Superadmin)
 const registrarIncidente = async (req, res) => {
   const idusuarioLogueado = req.session.idusuario;
@@ -37,6 +101,12 @@ const registrarIncidente = async (req, res) => {
 
   if (!tipo || !fecha || !hora || lat === undefined || lng === undefined) {
     return res.status(400).json({ mensaje: "Faltan campos obligatorios: tipo, fecha, hora y coordenadas ⚠️" });
+  }
+
+  // Validación estricta de fecha y hora
+  const validacionFechaHora = validarFechaHoraIncidente(fecha, hora);
+  if (!validacionFechaHora.valido) {
+    return res.status(400).json({ mensaje: validacionFechaHora.mensaje });
   }
 
   try {
@@ -387,6 +457,13 @@ const actualizarIncidente = async (req, res) => {
 
     const { fechaincidente, horaincidente, descripcionincidente, direccion, id_gravedad, id_modalidad } = req.body;
 
+    if (fechaincidente) {
+      const validacionFecha = validarFechaHoraIncidente(fechaincidente, horaincidente);
+      if (!validacionFecha.valido) {
+        return res.status(400).json({ mensaje: validacionFecha.mensaje });
+      }
+    }
+
     const gravedadVal = id_gravedad ? parseInt(id_gravedad) : null;
     const modalidadVal = id_modalidad ? parseInt(id_modalidad) : null;
 
@@ -709,5 +786,6 @@ module.exports = {
   tomarIncidente,
   liberarIncidente,
   resolverIncidente,
-  cerrarIncidente
+  cerrarIncidente,
+  validarFechaHoraIncidente
 };

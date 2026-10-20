@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="admin.css?v=77">
+    <link rel="stylesheet" href="admin.css?v=82">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script>
@@ -77,6 +77,10 @@
                     <i class="bi bi-tags-fill" aria-hidden="true"></i>
                     <span class="nav-text">Tipos de Incidentes</span>
                 </button>
+                <button id="btnSeguridadIps" class="nav-btn" style="display: none;" title="Seguridad de Red y Control de IPs (Superadmin)">
+                    <i class="bi bi-shield-lock-fill" aria-hidden="true"></i>
+                    <span class="nav-text">Seguridad IP</span>
+                </button>
                 <button id="btnReportePDF" class="nav-btn btn-pdf-header" title="Descargar informe ejecutivo en PDF">
                     <i class="bi bi-file-earmark-pdf-fill" aria-hidden="true"></i>
                     <span class="nav-text">Informe PDF</span>
@@ -141,6 +145,7 @@
                 <button id="btnUsuariosMobile" class="nav-admin-btn" style="display: none;"><i class="bi bi-people-fill" aria-hidden="true"></i> <span>Usuarios</span></button>
                 <button id="btnAuditoriaMobile" class="nav-admin-btn" style="display: none;"><i class="bi bi-journal-text" aria-hidden="true"></i> <span>Auditoría</span></button>
                 <button id="btnTiposIncidentesMobile" class="nav-admin-btn" style="display: none;"><i class="bi bi-tags-fill" aria-hidden="true"></i> <span>Tipos Incidentes</span></button>
+                <button id="btnSeguridadIpsMobile" class="nav-admin-btn" style="display: none;"><i class="bi bi-shield-lock-fill" aria-hidden="true"></i> <span>Seguridad IP</span></button>
                 <button id="btnReportePDFMobile" class="nav-admin-btn btn-pdf-header" style="display: flex; align-items: center; gap: 6px;" title="Descargar informe ejecutivo en PDF"><i class="bi bi-file-earmark-pdf-fill" aria-hidden="true"></i> <span>Informe PDF</span></button>
                 <button id="btnPerfilMobile" class="nav-admin-btn"><i class="bi bi-person-gear" aria-hidden="true"></i> <span>Perfil</span></button>
                 <div class="badge-usuario-admin">
@@ -188,7 +193,6 @@
                 </div>
                 <div class="contFormulario contFlexCol">
                     <form action="" class="contFlexCol form-incidente-unificado">
-                        <div id="contenedorToast" aria-live="polite" role="status"></div>
                         <div class="headForm contFlex">
                             <div class="form-header-title-wrap">
                                 <h3>Detalles del incidente</h3>
@@ -208,7 +212,7 @@
                             <div class="form-fila-tiempo-unificada">
                                 <section class="campo-tiempo-item">
                                     <label for="fecha">Fecha <span class="campo-obligatorio">*</span></label>
-                                    <input type="date" id="fecha" name="fecha">
+                                    <input type="date" id="fecha" name="fecha" min="2000-01-01" required>
                                 </section>
                                 <section class="campo-tiempo-item">
                                     <div class="tiempo-hora-head">
@@ -419,15 +423,13 @@
                     <div class="phtu-top-row">
                         <div class="phtu-brand">
                             <div class="phtu-titulo-wrap">
-                                <h2 class="phtu-titulo">
-                                    <i class="bi bi-people-fill phtu-icono" aria-hidden="true"></i> Gestión de Usuarios
-                                </h2>
+                                <h2 class="phtu-titulo">Gestión de Usuarios</h2>
                                 <p class="phtu-subtitulo">Directorio institucional de operadores, roles y control de acceso (Superadmin)</p>
                             </div>
                         </div>
                         <div class="phtu-acciones-top">
                             <button type="button" id="btnNuevoUsuario" class="btn-nuevo-registro-unificado" onclick="abrirModalCrearUsuario()">
-                                <i class="bi bi-person-plus-fill" aria-hidden="true"></i> Nuevo usuario
+                                Nuevo usuario
                             </button>
                         </div>
                     </div>
@@ -462,8 +464,7 @@
 
                     <!-- Fila 3: Barra de Búsqueda y Filtros Espaciosa -->
                     <div class="phtu-filtros-row">
-                        <div class="phtu-buscador-wrapper">
-                            <i class="bi bi-search phtu-search-icon" aria-hidden="true"></i>
+                        <div class="phtu-buscador-wrapper sin-icono">
                             <input type="text" id="buscarUsuarioInput" name="buscarUsuario" class="phtu-input-buscar" placeholder="Buscar por usuario, correo electrónico o dependencia…" autocomplete="off" spellcheck="false" aria-label="Buscar por usuario, email o dependencia">
                         </div>
 
@@ -488,7 +489,7 @@
                         </div>
 
                         <button type="button" id="btnResetFiltrosUsuarios" class="btn-limpiar-filtros-unificado" title="Restablecer filtros" aria-label="Restablecer filtros de usuarios">
-                            <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Limpiar
+                            Limpiar
                         </button>
                     </div>
                 </div>
@@ -516,7 +517,7 @@
                     <!-- 4. Paginación de Usuarios -->
                     <div class="user-pagination-bar" id="paginacionUsuarios">
                         <span id="infoPaginacionUsuarios">Mostrando 0 de 0 usuarios</span>
-                        <div style="display: flex; gap: 8px; align-items: center;">
+                        <div class="paginacion-controles">
                             <button type="button" id="btnPagAntUsuario" class="btn-pag-incidente" aria-label="Página anterior de usuarios">
                                 Anterior
                             </button>
@@ -611,15 +612,13 @@
                     <div class="phtu-top-row">
                         <div class="phtu-brand">
                             <div class="phtu-titulo-wrap">
-                                <h2 class="phtu-titulo">
-                                    <i class="bi bi-tags-fill phtu-icono" aria-hidden="true"></i> Catálogo de Tipos de Incidentes
-                                </h2>
+                                <h2 class="phtu-titulo">Catálogo de Tipos de Incidentes</h2>
                                 <p class="phtu-subtitulo">Clasificación oficial y codificación de colores para mapas y reportes (Superadmin)</p>
                             </div>
                         </div>
                         <div class="phtu-acciones-top">
                             <button type="button" id="btnNuevoTipo" class="btn-nuevo-registro-unificado" onclick="abrirModalCrearTipo()">
-                                <i class="bi bi-plus-lg" aria-hidden="true"></i> Nuevo tipo
+                                Nuevo tipo
                             </button>
                         </div>
                     </div>
@@ -649,8 +648,7 @@
 
                     <!-- Fila 3: Barra de Búsqueda y Filtros Espaciosa -->
                     <div class="phtu-filtros-row">
-                        <div class="phtu-buscador-wrapper">
-                            <i class="bi bi-search phtu-search-icon" aria-hidden="true"></i>
+                        <div class="phtu-buscador-wrapper sin-icono">
                             <input type="text" id="buscarTipoInput" class="phtu-input-buscar" placeholder="Buscar por tipo, categoría o descripción…" autocomplete="off" spellcheck="false">
                         </div>
 
@@ -671,7 +669,7 @@
                         </div>
 
                         <button type="button" id="btnResetFiltrosTipos" class="btn-limpiar-filtros-unificado" title="Restablecer filtros" aria-label="Restablecer filtros de tipos">
-                            <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Limpiar
+                            Limpiar
                         </button>
                     </div>
                 </div>
@@ -707,6 +705,93 @@
                             </button>
                             <span id="labelPaginaTipos">Página 1 de 1</span>
                             <button type="button" id="btnPagSigTipos" class="btn-pag-incidente" aria-label="Página siguiente de tipos">
+                                Siguiente
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        
+            <!-- SECCIÓN 4.6: SEGURIDAD DE RED Y CONTROL DE IPS (EXCLUSIVO SUPERADMIN) -->
+            <section class="sec-seguridad-ips esconder" id="secSeguridadIps">
+                <div class="panel-header-toolbar-unificado">
+                    <div class="phtu-top-row">
+                        <div class="phtu-brand">
+                            <div class="phtu-titulo-wrap">
+                                <h2 class="phtu-titulo">Seguridad de Red y Control de IPs</h2>
+                                <p class="phtu-subtitulo">Supervisión en tiempo real de direcciones IP bloqueadas temporalmente por exceso de intentos fallidos (ventana de 15 min)</p>
+                            </div>
+                        </div>
+                        <div class="phtu-acciones-top">
+                            <button type="button" id="btnRefrescarIps" class="btn-nuevo-registro-unificado" onclick="cargarIpsBloqueadas()">
+                                Actualizar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Métricas / KPIs de Seguridad IP -->
+                    <div class="phtu-kpis-row">
+                        <div class="kpi-chip-suave inactivo" title="Direcciones IP actualmente bloqueadas">
+                            <span class="chip-dot" style="background: #ef4444;"></span>
+                            <span class="chip-label">IPs Bloqueadas Activas</span>
+                            <span id="kpiIpsActivas" class="chip-num">0</span>
+                        </div>
+                        <div class="kpi-chip-suave total" title="Total histórico de bloqueos gestionados">
+                            <span class="chip-label">Bloqueos Neutralizados</span>
+                            <span id="kpiIpsHistorico" class="chip-num">0</span>
+                        </div>
+                        <div class="kpi-chip-suave activo" title="Ventana estándar de desbloqueo automático">
+                            <span class="chip-dot" style="background: #10b981;"></span>
+                            <span class="chip-label">Auto-Expiración</span>
+                            <span class="chip-num" style="font-size: 0.82rem;">15 Minutos</span>
+                        </div>
+                    </div>
+
+                    <!-- Fila 3: Barra de Búsqueda y Filtros Espaciosa -->
+                    <div class="phtu-filtros-row">
+                        <div class="phtu-buscador-wrapper sin-icono">
+                            <input type="text" id="buscarIpInput" class="phtu-input-buscar" placeholder="Buscar por dirección IP o motivo de bloqueo…" autocomplete="off" spellcheck="false" aria-label="Buscar dirección IP">
+                        </div>
+
+                        <button type="button" id="btnResetFiltrosIps" class="btn-limpiar-filtros-unificado" title="Restablecer filtros" aria-label="Restablecer búsqueda de IPs">
+                            Limpiar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabla de Direcciones IP Bloqueadas en Marco Unificado SIGI -->
+                <div class="tabla-contenedor-sigi">
+                    <div class="table-responsive contTablaDatos">
+                        <table class="tabla-moderna tabla-sigi" id="tablaIpsBloqueadas">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="th-col-num" style="text-align: center;">Num</th>
+                                    <th scope="col">Dirección IP</th>
+                                    <th scope="col">Motivo del Bloqueo</th>
+                                    <th scope="col" style="text-align: center;">Hora Bloqueo</th>
+                                    <th scope="col" style="text-align: center;">Tiempo Restante</th>
+                                    <th scope="col" style="text-align: center;">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cuerpoTablaIps">
+                                <tr>
+                                    <td colspan="6" style="text-align: center; padding: 24px; color: var(--texto-suave);">
+                                        Cargando estado de la red…
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginación de IPs (Diseño Institucional Unificado) -->
+                    <div class="user-pagination-bar" id="paginacionIps">
+                        <span id="infoPaginacionIps">Mostrando 0 de 0 IPs</span>
+                        <div class="paginacion-controles">
+                            <button type="button" id="btnPagAntIps" class="btn-pag-incidente" aria-label="Página anterior de IPs">
+                                Anterior
+                            </button>
+                            <span id="labelPaginaIps">Página 1 de 1</span>
+                            <button type="button" id="btnPagSigIps" class="btn-pag-incidente" aria-label="Página siguiente de IPs">
                                 Siguiente
                             </button>
                         </div>
@@ -844,7 +929,7 @@
 
             <div class="grupo" style="margin-bottom: 12px;">
                 <label for="editFecha" style="display: block; font-size: 0.78rem; color: var(--texto-suave); margin-bottom: 4px;">Fecha</label>
-                <input type="date" id="editFecha" name="editFecha" style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem;">
+                <input type="date" id="editFecha" name="editFecha" min="2000-01-01" required style="width: 100%; padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem;">
             </div>
 
             <div class="grupo" style="margin-bottom: 12px;">
@@ -1020,11 +1105,8 @@
                 <i class="bi bi-x-lg" aria-hidden="true"></i>
             </button>
 
-            <!-- Header con icono y título -->
+            <!-- Header sin icono y título estructurado -->
             <div class="modal-usuario-header">
-                <div class="modal-usuario-header-icono">
-                    <i class="bi bi-person-gear" aria-hidden="true"></i>
-                </div>
                 <div class="modal-usuario-header-texto">
                     <span class="modal-detalle-subtitulo">Gestión de Credenciales</span>
                     <h3 id="modalUsuarioTitle" class="modal-usuario-titulo">Crear nuevo usuario</h3>
@@ -1036,18 +1118,12 @@
                 
                 <div class="form-grupo-modal">
                     <label for="newNombreUsuario" class="form-label-modal">Nombre de usuario <span class="campo-obligatorio">*</span></label>
-                    <div class="input-con-icono-wrapper">
-                        <i class="bi bi-person icono-input-campo" aria-hidden="true"></i>
-                        <input type="text" id="newNombreUsuario" name="nombreUsuario" required autocomplete="off" spellcheck="false" placeholder="ej: juan_perez" class="filtro-input-control con-padding-icono">
-                    </div>
+                    <input type="text" id="newNombreUsuario" name="nombreUsuario" required autocomplete="off" spellcheck="false" placeholder="ej: juan_perez" class="filtro-input-control">
                 </div>
 
                 <div class="form-grupo-modal">
                     <label for="newEmail" class="form-label-modal">Correo electrónico <span class="campo-obligatorio">*</span></label>
-                    <div class="input-con-icono-wrapper">
-                        <i class="bi bi-envelope icono-input-campo" aria-hidden="true"></i>
-                        <input type="email" id="newEmail" name="email" required autocomplete="off" spellcheck="false" placeholder="ej: juan@entidad.gov.co" class="filtro-input-control con-padding-icono">
-                    </div>
+                    <input type="email" id="newEmail" name="email" required autocomplete="off" spellcheck="false" placeholder="ej: juan@entidad.gov.co" class="filtro-input-control">
                 </div>
 
                 <div class="form-fila-doble">
@@ -1060,28 +1136,19 @@
                         </select>
                     </div>
                     <div class="form-grupo-modal">
-                        <label for="newEstado" class="form-label-modal">Estado de cuenta <span class="campo-obligatorio">*</span></label>
-                        <select id="newEstado" name="estado" required class="filtro-select-control">
-                            <option value="activo">Activo</option>
-                            <option value="inactivo">Inactivo</option>
-                        </select>
+                        <label for="newEstado" class="form-label-modal">Estado de cuenta</label>
+                        <input type="text" id="newEstado" name="estado" readonly class="filtro-input-control input-readonly" value="Activo" data-valor="activo" title="El estado se gestiona directamente desde las acciones de la tabla" style="cursor: not-allowed; background: rgba(255, 255, 255, 0.04); opacity: 0.9; font-weight: 600;">
                     </div>
                 </div>
 
                 <div class="form-grupo-modal">
                     <label for="newDependencia" class="form-label-modal">Dependencia / Entidad</label>
-                    <div class="input-con-icono-wrapper">
-                        <i class="bi bi-building icono-input-campo" aria-hidden="true"></i>
-                        <input type="text" id="newDependencia" name="dependencia" placeholder="ej: Policía Nacional / Alcaldía" class="filtro-input-control con-padding-icono">
-                    </div>
+                    <input type="text" id="newDependencia" name="dependencia" placeholder="ej: Policía Nacional / Alcaldía" class="filtro-input-control">
                 </div>
 
                 <div class="form-grupo-modal">
                     <label for="newTelefono" class="form-label-modal">Teléfono de contacto</label>
-                    <div class="input-con-icono-wrapper">
-                        <i class="bi bi-telephone icono-input-campo" aria-hidden="true"></i>
-                        <input type="tel" id="newTelefono" name="telefono" placeholder="ej: 3001234567" class="filtro-input-control con-padding-icono">
-                    </div>
+                    <input type="tel" id="newTelefono" name="telefono" placeholder="ej: 3001234567" class="filtro-input-control">
                 </div>
 
                 <!-- Alerta interna del modal para visibilidad inmediata -->
@@ -1090,7 +1157,7 @@
                 <div class="modal-acciones-footer">
                     <button type="button" id="btnCerrarModalUsuario" onclick="cerrarModalUsuario()" class="btn-modal-op btn-modal-cancelar">Cancelar</button>
                     <button type="submit" id="btnGuardarUsuarioSubmit" class="btn-modal-op btn-modal-guardar">
-                        <i class="bi bi-check2-circle" aria-hidden="true"></i> Guardar usuario
+                        Guardar usuario
                     </button>
                 </div>
             </form>
@@ -1204,17 +1271,18 @@
                 <i class="bi bi-x-lg" aria-hidden="true"></i>
             </button>
 
-            <!-- Header Modal Visor -->
-            <div class="modal-detalle-header" style="margin-bottom: 12px; padding-bottom: 12px;">
+            <!-- Header Modal Visor Minimalista y sin iconos -->
+            <div class="modal-detalle-header modal-pdf-header-wrap">
                 <div class="modal-detalle-header-info">
                     <span class="modal-detalle-subtitulo">Vista Previa Institucional</span>
-                    <h3 class="modal-detalle-codigo" id="tituloVisorPDF">Informe Ejecutivo Mensual (PDF)</h3>
+                    <h3 class="modal-detalle-codigo" id="tituloVisorPDF">Informe Ejecutivo Mensual</h3>
+                    <p class="modal-pdf-subinfo">Documento oficial compilado dinámicamente con métricas consolidadas y análisis territorial</p>
                 </div>
-                <div class="modal-detalle-badges-wrap" style="gap: 8px;">
-                    <a id="btnAbrirNuevaPestanaPDF" href="#" target="_blank" class="btn-modal-op btn-modal-editar" style="text-decoration: none;" title="Abrir informe en pestaña completa">
+                <div class="modal-detalle-badges-wrap modal-pdf-acciones-wrap">
+                    <a id="btnAbrirNuevaPestanaPDF" href="#" target="_blank" class="btn-pdf-modal-secundario" style="text-decoration: none;" title="Abrir informe en pestaña completa">
                         Abrir en pestaña
                     </a>
-                    <a id="btnDescargarPDFModal" href="#" download class="btn-modal-op btn-modal-tomar" style="text-decoration: none;" title="Descargar copia local en formato PDF">
+                    <a id="btnDescargarPDFModal" href="#" download class="btn-pdf-modal-primario" style="text-decoration: none;" title="Descargar copia local en formato PDF">
                         Descargar PDF
                     </a>
                 </div>
@@ -1223,13 +1291,14 @@
             <!-- Contenedor del Visor / Iframe -->
             <div class="visor-pdf-marco">
                 <div id="cargandoVisorPDF" class="visor-pdf-loader">
-                    Generando vista previa del documento…
+                    <div class="visor-pdf-spinner"></div>
+                    <span class="visor-pdf-loader-texto">Cargando documento oficial…</span>
                 </div>
-                <iframe id="iframeVisorPDF" src="" style="width: 100%; height: 100%; border: none; display: block;" title="Vista previa del informe ejecutivo mensual en PDF"></iframe>
+                <iframe id="iframeVisorPDF" src="" title="Vista previa del informe ejecutivo mensual en PDF"></iframe>
             </div>
 
             <!-- Footer Modal con Botón Cerrar -->
-            <div class="modal-detalle-footer" style="margin-top: 12px; padding-top: 10px;">
+            <div class="modal-detalle-footer">
                 <button type="button" class="btn-cerrar-modal-footer" onclick="cerrarVisorPDF()" aria-label="Cerrar visor">Cerrar</button>
             </div>
         </div>
@@ -1416,13 +1485,18 @@
 
                 <!-- Bloque 2: Codificación Cromática (Mapas y Reportes) -->
                 <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--borde); border-radius: 8px; padding: 14px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px;">
-                    <div style="font-size: 0.72rem; font-weight: 700; color: var(--texto-suave); text-transform: uppercase; letter-spacing: 0.05em;">
-                        Identificación Cromática (Mapas y Reportes)
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
+                        <span style="font-size: 0.72rem; font-weight: 700; color: var(--texto-suave); text-transform: uppercase; letter-spacing: 0.05em;">
+                            Identificación Cromática (Mapas y Reportes)
+                        </span>
+                        <span id="tipoColorInfoTono" style="font-size: 0.72rem; font-weight: 600; color: var(--acento); padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,0.05);">
+                            Tono: Medio
+                        </span>
                     </div>
 
                     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                        <input type="color" id="tipoColorPicker" value="#06b6d4" style="width: 44px; height: 38px; border: 1px solid var(--borde); border-radius: 6px; cursor: pointer; padding: 2px; background: transparent;">
-                        <input type="text" id="tipoColorHex" value="#06b6d4" maxlength="7" spellcheck="false" style="width: 95px; text-transform: uppercase; font-family: monospace; font-weight: 700; padding: 8px 10px; background: var(--bg-card); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; text-align: center;">
+                        <input type="color" id="tipoColorPicker" value="#06b6d4" title="Selector libre de color" style="width: 44px; height: 38px; border: 1px solid var(--borde); border-radius: 6px; cursor: pointer; padding: 2px; background: transparent;">
+                        <input type="text" id="tipoColorHex" value="#06b6d4" maxlength="7" spellcheck="false" title="Código hexadecimal de color" style="width: 95px; text-transform: uppercase; font-family: monospace; font-weight: 700; padding: 8px 10px; background: var(--bg-card); border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); font-size: 0.82rem; text-align: center;">
                         
                         <!-- Previsualizador estilo badge sin iconos -->
                         <div id="tipoBadgePreview" style="padding: 5px 14px; border-radius: 20px; font-size: 0.76rem; font-weight: 700; background: rgba(6, 182, 212, 0.2); color: #06b6d4; border: 1px solid rgba(6, 182, 212, 0.4);">
@@ -1430,16 +1504,26 @@
                         </div>
                     </div>
 
-                    <!-- Paleta recomendada sin iconos -->
+                    <!-- Filtros por tono de luminosidad y paleta amplia -->
                     <div style="margin-top: 4px;">
-                        <span style="font-size: 0.7rem; color: var(--texto-suave); display: block; margin-bottom: 6px; font-weight: 600;">Tonos de contraste recomendados:</span>
-                        <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="paletaSugeridaTipos">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
+                            <span style="font-size: 0.72rem; color: var(--texto-suave); font-weight: 600;">Variedad sugerida (claros, medios, oscuros):</span>
+                            <div class="botones-filtro-tonos" style="display: flex; gap: 4px;">
+                                <button type="button" class="btn-tono-chip activo" data-filtro="todos">Todos (45)</button>
+                                <button type="button" class="btn-tono-chip" data-filtro="claro">Claros (15)</button>
+                                <button type="button" class="btn-tono-chip" data-filtro="medio">Medios (15)</button>
+                                <button type="button" class="btn-tono-chip" data-filtro="oscuro">Oscuros (15)</button>
+                            </div>
+                        </div>
+
+                        <!-- Grilla de chips de colores clasificados -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(24px, 1fr)); gap: 6px; max-height: 120px; overflow-y: auto; padding: 4px 2px;" id="paletaSugeridaTipos">
                             <!-- Chips insertados dinámicamente -->
                         </div>
                     </div>
 
-                    <!-- Alerta de proximidad o similitud de color (texto limpio sin iconos) -->
-                    <div id="alertaColorTipo" style="font-size: 0.76rem; border-radius: 6px; padding: 8px 12px; display: none; line-height: 1.4;"></div>
+                    <!-- Alerta de proximidad, similitud y análisis de tono (más claro / más oscuro / idéntico) -->
+                    <div id="alertaColorTipo" style="font-size: 0.76rem; border-radius: 6px; padding: 8px 12px; display: none; line-height: 1.45;"></div>
                 </div>
 
                 <!-- Alerta general del modal -->
@@ -1481,12 +1565,38 @@
         </div>
     </div>
 
+    <!-- MODAL CONFIRMAR DESBLOQUEO DE DIRECCIÓN IP (Estructurado, Minimalista, Sin Iconos) -->
+    <div id="modalConfirmarDesbloqueoIp" class="modal" style="display: none;">
+        <div class="modal-contenido" style="max-width: 440px; background: var(--bg-card); border: 1px solid var(--borde-acento); border-radius: 12px; padding: 24px; text-align: center; position: relative; box-shadow: 0 16px 40px rgba(0,0,0,0.45);">
+            <button type="button" class="btn-cerrar-modal" onclick="cerrarModalDesbloqueoIp()" aria-label="Cerrar confirmación de desbloqueo" style="font-size: 1.25rem; font-weight: 700; line-height: 1; border: none; background: transparent; color: var(--texto-suave); cursor: pointer; position: absolute; top: 14px; right: 14px;">
+                &times;
+            </button>
+            <h3 id="tituloConfirmarDesbloqueoIp" style="color: var(--texto); font-size: 1.15rem; font-weight: 700; margin-bottom: 8px;">
+                Desbloquear dirección IP
+            </h3>
+            <div id="mensajeConfirmarDesbloqueoIp" style="font-size: 0.86rem; color: var(--texto-suave); margin-bottom: 20px; line-height: 1.45; text-align: left;">
+                <!-- Texto explicativo estructurado sin iconos -->
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 14px;">
+                <button type="button" onclick="cerrarModalDesbloqueoIp()" class="btn-modal-cancelar">
+                    Cancelar
+                </button>
+                <button type="button" id="btnConfirmarDesbloqueoIp" class="btn-modal-confirmar-ip">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor Global de Toasts (Independiente del scroll y cabecera) -->
+    <div id="contenedorToast" aria-live="polite" role="status"></div>
+
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="../js/session-timer.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="../js/sigi-realtime.js"></script>
     <script src="../js/sigi-ml-assistant.js"></script>
-    <script src="admin.js?v=76"></script>
+    <script src="admin.js?v=85"></script>
 </body>
 
 </html>

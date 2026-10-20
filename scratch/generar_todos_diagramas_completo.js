@@ -1,0 +1,1176 @@
+const fs = require('fs');
+const path = require('path');
+const { DrawioDiagramBuilder } = require('./drawio_builder');
+
+function escapeHtmlForDrawio(html) {
+    if (typeof html !== 'string') return '';
+    return html
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+}
+
+function construirSistemaCompletoDiagramas() {
+    const builder = new DrawioDiagramBuilder();
+
+    // =========================================================================
+    // ESTILOS ESPECIALIZADOS PARA ERD Y CLASES UML (B&W ESTRICTO - HTML WRAPPED)
+    // =========================================================================
+    const ERD_ENTITY_STYLE = "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=10;spacingTop=6;spacingLeft=6;spacingRight=6;";
+    const UML_CLASS_STYLE = "rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=10;spacingTop=6;spacingLeft=6;spacingRight=6;";
+
+    function addErdEntityBox(tab, id, tableName, pkText, ukText, fkList, attrList, x, y, width, height) {
+        let html = `<p style="margin:0px;text-align:center;font-size:12px;"><b>${tableName}</b></p><hr size="1" style="border:none;border-top:1px solid #000000;margin:6px 0;"/>`;
+        
+        if (pkText || ukText) {
+            html += `<p style="margin:0px;line-height:1.35;">`;
+            if (pkText) html += `<b>[PK]</b> ${pkText}<br/>`;
+            if (ukText) html += `<b>[UK]</b> ${ukText}<br/>`;
+            html += `</p><hr size="1" style="border:none;border-top:1px solid #000000;margin:6px 0;"/>`;
+        }
+        
+        if (fkList && fkList.length > 0) {
+            html += `<p style="margin:0px;line-height:1.35;">`;
+            for (const fk of fkList) {
+                html += `<i>${fk}</i><br/>`;
+            }
+            html += `</p><hr size="1" style="border:none;border-top:1px solid #000000;margin:6px 0;"/>`;
+        }
+        
+        if (attrList && attrList.length > 0) {
+            html += `<p style="margin:0px;line-height:1.35;">`;
+            for (const attr of attrList) {
+                html += `${attr}<br/>`;
+            }
+            html += `</p>`;
+        }
+        
+        const escaped = escapeHtmlForDrawio(html);
+        tab.cells.push(
+            `<mxCell id="${id}" value="${escaped}" style="${ERD_ENTITY_STYLE}" vertex="1" parent="1">` +
+            `<mxGeometry x="${x}" y="${y}" width="${width}" height="${height}" as="geometry" />` +
+            `</mxCell>`
+        );
+    }
+
+    function addUmlClassBox(tab, id, className, stereotype, attributes, methods, x, y, width, height) {
+        let html = `<p style="margin:0px;text-align:center;font-size:11px;">`;
+        if (stereotype) html += `&laquo;${stereotype}&raquo;<br/>`;
+        html += `<b style="font-size:12px;">${className}</b></p><hr size="1" style="border:none;border-top:1px solid #000000;margin:6px 0;"/>`;
+        
+        if (attributes && attributes.length > 0) {
+            html += `<p style="margin:0px;line-height:1.35;font-size:10px;">`;
+            for (const attr of attributes) {
+                html += `${attr}<br/>`;
+            }
+            html += `</p><hr size="1" style="border:none;border-top:1px solid #000000;margin:6px 0;"/>`;
+        }
+        
+        if (methods && methods.length > 0) {
+            html += `<p style="margin:0px;line-height:1.35;font-size:10px;">`;
+            for (const m of methods) {
+                html += `${m}<br/>`;
+            }
+            html += `</p>`;
+        }
+        
+        const escaped = escapeHtmlForDrawio(html);
+        tab.cells.push(
+            `<mxCell id="${id}" value="${escaped}" style="${UML_CLASS_STYLE}" vertex="1" parent="1">` +
+            `<mxGeometry x="${x}" y="${y}" width="${width}" height="${height}" as="geometry" />` +
+            `</mxCell>`
+        );
+    }
+
+    // =========================================================================
+    // PESTAÑAS 1 A 7 (FLUJOS, NEGOCIO, FUNCIONAL)
+    // =========================================================================
+    // Tab 1: Auth
+    const tabAuth = builder.addTab('tab-auth', 'Flujo-Autenticacion-General');
+    builder.addNode(tabAuth, 'mod_auth_box', 'MÓDULO: Inicio de Sesión y Control de Acceso (Login & JWT)', DrawioDiagramBuilder.STYLES.CONTAINER, 50, 40, 660, 1500);
+    builder.addNode(tabAuth, 'auth_start', 'Inicio: Acceso a /login/index.html', DrawioDiagramBuilder.STYLES.START_END, 260, 90, 240, 50);
+    builder.addNode(tabAuth, 'auth_in1', 'Ingreso de credenciales:\nUsuario/Email + Contraseña', DrawioDiagramBuilder.STYLES.IO_DATA, 260, 180, 240, 55);
+    builder.addNode(tabAuth, 'auth_err_rl', 'HTTP 429: Bloqueo temporal por 15 min\ngestorIps.registrarBloqueo(ip)\nio.emit("ip_bloqueada") a Superadmin', DrawioDiagramBuilder.STYLES.PROCESS, 510, 295, 200, 60);
+    builder.addNode(tabAuth, 'auth_end_rl', 'Fin: Acceso bloqueado', DrawioDiagramBuilder.STYLES.START_END, 530, 380, 140, 40);
+    builder.addNode(tabAuth, 'auth_proc_find', 'Consulta en PostgreSQL:\nSELECT * FROM usuarios WHERE email = $1', DrawioDiagramBuilder.STYLES.PROCESS, 260, 410, 240, 55);
+    builder.addNode(tabAuth, 'auth_dec_exist', '¿Usuario existe en base de datos?', DrawioDiagramBuilder.STYLES.DECISION, 280, 505, 200, 90);
+    builder.addNode(tabAuth, 'auth_err_exist', 'HTTP 401: Credenciales inválidas\nRegistra intento fallido', DrawioDiagramBuilder.STYLES.PROCESS, 70, 525, 170, 50);
+    builder.addNode(tabAuth, 'auth_end_exist', 'Fin: Autenticación rechazada', DrawioDiagramBuilder.STYLES.START_END, 70, 610, 170, 40);
+    builder.addNode(tabAuth, 'auth_dec_act', '¿Cuenta en estado activo?\n(activo == 1)', DrawioDiagramBuilder.STYLES.DECISION, 280, 635, 200, 90);
+    builder.addNode(tabAuth, 'auth_err_act', 'HTTP 403: Cuenta inactiva\n"Consulte al Superadministrador"', DrawioDiagramBuilder.STYLES.PROCESS, 70, 655, 170, 50);
+    builder.addNode(tabAuth, 'auth_end_act', 'Fin: Acceso denegado', DrawioDiagramBuilder.STYLES.START_END, 70, 740, 170, 40);
+    builder.addNode(tabAuth, 'auth_proc_bcrypt', 'Verificación de hash con Bcrypt:\nbcrypt.compare(password, password_hash)', DrawioDiagramBuilder.STYLES.PROCESS, 260, 765, 240, 55);
+    builder.addNode(tabAuth, 'auth_dec_pass', '¿Contraseña válida?', DrawioDiagramBuilder.STYLES.DECISION, 280, 860, 200, 90);
+    builder.addNode(tabAuth, 'auth_err_pass', 'HTTP 401: Credenciales inválidas\nIncrementa contador de fallas', DrawioDiagramBuilder.STYLES.PROCESS, 70, 880, 170, 50);
+    builder.addNode(tabAuth, 'auth_end_pass', 'Fin: Contraseña incorrecta', DrawioDiagramBuilder.STYLES.START_END, 70, 965, 170, 40);
+    builder.addNode(tabAuth, 'auth_dec_force', '¿Debe cambiar contraseña?\n(debe_cambiar_password == 1)', DrawioDiagramBuilder.STYLES.DECISION, 280, 990, 200, 90);
+    builder.addNode(tabAuth, 'auth_proc_modal', 'Modal forzoso de cambio de clave:\nIngresa nueva clave (>= 8 caracteres)\nbcrypt.hash() -> UPDATE usuarios\nSET debe_cambiar_password = 0', DrawioDiagramBuilder.STYLES.PROCESS, 490, 1070, 200, 85);
+    builder.addNode(tabAuth, 'auth_proc_jwt', 'Generación de Token JWT de sesión\nFirma HMAC con JWT_SECRET\nPayload: { id, rol, exp: 24h }', DrawioDiagramBuilder.STYLES.PROCESS, 260, 1165, 240, 65);
+    builder.addNode(tabAuth, 'auth_dec_rol', 'Bifurcación según Rol:\n¿rol del usuario?', DrawioDiagramBuilder.STYLES.DECISION, 280, 1270, 200, 90);
+    builder.addNode(tabAuth, 'auth_dest_rep', 'Redirección a /reportero/index.html', DrawioDiagramBuilder.STYLES.PROCESS, 70, 1400, 180, 45);
+    builder.addNode(tabAuth, 'auth_end_rep', 'Fin: Sesión Reportero', DrawioDiagramBuilder.STYLES.START_END, 80, 1475, 160, 40);
+    builder.addNode(tabAuth, 'auth_dest_adm', 'Redirección a /admin/index.html', DrawioDiagramBuilder.STYLES.PROCESS, 290, 1400, 180, 45);
+    builder.addNode(tabAuth, 'auth_end_adm', 'Fin: Sesión Administrador', DrawioDiagramBuilder.STYLES.START_END, 300, 1475, 160, 40);
+    builder.addNode(tabAuth, 'auth_dest_sup', 'Redirección a /superadmin/index.html', DrawioDiagramBuilder.STYLES.PROCESS, 500, 1400, 190, 45);
+    builder.addNode(tabAuth, 'auth_end_sup', 'Fin: Sesión Superadministrador', DrawioDiagramBuilder.STYLES.START_END, 515, 1475, 160, 40);
+
+    builder.addEdge(tabAuth, 'ea1', 'auth_start', 'auth_in1');
+    builder.addEdge(tabAuth, 'ea2', 'auth_in1', 'auth_dec_rl');
+    builder.addEdge(tabAuth, 'ea3', 'auth_dec_rl', 'auth_err_rl', 'Sí');
+    builder.addEdge(tabAuth, 'ea4', 'auth_err_rl', 'auth_end_rl');
+    builder.addEdge(tabAuth, 'ea5', 'auth_dec_rl', 'auth_proc_find', 'No');
+    builder.addEdge(tabAuth, 'ea6', 'auth_proc_find', 'auth_dec_exist');
+    builder.addEdge(tabAuth, 'ea7', 'auth_dec_exist', 'auth_err_exist', 'No');
+    builder.addEdge(tabAuth, 'ea8', 'auth_err_exist', 'auth_end_exist');
+    builder.addEdge(tabAuth, 'ea9', 'auth_dec_exist', 'auth_dec_act', 'Sí');
+    builder.addEdge(tabAuth, 'ea10', 'auth_dec_act', 'auth_err_act', 'No');
+    builder.addEdge(tabAuth, 'ea11', 'auth_err_act', 'auth_end_act');
+    builder.addEdge(tabAuth, 'ea12', 'auth_dec_act', 'auth_proc_bcrypt', 'Sí');
+    builder.addEdge(tabAuth, 'ea13', 'auth_proc_bcrypt', 'auth_dec_pass');
+    builder.addEdge(tabAuth, 'ea14', 'auth_dec_pass', 'auth_err_pass', 'No');
+    builder.addEdge(tabAuth, 'ea15', 'auth_err_pass', 'auth_end_pass');
+    builder.addEdge(tabAuth, 'ea16', 'auth_dec_pass', 'auth_dec_force', 'Sí');
+    builder.addEdge(tabAuth, 'ea17', 'auth_dec_force', 'auth_proc_modal', 'Sí');
+    builder.addEdge(tabAuth, 'ea18', 'auth_proc_modal', 'auth_proc_jwt');
+    builder.addEdge(tabAuth, 'ea19', 'auth_dec_force', 'auth_proc_jwt', 'No');
+    builder.addEdge(tabAuth, 'ea20', 'auth_proc_jwt', 'auth_dec_rol');
+    builder.addEdge(tabAuth, 'ea21', 'auth_dec_rol', 'auth_dest_rep', 'Rol: Reportero');
+    builder.addEdge(tabAuth, 'ea22', 'auth_dest_rep', 'auth_end_rep');
+    builder.addEdge(tabAuth, 'ea23', 'auth_dec_rol', 'auth_dest_adm', 'Rol: Admin');
+    builder.addEdge(tabAuth, 'ea24', 'auth_dest_adm', 'auth_end_adm');
+    builder.addEdge(tabAuth, 'ea25', 'auth_dec_rol', 'auth_dest_sup', 'Rol: Superadmin');
+    builder.addEdge(tabAuth, 'ea26', 'auth_dest_sup', 'auth_end_sup');
+
+    builder.addNode(tabAuth, 'mod_rec_box', 'MÓDULO: Recuperación Segura de Contraseña (Token HMAC 60 min)', DrawioDiagramBuilder.STYLES.CONTAINER, 750, 40, 560, 1340);
+    builder.addNode(tabAuth, 'rec_start', 'Inicio: Clic en "¿Olvidó su contraseña?"', DrawioDiagramBuilder.STYLES.START_END, 910, 90, 240, 50);
+    builder.addNode(tabAuth, 'rec_in_email', 'Ingreso de correo institucional', DrawioDiagramBuilder.STYLES.IO_DATA, 910, 180, 240, 50);
+    builder.addNode(tabAuth, 'rec_proc_search', 'Búsqueda en PostgreSQL por correo', DrawioDiagramBuilder.STYLES.PROCESS, 910, 270, 240, 50);
+    builder.addNode(tabAuth, 'rec_dec_exist', '¿Correo registrado y activo?', DrawioDiagramBuilder.STYLES.DECISION, 930, 360, 200, 90);
+    builder.addNode(tabAuth, 'rec_msg_safe', 'Respuesta genérica por seguridad:\n"Si el correo existe, recibirá el enlace"', DrawioDiagramBuilder.STYLES.PROCESS, 1150, 380, 140, 65);
+    builder.addNode(tabAuth, 'rec_end_safe', 'Fin: Proceso seguro finalizado', DrawioDiagramBuilder.STYLES.START_END, 1150, 480, 140, 40);
+    builder.addNode(tabAuth, 'rec_proc_token', 'Genera token criptográfico HMAC SHA-256\nAlmacena en reset_tokens con validez 60 min', DrawioDiagramBuilder.STYLES.PROCESS, 910, 490, 240, 60);
+    builder.addNode(tabAuth, 'rec_proc_mail', 'Despacha correo electrónico formal vía Nodemailer\ncon enlace a /login/reset-password.html?token=...', DrawioDiagramBuilder.STYLES.PROCESS, 910, 590, 240, 60);
+    builder.addNode(tabAuth, 'rec_proc_click', 'Usuario hace clic en enlace recibido', DrawioDiagramBuilder.STYLES.PROCESS, 910, 690, 240, 50);
+    builder.addNode(tabAuth, 'rec_dec_valid', '¿Token válido, vigente (< 60 min)\ny sin uso previo?', DrawioDiagramBuilder.STYLES.DECISION, 930, 780, 200, 90);
+    builder.addNode(tabAuth, 'rec_err_token', 'HTTP 400: Enlace inválido o expirado\nSolicite una nueva recuperación', DrawioDiagramBuilder.STYLES.PROCESS, 1150, 800, 140, 60);
+    builder.addNode(tabAuth, 'rec_end_err', 'Fin: Enlace caducado', DrawioDiagramBuilder.STYLES.START_END, 1150, 895, 140, 40);
+    builder.addNode(tabAuth, 'rec_in_newpass', 'Usuario ingresa y confirma nueva contraseña', DrawioDiagramBuilder.STYLES.IO_DATA, 910, 910, 240, 50);
+    builder.addNode(tabAuth, 'rec_dec_policy', '¿Cumple política de seguridad?\n(Mínimo 8 caracteres alfanuméricos)', DrawioDiagramBuilder.STYLES.DECISION, 930, 1000, 200, 90);
+    builder.addNode(tabAuth, 'rec_proc_update', 'Cifra contraseña con Bcrypt (10 rondas)\nUPDATE usuarios SET password_hash = $1\nMarca token como consumido (used = 1)', DrawioDiagramBuilder.STYLES.PROCESS, 910, 1130, 240, 65);
+    builder.addNode(tabAuth, 'rec_end_ok', 'Fin: Notifica éxito y redirige a Login', DrawioDiagramBuilder.STYLES.START_END, 910, 1235, 240, 45);
+
+    builder.addEdge(tabAuth, 'er1', 'rec_start', 'rec_in_email');
+    builder.addEdge(tabAuth, 'er2', 'rec_in_email', 'rec_proc_search');
+    builder.addEdge(tabAuth, 'er3', 'rec_proc_search', 'rec_dec_exist');
+    builder.addEdge(tabAuth, 'er4', 'rec_dec_exist', 'rec_msg_safe', 'No');
+    builder.addEdge(tabAuth, 'er5', 'rec_msg_safe', 'rec_end_safe');
+    builder.addEdge(tabAuth, 'er6', 'rec_dec_exist', 'rec_proc_token', 'Sí');
+    builder.addEdge(tabAuth, 'er7', 'rec_proc_token', 'rec_proc_mail');
+    builder.addEdge(tabAuth, 'er8', 'rec_proc_mail', 'rec_proc_click');
+    builder.addEdge(tabAuth, 'er9', 'rec_proc_click', 'rec_dec_valid');
+    builder.addEdge(tabAuth, 'er10', 'rec_dec_valid', 'rec_err_token', 'No');
+    builder.addEdge(tabAuth, 'er11', 'rec_err_token', 'rec_end_err');
+    builder.addEdge(tabAuth, 'er12', 'rec_dec_valid', 'rec_in_newpass', 'Sí');
+    builder.addEdge(tabAuth, 'er13', 'rec_in_newpass', 'rec_dec_policy');
+    builder.addEdge(tabAuth, 'er14', 'rec_dec_policy', 'rec_in_newpass', 'No: Reintentar', { exitX: 0, exitY: 0.5, entryX: 0, entryY: 0.5 });
+    builder.addEdge(tabAuth, 'er15', 'rec_dec_policy', 'rec_proc_update', 'Sí');
+    builder.addEdge(tabAuth, 'er16', 'rec_proc_update', 'rec_end_ok');
+
+    // Tab 2: Invitado
+    const tabInv = builder.addTab('tab-invitado', 'Flujo-Invitado');
+    builder.addNode(tabInv, 'mod_inv_box', 'MÓDULO: Geoportal Cartográfico Público & Capas Territoriales', DrawioDiagramBuilder.STYLES.CONTAINER, 50, 40, 620, 1100);
+    builder.addNode(tabInv, 'inv_start', 'Inicio: Acceso público a /dashboard/index.html', DrawioDiagramBuilder.STYLES.START_END, 240, 90, 240, 50);
+    builder.addNode(tabInv, 'inv_proc_init', 'Inicialización de Leaflet.js centrado en Florencia\nCarga mapa base (Satelital / Positron / Dark Mode)', DrawioDiagramBuilder.STYLES.PROCESS, 240, 180, 240, 60);
+    builder.addNode(tabInv, 'inv_proc_geom', 'Carga capas vectoriales GeoJSON:\nLímites de Barrios urbanos y Veredas rurales', DrawioDiagramBuilder.STYLES.PROCESS, 240, 280, 240, 60);
+    builder.addNode(tabInv, 'inv_proc_req', 'Solicitud asíncrona de incidentes:\nGET /api/incidentes', DrawioDiagramBuilder.STYLES.PROCESS, 240, 380, 240, 55);
+    builder.addNode(tabInv, 'inv_dec_filter', 'Filtro de Seguridad Pública en BD:\n¿Incidente con id_estado = 5 (Aprobado)?', DrawioDiagramBuilder.STYLES.DECISION, 260, 475, 200, 90);
+    builder.addNode(tabInv, 'inv_proc_omit', 'Se descarta del mapa público\n(Queda invisible a la ciudadanía)', DrawioDiagramBuilder.STYLES.PROCESS, 70, 495, 170, 50);
+    builder.addNode(tabInv, 'inv_end_omit', 'Fin: Incidente oculto', DrawioDiagramBuilder.STYLES.START_END, 80, 580, 150, 40);
+    builder.addNode(tabInv, 'inv_proc_sanit', 'Sanitización de datos confidenciales:\nOmite nombres e identificación de reporteros', DrawioDiagramBuilder.STYLES.PROCESS, 240, 605, 240, 55);
+    builder.addNode(tabInv, 'inv_proc_cluster', 'Agrupamiento espacial dinámico (MarkerCluster)\nColor según tipología e índice de gravedad', DrawioDiagramBuilder.STYLES.PROCESS, 240, 700, 240, 60);
+    builder.addNode(tabInv, 'inv_proc_click', 'Ciudadano pulsa sobre un marcador en el mapa', DrawioDiagramBuilder.STYLES.PROCESS, 240, 800, 240, 50);
+    builder.addNode(tabInv, 'inv_proc_popup', 'Despliega Popup informativo:\nRadicado, Tipo, Fecha/Hora, Sector, Severidad,\nEvidencia fotográfica optimizada (Cloudinary CDN)', DrawioDiagramBuilder.STYLES.PROCESS, 240, 890, 240, 70);
+    builder.addNode(tabInv, 'inv_end_map', 'Fin: Visualización e interacción completa', DrawioDiagramBuilder.STYLES.START_END, 240, 1000, 240, 45);
+
+    builder.addEdge(tabInv, 'ei1', 'inv_start', 'inv_proc_init');
+    builder.addEdge(tabInv, 'ei2', 'inv_proc_init', 'inv_proc_geom');
+    builder.addEdge(tabInv, 'ei3', 'inv_proc_geom', 'inv_proc_req');
+    builder.addEdge(tabInv, 'ei4', 'inv_proc_req', 'inv_dec_filter');
+    builder.addEdge(tabInv, 'ei5', 'inv_dec_filter', 'inv_proc_omit', 'No');
+    builder.addEdge(tabInv, 'ei6', 'inv_proc_omit', 'inv_end_omit');
+    builder.addEdge(tabInv, 'ei7', 'inv_dec_filter', 'inv_proc_sanit', 'Sí');
+    builder.addEdge(tabInv, 'ei8', 'inv_proc_sanit', 'inv_proc_cluster');
+    builder.addEdge(tabInv, 'ei9', 'inv_proc_cluster', 'inv_proc_click');
+    builder.addEdge(tabInv, 'ei10', 'inv_proc_click', 'inv_proc_popup');
+    builder.addEdge(tabInv, 'ei11', 'inv_proc_popup', 'inv_end_map');
+
+    builder.addNode(tabInv, 'mod_inv_kpi_box', 'MÓDULO: Motor de Filtros Espacio-Temporales y Estadísticas KPI', DrawioDiagramBuilder.STYLES.CONTAINER, 710, 40, 620, 1140);
+    builder.addNode(tabInv, 'inv_f_start', 'Inicio: Ciudadano abre panel lateral de filtros', DrawioDiagramBuilder.STYLES.START_END, 900, 90, 240, 50);
+    builder.addNode(tabInv, 'inv_f_in', 'Selección de criterios de búsqueda:\n- Rango de fechas (Desde / Hasta)\n- Tipo de incidente\n- Comuna / Barrio / Vereda\n- Nivel de gravedad (1 a 5)', DrawioDiagramBuilder.STYLES.IO_DATA, 900, 180, 240, 85);
+    builder.addNode(tabInv, 'inv_f_click', 'Clic en botón "Filtrar Incidentes"', DrawioDiagramBuilder.STYLES.PROCESS, 900, 305, 240, 45);
+    builder.addNode(tabInv, 'inv_f_req', 'Consulta con parámetros: GET /api/filtros', DrawioDiagramBuilder.STYLES.PROCESS, 900, 390, 240, 50);
+    builder.addNode(tabInv, 'inv_f_dec_res', '¿Se hallaron incidentes en el criterio?', DrawioDiagramBuilder.STYLES.DECISION, 920, 480, 200, 90);
+    builder.addNode(tabInv, 'inv_f_empty', 'Notificación emergente:\n"No se encontraron incidentes coincidentes"', DrawioDiagramBuilder.STYLES.PROCESS, 1145, 500, 165, 50);
+    builder.addNode(tabInv, 'inv_f_update', 'Actualiza marcadores visibles en pantalla\nAjusta encuadre geográfico (fitBounds)', DrawioDiagramBuilder.STYLES.PROCESS, 900, 610, 240, 60);
+    builder.addNode(tabInv, 'inv_f_kpi_tab', 'Ciudadano selecciona pestaña "Estadísticas / KPIs"', DrawioDiagramBuilder.STYLES.PROCESS, 900, 710, 240, 50);
+    builder.addNode(tabInv, 'inv_f_kpi_req', 'Consultas analíticas asíncronas:\nGET /api/estadisticas/resumen\nGET /api/estadisticas/conteoPorTipo\nGET /api/estadisticas/top-zonas', DrawioDiagramBuilder.STYLES.PROCESS, 900, 800, 240, 75);
+    builder.addNode(tabInv, 'inv_f_kpi_render', 'Renderizado con Chart.js:\n- Tarjetas de métricas agregadas\n- Gráfico de dona (Doughnut) por tipo\n- Evolución temporal semanal/mensual\n- Gráfico de barras: Top 10 zonas críticas', DrawioDiagramBuilder.STYLES.PROCESS, 900, 915, 240, 85);
+    builder.addNode(tabInv, 'inv_f_end', 'Fin: Análisis estadístico desplegado', DrawioDiagramBuilder.STYLES.START_END, 900, 1040, 240, 45);
+
+    builder.addEdge(tabInv, 'eif1', 'inv_f_start', 'inv_f_in');
+    builder.addEdge(tabInv, 'eif2', 'inv_f_in', 'inv_f_click');
+    builder.addEdge(tabInv, 'eif3', 'inv_f_click', 'inv_f_req');
+    builder.addEdge(tabInv, 'eif4', 'inv_f_req', 'inv_f_dec_res');
+    builder.addEdge(tabInv, 'eif5', 'inv_f_dec_res', 'inv_f_empty', 'No');
+    builder.addEdge(tabInv, 'eif6', 'inv_f_empty', 'inv_f_in', '', { exitX: 0.5, exitY: 0, entryX: 1, entryY: 0.5 });
+    builder.addEdge(tabInv, 'eif7', 'inv_f_dec_res', 'inv_f_update', 'Sí');
+    builder.addEdge(tabInv, 'eif8', 'inv_f_update', 'inv_f_kpi_tab');
+    builder.addEdge(tabInv, 'eif9', 'inv_f_kpi_tab', 'inv_f_kpi_req');
+    builder.addEdge(tabInv, 'eif10', 'inv_f_kpi_req', 'inv_f_kpi_render');
+    builder.addEdge(tabInv, 'eif11', 'inv_f_kpi_render', 'inv_f_end');
+
+    // Tab 3: Reportero
+    const tabRep = builder.addTab('tab-reportero', 'Flujo-Reportero');
+    builder.addNode(tabRep, 'mod_rep_box', 'MÓDULO: Captura Móvil GPS y Asistencia Inteligente con IA (NLP)', DrawioDiagramBuilder.STYLES.CONTAINER, 50, 40, 620, 1530);
+    builder.addNode(tabRep, 'rep_start', 'Inicio: Acceso a /reportero/index.html', DrawioDiagramBuilder.STYLES.START_END, 240, 90, 240, 50);
+    builder.addNode(tabRep, 'rep_dec_pwa', '¿PWA instalada en dispositivo?', DrawioDiagramBuilder.STYLES.DECISION, 260, 180, 200, 90);
+    builder.addNode(tabRep, 'rep_pwa_banner', 'Service Worker cachea recursos shell\nMuestra banner "Instalar App en inicio"', DrawioDiagramBuilder.STYLES.PROCESS, 70, 195, 170, 60);
+    builder.addNode(tabRep, 'rep_btn_new', 'Clic en "Nuevo Reporte de Incidente"', DrawioDiagramBuilder.STYLES.PROCESS, 240, 310, 240, 45);
+    builder.addNode(tabRep, 'rep_btn_gps', 'Clic en "Obtener Mi Ubicación (GPS)"', DrawioDiagramBuilder.STYLES.PROCESS, 240, 395, 240, 45);
+    builder.addNode(tabRep, 'rep_dec_gps', '¿Permiso GPS concedido?', DrawioDiagramBuilder.STYLES.DECISION, 260, 480, 200, 90);
+    builder.addNode(tabRep, 'rep_err_gps', 'Alerta: "Permiso GPS denegado"\nSolicita habilitar en configuración', DrawioDiagramBuilder.STYLES.PROCESS, 70, 495, 170, 60);
+    builder.addNode(tabRep, 'rep_proc_gps', 'HTML5 Geolocation (enableHighAccuracy)\nCaptura latitud, longitud y precisión métrica', DrawioDiagramBuilder.STYLES.PROCESS, 240, 610, 240, 55);
+    builder.addNode(tabRep, 'rep_proc_drag', 'Fija marcador en mini-mapa interactivo\nReportero puede arrastrarlo para afinar punto', DrawioDiagramBuilder.STYLES.PROCESS, 240, 705, 240, 55);
+    builder.addNode(tabRep, 'rep_proc_topol', 'Consulta topológica PostGIS (ST_Contains):\nIdentifica automáticamente Barrio o Vereda', DrawioDiagramBuilder.STYLES.PROCESS, 240, 800, 240, 55);
+    builder.addNode(tabRep, 'rep_in_desc', 'Reportero redacta relato de los hechos en campo', DrawioDiagramBuilder.STYLES.IO_DATA, 240, 895, 240, 50);
+    builder.addNode(tabRep, 'rep_proc_nlp', 'Motor NLP Naive Bayes analiza el texto en segundo plano', DrawioDiagramBuilder.STYLES.PROCESS, 240, 985, 240, 50);
+    builder.addNode(tabRep, 'rep_dec_sug', '¿Modelo detecta tipología con alta probabilidad?', DrawioDiagramBuilder.STYLES.DECISION, 260, 1075, 200, 90);
+    builder.addNode(tabRep, 'rep_sug_chip', 'Muestra chip predictivo:\n"Tipo sugerido: [Tipo] (Confianza: X%)"\nReportero acepta sugerencia con un clic', DrawioDiagramBuilder.STYLES.PROCESS, 475, 1085, 180, 70);
+    builder.addNode(tabRep, 'rep_dec_emerg', '¿Texto contiene palabras de emergencia?\n("herido", "fuego", "disparos", "sangre")', DrawioDiagramBuilder.STYLES.DECISION, 260, 1205, 200, 90);
+    builder.addNode(tabRep, 'rep_emerg_act', 'Activa automáticamente casillas de auxilio:\nAmbulancia / Policía / Bomberos', DrawioDiagramBuilder.STYLES.PROCESS, 475, 1215, 180, 70);
+    builder.addNode(tabRep, 'rep_in_photo', 'Captura de fotografía con cámara o galería móvil', DrawioDiagramBuilder.STYLES.IO_DATA, 240, 1335, 240, 50);
+    builder.addNode(tabRep, 'rep_end_m1', 'Fin: Formulario listo para radicación', DrawioDiagramBuilder.STYLES.START_END, 240, 1425, 240, 45);
+
+    builder.addEdge(tabRep, 'er1', 'rep_start', 'rep_dec_pwa');
+    builder.addEdge(tabRep, 'er2', 'rep_dec_pwa', 'rep_pwa_banner', 'No');
+    builder.addEdge(tabRep, 'er3', 'rep_pwa_banner', 'rep_btn_new');
+    builder.addEdge(tabRep, 'er4', 'rep_dec_pwa', 'rep_btn_new', 'Sí');
+    builder.addEdge(tabRep, 'er5', 'rep_btn_new', 'rep_btn_gps');
+    builder.addEdge(tabRep, 'er6', 'rep_btn_gps', 'rep_dec_gps');
+    builder.addEdge(tabRep, 'er7', 'rep_dec_gps', 'rep_err_gps', 'No');
+    builder.addEdge(tabRep, 'er8', 'rep_err_gps', 'rep_btn_gps', '', { exitX: 0.5, exitY: 0, entryX: 0, entryY: 0.5 });
+    builder.addEdge(tabRep, 'er9', 'rep_dec_gps', 'rep_proc_gps', 'Sí');
+    builder.addEdge(tabRep, 'er10', 'rep_proc_gps', 'rep_proc_drag');
+    builder.addEdge(tabRep, 'er11', 'rep_proc_drag', 'rep_proc_topol');
+    builder.addEdge(tabRep, 'er12', 'rep_proc_topol', 'rep_in_desc');
+    builder.addEdge(tabRep, 'er13', 'rep_in_desc', 'rep_proc_nlp');
+    builder.addEdge(tabRep, 'er14', 'rep_proc_nlp', 'rep_dec_sug');
+    builder.addEdge(tabRep, 'er15', 'rep_dec_sug', 'rep_sug_chip', 'Sí');
+    builder.addEdge(tabRep, 'er16', 'rep_sug_chip', 'rep_dec_emerg');
+    builder.addEdge(tabRep, 'er17', 'rep_dec_sug', 'rep_dec_emerg', 'No / Manual');
+    builder.addEdge(tabRep, 'er18', 'rep_dec_emerg', 'rep_emerg_act', 'Sí');
+    builder.addEdge(tabRep, 'er19', 'rep_emerg_act', 'rep_in_photo');
+    builder.addEdge(tabRep, 'er20', 'rep_dec_emerg', 'rep_in_photo', 'No');
+    builder.addEdge(tabRep, 'er21', 'rep_in_photo', 'rep_end_m1');
+
+    builder.addNode(tabRep, 'mod_rep_rad_box', 'MÓDULO: Gestión de Conectividad (Online vs PWA Offline) & Radicación', DrawioDiagramBuilder.STYLES.CONTAINER, 700, 40, 580, 1020);
+    builder.addNode(tabRep, 'rep_rad_start', 'Inicio: Reportero pulsa "Radicar Incidente"', DrawioDiagramBuilder.STYLES.START_END, 870, 90, 240, 50);
+    builder.addNode(tabRep, 'rep_dec_online', '¿Dispositivo tiene conexión a Internet?\n(navigator.onLine == true)', DrawioDiagramBuilder.STYLES.DECISION, 890, 180, 200, 90);
+    builder.addNode(tabRep, 'rep_off_save', 'Modo Offline Activo:\nSerializa payload y almacena en cola local\nlocalStorage: sigi_cola_incidentes_offline', DrawioDiagramBuilder.STYLES.PROCESS, 720, 310, 180, 75);
+    builder.addNode(tabRep, 'rep_off_banner', 'Despliega franja ámbar informativa:\n"Reporte guardado localmente en el móvil"', DrawioDiagramBuilder.STYLES.PROCESS, 720, 425, 180, 60);
+    builder.addNode(tabRep, 'rep_off_listen', 'Service Worker escucha evento:\nwindow.ononline', DrawioDiagramBuilder.STYLES.PROCESS, 720, 525, 180, 50);
+    builder.addNode(tabRep, 'rep_off_sync', 'Al restablecer señal:\nLee cola secuencialmente (FIFO) y transmite', DrawioDiagramBuilder.STYLES.PROCESS, 720, 615, 180, 65);
+    builder.addNode(tabRep, 'rep_on_cloud', 'Transmisión de imagen a Cloudinary CDN\nGenera URL HTTPS segura y optimizada', DrawioDiagramBuilder.STYLES.PROCESS, 950, 310, 240, 60);
+    builder.addNode(tabRep, 'rep_on_post', 'Envío de payload al servidor:\nPOST /api/incidentes con coordenadas y foto', DrawioDiagramBuilder.STYLES.PROCESS, 950, 410, 240, 60);
+    builder.addNode(tabRep, 'rep_on_db', 'Backend inserta incidente en PostgreSQL:\nAsigna id_estado = 1 ("Reportado")\nGenera código radicado INC-YYYY-XXXX', DrawioDiagramBuilder.STYLES.PROCESS, 950, 510, 240, 70);
+    builder.addNode(tabRep, 'rep_on_ws', 'Servidor emite evento WebSocket "nuevo_incidente"\na la sala institucional de "administradores"', DrawioDiagramBuilder.STYLES.PROCESS, 950, 620, 240, 60);
+    builder.addNode(tabRep, 'rep_on_res', 'Retorna respuesta exitosa HTTP 201 Created', DrawioDiagramBuilder.STYLES.PROCESS, 950, 720, 240, 50);
+    builder.addNode(tabRep, 'rep_on_modal', 'Despliega modal de confirmación con radicado oficial\nLimpia formulario para nueva captura', DrawioDiagramBuilder.STYLES.PROCESS, 950, 810, 240, 60);
+    builder.addNode(tabRep, 'rep_rad_end', 'Fin: Incidente radicado exitosamente', DrawioDiagramBuilder.STYLES.START_END, 950, 910, 240, 45);
+
+    builder.addEdge(tabRep, 'err1', 'rep_rad_start', 'rep_dec_online');
+    builder.addEdge(tabRep, 'err2', 'rep_dec_online', 'rep_off_save', 'No (Offline)');
+    builder.addEdge(tabRep, 'err3', 'rep_off_save', 'rep_off_banner');
+    builder.addEdge(tabRep, 'err4', 'rep_off_banner', 'rep_off_listen');
+    builder.addEdge(tabRep, 'err5', 'rep_off_listen', 'rep_off_sync');
+    builder.addEdge(tabRep, 'err6', 'rep_off_sync', 'rep_on_cloud');
+    builder.addEdge(tabRep, 'err7', 'rep_dec_online', 'rep_on_cloud', 'Sí (Online)');
+    builder.addEdge(tabRep, 'err8', 'rep_on_cloud', 'rep_on_post');
+    builder.addEdge(tabRep, 'err9', 'rep_on_post', 'rep_on_db');
+    builder.addEdge(tabRep, 'err10', 'rep_on_db', 'rep_on_ws');
+    builder.addEdge(tabRep, 'err11', 'rep_on_ws', 'rep_on_res');
+    builder.addEdge(tabRep, 'err12', 'rep_on_res', 'rep_on_modal');
+    builder.addEdge(tabRep, 'err13', 'rep_on_modal', 'rep_rad_end');
+
+    builder.addNode(tabRep, 'mod_rep_list_box', 'MÓDULO: Consulta y Trazabilidad en "Mis Reportes"', DrawioDiagramBuilder.STYLES.CONTAINER, 1310, 40, 460, 720);
+    builder.addNode(tabRep, 'rep_rep_start', 'Inicio: Acceso a pestaña "Mis Reportes"', DrawioDiagramBuilder.STYLES.START_END, 1420, 90, 240, 50);
+    builder.addNode(tabRep, 'rep_rep_req', 'Solicitud: GET /api/incidentes/mis-reportes', DrawioDiagramBuilder.STYLES.PROCESS, 1420, 180, 240, 50);
+    builder.addNode(tabRep, 'rep_rep_render', 'Renderiza listado cronológico con badges:\n- Reportado (Amarillo)\n- En Evaluación (Azul)\n- Aprobado (Verde)\n- Desestimado (Rojo)', DrawioDiagramBuilder.STYLES.PROCESS, 1420, 270, 240, 80);
+    builder.addNode(tabRep, 'rep_rep_dec', '¿Incidente fue desestimado?', DrawioDiagramBuilder.STYLES.DECISION, 1440, 390, 200, 90);
+    builder.addNode(tabRep, 'rep_rep_motivo', 'Clic abre modal con justificación técnica\ny motivo emitido por el analista validador', DrawioDiagramBuilder.STYLES.PROCESS, 1330, 520, 180, 65);
+    builder.addNode(tabRep, 'rep_rep_det', 'Muestra detalle de radicado y fecha oficial de publicación', DrawioDiagramBuilder.STYLES.PROCESS, 1550, 520, 180, 65);
+    builder.addNode(tabRep, 'rep_rep_end', 'Fin: Estado de reportes verificado', DrawioDiagramBuilder.STYLES.START_END, 1420, 630, 240, 45);
+
+    builder.addEdge(tabRep, 'erl1', 'rep_rep_start', 'rep_rep_req');
+    builder.addEdge(tabRep, 'erl2', 'rep_rep_req', 'rep_rep_render');
+    builder.addEdge(tabRep, 'erl3', 'rep_rep_render', 'rep_rep_dec');
+    builder.addEdge(tabRep, 'erl4', 'rep_rep_dec', 'rep_rep_motivo', 'Sí');
+    builder.addEdge(tabRep, 'erl5', 'rep_rep_dec', 'rep_rep_det', 'No');
+    builder.addEdge(tabRep, 'erl6', 'rep_rep_motivo', 'rep_rep_end');
+    builder.addEdge(tabRep, 'erl7', 'rep_rep_det', 'rep_rep_end');
+
+    // Tab 4: Admin
+    const tabAdmin = builder.addTab('tab-admin', 'Flujo-Admin');
+    builder.addNode(tabAdmin, 'mod_adm_val_box', 'MÓDULO: Mesa de Validación & Control de Concurrencia (Candado 10 min)', DrawioDiagramBuilder.STYLES.CONTAINER, 50, 40, 680, 1440);
+    builder.addNode(tabAdmin, 'adm_start', 'Inicio: Administrador en /admin/index.html', DrawioDiagramBuilder.STYLES.START_END, 270, 90, 240, 50);
+    builder.addNode(tabAdmin, 'adm_proc_ws', 'Socket.io conectado a sala "administradores"\nEscucha evento "nuevo_incidente" en tiempo real', DrawioDiagramBuilder.STYLES.PROCESS, 270, 180, 240, 60);
+    builder.addNode(tabAdmin, 'adm_proc_tone', 'Web Audio API sintetiza tono sonoro (D5 a A5)\nDespliega notificación Toast e inserta fila superior', DrawioDiagramBuilder.STYLES.PROCESS, 270, 280, 240, 60);
+    builder.addNode(tabAdmin, 'adm_proc_click', 'Administrador pulsa "Revisar Incidente"', DrawioDiagramBuilder.STYLES.PROCESS, 270, 380, 240, 45);
+    builder.addNode(tabAdmin, 'adm_proc_lockreq', 'Solicitud atómica: POST /api/incidentes/:id/tomar', DrawioDiagramBuilder.STYLES.PROCESS, 270, 465, 240, 50);
+    builder.addNode(tabAdmin, 'adm_dec_lock', '¿Caso disponible o candado previo expirado?\n(id_admin_revisor IS NULL OR bloqueo_expira < NOW())', DrawioDiagramBuilder.STYLES.DECISION, 290, 555, 200, 95);
+    builder.addNode(tabAdmin, 'adm_err_conflict', 'HTTP 409 Conflicto:\n"Caso en evaluación por otro analista"\nDeshabilita botón para los demás analistas', DrawioDiagramBuilder.STYLES.PROCESS, 80, 575, 180, 65);
+    builder.addNode(tabAdmin, 'adm_end_conflict', 'Fin: Caso reservado', DrawioDiagramBuilder.STYLES.START_END, 90, 675, 160, 40);
+    builder.addNode(tabAdmin, 'adm_proc_setlock', 'Adquisición de Candado:\nUPDATE incidente SET id_admin_revisor = $user,\nid_estado = 2, bloqueo_expira = NOW() + INTERVAL \'10 MIN\'', DrawioDiagramBuilder.STYLES.PROCESS, 270, 690, 240, 70);
+    builder.addNode(tabAdmin, 'adm_proc_modal', 'Abre modal de validación exclusiva con fotos Cloudinary\ny mapa interactivo del punto del suceso', DrawioDiagramBuilder.STYLES.PROCESS, 270, 800, 240, 60);
+    builder.addNode(tabAdmin, 'adm_proc_ai', 'Consulta Asistente IA ("Sugerencia IA"):\nCompara tipología reportada vs predicción NLP', DrawioDiagramBuilder.STYLES.PROCESS, 270, 900, 240, 55);
+    builder.addNode(tabAdmin, 'adm_dec_resol', '¿Dictamen técnico del Administrador?', DrawioDiagramBuilder.STYLES.DECISION, 290, 995, 200, 90);
+    builder.addNode(tabAdmin, 'adm_res_apr', 'Aprobar: POST /:id/resolver\nUPDATE incidente SET id_estado = 5 ("Aprobado"),\nfecha_resolucion = NOW()', DrawioDiagramBuilder.STYLES.PROCESS, 270, 1125, 240, 70);
+    builder.addNode(tabAdmin, 'adm_res_pub', 'Caso se publica de inmediato en Geoportal público\ny alimenta modelos de Machine Learning', DrawioDiagramBuilder.STYLES.PROCESS, 270, 1235, 240, 60);
+    builder.addNode(tabAdmin, 'adm_res_des', 'Desestimar: POST /:id/cerrar\nValida justificación técnica obligatoria\nUPDATE incidente SET id_estado = 6, motivo = $motivo', DrawioDiagramBuilder.STYLES.PROCESS, 530, 1125, 180, 75);
+    builder.addNode(tabAdmin, 'adm_res_arch', 'Caso se archiva fuera de la vista pública\nPermanece accesible para auditoría', DrawioDiagramBuilder.STYLES.PROCESS, 530, 1240, 180, 55);
+    builder.addNode(tabAdmin, 'adm_res_lib', 'Liberar: POST /:id/liberar\n(O transcurren 10 min de inactividad)\nRestablece id_admin_revisor = NULL, id_estado = 1', DrawioDiagramBuilder.STYLES.PROCESS, 80, 1125, 170, 75);
+    builder.addNode(tabAdmin, 'adm_end_val', 'Fin: Caso procesado y cola actualizada', DrawioDiagramBuilder.STYLES.START_END, 270, 1345, 240, 45);
+
+    builder.addEdge(tabAdmin, 'eav1', 'adm_start', 'adm_proc_ws');
+    builder.addEdge(tabAdmin, 'eav2', 'adm_proc_ws', 'adm_proc_tone');
+    builder.addEdge(tabAdmin, 'eav3', 'adm_proc_tone', 'adm_proc_click');
+    builder.addEdge(tabAdmin, 'eav4', 'adm_proc_click', 'adm_proc_lockreq');
+    builder.addEdge(tabAdmin, 'eav5', 'adm_proc_lockreq', 'adm_dec_lock');
+    builder.addEdge(tabAdmin, 'eav6', 'adm_dec_lock', 'adm_err_conflict', 'No');
+    builder.addEdge(tabAdmin, 'eav7', 'adm_err_conflict', 'adm_end_conflict');
+    builder.addEdge(tabAdmin, 'eav8', 'adm_dec_lock', 'adm_proc_setlock', 'Sí');
+    builder.addEdge(tabAdmin, 'eav9', 'adm_proc_setlock', 'adm_proc_modal');
+    builder.addEdge(tabAdmin, 'eav10', 'adm_proc_modal', 'adm_proc_ai');
+    builder.addEdge(tabAdmin, 'eav11', 'adm_proc_ai', 'adm_dec_resol');
+    builder.addEdge(tabAdmin, 'eav12', 'adm_dec_resol', 'adm_res_apr', 'Aprobar');
+    builder.addEdge(tabAdmin, 'eav13', 'adm_res_apr', 'adm_res_pub');
+    builder.addEdge(tabAdmin, 'eav14', 'adm_res_pub', 'adm_end_val');
+    builder.addEdge(tabAdmin, 'eav15', 'adm_dec_resol', 'adm_res_des', 'Desestimar');
+    builder.addEdge(tabAdmin, 'eav16', 'adm_res_des', 'adm_res_arch');
+    builder.addEdge(tabAdmin, 'eav17', 'adm_res_arch', 'adm_end_val');
+    builder.addEdge(tabAdmin, 'eav18', 'adm_dec_resol', 'adm_res_lib', 'Liberar');
+    builder.addEdge(tabAdmin, 'eav19', 'adm_res_lib', 'adm_end_val');
+
+    builder.addNode(tabAdmin, 'mod_adm_an_box', 'MÓDULO: Analítica Predictiva Espacial (DBSCAN) y Pronóstico Temporal', DrawioDiagramBuilder.STYLES.CONTAINER, 760, 40, 520, 960);
+    builder.addNode(tabAdmin, 'adm_an_start', 'Inicio: Acceso a pestaña "Analítica Predictiva"', DrawioDiagramBuilder.STYLES.START_END, 900, 90, 240, 50);
+    builder.addNode(tabAdmin, 'adm_an_in', 'Selección de ventana temporal y tipologías', DrawioDiagramBuilder.STYLES.IO_DATA, 900, 180, 240, 50);
+    builder.addNode(tabAdmin, 'adm_an_req_dbscan', 'Solicitud: GET /api/ml/hotspots', DrawioDiagramBuilder.STYLES.PROCESS, 900, 270, 240, 50);
+    builder.addNode(tabAdmin, 'adm_an_dbscan', 'Algoritmo DBSCAN con distancia de Haversine:\nAgrupa focos con eps = 300m y minPts = 3 incidentes', DrawioDiagramBuilder.STYLES.PROCESS, 900, 360, 240, 65);
+    builder.addNode(tabAdmin, 'adm_an_map_render', 'Renderiza mapa de calor interactivo con gradiente cromático\n(Verde -> Amarillo -> Rojo según densidad crítica)', DrawioDiagramBuilder.STYLES.PROCESS, 900, 465, 240, 65);
+    builder.addNode(tabAdmin, 'adm_an_req_fore', 'Solicitud: GET /api/ml/forecast', DrawioDiagramBuilder.STYLES.PROCESS, 900, 570, 240, 50);
+    builder.addNode(tabAdmin, 'adm_an_fore', 'Modelo de Suavizado Exponencial (Exponential Smoothing):\nCalcula proyección delictiva para las próximas 4 semanas', DrawioDiagramBuilder.STYLES.PROCESS, 900, 660, 240, 65);
+    builder.addNode(tabAdmin, 'adm_an_chart', 'Renderiza gráfico de tendencia con bandas de predicción\npara planificación de patrullajes preventivos', DrawioDiagramBuilder.STYLES.PROCESS, 900, 765, 240, 65);
+    builder.addNode(tabAdmin, 'adm_an_end', 'Fin: Diagnóstico predictivo completado', DrawioDiagramBuilder.STYLES.START_END, 900, 870, 240, 45);
+
+    builder.addEdge(tabAdmin, 'eaa1', 'adm_an_start', 'adm_an_in');
+    builder.addEdge(tabAdmin, 'eaa2', 'adm_an_in', 'adm_an_req_dbscan');
+    builder.addEdge(tabAdmin, 'eaa3', 'adm_an_req_dbscan', 'adm_an_dbscan');
+    builder.addEdge(tabAdmin, 'eaa4', 'adm_an_dbscan', 'adm_an_map_render');
+    builder.addEdge(tabAdmin, 'eaa5', 'adm_an_map_render', 'adm_an_req_fore');
+    builder.addEdge(tabAdmin, 'eaa6', 'adm_an_req_fore', 'adm_an_fore');
+    builder.addEdge(tabAdmin, 'eaa7', 'adm_an_fore', 'adm_an_chart');
+    builder.addEdge(tabAdmin, 'eaa8', 'adm_an_chart', 'adm_an_end');
+
+    builder.addNode(tabAdmin, 'mod_adm_pdf_box', 'MÓDULO: Generación de Reportes Oficiales Ejecutivos en PDF', DrawioDiagramBuilder.STYLES.CONTAINER, 1310, 40, 480, 870);
+    builder.addNode(tabAdmin, 'adm_pdf_start', 'Inicio: Pestaña "Reportes Ejecutivos"', DrawioDiagramBuilder.STYLES.START_END, 1430, 90, 240, 50);
+    builder.addNode(tabAdmin, 'adm_pdf_in', 'Selección de mes y año institucional (o rango)', DrawioDiagramBuilder.STYLES.IO_DATA, 1430, 180, 240, 50);
+    builder.addNode(tabAdmin, 'adm_pdf_click', 'Clic en "Generar Reporte Oficial PDF"', DrawioDiagramBuilder.STYLES.PROCESS, 1430, 270, 240, 45);
+    builder.addNode(tabAdmin, 'adm_pdf_query', 'Backend consulta base de datos PostgreSQL:\nConsolida tipologías, variaciones y comunas', DrawioDiagramBuilder.STYLES.PROCESS, 1430, 355, 240, 60);
+    builder.addNode(tabAdmin, 'adm_pdf_kit', 'Motor PDFKit compila dinámicamente el documento:\n- Portada oficial institucional\n- Tablas estadísticas formateadas\n- Resumen ejecutivo y firmas de control', DrawioDiagramBuilder.STYLES.PROCESS, 1430, 455, 240, 80);
+    builder.addNode(tabAdmin, 'adm_pdf_stream', 'Transmite archivo con Content-Type: application/pdf', DrawioDiagramBuilder.STYLES.PROCESS, 1430, 575, 240, 50);
+    builder.addNode(tabAdmin, 'adm_pdf_down', 'Descarga automática en navegador:\nReporte_Ejecutivo_SIGI_[MES]_[AÑO].pdf', DrawioDiagramBuilder.STYLES.PROCESS, 1430, 665, 240, 60);
+    builder.addNode(tabAdmin, 'adm_pdf_end', 'Fin: Documento listo para comités', DrawioDiagramBuilder.STYLES.START_END, 1430, 765, 240, 45);
+
+    builder.addEdge(tabAdmin, 'eap1', 'adm_pdf_start', 'adm_pdf_in');
+    builder.addEdge(tabAdmin, 'eap2', 'adm_pdf_in', 'adm_pdf_click');
+    builder.addEdge(tabAdmin, 'eap3', 'adm_pdf_click', 'adm_pdf_query');
+    builder.addEdge(tabAdmin, 'eap4', 'adm_pdf_query', 'adm_pdf_kit');
+    builder.addEdge(tabAdmin, 'eap5', 'adm_pdf_kit', 'adm_pdf_stream');
+    builder.addEdge(tabAdmin, 'eap6', 'adm_pdf_stream', 'adm_pdf_down');
+    builder.addEdge(tabAdmin, 'eap7', 'adm_pdf_down', 'adm_pdf_end');
+
+    builder.addNode(tabAdmin, 'mod_adm_csv_box', 'MÓDULO: Ingesta Masiva CSV y Reversión Atómica (Rollback)', DrawioDiagramBuilder.STYLES.CONTAINER, 1820, 40, 520, 1080);
+    builder.addNode(tabAdmin, 'adm_csv_start', 'Inicio: Pestaña "Importación Masiva"', DrawioDiagramBuilder.STYLES.START_END, 1960, 90, 240, 50);
+    builder.addNode(tabAdmin, 'adm_csv_in', 'Carga de archivo .csv estructurado según plantilla', DrawioDiagramBuilder.STYLES.IO_DATA, 1960, 180, 240, 50);
+    builder.addNode(tabAdmin, 'adm_csv_proc', 'Procesamiento en streaming fila a fila:\nValida tipos de datos, rangos geográficos y obligatoriedad', DrawioDiagramBuilder.STYLES.PROCESS, 1960, 270, 240, 65);
+    builder.addNode(tabAdmin, 'adm_csv_dec_val', '¿Archivo contiene registros válidos?', DrawioDiagramBuilder.STYLES.DECISION, 1980, 375, 200, 90);
+    builder.addNode(tabAdmin, 'adm_csv_err', 'Rechazo de lote con reporte detallado de errores', DrawioDiagramBuilder.STYLES.PROCESS, 2190, 395, 130, 50);
+    builder.addNode(tabAdmin, 'adm_csv_insert', 'Inserción transaccional atómica en PostgreSQL:\nAsigna batch_id único a todos los registros del lote', DrawioDiagramBuilder.STYLES.PROCESS, 1960, 505, 240, 65);
+    builder.addNode(tabAdmin, 'adm_csv_res', 'Reporta total de filas importadas con éxito', DrawioDiagramBuilder.STYLES.PROCESS, 1960, 610, 240, 50);
+    builder.addNode(tabAdmin, 'adm_csv_dec_roll', '¿Usuario solicita revertir importación?\n(Clic en "Deshacer Última Importación")', DrawioDiagramBuilder.STYLES.DECISION, 1980, 700, 200, 90);
+    builder.addNode(tabAdmin, 'adm_csv_roll_conf', 'Solicita confirmación de seguridad con batch_id', DrawioDiagramBuilder.STYLES.PROCESS, 2190, 795, 130, 50);
+    builder.addNode(tabAdmin, 'adm_csv_roll_del', 'DELETE FROM incidente WHERE batch_id = $batchId\nEliminación atómica y exclusiva del lote', DrawioDiagramBuilder.STYLES.PROCESS, 2180, 885, 150, 65);
+    builder.addNode(tabAdmin, 'adm_csv_roll_ok', 'Restaura mapa al estado anterior e informa', DrawioDiagramBuilder.STYLES.PROCESS, 2180, 990, 150, 50);
+    builder.addNode(tabAdmin, 'adm_csv_ok_keep', 'Registros quedan consolidados definitivamente en el sistema', DrawioDiagramBuilder.STYLES.PROCESS, 1960, 830, 240, 55);
+    builder.addNode(tabAdmin, 'adm_csv_end', 'Fin: Operación de importación concluida', DrawioDiagramBuilder.STYLES.START_END, 1960, 925, 240, 45);
+
+    builder.addEdge(tabAdmin, 'eac1', 'adm_csv_start', 'adm_csv_in');
+    builder.addEdge(tabAdmin, 'eac2', 'adm_csv_in', 'adm_csv_proc');
+    builder.addEdge(tabAdmin, 'eac3', 'adm_csv_proc', 'adm_csv_dec_val');
+    builder.addEdge(tabAdmin, 'eac4', 'adm_csv_dec_val', 'adm_csv_err', 'No');
+    builder.addEdge(tabAdmin, 'eac5', 'adm_csv_dec_val', 'adm_csv_insert', 'Sí');
+    builder.addEdge(tabAdmin, 'eac6', 'adm_csv_insert', 'adm_csv_res');
+    builder.addEdge(tabAdmin, 'eac7', 'adm_csv_res', 'adm_csv_dec_roll');
+    builder.addEdge(tabAdmin, 'eac8', 'adm_csv_dec_roll', 'adm_csv_roll_conf', 'Sí');
+    builder.addEdge(tabAdmin, 'eac9', 'adm_csv_roll_conf', 'adm_csv_roll_del');
+    builder.addEdge(tabAdmin, 'eac10', 'adm_csv_roll_del', 'adm_csv_roll_ok');
+    builder.addEdge(tabAdmin, 'eac11', 'adm_csv_roll_ok', 'adm_csv_end');
+    builder.addEdge(tabAdmin, 'eac12', 'adm_csv_dec_roll', 'adm_csv_ok_keep', 'No');
+    builder.addEdge(tabAdmin, 'eac13', 'adm_csv_ok_keep', 'adm_csv_end');
+
+    // Tab 5: Superadmin
+    const tabSuper = builder.addTab('tab-superadmin', 'Flujo-Superadmin');
+    builder.addNode(tabSuper, 'mod_sup_box', 'MÓDULO: Creación de Usuarios y Despacho Automático de Credenciales', DrawioDiagramBuilder.STYLES.CONTAINER, 50, 40, 560, 770);
+    builder.addNode(tabSuper, 'sup_start', 'Inicio: Acceso a /superadmin/index.html', DrawioDiagramBuilder.STYLES.START_END, 210, 90, 240, 50);
+    builder.addNode(tabSuper, 'sup_in_user', 'Ingreso de datos en "+ Registrar Nuevo Usuario":\nNombre, Username, Email, Rol, Entidad, Teléfono', DrawioDiagramBuilder.STYLES.IO_DATA, 210, 180, 240, 70);
+    builder.addNode(tabSuper, 'sup_proc_pass', 'Genera contraseña aleatoria segura (10 caracteres)\nCifra hash con Bcrypt (10 salt rounds)', DrawioDiagramBuilder.STYLES.PROCESS, 210, 290, 240, 60);
+    builder.addNode(tabSuper, 'sup_proc_insert', 'Inserta en BD con activo = 1 y debe_cambiar_password = 1', DrawioDiagramBuilder.STYLES.PROCESS, 210, 390, 240, 50);
+    builder.addNode(tabSuper, 'sup_proc_mail', 'Nodemailer despacha correo electrónico formal\ncon credenciales de acceso y enlace oficial', DrawioDiagramBuilder.STYLES.PROCESS, 210, 480, 240, 60);
+    builder.addNode(tabSuper, 'sup_proc_audit1', 'Registra evento de creación en bitácora de auditoría', DrawioDiagramBuilder.STYLES.PROCESS, 210, 580, 240, 50);
+    builder.addNode(tabSuper, 'sup_end_create', 'Fin: Cuenta creada y credenciales enviadas', DrawioDiagramBuilder.STYLES.START_END, 210, 670, 240, 45);
+
+    builder.addEdge(tabSuper, 'es1', 'sup_start', 'sup_in_user');
+    builder.addEdge(tabSuper, 'es2', 'sup_in_user', 'sup_proc_pass');
+    builder.addEdge(tabSuper, 'es3', 'sup_proc_pass', 'sup_proc_insert');
+    builder.addEdge(tabSuper, 'es4', 'sup_proc_insert', 'sup_proc_mail');
+    builder.addEdge(tabSuper, 'es5', 'sup_proc_mail', 'sup_proc_audit1');
+    builder.addEdge(tabSuper, 'es6', 'sup_proc_audit1', 'sup_end_create');
+
+    builder.addNode(tabSuper, 'mod_sup_st_box', 'MÓDULO: Control de Estados y Blindaje Institucional de Superadmin', DrawioDiagramBuilder.STYLES.CONTAINER, 640, 40, 560, 1040);
+    builder.addNode(tabSuper, 'sup_st_start', 'Inicio: Superadmin selecciona un usuario existente', DrawioDiagramBuilder.STYLES.START_END, 800, 90, 240, 50);
+    builder.addNode(tabSuper, 'sup_st_in', 'Solicitud: Inactivar usuario o Modificar Rol', DrawioDiagramBuilder.STYLES.IO_DATA, 800, 180, 240, 50);
+    builder.addNode(tabSuper, 'sup_st_dec_issup', '¿El usuario objetivo es Superadministrador?', DrawioDiagramBuilder.STYLES.DECISION, 820, 270, 200, 90);
+    builder.addNode(tabSuper, 'sup_st_dec_last', '¿Es el único Superadmin activo?\n(contarSuperadminsActivos <= 1)', DrawioDiagramBuilder.STYLES.DECISION, 820, 400, 200, 95);
+    builder.addNode(tabSuper, 'sup_st_err_last', 'Operación Denegada (HTTP 400):\n"No es posible inactivar ni degradar al\núnico Superadministrador activo"', DrawioDiagramBuilder.STYLES.PROCESS, 1030, 410, 160, 75);
+    builder.addNode(tabSuper, 'sup_st_end_block', 'Fin: Bloqueo de seguridad activo', DrawioDiagramBuilder.STYLES.START_END, 1035, 520, 150, 40);
+    builder.addNode(tabSuper, 'sup_st_dec_self', '¿Superadmin intenta auto-inactivarse\nen su propia sesión activa?', DrawioDiagramBuilder.STYLES.DECISION, 820, 535, 200, 95);
+    builder.addNode(tabSuper, 'sup_st_err_self', 'Operación Denegada (HTTP 400):\n"No puede inactivar su propia cuenta"', DrawioDiagramBuilder.STYLES.PROCESS, 1030, 550, 160, 65);
+    builder.addNode(tabSuper, 'sup_st_proc_upd', 'UPDATE usuarios SET activo = $estado / rol = $rol', DrawioDiagramBuilder.STYLES.PROCESS, 800, 670, 240, 50);
+    builder.addNode(tabSuper, 'sup_st_proc_sess', 'Revoca tokens y finaliza sesiones activas si fue inactivado', DrawioDiagramBuilder.STYLES.PROCESS, 800, 760, 240, 55);
+    builder.addNode(tabSuper, 'sup_st_proc_aud', 'Registra cambio de estado en bitácora de auditoría', DrawioDiagramBuilder.STYLES.PROCESS, 800, 855, 240, 50);
+    builder.addNode(tabSuper, 'sup_st_end_ok', 'Fin: Estado de cuenta actualizado con blindaje', DrawioDiagramBuilder.STYLES.START_END, 800, 945, 240, 45);
+
+    builder.addEdge(tabSuper, 'ess1', 'sup_st_start', 'sup_st_in');
+    builder.addEdge(tabSuper, 'ess2', 'sup_st_in', 'sup_st_dec_issup');
+    builder.addEdge(tabSuper, 'ess3', 'sup_st_dec_issup', 'sup_st_dec_last', 'Sí');
+    builder.addEdge(tabSuper, 'ess4', 'sup_st_dec_issup', 'sup_st_proc_upd', 'No (Reportero/Admin)');
+    builder.addEdge(tabSuper, 'ess5', 'sup_st_dec_last', 'sup_st_err_last', 'Sí');
+    builder.addEdge(tabSuper, 'ess6', 'sup_st_err_last', 'sup_st_end_block');
+    builder.addEdge(tabSuper, 'ess7', 'sup_st_dec_last', 'sup_st_dec_self', 'No (Hay otros activos)');
+    builder.addEdge(tabSuper, 'ess8', 'sup_st_dec_self', 'sup_st_err_self', 'Sí');
+    builder.addEdge(tabSuper, 'ess9', 'sup_st_err_self', 'sup_st_end_block');
+    builder.addEdge(tabSuper, 'ess10', 'sup_st_dec_self', 'sup_st_proc_upd', 'No');
+    builder.addEdge(tabSuper, 'ess11', 'sup_st_proc_upd', 'sup_st_proc_sess');
+    builder.addEdge(tabSuper, 'ess12', 'sup_st_proc_sess', 'sup_st_proc_aud');
+    builder.addEdge(tabSuper, 'ess13', 'sup_st_proc_aud', 'sup_st_end_ok');
+
+    builder.addNode(tabSuper, 'mod_sup_cat_box', 'MÓDULO: Catálogos con Validación Cromática Perceptual (Redmean)', DrawioDiagramBuilder.STYLES.CONTAINER, 1230, 40, 570, 1040);
+    builder.addNode(tabSuper, 'sup_cat_start', 'Inicio: Consola "Administración de Catálogos"', DrawioDiagramBuilder.STYLES.START_END, 1395, 90, 240, 50);
+    builder.addNode(tabSuper, 'sup_cat_in', 'Digita nombre de tipología y elige color hexadecimal', DrawioDiagramBuilder.STYLES.IO_DATA, 1395, 180, 240, 50);
+    builder.addNode(tabSuper, 'sup_cat_calc', 'Cálculo de Distancia Perceptual Cromática (Redmean):\nDeltaC = sqrt((2+r/256)*DR^2 + 4*DG^2 + (2+(255-r)/256)*DB^2)', DrawioDiagramBuilder.STYLES.PROCESS, 1395, 270, 240, 75);
+    builder.addNode(tabSuper, 'sup_cat_dec_col', '¿Distancia cromática DeltaC < 85\nrespecto a otro tipo preexistente?', DrawioDiagramBuilder.STYLES.DECISION, 1415, 385, 200, 95);
+    builder.addNode(tabSuper, 'sup_cat_err_col', 'Alerta de Colisión Visual:\n"El color es indistinguible de otro tipo.\nSeleccione una tonalidad con mayor contraste"', DrawioDiagramBuilder.STYLES.PROCESS, 1630, 395, 160, 75);
+    builder.addNode(tabSuper, 'sup_cat_insert', 'Color perceptiblemente diferenciable:\nINSERT INTO tipo_incidente (nombre, color, activo)', DrawioDiagramBuilder.STYLES.PROCESS, 1395, 520, 240, 60);
+    builder.addNode(tabSuper, 'sup_cat_dec_del', '¿Superadmin solicita eliminar una tipología?', DrawioDiagramBuilder.STYLES.DECISION, 1415, 620, 200, 90);
+    builder.addNode(tabSuper, 'sup_cat_chk_ref', 'Consulta referencial:\ncontarIncidentesPorTipo(id)', DrawioDiagramBuilder.STYLES.PROCESS, 1630, 725, 160, 50);
+    builder.addNode(tabSuper, 'sup_cat_dec_ref', '¿Tiene incidentes\nhistóricos?', DrawioDiagramBuilder.STYLES.DECISION, 1640, 815, 140, 75);
+    builder.addNode(tabSuper, 'sup_cat_err_ref', 'Bloquea eliminación física por integridad referencial\n(Sugiere archivado lógico)', DrawioDiagramBuilder.STYLES.PROCESS, 1620, 930, 170, 60);
+    builder.addNode(tabSuper, 'sup_cat_del_ok', 'DELETE FROM tipo_incidente WHERE id = $id', DrawioDiagramBuilder.STYLES.PROCESS, 1435, 935, 160, 50);
+    builder.addNode(tabSuper, 'sup_cat_end', 'Fin: Catálogo tipológico actualizado', DrawioDiagramBuilder.STYLES.START_END, 1395, 1025, 240, 45);
+
+    builder.addEdge(tabSuper, 'ec1', 'sup_cat_start', 'sup_cat_in');
+    builder.addEdge(tabSuper, 'ec2', 'sup_cat_in', 'sup_cat_calc');
+    builder.addEdge(tabSuper, 'ec3', 'sup_cat_calc', 'sup_cat_dec_col');
+    builder.addEdge(tabSuper, 'ec4', 'sup_cat_dec_col', 'sup_cat_err_col', 'Sí');
+    builder.addEdge(tabSuper, 'ec5', 'sup_cat_err_col', 'sup_cat_in', '', { exitX: 0.5, exitY: 0, entryX: 1, entryY: 0.5 });
+    builder.addEdge(tabSuper, 'ec6', 'sup_cat_dec_col', 'sup_cat_insert', 'No');
+    builder.addEdge(tabSuper, 'ec7', 'sup_cat_insert', 'sup_cat_dec_del');
+    builder.addEdge(tabSuper, 'ec8', 'sup_cat_dec_del', 'sup_cat_chk_ref', 'Sí');
+    builder.addEdge(tabSuper, 'ec9', 'sup_cat_chk_ref', 'sup_cat_dec_ref');
+    builder.addEdge(tabSuper, 'ec10', 'sup_cat_dec_ref', 'sup_cat_err_ref', 'Sí');
+    builder.addEdge(tabSuper, 'ec11', 'sup_cat_dec_ref', 'sup_cat_del_ok', 'No');
+    builder.addEdge(tabSuper, 'ec12', 'sup_cat_dec_del', 'sup_cat_end', 'No');
+    builder.addEdge(tabSuper, 'ec13', 'sup_cat_del_ok', 'sup_cat_end');
+    builder.addEdge(tabSuper, 'ec14', 'sup_cat_err_ref', 'sup_cat_end');
+
+    builder.addNode(tabSuper, 'mod_sup_ml_box', 'MÓDULO: Auditoría Forense y Reentrenamiento ML', DrawioDiagramBuilder.STYLES.CONTAINER, 1830, 40, 530, 870);
+    builder.addNode(tabSuper, 'sup_ml_start', 'Inicio: Consola de Auditoría y Machine Learning', DrawioDiagramBuilder.STYLES.START_END, 1970, 90, 240, 50);
+    builder.addNode(tabSuper, 'sup_aud_filter', 'Auditoría Forense: Filtrado por fecha, usuario y tabla\nConsulta GET /api/usuarios/auditoria (tabla inmutable)', DrawioDiagramBuilder.STYLES.PROCESS, 1970, 180, 240, 65);
+    builder.addNode(tabSuper, 'sup_aud_view', 'Inspección de metadatos forenses: IP, User-Agent, JSON payload', DrawioDiagramBuilder.STYLES.PROCESS, 1970, 285, 240, 55);
+    builder.addNode(tabSuper, 'sup_ml_retrain', 'Superadmin pulsa "Reentrenar Modelo ML":\nPOST /api/ml/reentrenar', DrawioDiagramBuilder.STYLES.PROCESS, 1970, 380, 240, 55);
+    builder.addNode(tabSuper, 'sup_ml_query', 'Extrae relatos de incidentes aprobados (id_estado = 5)', DrawioDiagramBuilder.STYLES.PROCESS, 1970, 475, 240, 50);
+    builder.addNode(tabSuper, 'sup_ml_bayes', 'Reconstruye vocabulario y probabilidades a priori\naplicando suavizado de Laplace en tiempo real', DrawioDiagramBuilder.STYLES.PROCESS, 1970, 565, 240, 65);
+    builder.addNode(tabSuper, 'sup_ml_update', 'Actualiza matriz predictiva en memoria sin reinicio de Node.js', DrawioDiagramBuilder.STYLES.PROCESS, 1970, 670, 240, 55);
+    builder.addNode(tabSuper, 'sup_ml_end', 'Fin: Modelo reentrenado y auditoría verificada', DrawioDiagramBuilder.STYLES.START_END, 1970, 765, 240, 45);
+
+    builder.addEdge(tabSuper, 'em1', 'sup_ml_start', 'sup_aud_filter');
+    builder.addEdge(tabSuper, 'em2', 'sup_aud_filter', 'sup_aud_view');
+    builder.addEdge(tabSuper, 'em3', 'sup_aud_view', 'sup_ml_retrain');
+    builder.addEdge(tabSuper, 'em4', 'sup_ml_retrain', 'sup_ml_query');
+    builder.addEdge(tabSuper, 'em5', 'sup_ml_query', 'sup_ml_bayes');
+    builder.addEdge(tabSuper, 'em6', 'sup_ml_bayes', 'sup_ml_update');
+    builder.addEdge(tabSuper, 'em7', 'sup_ml_update', 'sup_ml_end');
+
+    // Módulo 5: Seguridad Perimetral y Desbloqueo de IPs
+    builder.addNode(tabSuper, 'mod_sup_ip_box', 'MÓDULO: Seguridad Perimetral y Desbloqueo de IPs Bloqueadas', DrawioDiagramBuilder.STYLES.CONTAINER, 2400, 40, 560, 920);
+    builder.addNode(tabSuper, 'sup_ip_start', 'Inicio: Consola "Seguridad IP" (#btnSeguridadIps)', DrawioDiagramBuilder.STYLES.START_END, 2560, 90, 240, 50);
+    builder.addNode(tabSuper, 'sup_ip_req', 'Consulta GET /api/seguridad/ips-bloqueadas\n(Exclusivo rol Superadmin)', DrawioDiagramBuilder.STYLES.PROCESS, 2560, 180, 240, 55);
+    builder.addNode(tabSuper, 'sup_ip_render', 'Renderiza tabla con badge de IP, motivo,\nhora y temporizador decreciente en vivo (MM:SS)', DrawioDiagramBuilder.STYLES.PROCESS, 2560, 275, 240, 65);
+    builder.addNode(tabSuper, 'sup_ip_click', 'Superadmin pulsa botón con icono de candado cerrado\n(.btn-icon-usr) en la dirección IP afectada', DrawioDiagramBuilder.STYLES.PROCESS, 2560, 380, 240, 60);
+    builder.addNode(tabSuper, 'sup_ip_modal', 'Modal de Confirmación Institucional:\n"¿Está seguro de desbloquear la IP {ip}?"', DrawioDiagramBuilder.STYLES.PROCESS, 2560, 480, 240, 55);
+    builder.addNode(tabSuper, 'sup_ip_dec_conf', '¿Superadmin confirma\nel desbloqueo?', DrawioDiagramBuilder.STYLES.DECISION, 2580, 575, 200, 90);
+    builder.addNode(tabSuper, 'sup_ip_cancel', 'Cancela operación:\nSe mantiene el bloqueo perimetral', DrawioDiagramBuilder.STYLES.PROCESS, 2800, 595, 140, 50);
+    builder.addNode(tabSuper, 'sup_ip_post', 'Envía POST /api/seguridad/desbloquear-ip/:ip\ncon validación estricta de Token CSRF', DrawioDiagramBuilder.STYLES.PROCESS, 2560, 705, 240, 60);
+    builder.addNode(tabSuper, 'sup_ip_purge', 'Purga memoria en loginLimiter (127.0.0.1, ::1, ::/56),\nregistra log DESBLOQUEAR_IP y emite io.emit(ip_desbloqueada)', DrawioDiagramBuilder.STYLES.PROCESS, 2560, 805, 240, 65);
+    builder.addNode(tabSuper, 'sup_ip_end', 'Fin: Acceso de IP restablecido y tabla actualizada en tiempo real', DrawioDiagramBuilder.STYLES.START_END, 2560, 905, 240, 45);
+
+    builder.addEdge(tabSuper, 'eip1', 'sup_ip_start', 'sup_ip_req');
+    builder.addEdge(tabSuper, 'eip2', 'sup_ip_req', 'sup_ip_render');
+    builder.addEdge(tabSuper, 'eip3', 'sup_ip_render', 'sup_ip_click');
+    builder.addEdge(tabSuper, 'eip4', 'sup_ip_click', 'sup_ip_modal');
+    builder.addEdge(tabSuper, 'eip5', 'sup_ip_modal', 'sup_ip_dec_conf');
+    builder.addEdge(tabSuper, 'eip6', 'sup_ip_dec_conf', 'sup_ip_cancel', 'No');
+    builder.addEdge(tabSuper, 'eip7', 'sup_ip_dec_conf', 'sup_ip_post', 'Sí');
+    builder.addEdge(tabSuper, 'eip8', 'sup_ip_post', 'sup_ip_purge');
+    builder.addEdge(tabSuper, 'eip9', 'sup_ip_purge', 'sup_ip_end');
+    builder.addEdge(tabSuper, 'eip10', 'sup_ip_cancel', 'sup_ip_end');
+
+    // Tab 6: Negocio
+    const tabBiz = builder.addTab('tab-negocio', 'Diagrama-Negocio');
+    builder.addNode(tabBiz, 'lane_ciudadania', 'ACTOR DE NEGOCIO:\nCiudadanía de Florencia (Comunidad)', DrawioDiagramBuilder.STYLES.CONTAINER, 50, 40, 420, 1600);
+    builder.addNode(tabBiz, 'lane_campo', 'ACTOR DE NEGOCIO:\nPersonal Operativo en Campo (Policía / Tránsito)', DrawioDiagramBuilder.STYLES.CONTAINER, 490, 40, 440, 1600);
+    builder.addNode(tabBiz, 'lane_mesa', 'ACTOR DE NEGOCIO:\nMesa Técnica de Validación (Analistas / Gobierno)', DrawioDiagramBuilder.STYLES.CONTAINER, 950, 40, 440, 1600);
+    builder.addNode(tabBiz, 'lane_mando', 'ACTOR DE NEGOCIO:\nNivel Estratégico & Comités de Orden Público', DrawioDiagramBuilder.STYLES.CONTAINER, 1410, 40, 420, 1600);
+    builder.addNode(tabBiz, 'lane_gob', 'ACTOR DE NEGOCIO:\nGobernanza & Administración General SIGI', DrawioDiagramBuilder.STYLES.CONTAINER, 1850, 40, 400, 1600);
+
+    builder.addNode(tabBiz, 'biz_start', 'Inicio de Negocio:\nOcurrencia de hecho delictivo, accidente\no contravención en sector de Florencia', DrawioDiagramBuilder.STYLES.START_END, 120, 90, 280, 60);
+    builder.addNode(tabBiz, 'biz_ciud_alerta', 'Actividad de Negocio:\nCiudadano alerta al cuadrante policial\no inspector mediante llamada / en terreno', DrawioDiagramBuilder.STYLES.PROCESS, 120, 190, 280, 65);
+    builder.addNode(tabBiz, 'biz_campo_arribo', 'Actividad de Negocio:\nPatrulla arriba a las coordenadas del suceso\ny verifica la situación de seguridad', DrawioDiagramBuilder.STYLES.PROCESS, 570, 190, 280, 65);
+    builder.addNode(tabBiz, 'biz_campo_pwa', 'Actividad de Negocio:\nApertura de aplicativo SIGI Móvil (PWA)\nAutolocalización GPS métrica y evidencia fotográfica', DrawioDiagramBuilder.STYLES.PROCESS, 570, 290, 280, 65);
+    builder.addNode(tabBiz, 'biz_campo_ia', 'Asistencia Tecnológica en Negocio:\nAsistente NLP sugiere tipología delictiva y\nactiva auxilio médico/policial según relato', DrawioDiagramBuilder.STYLES.PROCESS, 570, 395, 280, 65);
+    builder.addNode(tabBiz, 'biz_campo_dec_net', 'Decisión Operativa:\n¿Cobertura de red móvil en el sector?', DrawioDiagramBuilder.STYLES.DECISION, 610, 500, 200, 90);
+    builder.addNode(tabBiz, 'biz_campo_offline', 'Regla de Negocio (Offline-First):\nAlmacena en cola segura de dispositivo.\nSincroniza automáticamente al retomar red', DrawioDiagramBuilder.STYLES.PROCESS, 740, 620, 180, 75);
+    builder.addNode(tabBiz, 'biz_campo_radica', 'Actividad de Negocio:\nRadicación formal con código institucional\n(INC-YYYY-XXXX). Transmisión inmediata', DrawioDiagramBuilder.STYLES.PROCESS, 510, 620, 210, 75);
+    builder.addNode(tabBiz, 'biz_mesa_recep', 'Actividad de Negocio:\nRecepción en tiempo real en pantalla de mando\nAlerta auditiva armónica y visual (WebSockets)', DrawioDiagramBuilder.STYLES.PROCESS, 1030, 620, 280, 65);
+    builder.addNode(tabBiz, 'biz_mesa_lock', 'Regla de Control de Concurrencia:\nCandado exclusivo de 10 minutos.\nImpide dictámenes duplicados o contradictorios', DrawioDiagramBuilder.STYLES.PROCESS, 1030, 725, 280, 65);
+    builder.addNode(tabBiz, 'biz_mesa_dec_valid', 'Decisión de Negocio (Dictamen):\n¿El hecho cumple criterios de veracidad,\nconsistencia territorial y evidencia fotográfica?', DrawioDiagramBuilder.STYLES.DECISION, 1060, 830, 220, 95);
+    builder.addNode(tabBiz, 'biz_mesa_desestimar', 'Dictamen: Desestimado / Rechazado\nIngreso obligatorio de motivo técnico formal.\nQueda archivado para trazabilidad y auditoría', DrawioDiagramBuilder.STYLES.PROCESS, 970, 970, 200, 75);
+    builder.addNode(tabBiz, 'biz_mesa_aprobar', 'Dictamen: Aprobado / Oficializado\nIncidente cobra estatus de dato oficial institucional\npara seguridad pública municipal', DrawioDiagramBuilder.STYLES.PROCESS, 1200, 970, 180, 75);
+    builder.addNode(tabBiz, 'biz_mando_ingesta', 'Procesamiento de Inteligencia:\nIngesta atómica en repositorio PostGIS\nAlimentación de modelos espaciales y temporales', DrawioDiagramBuilder.STYLES.PROCESS, 1480, 970, 280, 70);
+    builder.addNode(tabBiz, 'biz_mando_hotspots', 'Actividad de Negocio:\nCálculo de núcleos delictivos críticos (Hotspots DBSCAN)\ny pronóstico de incidentes a 4 semanas', DrawioDiagramBuilder.STYLES.PROCESS, 1480, 1080, 280, 70);
+    builder.addNode(tabBiz, 'biz_mando_pdf', 'Entregable de Negocio:\nGeneración de Reporte Ejecutivo Oficial PDF\npara Consejo Municipal de Seguridad', DrawioDiagramBuilder.STYLES.PROCESS, 1480, 1190, 280, 70);
+    builder.addNode(tabBiz, 'biz_mando_decision', 'Decisión Táctica de Mando:\nAsignación prioritaria de patrullas, turnos de vigilancia\ne intervenciones sociales focalizadas', DrawioDiagramBuilder.STYLES.PROCESS, 1480, 1300, 280, 75);
+    builder.addNode(tabBiz, 'biz_campo_patrulla', 'Resultado de Negocio:\nPatrullas y cuadrantes se despliegan en\nsectores de mayor vulnerabilidad identificados', DrawioDiagramBuilder.STYLES.PROCESS, 570, 1305, 280, 65);
+    builder.addNode(tabBiz, 'biz_ciud_geoportal', 'Valor Ciudadano de Negocio:\nAcceso libre al Geoportal Cartográfico\nVisualización de zonas seguras, estadísticas y KPIs', DrawioDiagramBuilder.STYLES.PROCESS, 120, 970, 280, 75);
+    builder.addNode(tabBiz, 'biz_ciud_control', 'Control Social & Convivencia:\nComunidad informada toma medidas de autoprotección\ny participa en frentes de seguridad barriales', DrawioDiagramBuilder.STYLES.PROCESS, 120, 1305, 280, 65);
+    builder.addNode(tabBiz, 'biz_gob_aud', 'Supervisión Continua:\nBitácora de auditoría forense inmutable registra\nactores, timestamps, IPs y dictámenes', DrawioDiagramBuilder.STYLES.PROCESS, 1910, 725, 280, 65);
+    builder.addNode(tabBiz, 'biz_gob_cat', 'Control de Parámetros:\nGestión de tipologías con validación Redmean\n(Garantiza diferenciación visual al ciudadano)', DrawioDiagramBuilder.STYLES.PROCESS, 1910, 830, 280, 65);
+    builder.addNode(tabBiz, 'biz_gob_ml', 'Mejora Continua de IA:\nReentrenamiento supervisado del modelo NLP\ncon relatos de incidentes formalmente aprobados', DrawioDiagramBuilder.STYLES.PROCESS, 1910, 970, 280, 70);
+    builder.addNode(tabBiz, 'biz_end', 'Fin de Negocio (Valor Entregado):\nEcosistema de Seguridad Ciudadana Confiable,\nRespuesta Oportuna y Reducción del Delito en Florencia', DrawioDiagramBuilder.STYLES.START_END, 800, 1460, 640, 60);
+
+    builder.addEdge(tabBiz, 'eb1', 'biz_start', 'biz_ciud_alerta');
+    builder.addEdge(tabBiz, 'eb2', 'biz_ciud_alerta', 'biz_campo_arribo');
+    builder.addEdge(tabBiz, 'eb3', 'biz_campo_arribo', 'biz_campo_pwa');
+    builder.addEdge(tabBiz, 'eb4', 'biz_campo_pwa', 'biz_campo_ia');
+    builder.addEdge(tabBiz, 'eb5', 'biz_campo_ia', 'biz_campo_dec_net');
+    builder.addEdge(tabBiz, 'eb6', 'biz_campo_dec_net', 'biz_campo_radica', 'Sí (En Línea)');
+    builder.addEdge(tabBiz, 'eb7', 'biz_campo_dec_net', 'biz_campo_offline', 'No (Fuera de Línea)');
+    builder.addEdge(tabBiz, 'eb8', 'biz_campo_offline', 'biz_campo_radica', 'Sincronización autom.');
+    builder.addEdge(tabBiz, 'eb9', 'biz_campo_radica', 'biz_mesa_recep', 'Notificación Socket.io');
+    builder.addEdge(tabBiz, 'eb10', 'biz_mesa_recep', 'biz_mesa_lock');
+    builder.addEdge(tabBiz, 'eb11', 'biz_mesa_lock', 'biz_mesa_dec_valid');
+    builder.addEdge(tabBiz, 'eb12', 'biz_mesa_dec_valid', 'biz_mesa_desestimar', 'No (Inconsistente)');
+    builder.addEdge(tabBiz, 'eb13', 'biz_mesa_dec_valid', 'biz_mesa_aprobar', 'Sí (Verídico)');
+    builder.addEdge(tabBiz, 'eb14', 'biz_mesa_desestimar', 'biz_gob_aud', 'Registro forense');
+    builder.addEdge(tabBiz, 'eb15', 'biz_mesa_aprobar', 'biz_ciud_geoportal', 'Publicación pública abierta');
+    builder.addEdge(tabBiz, 'eb16', 'biz_mesa_aprobar', 'biz_mando_ingesta', 'Ingesta transaccional PostGIS');
+    builder.addEdge(tabBiz, 'eb17', 'biz_mesa_aprobar', 'biz_gob_ml', 'Datos curados para IA');
+    builder.addEdge(tabBiz, 'eb18', 'biz_ciud_geoportal', 'biz_ciud_control');
+    builder.addEdge(tabBiz, 'eb19', 'biz_mando_ingesta', 'biz_mando_hotspots');
+    builder.addEdge(tabBiz, 'eb20', 'biz_mando_hotspots', 'biz_mando_pdf');
+    builder.addEdge(tabBiz, 'eb21', 'biz_mando_pdf', 'biz_mando_decision');
+    builder.addEdge(tabBiz, 'eb22', 'biz_mando_decision', 'biz_campo_patrulla', 'Despacho táctico');
+    builder.addEdge(tabBiz, 'eb23', 'biz_campo_patrulla', 'biz_end');
+    builder.addEdge(tabBiz, 'eb24', 'biz_ciud_control', 'biz_end');
+    builder.addEdge(tabBiz, 'eb25', 'biz_gob_ml', 'biz_end');
+    builder.addEdge(tabBiz, 'eb26', 'biz_mesa_lock', 'biz_gob_aud', 'Auditoría');
+
+    // Tab 7: Funcional
+    const tabFunc = builder.addTab('tab-funcional', 'Diagrama-Funcional');
+    builder.addNode(tabFunc, 'func_title', 'DIAGRAMA FUNCIONAL DEL SISTEMA — ARQUITECTURA DE MÓDULOS Y CAPACIDADES SIGI (v2.1)\nDescomposición Funcional de Alto Nivel, Entradas, Procesos y Salidas Operativas', DrawioDiagramBuilder.STYLES.SUBPROCESS, 50, 20, 2180, 50);
+
+    builder.addNode(tabFunc, 'box_mf1', 'MF-01: Módulo Funcional de Autenticación, Acceso y Seguridad', DrawioDiagramBuilder.STYLES.CONTAINER, 50, 90, 700, 680);
+    builder.addNode(tabFunc, 'mf1_in', 'ENTRADAS:\n- Credenciales (Username/Email + Password)\n- Solicitudes de reseteo de contraseña\n- Tokens JWT de encabezado Authorization', DrawioDiagramBuilder.STYLES.IO_DATA, 70, 140, 310, 75);
+    builder.addNode(tabFunc, 'mf1_f1', 'F1.1 Control de Tráfico & Rate Limiter:\nBloqueo preventivo por IP (> 5 intentos fallidos en 15 min)', DrawioDiagramBuilder.STYLES.PROCESS, 70, 235, 310, 60);
+    builder.addNode(tabFunc, 'mf1_f2', 'F1.2 Autenticación JWT Criptográfica:\nVerificación Bcrypt (10 salt rounds) + Firma de Token HMAC', DrawioDiagramBuilder.STYLES.PROCESS, 70, 310, 310, 60);
+    builder.addNode(tabFunc, 'mf1_f3', 'F1.3 Política Forzosa de Primer Acceso:\nVerificación de directiva debe_cambiar_password = 1', DrawioDiagramBuilder.STYLES.PROCESS, 70, 385, 310, 60);
+    builder.addNode(tabFunc, 'mf1_f4', 'F1.4 Recuperación Segura por Correo:\nGeneración de Token HMAC SHA-256 (60 min) + Nodemailer SMTP', DrawioDiagramBuilder.STYLES.PROCESS, 70, 460, 310, 65);
+    builder.addNode(tabFunc, 'mf1_f5', 'F1.5 Enrutamiento y Control de Roles:\nRBAC para Reportero, Administrador y Superadministrador', DrawioDiagramBuilder.STYLES.PROCESS, 70, 540, 310, 60);
+    builder.addNode(tabFunc, 'mf1_out', 'SALIDAS OPERATIVAS:\n- Token JWT en cookie HttpOnly segura\n- Redirección automática a vistas autorizadas\n- Enlace seguro de un solo uso por correo\n- Códigos de estado HTTP (200, 401, 403, 429)', DrawioDiagramBuilder.STYLES.IO_DATA, 400, 140, 330, 110);
+    builder.addNode(tabFunc, 'mf1_sub', 'Submódulos / Dependencias:\n- controllers/auth.controller.js\n- middleware/rateLimit.middleware.js\n- middleware/auth.middleware.js\n- models/UsuarioModel.js', DrawioDiagramBuilder.STYLES.SUBPROCESS, 400, 270, 330, 90);
+
+    builder.addNode(tabFunc, 'box_mf2', 'MF-02: Módulo Funcional de Georreferenciación y Geoportal Ciudadano', DrawioDiagramBuilder.STYLES.CONTAINER, 790, 90, 700, 680);
+    builder.addNode(tabFunc, 'mf2_in', 'ENTRADAS:\n- Coordenadas de encuadre cartográfico (BBox)\n- Criterios de filtrado (Fechas, tipo, sector, severidad)\n- Eventos de clic sobre marcadores en Leaflet', DrawioDiagramBuilder.STYLES.IO_DATA, 810, 140, 310, 75);
+    builder.addNode(tabFunc, 'mf2_f1', 'F2.1 Motor Cartográfico Leaflet.js:\nCarga dinámica de capas base (Satelital Esri, Positron, Dark)', DrawioDiagramBuilder.STYLES.PROCESS, 810, 235, 310, 60);
+    builder.addNode(tabFunc, 'mf2_f2', 'F2.2 Vectorización de Límites Poligonales:\nRenderizado GeoJSON de Barrios urbanos y Veredas rurales', DrawioDiagramBuilder.STYLES.PROCESS, 810, 310, 310, 60);
+    builder.addNode(tabFunc, 'mf2_f3', 'F2.3 Motor de Filtros Espacio-Temporales:\nFiltrado multi-variable combinado con ajuste automático de vista', DrawioDiagramBuilder.STYLES.PROCESS, 810, 385, 310, 60);
+    builder.addNode(tabFunc, 'mf2_f4', 'F2.4 Sanitización Estricta de Datos Públicos:\nFiltro WHERE id_estado = 5 y omisión de datos de reporteros', DrawioDiagramBuilder.STYLES.PROCESS, 810, 460, 310, 60);
+    builder.addNode(tabFunc, 'mf2_f5', 'F2.5 Tablero Analítico y Gráficos KPI:\nCómputo en tiempo real con Chart.js (Dona, series, Top 10)', DrawioDiagramBuilder.STYLES.PROCESS, 810, 535, 310, 65);
+    builder.addNode(tabFunc, 'mf2_out', 'SALIDAS OPERATIVAS:\n- Mapa temático interactivo con chinchetas agrupadas\n- Popups sanitizados con fotos Cloudinary CDN\n- Capas vectoriales activables/desactivables\n- Tarjetas numéricas y gráficos de tendencias públicas', DrawioDiagramBuilder.STYLES.IO_DATA, 1140, 140, 330, 110);
+    builder.addNode(tabFunc, 'mf2_sub', 'Submódulos / Dependencias:\n- controllers/incidentes.controller.js\n- controllers/estadisticas.controller.js\n- controllers/geografia.controller.js\n- public/dashboard/js/dashboard.js', DrawioDiagramBuilder.STYLES.SUBPROCESS, 1140, 270, 330, 90);
+
+    builder.addNode(tabFunc, 'box_mf3', 'MF-03: Módulo Funcional de Captura en Campo y Resiliencia Móvil (PWA)', DrawioDiagramBuilder.STYLES.CONTAINER, 1530, 90, 700, 680);
+    builder.addNode(tabFunc, 'mf3_in', 'ENTRADAS:\n- Coordenadas GPS del sensor móvil\n- Ajuste manual de chincheta por arrastre\n- Relato textual de los hechos y severidad estimada\n- Fotografía capturada con cámara o galería', DrawioDiagramBuilder.STYLES.IO_DATA, 1550, 140, 310, 85);
+    builder.addNode(tabFunc, 'mf3_f1', 'F3.1 Service Worker PWA Offline-First:\nCaché de activos y detección automática de pérdida de señal', DrawioDiagramBuilder.STYLES.PROCESS, 1550, 245, 310, 60);
+    builder.addNode(tabFunc, 'mf3_f2', 'F3.2 Autolocalización GPS & Contención PostGIS:\nCaptura métrica HTML5 + cálculo ST_Contains de barrio/vereda', DrawioDiagramBuilder.STYLES.PROCESS, 1550, 320, 310, 60);
+    builder.addNode(tabFunc, 'mf3_f3', 'F3.3 Asistente NLP Predictivo (Naive Bayes):\nClasificación automática de tipología a partir del relato escrito', DrawioDiagramBuilder.STYLES.PROCESS, 1550, 395, 310, 60);
+    builder.addNode(tabFunc, 'mf3_f4', 'F3.4 Disparador Semántico de Emergencias:\nActivación automática de casillas (Policía/Ambulancia/Bomberos)', DrawioDiagramBuilder.STYLES.PROCESS, 1550, 470, 310, 60);
+    builder.addNode(tabFunc, 'mf3_f5', 'F3.5 Ingesta de Evidencias & Subida Cloudinary:\nOptimización automática de imágenes y compresión web', DrawioDiagramBuilder.STYLES.PROCESS, 1550, 545, 310, 60);
+    builder.addNode(tabFunc, 'mf3_f6', 'F3.6 Cola Offline & Autosincronización:\nPersistencia en localStorage y despacho secuencial al reconectar', DrawioDiagramBuilder.STYLES.PROCESS, 1550, 620, 310, 60);
+    builder.addNode(tabFunc, 'mf3_out', 'SALIDAS OPERATIVAS:\n- Código radicado oficial único (INC-YYYY-XXXX)\n- Notificación toast y modal de confirmación\n- Transmisión en tiempo real vía WebSockets al backend\n- Historial en "Mis Reportes" con badges semafóricos', DrawioDiagramBuilder.STYLES.IO_DATA, 1880, 140, 330, 110);
+    builder.addNode(tabFunc, 'mf3_sub', 'Submódulos / Dependencias:\n- services/ml.service.js\n- public/sw.js\n- public/js/pwa-offline.js\n- public/reportero/js/reportero.js', DrawioDiagramBuilder.STYLES.SUBPROCESS, 1880, 270, 330, 90);
+
+    builder.addNode(tabFunc, 'box_mf4', 'MF-04: Módulo Funcional de Mesa de Validación y Monitoreo en Tiempo Real', DrawioDiagramBuilder.STYLES.CONTAINER, 50, 800, 700, 740);
+    builder.addNode(tabFunc, 'mf4_in', 'ENTRADAS:\n- Evento de nuevo incidente radicado en terreno\n- Solicitudes de adquisición / liberación de candado\n- Dictamen técnico del analista (Aprobar / Desestimar)', DrawioDiagramBuilder.STYLES.IO_DATA, 70, 850, 310, 75);
+    builder.addNode(tabFunc, 'mf4_f1', 'F4.1 Túnel Persistente WebSockets (Socket.io):\nSala "administradores" con push inmediato a la bandeja', DrawioDiagramBuilder.STYLES.PROCESS, 70, 945, 310, 60);
+    builder.addNode(tabFunc, 'mf4_f2', 'F4.2 Sintetizador de Tonos Web Audio API:\nGenerador de audio armónico nativo (D5 a A5) sin MP3 externo', DrawioDiagramBuilder.STYLES.PROCESS, 70, 1020, 310, 60);
+    builder.addNode(tabFunc, 'mf4_f3', 'F4.3 Candado de Concurrencia Transaccional:\nReserva atómica de 10 min por analista con control de conflicto 409', DrawioDiagramBuilder.STYLES.PROCESS, 70, 1095, 310, 65);
+    builder.addNode(tabFunc, 'mf4_f4', 'F4.4 Asistente IA de Validación Cruzada:\nComparación heurística entre texto original y tipología seleccionada', DrawioDiagramBuilder.STYLES.PROCESS, 70, 1175, 310, 65);
+    builder.addNode(tabFunc, 'mf4_f5', 'F4.5 Emisión y Registro de Dictamen Técnico:\nAprobación oficial (id_estado = 5) o desestimación con justificación', DrawioDiagramBuilder.STYLES.PROCESS, 70, 1255, 310, 65);
+    builder.addNode(tabFunc, 'mf4_out', 'SALIDAS OPERATIVAS:\n- Fila insertada dinámicamente en cola sin recarga (F5)\n- Bloqueo de botón para otros analistas ("En revisión por...")\n- Publicación inmediata en Geoportal ante aprobación\n- Registro inmutable de dictamen en bitácora', DrawioDiagramBuilder.STYLES.IO_DATA, 400, 850, 330, 110);
+    builder.addNode(tabFunc, 'mf4_sub', 'Submódulos / Dependencias:\n- server.js (Socket.io)\n- public/js/sigi-realtime.js\n- controllers/incidentes.controller.js\n- models/IncidenteModel.js', DrawioDiagramBuilder.STYLES.SUBPROCESS, 400, 980, 330, 90);
+
+    builder.addNode(tabFunc, 'box_mf5', 'MF-05: Módulo Funcional de Analítica Predictiva y Reportes Institucionales', DrawioDiagramBuilder.STYLES.CONTAINER, 790, 800, 700, 740);
+    builder.addNode(tabFunc, 'mf5_in', 'ENTRADAS:\n- Parámetros temporales y selección de delitos\n- Archivos CSV para ingesta masiva histórica\n- Identificador de lote (batch_id) para Rollback', DrawioDiagramBuilder.STYLES.IO_DATA, 810, 850, 310, 75);
+    builder.addNode(tabFunc, 'mf5_f1', 'F5.1 Agrupamiento Espacial DBSCAN & Haversine:\nCálculo de núcleos críticos (eps = 300m, minPts = 3 incidentes)', DrawioDiagramBuilder.STYLES.PROCESS, 810, 945, 310, 60);
+    builder.addNode(tabFunc, 'mf5_f2', 'F5.2 Proyección Temporal con Suavizado Exponencial:\nPronóstico delictivo estacional a 4 semanas para patrullaje preventivo', DrawioDiagramBuilder.STYLES.PROCESS, 810, 1020, 310, 65);
+    builder.addNode(tabFunc, 'mf5_f3', 'F5.3 Compilación Dinámica de Reportes PDFKit:\nGeneración de informe institucional consolidado por comunas y tipos', DrawioDiagramBuilder.STYLES.PROCESS, 810, 1100, 310, 60);
+    builder.addNode(tabFunc, 'mf5_f4', 'F5.4 Ingestor Masivo CSV en Streaming:\nValidación de cabeceras, tipos de datos y rangos fila por fila', DrawioDiagramBuilder.STYLES.PROCESS, 810, 1175, 310, 60);
+    builder.addNode(tabFunc, 'mf5_f5', 'F5.5 Mecanismo Atómico de Rollback:\nEliminación transaccional limpia y exclusiva de registros de un lote', DrawioDiagramBuilder.STYLES.PROCESS, 810, 1250, 310, 65);
+    builder.addNode(tabFunc, 'mf5_out', 'SALIDAS OPERATIVAS:\n- Mapa de calor de Hotspots con gradiente cromático\n- Gráficas predictivas con intervalos de confianza\n- Documento PDF estructurado de alta fidelidad con firmas\n- Resumen cuantitativo de filas procesadas y rechazadas', DrawioDiagramBuilder.STYLES.IO_DATA, 1140, 850, 330, 110);
+    builder.addNode(tabFunc, 'mf5_sub', 'Submódulos / Dependencias:\n- services/ml.service.js\n- controllers/ml.controller.js\n- controllers/reportes.controller.js\n- controllers/tablas.controller.js', DrawioDiagramBuilder.STYLES.SUBPROCESS, 1140, 980, 330, 90);
+
+    builder.addNode(tabFunc, 'box_mf6', 'MF-06: Módulo Funcional de Gobernanza, Auditoría y Configuración Global', DrawioDiagramBuilder.STYLES.CONTAINER, 1530, 800, 700, 740);
+    builder.addNode(tabFunc, 'mf6_in', 'ENTRADAS:\n- Datos de nuevos usuarios y asignación de roles\n- Órdenes de cambio de estado (Activar/Inactivar)\n- Nuevas tipologías con color hexadecimal en selector\n- Solicitud de reentrenamiento del modelo de IA', DrawioDiagramBuilder.STYLES.IO_DATA, 1550, 850, 310, 85);
+    builder.addNode(tabFunc, 'mf6_f1', 'F6.1 Aprovisionamiento de Identidades:\nGeneración de claves criptográficas y despacho por email (Nodemailer)', DrawioDiagramBuilder.STYLES.PROCESS, 1550, 955, 310, 60);
+    builder.addNode(tabFunc, 'mf6_f2', 'F6.2 Blindaje Institucional de Superadministrador:\nBloqueo estricto de auto-inactivación y protección del último activo', DrawioDiagramBuilder.STYLES.PROCESS, 1550, 1030, 310, 60);
+    builder.addNode(tabFunc, 'mf6_f3', 'F6.3 Bitácora Forense Inmutable:\nRegistro de auditoría con marca ISO 8601, IP origen, User-Agent y JSON', DrawioDiagramBuilder.STYLES.PROCESS, 1550, 1105, 310, 60);
+    builder.addNode(tabFunc, 'mf6_f4', 'F6.4 Validación Cromática Perceptual Redmean:\nControl de colisión de color (DeltaC < 85) e integridad referencial', DrawioDiagramBuilder.STYLES.PROCESS, 1550, 1180, 310, 60);
+    builder.addNode(tabFunc, 'mf6_f5', 'F6.5 Reentrenador Supervisado en Memoria:\nReconstrucción de vocabulario y probabilidades con Laplace sin reinicio', DrawioDiagramBuilder.STYLES.PROCESS, 1550, 1255, 310, 65);
+    builder.addNode(tabFunc, 'mf6_out', 'SALIDAS OPERATIVAS:\n- Cuentas de usuario activas con tokens revocados ante baja\n- Matriz predictiva de IA actualizada en memoria RAM\n- Nuevas tipologías con colores visualmente distinguibles\n- Reporte forense exportable para entes judiciales o de control', DrawioDiagramBuilder.STYLES.IO_DATA, 1880, 850, 330, 110);
+    builder.addNode(tabFunc, 'mf6_sub', 'Submódulos / Dependencias:\n- controllers/usuarios.controller.js\n- controllers/catalogos.controller.js\n- models/UsuarioModel.js\n- models/CatalogosModel.js', DrawioDiagramBuilder.STYLES.SUBPROCESS, 1880, 980, 330, 90);
+
+    builder.addEdge(tabFunc, 'ef_1_to_3', 'mf1_f5', 'mf3_f1', 'Permisos y Token de Reportero');
+    builder.addEdge(tabFunc, 'ef_1_to_4', 'mf1_f5', 'mf4_f1', 'Permisos y Token de Administrador');
+    builder.addEdge(tabFunc, 'ef_3_to_4', 'mf3_f6', 'mf4_f1', 'WebSocket: nuevo_incidente');
+    builder.addEdge(tabFunc, 'ef_4_to_2', 'mf4_f5', 'mf2_f4', 'Incidente Aprobado (Oficial)');
+    builder.addEdge(tabFunc, 'ef_4_to_5', 'mf4_f5', 'mf5_f1', 'Datos para Clustering DBSCAN');
+    builder.addEdge(tabFunc, 'ef_6_to_3', 'mf6_f5', 'mf3_f3', 'Modelo NLP Reentrenado');
+    builder.addEdge(tabFunc, 'ef_4_to_6', 'mf4_f5', 'mf6_f3', 'Registro de Dictamen en Auditoría');
+
+    // =========================================================================
+    // PESTAÑA 8: Diagrama-Entidad-Relacion (ERD - PostgreSQL / PostGIS)
+    // =========================================================================
+    const tabErd = builder.addTab('tab-erd', 'Diagrama-Entidad-Relacion');
+
+    builder.addNode(tabErd, 'erd_title', 'DIAGRAMA ENTIDAD-RELACIÓN (ERD) — BASE DE DATOS GEOGRÁFICA POSTGRESQL / POSTGIS (SIGI v2.1)\nModelo Relacional Espacial, Tablas Maestras, Transaccionales, Geometrías WGS84 EPSG:4326 y Auditoría', DrawioDiagramBuilder.STYLES.SUBPROCESS, 50, 20, 2400, 50);
+
+    // 1. Entidad Central: incidente (x=1050, y=380, w=380, h=520)
+    addErdEntityBox(tabErd, 'erd_incidente', 'incidente (Transaccional)',
+        'idincidente: SERIAL',
+        'codigoincidente: VARCHAR(50)',
+        ['FK idtipoincidente: INTEGER',
+         'FK id_estado: INTEGER',
+         'FK id_gravedad: INTEGER',
+         'FK id_modalidad: INTEGER',
+         'FK idbarrio: INTEGER',
+         'FK idvereda: INTEGER',
+         'FK idusuario: INTEGER (creador)',
+         'FK id_admin_revisor: INTEGER (candado)'],
+        ['descripcionincidente: TEXT',
+         'fechaincidente: DATE',
+         'horaincidente: TIME',
+         'direccion: TEXT',
+         'geom: GEOMETRY(Point, 4326) [GiST]',
+         'numero_victimas: INTEGER DEFAULT 1',
+         'numero_vehiculos_afectados: INT DEFAULT 0',
+         'requiere_ambulancia: BOOLEAN DEFAULT false',
+         'requiere_policia: BOOLEAN DEFAULT true',
+         'requiere_bomberos: BOOLEAN DEFAULT false',
+         'foto_url: TEXT (Cloudinary CDN)',
+         'bloqueo_expira: TIMESTAMP (10 min)',
+         'fecha_toma_revision: TIMESTAMP',
+         'batch_id: VARCHAR(50) (Lote CSV)',
+         'motivo_desestimacion: TEXT',
+         'fecha_creacion: TIMESTAMP DEFAULT NOW()'],
+        1050, 380, 380, 520
+    );
+
+    // 2. Catálogo: tipo_incidente (x=450, y=100, w=340, h=230)
+    addErdEntityBox(tabErd, 'erd_tipo_incidente', 'tipo_incidente (Catálogo)',
+        'idtipoincidente: SERIAL',
+        'nametipoincidente: VARCHAR(100)',
+        ['FK id_categoria: INTEGER'],
+        ['codigo: VARCHAR(10)',
+         'color: VARCHAR(20) DEFAULT \'#6c757d\'',
+         'nivel_riesgo_base: VARCHAR(20)',
+         'tiempo_resolucion_promedio: INTEGER',
+         'requiere_visita: BOOLEAN DEFAULT false',
+         'activo: BOOLEAN DEFAULT true',
+         'fecha_creacion: TIMESTAMP'],
+        450, 100, 340, 230
+    );
+
+    // 3. Catálogo: categoria_incidente (x=50, y=100, w=320, h=180)
+    addErdEntityBox(tabErd, 'erd_categoria_incidente', 'categoria_incidente (Maestro)',
+        'id_categoria: SERIAL',
+        'nombre: VARCHAR(100)',
+        [],
+        ['descripcion: TEXT',
+         'color: VARCHAR(20)',
+         'icono: VARCHAR(50)',
+         'fecha_creacion: TIMESTAMP'],
+        50, 100, 320, 180
+    );
+
+    // 4. Catálogo: gravedad_incidente (x=450, y=380, w=340, h=210)
+    addErdEntityBox(tabErd, 'erd_gravedad_incidente', 'gravedad_incidente (Catálogo)',
+        'id_gravedad: SERIAL',
+        'nombre: VARCHAR(50)',
+        [],
+        ['nivel: INTEGER (1-5) [CHECK]',
+         'color: VARCHAR(20)',
+         'prioridad: INTEGER (1-5) [CHECK]',
+         'tiempo_respuesta_horas: INTEGER',
+         'descripcion: TEXT',
+         'icono: VARCHAR(50)'],
+        450, 380, 340, 210
+    );
+
+    // 5. Catálogo: modalidad_incidente (x=450, y=660, w=340, h=190)
+    addErdEntityBox(tabErd, 'erd_modalidad_incidente', 'modalidad_incidente (Catálogo)',
+        'id_modalidad: SERIAL',
+        'nombre: VARCHAR(100)',
+        [],
+        ['descripcion: TEXT',
+         'tipo: VARCHAR(50) [CHECK: violencia, engaño, fuerza, vial, otro]',
+         'fecha_creacion: TIMESTAMP'],
+        450, 660, 340, 190
+    );
+
+    // 6. Catálogo: factores_incidente (x=50, y=660, w=320, h=190)
+    addErdEntityBox(tabErd, 'erd_factores_incidente', 'factores_incidente (Maestro)',
+        'id_factor: SERIAL',
+        'nombre: VARCHAR(100)',
+        [],
+        ['descripcion: TEXT',
+         'categoria: VARCHAR(50) [CHECK: social, economico, ambiental, otro]',
+         'fecha_creacion: TIMESTAMP'],
+        50, 660, 320, 190
+    );
+
+    // 7. Relación N:N: incidente_factores (x=50, y=380, w=320, h=160)
+    addErdEntityBox(tabErd, 'erd_incidente_factores', 'incidente_factores (Pivote M:N)',
+        'id_incidente_factor: SERIAL',
+        'UNIQUE (id_incidente, id_factor)',
+        ['FK id_incidente: INTEGER', 'FK id_factor: INTEGER'],
+        ['fecha_asociacion: TIMESTAMP DEFAULT NOW()'],
+        50, 380, 320, 160
+    );
+
+    // 8. Espacial: barrio (x=1580, y=100, w=360, h=180)
+    addErdEntityBox(tabErd, 'erd_barrio', 'barrio (Capa Urbana PostGIS)',
+        'gid: SERIAL',
+        'idbarrio: VARCHAR(80)',
+        [],
+        ['namebarrio: VARCHAR(100)',
+         'idcomuna: VARCHAR(25)',
+         'geom: GEOMETRY(MultiPolygon, 4326) [GiST]'],
+        1580, 100, 360, 180
+    );
+
+    // 9. Espacial: vereda (x=2060, y=100, w=360, h=180)
+    addErdEntityBox(tabErd, 'erd_vereda', 'vereda (Capa Rural PostGIS)',
+        'id: SERIAL',
+        'nombre: VARCHAR(100)',
+        ['FK idcorregimiento: INTEGER'],
+        ['geom: GEOMETRY(MultiPolygon, 4326) [GiST]'],
+        2060, 100, 360, 180
+    );
+
+    // 10. Espacial: corregimiento (x=2060, y=360, w=360, h=150)
+    addErdEntityBox(tabErd, 'erd_corregimiento', 'corregimiento (División Rural)',
+        'idcorregimiento: SERIAL',
+        'namecorregimiento: VARCHAR(255)',
+        [],
+        ['fecha_registro: TIMESTAMP DEFAULT NOW()'],
+        2060, 360, 360, 150
+    );
+
+    // 11. Catálogo: estado_incidente (x=1580, y=360, w=360, h=210)
+    addErdEntityBox(tabErd, 'erd_estado_incidente', 'estado_incidente (Workflow)',
+        'id_estado: SERIAL',
+        'nombre: VARCHAR(50)',
+        [],
+        ['descripcion: TEXT',
+         'color: VARCHAR(20)',
+         'orden: INTEGER',
+         'es_final: BOOLEAN DEFAULT false',
+         '(1:Reportado, 2:En Evaluac., 5:Aprob., 6:Desestim.)'],
+        1580, 360, 360, 210
+    );
+
+    // 12. Seguridad: usuario (x=1050, y=980, w=380, h=310)
+    addErdEntityBox(tabErd, 'erd_usuario', 'usuario (Seguridad & RBAC)',
+        'idusuario: SERIAL',
+        'nombreusuario: VARCHAR(50), email: VARCHAR(150)',
+        ['FK created_by: INTEGER'],
+        ['contraseniausuario: VARCHAR(255) (Bcrypt)',
+         'rol: VARCHAR(20) [reportero, admin, superadmin]',
+         'estado: VARCHAR(20) DEFAULT \'activo\'',
+         'activo: INTEGER DEFAULT 1',
+         'debe_cambiar_password: INTEGER DEFAULT 1',
+         'entidadusuario: VARCHAR(100)',
+         'telefono: VARCHAR(20)',
+         'foto_perfil: TEXT',
+         'ultimo_acceso: TIMESTAMP',
+         'fecha_registro: TIMESTAMP DEFAULT NOW()'],
+        1050, 980, 380, 310
+    );
+
+    // 13. Auditoría: logs_actividad (x=1580, y=980, w=360, h=230)
+    addErdEntityBox(tabErd, 'erd_logs_actividad', 'logs_actividad (Auditoría Forense)',
+        'id_log: SERIAL',
+        '',
+        ['FK id_usuario: INTEGER'],
+        ['accion: VARCHAR(50) NOT NULL',
+         'tabla_afectada: VARCHAR(50)',
+         'id_registro: INTEGER',
+         'descripcion: TEXT',
+         'ip: VARCHAR(45)',
+         'user_agent: TEXT',
+         'fecha: TIMESTAMP DEFAULT NOW()'],
+        1580, 980, 360, 230
+    );
+
+    // 14. Seguridad: token (x=2060, y=980, w=360, h=210)
+    addErdEntityBox(tabErd, 'erd_token', 'token / reset_tokens (Criptográfico)',
+        'id_token: SERIAL',
+        'token: VARCHAR(255)',
+        ['FK id_usuario: INTEGER'],
+        ['tipo: VARCHAR(30) [reset_password, verificacion]',
+         'expiracion: TIMESTAMP (60 min)',
+         'usado: BOOLEAN DEFAULT false',
+         'fecha_creacion: TIMESTAMP DEFAULT NOW()'],
+        2060, 980, 360, 210
+    );
+
+    // 15. Sesiones: session (x=450, y=980, w=340, h=160)
+    addErdEntityBox(tabErd, 'erd_session', 'session (Persistencia HTTP)',
+        'sid: VARCHAR(255)',
+        '',
+        [],
+        ['sess: JSON NOT NULL',
+         'expire: TIMESTAMP(6) NOT NULL',
+         '[Index: IDX_session_expire]'],
+        450, 980, 340, 160
+    );
+
+    // Conectores ERD
+    builder.addEdge(tabErd, 'erd_rel_cat_tipo', 'erd_categoria_incidente', 'erd_tipo_incidente', '1 : N', { exitX: 1, exitY: 0.5, entryX: 0, entryY: 0.5 });
+    builder.addEdge(tabErd, 'erd_rel_tipo_inc', 'erd_tipo_incidente', 'erd_incidente', '1 : N', { exitX: 1, exitY: 0.5, entryX: 0, entryY: 0.2 });
+    builder.addEdge(tabErd, 'erd_rel_grav_inc', 'erd_gravedad_incidente', 'erd_incidente', '1 : N', { exitX: 1, exitY: 0.5, entryX: 0, entryY: 0.5 });
+    builder.addEdge(tabErd, 'erd_rel_mod_inc', 'erd_modalidad_incidente', 'erd_incidente', '1 : N', { exitX: 1, exitY: 0.5, entryX: 0, entryY: 0.8 });
+    builder.addEdge(tabErd, 'erd_rel_inc_fac', 'erd_incidente', 'erd_incidente_factores', '1 : N', { exitX: 0, exitY: 0.4, entryX: 1, entryY: 0.5 });
+    builder.addEdge(tabErd, 'erd_rel_fac_fac', 'erd_factores_incidente', 'erd_incidente_factores', '1 : N', { exitX: 0.5, exitY: 0, entryX: 0.5, entryY: 1 });
+    builder.addEdge(tabErd, 'erd_rel_barrio_inc', 'erd_barrio', 'erd_incidente', '1 : N (Urbano)', { exitX: 0, exitY: 0.5, entryX: 1, entryY: 0.2 });
+    builder.addEdge(tabErd, 'erd_rel_vereda_inc', 'erd_vereda', 'erd_incidente', '1 : N (Rural)', { exitX: 0, exitY: 0.5, entryX: 1, entryY: 0.4 });
+    builder.addEdge(tabErd, 'erd_rel_corr_ver', 'erd_corregimiento', 'erd_vereda', '1 : N', { exitX: 0.5, exitY: 0, entryX: 0.5, entryY: 1 });
+    builder.addEdge(tabErd, 'erd_rel_est_inc', 'erd_estado_incidente', 'erd_incidente', '1 : N (Workflow)', { exitX: 0, exitY: 0.5, entryX: 1, entryY: 0.7 });
+    builder.addEdge(tabErd, 'erd_rel_usr_inc', 'erd_usuario', 'erd_incidente', '1 : N (Creador / Revisor)', { exitX: 0.5, exitY: 0, entryX: 0.5, entryY: 1 });
+    builder.addEdge(tabErd, 'erd_rel_usr_log', 'erd_usuario', 'erd_logs_actividad', '1 : N (Auditoría)', { exitX: 1, exitY: 0.5, entryX: 0, entryY: 0.5 });
+    builder.addEdge(tabErd, 'erd_rel_usr_tok', 'erd_usuario', 'erd_token', '1 : N (Tokens)', { exitX: 1, exitY: 0.8, entryX: 0, entryY: 0.5 });
+
+    // =========================================================================
+    // PESTAÑA 9: Diagrama-Clases (UML Class Diagram - Clean Architecture)
+    // =========================================================================
+    const tabClases = builder.addTab('tab-clases', 'Diagrama-Clases');
+
+    builder.addNode(tabClases, 'uml_title', 'DIAGRAMA DE CLASES UML — ARQUITECTURA LIMPIA POR CAPAS SIGI (v2.1)\nControladores, Servicios de Dominio, Modelos de Acceso a Datos (DAOs), Entidades y Capa de Persistencia', DrawioDiagramBuilder.STYLES.SUBPROCESS, 50, 20, 2400, 50);
+
+    // CAPA 1: CONTROLADORES (y=100)
+    addUmlClassBox(tabClases, 'uml_ctrl_inc', 'IncidentesController', 'Controller',
+        ['- incidenteModel: IncidenteModel', '- mlService: MLService'],
+        ['+ listar(req, res): Promise&lt;void&gt;',
+         '+ crear(req, res): Promise&lt;void&gt;',
+         '+ tomarRevision(req, res): Promise&lt;void&gt;',
+         '+ resolverIncidente(req, res): Promise&lt;void&gt;',
+         '+ cerrarIncidente(req, res): Promise&lt;void&gt;',
+         '+ liberarIncidente(req, res): Promise&lt;void&gt;',
+         '+ importarCSV(req, res): Promise&lt;void&gt;',
+         '+ rollbackImportacion(req, res): Promise&lt;void&gt;'],
+        60, 100, 360, 240
+    );
+
+    addUmlClassBox(tabClases, 'uml_ctrl_auth', 'AuthController', 'Controller',
+        ['- usuarioModel: UsuarioModel', '- emailService: EmailService'],
+        ['+ login(req, res): Promise&lt;void&gt;',
+         '+ logout(req, res): void',
+         '+ cambiarPassword(req, res): Promise&lt;void&gt;',
+         '+ solicitarRecuperacion(req, res): Promise&lt;void&gt;',
+         '+ resetearPassword(req, res): Promise&lt;void&gt;',
+         '+ verificarSesion(req, res): void'],
+        480, 100, 360, 210
+    );
+
+    addUmlClassBox(tabClases, 'uml_ctrl_ml', 'MLController', 'Controller',
+        ['- mlService: MLService', '- incidenteModel: IncidenteModel'],
+        ['+ predecirTipologia(req, res): void',
+         '+ detectarEmergencia(req, res): void',
+         '+ obtenerHotspots(req, res): Promise&lt;void&gt;',
+         '+ obtenerPronostico(req, res): Promise&lt;void&gt;',
+         '+ reentrenarModelo(req, res): Promise&lt;void&gt;'],
+        900, 100, 360, 200
+    );
+
+    addUmlClassBox(tabClases, 'uml_ctrl_rep', 'ReportesController', 'Controller',
+        ['- estadisticasModel: EstadisticasModel', '- pdfKitEngine: PDFDocument'],
+        ['+ generarReportePDF(req, res): Promise&lt;void&gt;',
+         '+ exportarExcel(req, res): Promise&lt;void&gt;',
+         '+ compilarDocumentoOficial(datos): Buffer'],
+        1320, 100, 360, 190
+    );
+
+    addUmlClassBox(tabClases, 'uml_ctrl_cat', 'CatalogosController', 'Controller',
+        ['- catalogosModel: CatalogosModel'],
+        ['+ obtenerTipos(req, res): Promise&lt;void&gt;',
+         '+ crearTipo(req, res): Promise&lt;void&gt;',
+         '+ actualizarTipo(req, res): Promise&lt;void&gt;',
+         '+ eliminarTipo(req, res): Promise&lt;void&gt;',
+         '+ calcularDistanciaColor(c1, c2): number'],
+        1740, 100, 340, 190
+    );
+
+    addUmlClassBox(tabClases, 'uml_ctrl_usr', 'UsuariosController', 'Controller',
+        ['- usuarioModel: UsuarioModel', '- emailService: EmailService'],
+        ['+ listarUsuarios(req, res): Promise&lt;void&gt;',
+         '+ crearUsuario(req, res): Promise&lt;void&gt;',
+         '+ cambiarEstado(req, res): Promise&lt;void&gt;',
+         '+ cambiarRol(req, res): Promise&lt;void&gt;',
+         '+ obtenerAuditoria(req, res): Promise&lt;void&gt;'],
+        2140, 100, 340, 190
+    );
+
+    addUmlClassBox(tabClases, 'uml_ctrl_seg', 'SeguridadController', 'Controller',
+        ['- gestorIps: GestorIpsBloqueadas', '- logger: LoggerService'],
+        ['+ obtenerIpsBloqueadas(req, res): Promise&lt;void&gt;',
+         '+ desbloquearIp(req, res): Promise&lt;void&gt;'],
+        2520, 100, 340, 190
+    );
+
+    // CAPA 2: SERVICIOS DE DOMINIO & IA (y=410)
+    addUmlClassBox(tabClases, 'uml_srv_ml', 'MLService', 'Service / Singleton',
+        ['- vocabulario: Set&lt;string&gt;',
+         '- conteoClases: Map&lt;string, number&gt;',
+         '- frecuenciasTerminos: Map&lt;string, Map&lt;string, number&gt;&gt;',
+         '- totalDocumentos: number'],
+        ['+ clasificarTexto(texto): { tipo, confianza, alternativas }',
+         '+ detectarServicios(texto): { policia, ambulancia, bomberos }',
+         '+ calcularHotspotsDBSCAN(puntos, eps, minPts): Cluster[]',
+         '+ predecirSeriesTemporales(datos, alpha, horizonte): ForecastPoint[]',
+         '+ entrenarModelo(dataset): void',
+         '+ distanciaHaversine(lat1, lon1, lat2, lon2): number'],
+        500, 410, 470, 260
+    );
+
+    addUmlClassBox(tabClases, 'uml_srv_mail', 'EmailService', 'Service',
+        ['- transporter: nodemailer.Transporter', '- config: SMTPConfig'],
+        ['+ enviarCredencialesBienvenida(email, user, pass): Promise&lt;boolean&gt;',
+         '+ enviarTokenRecuperacion(email, token): Promise&lt;boolean&gt;',
+         '+ verificarConexionSMTP(): Promise&lt;boolean&gt;'],
+        1050, 410, 420, 180
+    );
+
+    addUmlClassBox(tabClases, 'uml_srv_rt', 'RealtimeGateway', 'Gateway / Socket.io',
+        ['- io: SocketIOServer', '- connectedAdmins: Set&lt;string&gt;'],
+        ['+ emitirNuevoIncidente(incidente): void',
+         '+ unirseASalaAdministradores(socket): void',
+         '+ notificarLiberacionCandado(idIncidente): void',
+         '+ emitirIpBloqueada(bloqueo): void',
+         '+ emitirIpDesbloqueada(ip): void'],
+        1550, 410, 420, 200
+    );
+
+    addUmlClassBox(tabClases, 'uml_srv_gestor_ips', 'GestorIpsBloqueadas', 'Service / Singleton',
+        ['- ipsBloqueadas: Map&lt;string, InfoBloqueo&gt;',
+         '- totalHistoricoBloqueos: number',
+         '- loginLimiter: RateLimitMiddleware'],
+        ['+ normalizarIp(rawIp: string): string',
+         '+ registrarBloqueo(rawIp, motivo): InfoBloqueo',
+         '+ obtenerIpsActivas(): InfoBloqueo[]',
+         '+ obtenerEstadisticas(): EstadisticasSeguridad',
+         '+ desbloquearIp(rawIp): boolean'],
+        2040, 410, 430, 200
+    );
+
+    // CAPA 3: MODELOS DE ACCESO A DATOS (y=750)
+    addUmlClassBox(tabClases, 'uml_dao_inc', 'IncidenteModel', 'Model / DAO',
+        ['- dbPool: DatabasePool'],
+        ['+ crear(datos): Promise&lt;Incidente&gt;',
+         '+ obtenerTodos(filtros): Promise&lt;Incidente[]&gt;',
+         '+ obtenerPorId(id): Promise&lt;Incidente&gt;',
+         '+ bloquearParaRevision(id, adminId, minutos): Promise&lt;boolean&gt;',
+         '+ liberarBloqueo(id): Promise&lt;boolean&gt;',
+         '+ resolver(id, dictamen): Promise&lt;boolean&gt;',
+         '+ importarLote(filas, batchId): Promise&lt;ImportResult&gt;',
+         '+ revertirLote(batchId): Promise&lt;number&gt;'],
+        60, 750, 400, 250
+    );
+
+    addUmlClassBox(tabClases, 'uml_dao_usr', 'UsuarioModel', 'Model / DAO',
+        ['- dbPool: DatabasePool'],
+        ['+ buscarPorEmail(email): Promise&lt;Usuario&gt;',
+         '+ buscarPorId(id): Promise&lt;Usuario&gt;',
+         '+ crear(usuario): Promise&lt;Usuario&gt;',
+         '+ actualizarPassword(id, hash): Promise&lt;boolean&gt;',
+         '+ cambiarEstado(id, estado): Promise&lt;boolean&gt;',
+         '+ contarSuperadminsActivos(excluirId): Promise&lt;number&gt;',
+         '+ registrarLogAuditoria(log): Promise&lt;void&gt;'],
+        520, 750, 400, 240
+    );
+
+    addUmlClassBox(tabClases, 'uml_dao_cat', 'CatalogosModel', 'Model / DAO',
+        ['- dbPool: DatabasePool'],
+        ['+ obtenerTiposConDetalle(): Promise&lt;TipoIncidente[]&gt;',
+         '+ crearTipo(tipo): Promise&lt;TipoIncidente&gt;',
+         '+ contarIncidentesPorTipo(id): Promise&lt;number&gt;',
+         '+ verificarColisionCromatica(hex, umbral): Promise&lt;CheckResult&gt;'],
+        980, 750, 400, 200
+    );
+
+    addUmlClassBox(tabClases, 'uml_dao_geo', 'GeografiaModel', 'Model / DAO',
+        ['- dbPool: DatabasePool'],
+        ['+ obtenerBarriosGeoJSON(): Promise&lt;FeatureCollection&gt;',
+         '+ obtenerVeredasGeoJSON(): Promise&lt;FeatureCollection&gt;',
+         '+ buscarSectorPorPunto(lat, lng): Promise&lt;SectorResult&gt;'],
+        1440, 750, 400, 190
+    );
+
+    addUmlClassBox(tabClases, 'uml_dao_est', 'EstadisticasModel', 'Model / DAO',
+        ['- dbPool: DatabasePool'],
+        ['+ resumenGeneral(): Promise&lt;ResumenKPI&gt;',
+         '+ distribucionPorTipologia(): Promise&lt;ConteoTipo[]&gt;',
+         '+ topZonasCriticas(limite): Promise&lt;ZonaCritica[]&gt;',
+         '+ serieTemporalMensual(): Promise&lt;SerieTemporal[]&gt;'],
+        1900, 750, 400, 200
+    );
+
+    // CAPA 4 & 5: ENTIDADES Y PERSISTENCIA (y=1080)
+    addUmlClassBox(tabClases, 'uml_ent_inc', 'Incidente', 'Entity',
+        ['- idincidente: number',
+         '- codigoincidente: string',
+         '- descripcion: string',
+         '- fecha: Date',
+         '- hora: string',
+         '- coordenadas: PuntoGeografico',
+         '- idEstado: number',
+         '- idGravedad: number',
+         '- fotoUrl: string'],
+        ['+ estaAprobado(): boolean',
+         '+ tieneCandadoActivo(): boolean',
+         '+ esCritico(): boolean'],
+        100, 1080, 320, 230
+    );
+
+    addUmlClassBox(tabClases, 'uml_ent_usr', 'Usuario', 'Entity',
+        ['- idusuario: number',
+         '- nombreusuario: string',
+         '- email: string',
+         '- rol: RolUsuario',
+         '- activo: boolean',
+         '- debeCambiarPassword: boolean'],
+        ['+ esSuperadmin(): boolean',
+         '+ esAdmin(): boolean',
+         '+ esReportero(): boolean',
+         '+ puedeInactivarse(): boolean'],
+        500, 1080, 320, 230
+    );
+
+    addUmlClassBox(tabClases, 'uml_vo_geo', 'PuntoGeografico', 'Value Object',
+        ['- latitud: number',
+         '- longitud: number',
+         '- srid: number = 4326'],
+        ['+ aPostGISPoint(): string',
+         '+ distanciaA(otroPunto): number'],
+        900, 1080, 280, 160
+    );
+
+    addUmlClassBox(tabClases, 'uml_vo_cluster', 'ClusterHotspot', 'Value Object',
+        ['- clusterId: number',
+         '- centroide: PuntoGeografico',
+         '- radioMetros: number',
+         '- cantidadIncidentes: number',
+         '- nivelCriticidad: string'],
+        ['+ calcularDensidad(): number'],
+        1260, 1080, 300, 170
+    );
+
+    addUmlClassBox(tabClases, 'uml_db_pool', 'DatabasePool', 'Infrastructure / pg.Pool',
+        ['- pool: pg.Pool',
+         '- config: PoolConfig (max: 20, idleTimeout: 30s)'],
+        ['+ query(sql: string, params?: any[]): Promise&lt;QueryResult&gt;',
+         '+ getClient(): Promise&lt;PoolClient&gt;',
+         '+ transaction(callback): Promise&lt;any&gt;'],
+        1700, 1080, 440, 190
+    );
+
+    // Conectores UML
+    builder.addEdge(tabClases, 'u_c_inc_dao', 'uml_ctrl_inc', 'uml_dao_inc', 'usa DAO', { exitX: 0.5, exitY: 1, entryX: 0.5, entryY: 0 });
+    builder.addEdge(tabClases, 'u_c_inc_ml', 'uml_ctrl_inc', 'uml_srv_ml', 'usa ML', { exitX: 0.8, exitY: 1, entryX: 0.2, entryY: 0 });
+    builder.addEdge(tabClases, 'u_c_auth_usr', 'uml_ctrl_auth', 'uml_dao_usr', 'usa DAO', { exitX: 0.5, exitY: 1, entryX: 0.5, entryY: 0 });
+    builder.addEdge(tabClases, 'u_c_auth_mail', 'uml_ctrl_auth', 'uml_srv_mail', 'despacha email', { exitX: 0.8, exitY: 1, entryX: 0.2, entryY: 0 });
+    builder.addEdge(tabClases, 'u_c_ml_srv', 'uml_ctrl_ml', 'uml_srv_ml', 'invoca IA', { exitX: 0.5, exitY: 1, entryX: 0.5, entryY: 0 });
+    builder.addEdge(tabClases, 'u_c_rep_est', 'uml_ctrl_rep', 'uml_dao_est', 'consulta stats', { exitX: 0.8, exitY: 1, entryX: 0.2, entryY: 0 });
+    builder.addEdge(tabClases, 'u_c_cat_dao', 'uml_ctrl_cat', 'uml_dao_cat', 'usa DAO', { exitX: 0.5, exitY: 1, entryX: 0.8, entryY: 0 });
+    builder.addEdge(tabClases, 'u_c_usr_dao', 'uml_ctrl_usr', 'uml_dao_usr', 'usa DAO', { exitX: 0.2, exitY: 1, entryX: 0.8, entryY: 0 });
+    builder.addEdge(tabClases, 'u_c_seg_gest', 'uml_ctrl_seg', 'uml_srv_gestor_ips', 'gestiona', { exitX: 0.5, exitY: 1, entryX: 0.8, entryY: 0 });
+    builder.addEdge(tabClases, 'u_c_seg_rt', 'uml_ctrl_seg', 'uml_srv_rt', 'emite eventos', { exitX: 0.2, exitY: 1, entryX: 0.8, entryY: 0 });
+
+    builder.addEdge(tabClases, 'u_dao_inc_pool', 'uml_dao_inc', 'uml_db_pool', 'SQL', { exitX: 1, exitY: 0.8, entryX: 0, entryY: 0.3 });
+    builder.addEdge(tabClases, 'u_dao_usr_pool', 'uml_dao_usr', 'uml_db_pool', 'SQL', { exitX: 1, exitY: 0.8, entryX: 0, entryY: 0.5 });
+    builder.addEdge(tabClases, 'u_dao_cat_pool', 'uml_dao_cat', 'uml_db_pool', 'SQL', { exitX: 1, exitY: 0.8, entryX: 0, entryY: 0.7 });
+    builder.addEdge(tabClases, 'u_dao_geo_pool', 'uml_dao_geo', 'uml_db_pool', 'PostGIS GiST', { exitX: 0.8, exitY: 1, entryX: 0.2, entryY: 0 });
+    builder.addEdge(tabClases, 'u_dao_est_pool', 'uml_dao_est', 'uml_db_pool', 'SQL Aggregations', { exitX: 0.5, exitY: 1, entryX: 0.5, entryY: 0 });
+
+    builder.addEdge(tabClases, 'u_dao_inc_ent', 'uml_dao_inc', 'uml_ent_inc', 'instancia', { exitX: 0.5, exitY: 1, entryX: 0.5, entryY: 0 });
+    builder.addEdge(tabClases, 'u_dao_usr_ent', 'uml_dao_usr', 'uml_ent_usr', 'instancia', { exitX: 0.5, exitY: 1, entryX: 0.5, entryY: 0 });
+    builder.addEdge(tabClases, 'u_ent_inc_geo', 'uml_ent_inc', 'uml_vo_geo', 'contiene', { exitX: 1, exitY: 0.5, entryX: 0, entryY: 0.5 });
+    builder.addEdge(tabClases, 'u_srv_ml_hot', 'uml_srv_ml', 'uml_vo_cluster', 'genera clusters', { exitX: 0.8, exitY: 1, entryX: 0.2, entryY: 0 });
+
+    return builder.toXml();
+}
+
+const xmlConsolidado = construirSistemaCompletoDiagramas();
+
+const rutaDestino1 = 'C:\\Users\\Lenovo\\Documents\\SENA\\AnalizarRiesgos\\Diagramas_Flujo_SIGI.drawio';
+const rutaDestino2 = 'C:\\Users\\Lenovo\\Documents\\SENA\\AnalizarRiesgos\\Diagramas.drawio';
+const rutaDocs = path.join(__dirname, '..', 'documentacion', 'DocumentosFinales', 'Diagramas', 'Diagramas_Flujo_SIGI.drawio');
+
+fs.writeFileSync(rutaDestino1, xmlConsolidado, 'utf8');
+fs.writeFileSync(rutaDestino2, xmlConsolidado, 'utf8');
+fs.writeFileSync(rutaDocs, xmlConsolidado, 'utf8');
+
+console.log('Diagramas ERD y Clases corregidos con renderizado HTML nativo!');
+console.log('Total bytes:', xmlConsolidado.length);

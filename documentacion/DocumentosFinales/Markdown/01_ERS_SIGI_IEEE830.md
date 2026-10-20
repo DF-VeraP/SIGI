@@ -10,9 +10,10 @@
 - **Programa de Formación:** Análisis y Desarrollo de Software (ADSO) - Ficha 3142784
 - **Autor / Desarrollador:** Daniel Felipe Vera Perdomo
 - **Ubicación Geográfica:** Florencia, Caquetá, Colombia
-- **Versión del Documento:** 2.0 (Actualizada integralmente con arquitectura multi-rol, Cloudinary y control concurrente)
-- **Fecha de Emisión:** Septiembre 2026
-- **Estado:** Versión Oficial Final
+- **Despliegue Oficial en Producción:** [https://sigi.verapd.xyz](https://sigi.verapd.xyz)
+- **Versión del Documento:** 2.1 (Actualización Integral con Arquitectura Limpia, Machine Learning, WebSockets en Tiempo Real, PWA Offline y Generación Documental PDF)
+- **Fecha de Emisión:** Octubre 2026
+- **Estado:** Versión Oficial Final de Producción
 
 ---
 
@@ -41,6 +42,9 @@
    3.6 [Módulo 5: Analítica Espacio-Temporal y Tableros KPI (KPI-ANL)](#36-módulo-5-analítica-espacio-temporal-y-tableros-kpi-kpi-anl)
    3.7 [Módulo 6: Gestión Masiva de Datos y Rollback (DAT-MAS)](#37-módulo-6-gestión-masiva-de-datos-y-rollback-dat-mas)
    3.8 [Módulo 7: Administración y Gobernanza de Usuarios (ADM-GOB)](#38-módulo-7-administración-y-gobernanza-de-usuarios-adm-gob)
+   3.9 [Módulo 8: Inteligencia Artificial y Clasificación Predictiva (ML-IA)](#39-módulo-8-inteligencia-artificial-y-clasificación-predictiva-ml-ia)
+   3.10 [Módulo 9: Comunicación en Tiempo Real y Modo Offline PWA (RT-PWA)](#310-módulo-9-comunicación-en-tiempo-real-y-modo-offline-pwa-rt-pwa)
+   3.11 [Módulo 10: Reportes Ejecutivos y Exportación Documental (REP-EXP)](#311-módulo-10-reportes-ejecutivos-y-exportación-documental-rep-exp)
 4. [REQUISITOS NO FUNCIONALES (RNF)](#4-requisitos-no-funcionales-rnf)
    4.1 [Rendimiento y Capacidad](#41-rendimiento-y-capacidad)
    4.2 [Seguridad y Protección de Datos](#42-seguridad-y-protección-de-datos)
@@ -57,10 +61,13 @@
 El presente documento define formalmente la **Especificación de Requisitos de Software (ERS)** para el **Sistema de Información Geográfica de Incidentes (SIGI)**, siguiendo la norma internacional **IEEE 830-1998**. Su objetivo primordial es servir como acuerdo vinculante entre los desarrolladores, evaluadores técnicos del SENA y los actores operativos involucrados en la gestión, visualización y análisis de eventos de seguridad y convivencia en el municipio de Florencia, Caquetá.
 
 ### 1.2 Alcance del Producto
-SIGI es una plataforma WebGIS transaccional y analítica concebida para superar la fragmentación de la información de seguridad en Florencia. El sistema cubre:
-- Captura de incidentes georreferenciados en campo por cuadrantes o agentes móviles, con coordenadas GNSS/WGS84 y anexión de fotografías procesadas y almacenadas en Cloudinary.
+SIGI es una plataforma WebGIS transaccional y analítica concebida para superar la fragmentación de la información de seguridad en Florencia, desplegada públicamente en **https://sigi.verapd.xyz**. El sistema cubre:
+- Captura de incidentes georreferenciados en campo por cuadrantes o agentes móviles, con coordenadas GNSS/WGS84, modo offline resiliente (PWA) y anexión de fotografías procesadas y almacenadas en Cloudinary.
 - Mesa de validación y control concurrente para analistas y administradores, impidiendo condiciones de carrera (*race conditions*) mediante bloqueo temporal y revisión de evidencia.
 - Portal público e interactivo para la ciudadanía con mapas temáticos, capas de comunas, barrios y veredas, filtros espacio-temporales y tableros de analítica cívica.
+- Asistencia predictiva por Machine Learning (clasificación supervisada Naive Bayes, detección de servicios de socorro, análisis de series temporales y clustering espacial DBSCAN de puntos calientes).
+- Comunicación bidireccional en tiempo real con WebSockets (Socket.io) para actualización dinámica de mapas y alertas operativas audibles sin recargar el navegador.
+- Generación y exportación de informes ejecutivos e institucionales en formato PDF vectorizado (PDFKit).
 - Panel de gobernanza, auditoría exhaustiva de operaciones en base de datos y administración granular de cuentas con autenticación segura y recuperación por token criptográfico vía correo.
 
 ### 1.3 Personal Involucrado y Audiencia
@@ -72,12 +79,17 @@ SIGI es una plataforma WebGIS transaccional y analítica concebida para superar 
 - **ADSO:** Análisis y Desarrollo de Software.
 - **API REST:** Interfaz de Programación de Aplicaciones basada en transferencia de estado representacional sobre HTTP/HTTPS.
 - **Cloudinary:** Plataforma en la nube para ingesta, optimización, transformación y entrega de activos digitales multimedia.
+- **DBSCAN:** *Density-Based Spatial Clustering of Applications with Noise*, algoritmo de agrupamiento no supervisado para detección de *hotspots*.
 - **EPSG:4326:** Sistema de Referencia Espacial estándar WGS84 expresado en coordenadas geográficas de latitud y longitud.
 - **GIS / SIG:** Sistema de Información Geográfica (*Geographic Information System*).
 - **JWT / Session:** Esquema de persistencia de sesión por cookies cifradas (`express-session`) y tokens para tareas de servicio.
 - **Locking Concurrente:** Mecanismo transaccional que reserva un registro para un único operador en un lapso determinado, evitando colisiones de dictamen.
+- **Naive Bayes:** Clasificador probabilístico supervisado basado en el teorema de Bayes con suavizado de Laplace para categorización de textos en lenguaje natural.
+- **PDFKit:** Motor generador de documentos PDF enriquecidos vectoriales en Node.js.
 - **PostGIS:** Extensión espacial para PostgreSQL que habilita tipos de datos geométricos (`Point`, `MultiPolygon`) e indexación GiST.
+- **PWA:** *Progressive Web App*, aplicación web progresiva con capacidad de ejecución offline y persistencia local (`localStorage` / Service Worker).
 - **RBAC:** Control de Acceso Basado en Roles (*Role-Based Access Control*).
+- **Socket.io:** Biblioteca para comunicación bidireccional y basada en eventos sobre WebSockets en tiempo real.
 
 ### 1.5 Referencias Normativas y Técnicas
 - **IEEE Std 830-1998:** *IEEE Recommended Practice for Software Requirements Specifications*.
@@ -86,39 +98,44 @@ SIGI es una plataforma WebGIS transaccional y analítica concebida para superar 
 - **OpenGIS Consortium (OGC) Simple Features for SQL:** Estándar de almacenamiento geométrico vectorial.
 
 ### 1.6 Resumen del Contenido
-El documento describe en la sección 2 los lineamientos generales, modelo RBAC y contexto del software; en la sección 3 se detallan los requisitos funcionales organizados en 7 módulos temáticos; en la sección 4 se consagran los requisitos no funcionales; y en la sección 5 se consolida la matriz de trazabilidad.
+El documento describe en la sección 2 los lineamientos generales, modelo RBAC y contexto del software; en la sección 3 se detallan los requisitos funcionales organizados en 10 módulos temáticos; en la sección 4 se consagran los requisitos no funcionales; y en la sección 5 se consolida la matriz de trazabilidad integral.
 
 ---
 
 ## 2. DESCRIPCIÓN GENERAL DEL SISTEMA
 
 ### 2.1 Perspectiva del Producto
-SIGI es un software autónomo de arquitectura 3 capas (*3-Tier*) que integra tecnologías web modernas con cómputo geoespacial avanzado y servicios SaaS en la nube. A diferencia de las soluciones genéricas de hojas de cálculo o mapas estáticos, SIGI vincula topología municipal real (shapefiles de barrios y veredas de Florencia transformados a PostGIS) con eventos delictivos y de convivencia en tiempo real.
+SIGI es un software autónomo de arquitectura limpia por capas desacopladas (*Clean Architecture & Layered Pattern*) que integra tecnologías web modernas con cómputo geoespacial avanzado, aprendizaje automático e integraciones en la nube. Desplegado en producción bajo el dominio **https://sigi.verapd.xyz**, vincula topología municipal real (shapefiles de barrios y veredas de Florencia transformados a PostGIS) con eventos delictivos y de convivencia en tiempo real.
 
 ```
-+-------------------------------------------------------------------------------+
-|                             CLIENTE (FRONTEND)                                |
-|  - HTML5 Semántico + CSS3 Glassmorphism + Vanilla JS ES6+ (Modular)          |
-|  - Motor de Mapas: Leaflet.js v1.9.4 + Chart.js v4.4                         |
-+---------------------------------------+---------------------------------------+
-                                        |  HTTPS / JSON / Multipart
-                                        v
-+-------------------------------------------------------------------------------+
-|                            SERVIDOR (BACKEND API)                             |
-|  - Node.js v20+ / Express v5.x                                                |
-|  - Middlewares: Helmet, Express-Rate-Limit, Express-Session, Multer           |
-|  - Controladores modulares (Auth, Incidentes, Filtros, Geografía, Usuarios)   |
-+-------------------+-----------------------------------+-----------------------+
-                    |                                   |
-         Consultas SQL / GiST                  Carga Multimedia HTTPS
-                    v                                   v
-+---------------------------------------+  +------------------------------------+
-|            BASE DE DATOS              |  |         SERVICIOS CLOUD            |
-| - PostgreSQL v15+                     |  | - Cloudinary (CDN de Evidencias)   |
-| - Extensión Espacial PostGIS          |  | - Servidor SMTP (Nodemailer / SSL) |
-+---------------------------------------+  +------------------------------------+
++---------------------------------------------------------------------------------------------------+
+|                                      CLIENTE (FRONTEND & PWA)                                     |
+|  - HTML5 Semántico + CSS3 Nativo Puro Glassmorphism + Vanilla JS ES6+ (Modular)                   |
+|  - Motor Cartográfico: Leaflet.js v1.9.4 | Analítica Gráfica: Chart.js v4.4                       |
+|  - Cliente PWA: Service Worker (sw.js) + Cola Offline Local (pwa-offline.js)                       |
+|  - Cliente Tiempo Real: Socket.io-client (sigi-realtime.js) + Web Audio API                       |
+|  - Asistente Inteligente: sigi-ml-assistant.js (Sugerencias NLP en Tiempo Real)                   |
++-------------------------------------------------+-------------------------------------------------+
+                                                  |  HTTPS / WSS / JSON / Multipart
+                                                  v
++---------------------------------------------------------------------------------------------------+
+|                                      SERVIDOR (BACKEND API REST)                                  |
+|  - Node.js v20+ / Express v5.x / Engine de WebSockets (Socket.io Server)                          |
+|  - Middlewares: Helmet, Express-Rate-Limit, Express-Session, Multer, Guard RBAC                    |
+|  - Capa de Controladores: auth, incidentes, catalogos, estadisticas, geografia, ml, reportes      |
+|  - Capa de Servicios: ml.service.js (Naive Bayes, DBSCAN, Forecast), mailer.js, cloudinary.js    |
+|  - Capa de Modelos (Clean Architecture): incidente, usuario, catalogos, estadisticas, geografia   |
++-------------------------+-----------------------------------------+-------------------------------+
+                          |                                         |
+               Consultas SQL / GiST                        Carga Multimedia HTTPS / SMTP
+                          v                                         v
++-----------------------------------------+   +---------------------------------------------+
+|             BASE DE DATOS               |   |               SERVICIOS CLOUD               |
+| - PostgreSQL v15+ (Pool en config/db.js)|   | - Cloudinary (CDN de Evidencias WebP)       |
+| - Extensión Espacial PostGIS 3.3+       |   | - Servidor SMTP (Nodemailer / SSL)          |
+| - Topología Vectorial WGS84 EPSG:4326   |   | - Despliegue en https://sigi.verapd.xyz     |
++-----------------------------------------+   +---------------------------------------------+
 ```
-
 
 ### 2.2 Funcionalidades Principales del Sistema
 1. **Geovisualización Dinámica:** Carga asíncrona de incidentes según el *bounding box* o filtros de polígonos urbanos y rurales.
@@ -127,6 +144,10 @@ SIGI es un software autónomo de arquitectura 3 capas (*3-Tier*) que integra tec
 4. **Inteligencia Geoespacial y KPIs:** Extracción instantánea de zonas calientes (*hotspots*), distribución temporal (mes, día, hora pico) y métricas de afectación comunitaria.
 5. **Carga Masiva Transaccional:** Importación de ficheros CSV con validación de cabeceras, casteo espacial y reversión (*rollback*) en lote ante errores.
 6. **Seguridad Integral:** Hasheo criptográfico con Bcrypt (cost 10), protección contra ataques DDoS y de fuerza bruta, políticas de inactividad de sesión y cambio obligatorio de clave provisional.
+7. **Asistencia Predictiva por Machine Learning (ML):** Sugerencia probabilística de tipología y severidad mediante análisis de lenguaje natural (Naive Bayes), cálculo de clustering no supervisado DBSCAN y estimación de tendencias.
+8. **Comunicación Bidireccional en Tiempo Real:** Emisión y recepción de eventos push (Socket.io) para reflejar nuevos incidentes y dictámenes de validación al instante con feedback sonoro configurable.
+9. **Modo Desconectado Resiliente (PWA Offline):** Encolamiento transaccional de novedades en el almacenamiento del dispositivo ante caídas de red, con sincronización automática garantizada al restablecer conectividad.
+10. **Generación Documental y Reportes Oficiales en PDF:** Exportación estructurada de informes ejecutivos mensuales con métricas consolidadas, analítica y diseño institucional vectorizado.
 
 ### 2.3 Perfiles de Usuario y Modelo RBAC
 
@@ -137,12 +158,15 @@ classDiagram
         +FiltrarIncidentes()
         +VisualizarEstadisticas()
         +SolicitarRecuperacionClave()
+        +RecibirAlertasTiempoReal()
     }
     class Reportero {
         +CapturarIncidenteTerreno()
         +SubirFotoCloudinary()
         +ConsultarMisReportes()
         +ModificarMiPerfil()
+        +AsistenciaPredictivaIA()
+        +RadicarEnModoOffline()
     }
     class Administrador {
         +AccederColaValidacion()
@@ -151,13 +175,17 @@ classDiagram
         +AprobarRechazarIncidente()
         +ImportarCSVConRollback()
         +CRUDIncidentes()
+        +ConsultarHotspotsDBSCAN()
+        +ExportarInformePDF()
     }
     class Superadministrador {
         +CRUDUsuarios()
         +AsignarRoles()
         +AuditarBitacoraLogs()
         +ConfigurarParametrosGlobales()
-        +GestionCatalogos()
+        +GestionCatalogosCromaticos()
+        +ReentrenarModeloML()
+        +ProteccionUltimoSuperadmin()
     }
 
     Invitado <|-- Reportero
@@ -392,7 +420,7 @@ classDiagram
 #### RF-ADM-02: Gestión Integral de Usuarios (CRUD y Estados)
 - **Descripción:** Edición de perfil, reasignación de roles y activación o inactivación de cuentas.
 - **Entradas:** ID de usuario a gestionar, nuevos valores de rol, dependencia o estado (`activo`, `inactivo`, `suspendido`).
-- **Proceso:** Actualización de registros con validación de reglas de negocio (un Superadministrador no puede inactivarse a sí mismo). Si un usuario pasa a `inactivo`, sus sesiones activas son destruidas de inmediato.
+- **Proceso:** Actualización de registros con validación de reglas de negocio. Si un usuario pasa a `inactivo`, sus sesiones activas son destruidas de inmediato.
 - **Salida:** Actualización reflejada en la tabla de gobernanza y constancia en la bitácora forense.
 
 #### RF-ADM-03: Visor de Auditoría y Trazabilidad Forense
@@ -400,6 +428,81 @@ classDiagram
 - **Entradas:** Filtros por fecha, usuario, tipo de acción (`INSERT`, `UPDATE`, `DELETE`, `LOGIN`, `LOCK`), tabla afectada.
 - **Proceso:** Consulta paginada sobre la tabla `logs_actividad`, mostrando marcas de tiempo UTC-5, direcciones IP y descriptores de eventos.
 - **Salida:** Cuadrícula de auditoría con herramientas de exportación y búsqueda rápida.
+
+#### RF-ADM-04: Salvaguarda de Disponibilidad Institucional de Superadministrador
+- **Descripción:** Protección de continuidad operativa que impide que el sistema quede acéfalo de administradores con máximo privilegio.
+- **Entradas:** Petición de cambio de rol o inactivación sobre un usuario con perfil Superadministrador.
+- **Proceso:** Verificación transaccional mediante `UsuarioModel.contarSuperadminsActivos()`. Si la cantidad de superadministradores activos es menor o igual a uno (1) y la solicitud pretende inactivarlo o degradarlo de rol, el sistema aborta la transacción arrojando error HTTP 400 informando que no es viable dejar el sistema sin al menos un Superadministrador activo.
+- **Salida:** Bloqueo preventivo de la operación o autorización si existen múltiples superadministradores.
+
+#### RF-CAT-01: Gestión Cromática y Anti-Duplicados de Catálogos de Incidentes
+- **Descripción:** Mantenimiento de tipologías delictivas garantizando legibilidad cartográfica y prevención de duplicidad semántica.
+- **Entradas:** `nametipoincidente`, código hexadecimal de color (`#RRGGBB`), `id_categoria`, `nivel_riesgo_base`.
+- **Proceso:** Normalización estricta de nombres (conversión a minúsculas, eliminación de tildes/diacríticos y compactación de espacios). Validación perceptual cromática mediante aproximación **Redmean**:
+  $$\Delta C = \sqrt{\left(2 + \frac{\bar{r}}{256}\right)\Delta R^2 + 4\Delta G^2 + \left(2 + \frac{255 - \bar{r}}{256}\right)\Delta B^2}$$
+  Si $\Delta C < 85$ respecto a un color existente, se rechaza la selección para evitar confusiones visuales en el mapa. Asimismo, se prohíbe la eliminación de tipos que posean incidentes asociados en la base de datos (integridad referencial activa).
+#### RF-SEC-02: Monitoreo en Tiempo Real y Desbloqueo Manual de Direcciones IP Bloqueadas por Fuerza Bruta
+- **Descripción:** Monitoreo perimetral y gobernanza sobre direcciones IP suspendidas temporalmente por exceder el umbral de cinco (5) intentos de autenticación fallidos en una ventana de 15 minutos en `/login`.
+- **Entradas:** Consulta `GET /api/seguridad/ips-bloqueadas` y comando de desbloqueo manual `POST /api/seguridad/desbloquear-ip/:ip` con validación de token CSRF, exclusivo para el rol Superadministrador.
+- **Proceso:** El componente `GestorIpsBloqueadas` registra en memoria las direcciones suspendidas por `express-rate-limit`, normalizando identificadores IPv4 e IPv6 (`::1` y `::ffff:` a `127.0.0.1`) y calculando la cuenta regresiva en vivo. Al solicitar el desbloqueo mediante ventana modal de confirmación, el backend purga de forma atómica todas las representaciones de clave en el limitador de tasa (`127.0.0.1`, `::1`, `::/56`), asienta el evento `DESBLOQUEAR_IP` en la bitácora inmutable de auditoría (`auditoria_logs`) y difunde el evento reactivo `ip_desbloqueada` vía WebSockets (Socket.io).
+- **Salida:** Restablecimiento instantáneo del acceso para la dirección IP desbloqueada, notificación toast en la consola y actualización sincronizada en todas las sesiones administrativas sin recarga de página.
+
+---
+
+### 3.9 Módulo 8: Inteligencia Artificial y Clasificación Predictiva (ML-IA)
+
+#### RF-ML-01: Clasificación Predictiva Probabilística de Tipología y Gravedad
+- **Descripción:** Motor de procesamiento de lenguaje natural (NLP) que sugiere la tipología delictiva y estima el nivel de gravedad al redactar la descripción.
+- **Entradas:** Cadena de texto libre con la narrativa del suceso (`descripcion`).
+- **Proceso:** Tokenización, eliminación de caracteres especiales y conversión a minúsculas. Evaluación probabilística mediante el clasificador supervisado **Multinomial Naive Bayes** con suavizado de Laplace sobre el léxico especializado colombiano (`services/ml.service.js`). Estimación de gravedad en escala 1 a 5 mediante ponderación de factores de riesgo (presencia de armas, sangre, menores de edad, agresión letal). Endpoint: `POST /api/ml/predecir-incidente`.
+- **Salida:** JSON con código de tipo de incidente sugerido, nivel de confianza probabilística (0-100%), gravedad recomendada y palabras clave determinantes.
+
+#### RF-ML-02: Detección Predictiva de Servicios de Emergencia Requeridos
+- **Descripción:** Inferencia automática de las entidades de auxilio requeridas para atender la novedad reportada.
+- **Entradas:** Texto de la descripción y tipología identificada.
+- **Proceso:** Reglas heurísticas y léxicas cruzadas que determinan necesidad de:
+  - **Policía Nacional:** Hurto, asalto, atraco, fleteo, porte ilegal, riña.
+  - **Ambulancia / Red Hospitalaria:** Lesiones personales, sangrado, atropellos, inconsciencia, fracturas.
+  - **Cuerpo de Bomberos:** Conflagraciones, escapes de gas, derrames de químicos, rescate en estructuras colapsadas.
+- **Salida:** Objeto con banderas booleanas y justificación técnica para el protocolo de despacho.
+
+#### RF-ML-03: Reentrenamiento y Monitoreo Continuo del Modelo
+- **Descripción:** Capacidad de aprendizaje incremental a partir de los datos históricos consolidados en la base de datos.
+- **Entradas:** Petición POST autenticada a `/api/ml/reentrenar` ejecutada por Administrador o Superadministrador.
+- **Proceso:** Lectura de incidentes en estado Aprobado y Resuelto. Actualización de matrices de frecuencia léxica y ajuste dinámico de priors de Laplace en memoria sin requerir reinicio del servicio Node.js.
+- **Salida:** Reporte del número de casos procesados, vocabulario actualizado y tasa de precisión estimada.
+
+#### RF-ML-04: Agrupamiento Espacial DBSCAN y Proyecciones de Tendencia (Forecast)
+- **Descripción:** Descubrimiento no supervisado de patrones espaciales y proyecciones temporales de criminalidad.
+- **Entradas:** Parámetros de radio espacial ($\epsilon$) y número mínimo de puntos (*minPoints*) para agrupamiento; horizonte temporal para pronósticos.
+- **Proceso:** Algoritmo **DBSCAN** en `/api/ml/hotspots` para delimitar clústeres espaciales densos excluyendo el ruido. Modelo de series de tiempo con suavizado exponencial y media móvil en `/api/ml/forecast` para proyectar el volumen esperado del siguiente mes.
+- **Salida:** Polígonos de calor geoespacial y vectores de tendencia mensual proyectada.
+
+---
+
+### 3.10 Módulo 9: Comunicación en Tiempo Real y Modo Offline PWA (RT-PWA)
+
+#### RF-RT-01: Notificaciones Push Bidireccionales WebSocket en Tiempo Real
+- **Descripción:** Distribución instantánea de eventos operativos a todos los clientes web conectados sin requerir sondeo periódico (*polling*).
+- **Entradas:** Eventos del ciclo de vida del incidente: `nuevo_incidente`, `incidente_actualizado`.
+- **Proceso:** El servidor centralizado emite mensajes a través del motor **Socket.io**. El script cliente `public/js/sigi-realtime.js` intercepta el evento, genera un contenedor flotante de notificación (toast), sintetiza una señal audible mediante **Web Audio API** (frecuencia D5 a A5 con decaimiento exponencial) e inyecta dinámicamente los datos en el mapa Leaflet y en la tabla operativa.
+- **Salida:** Sincronización cartográfica y de mesa en tiempo real con latencia menor a 400 ms.
+
+#### RF-RT-02: Modo Offline PWA con Encolamiento Local y Sincronización Automática
+- **Descripción:** Capacidad de captura de datos en campo en zonas rurales o urbanas de Florencia sin conectividad celular a Internet.
+- **Entradas:** Formulario de reporte de terreno diligenciado por el Reportero bajo bandera `navigator.onLine = false`.
+- **Proceso:** Intercepción en el cliente (`public/js/pwa-offline.js`) respaldado por el Service Worker (`public/sw.js`). Almacenamiento del payload completo en `localStorage` bajo la clave `sigi_cola_incidentes_offline`. Visualización de alerta persistente de modo desconectado. Al restablecerse la conectividad (evento `online`), el gestor envía automáticamente los reportes pendientes de forma secuencial al endpoint `/api/incidentes` y limpia la cola local tras confirmar respuesta HTTP 201.
+- **Salida:** Garantía de cero pérdida de datos en terreno y sincronización transparente al volver a línea.
+
+---
+
+### 3.11 Módulo 10: Reportes Ejecutivos y Exportación Documental (REP-EXP)
+
+#### RF-REP-EXP-01: Generación y Descarga de Informes Ejecutivos en PDF
+- **Descripción:** Emisión de informes formales consolidados en formato PDF vectorial para comités de orden público o rendición de cuentas institucionales.
+- **Entradas:** Mes y año de corte, bandera opcional de visualización previa (`preview=1`) vía `GET /api/reportes/pdf`.
+- **Proceso:** El controlador `reportes.controller.js` consulta métricas consolidadas en `EstadisticasModel`. Instancia un flujo vectorizado con **PDFKit** generando: cabecera institucional `#0f172a`, indicadores clave (KPIs), tablas de desglose por tipología y gravedad, resumen de zonas críticas y pronósticos de Machine Learning.
+- **Salida:** Documento PDF de alta resolución descargable o previsualizable en el navegador.
 
 ---
 
@@ -419,9 +522,11 @@ classDiagram
 ### 4.3 Disponibilidad y Concurrencia
 - **RNF-08 (Manejo de Bloqueos Concurrentes):** El sistema debe garantizar que dos operadores no validen simultáneamente el mismo incidente, liberando automáticamente bloqueos inactivos tras 10 minutos.
 - **RNF-09 (Resiliencia en Pool de Base de Datos):** La capa de datos gestionará un pool de conexiones con tolerancia a caídas temporales, reintentos automáticos y límites para evitar saturación de memoria.
+- **RNF-14 (Capacidad Offline PWA):** El cliente de reportería debe ser capaz de almacenar localmente hasta 50 incidentes en memoria no volátil ante interrupción total del servicio de red.
+- **RNF-15 (Latencia en Tiempo Real WebSocket):** La notificación de nuevos eventos vía Socket.io debe propagarse a los clientes conectados en un tiempo menor a 400 milisegundos.
 
 ### 4.4 Mantenibilidad y Portabilidad
-- **RNF-10 (Arquitectura Modular):** El código backend debe organizarse bajo el patrón Controlador-Ruta-Servicio en CommonJS/ES6, separando responsabilidades y facilitando pruebas unitarias.
+- **RNF-10 (Arquitectura Limpia Modular):** El código backend debe organizarse bajo separación de responsabilidades estricta (Rutas -> Middlewares -> Controladores -> Servicios -> Modelos), desacoplando las consultas SQL en clases de modelo especializadas.
 - **RNF-11 (Compatibilidad Multiplataforma):** La interfaz web debe ser agnóstica al sistema operativo del cliente, garantizando compatibilidad 100% en navegadores móviles (Chrome/Safari en Android/iOS) y de escritorio.
 
 ### 4.5 Usabilidad y Accesibilidad
@@ -461,8 +566,18 @@ classDiagram
 | **RF-ADM-01** | ADM-GOB | Creación de usuario y envío credenciales| Superadmin | `usuario`, `notificaciones`, `logs` | **Alta** |
 | **RF-ADM-02** | ADM-GOB | Administración integral de cuentas (CRUD)| Superadmin | `usuario`, `logs_actividad` | **Alta** |
 | **RF-ADM-03** | ADM-GOB | Consola de visualización de bitácora | Superadmin | `logs_actividad` | **Alta** |
+| **RF-ADM-04** | ADM-GOB | Protección de último Superadmin activo | Superadmin | `usuario` | **Alta** |
+| **RF-CAT-01** | ADM-GOB | Catálogo cromático Redmean y sin duplicados| Superadmin | `tipo_incidente`, `categoria_incidente`| **Alta** |
+| **RF-ML-01** | ML-IA | Clasificación Naive Bayes y gravedad | Reportero, Admin, Superadmin | `tipo_incidente` | **Alta** |
+| **RF-ML-02** | ML-IA | Recomendación de servicios de auxilio | Reportero, Admin, Superadmin | N/A (Inferencia en memoria) | **Media** |
+| **RF-ML-03** | ML-IA | Reentrenamiento continuo de modelo ML | Admin, Superadmin | `incidente` | **Media** |
+| **RF-ML-04** | ML-IA | Clustering DBSCAN y Forecast temporal | Admin, Superadmin | `incidente`, `barrio` | **Media** |
+| **RF-RT-01** | RT-PWA | Notificaciones WebSocket en tiempo real | Todos los perfiles | N/A (Socket.io / Memoria) | **Alta** |
+| **RF-RT-02** | RT-PWA | Radicación Offline PWA y autosync | Reportero | `incidente` (Local y Remoto) | **Alta** |
+| **RF-REP-EXP-01**| REP-EXP | Generación informe ejecutivo mensual PDF| Admin, Superadmin | `incidente`, `estadisticas` | **Alta** |
 
 ---
 
 ### Notas de Aprobación y Conformidad Técnica
-El presente documento constituye la especificación canónica y definitiva de los requisitos del software SIGI, alineado a los criterios de evaluación del SENA y a los estándares internacionales de la industria de software geográfico.
+El presente documento constituye la especificación canónica y definitiva de los requisitos del software SIGI versión 2.1, alineado a los criterios de evaluación del SENA y a los estándares internacionales de la industria de software geográfico. Despliegue de producción verificado en **https://sigi.verapd.xyz**.
+

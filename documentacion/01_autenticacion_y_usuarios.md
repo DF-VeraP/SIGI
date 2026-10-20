@@ -193,3 +193,13 @@ Elimina un usuario del sistema (o aplica borrado logico segun integridad referen
 
 #### `GET /api/usuarios/auditoria/logs`
 Consulta la bitacora forense de auditoria (`logs_actividad`), permitiendo filtrar por usuario, tipo de accion, rango de fechas e IP de origen.
+
+---
+
+### Seguridad de Red y Control Perimetral de IPs (Exclusivo Superadmin)
+
+#### `GET /api/seguridad/ips-bloqueadas`
+Retorna el inventario en tiempo real de direcciones IP suspendidas por superar 5 intentos fallidos en 15 minutos en `/login`, detallando motivo, hora del bloqueo, intentos registrados y temporizador decreciente en segundos/minutos.
+
+#### `POST /api/seguridad/desbloquear-ip/:ip`
+Desbloquea manualmente una dirección IP suspendida. Purga concurrentemente todas las representaciones de clave en la memoria de `express-rate-limit` (`127.0.0.1`, `::1`, `::/56`), asienta el evento `DESBLOQUEAR_IP` en la auditoría forense (`logs_actividad`) y emite el evento reactivo `ip_desbloqueada` vía WebSockets para sincronizar todas las consolas administrativas sin recargar la página.
