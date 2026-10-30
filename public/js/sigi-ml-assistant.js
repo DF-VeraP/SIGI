@@ -210,13 +210,13 @@ class SigiMLAssistant {
     const { tipo, gravedad, asistencias } = data;
 
     const factoresHtml = gravedad.factores_detectados.length > 0
-      ? gravedad.factores_detectados.map(f => `<span class="sigi-ml-tag">⚠️ ${f}</span>`).join('')
+      ? gravedad.factores_detectados.map(f => `<span class="sigi-ml-tag"><i class="bi bi-exclamation-triangle"></i> ${f}</span>`).join('')
       : '<span class="sigi-ml-tag">Evaluación estándar</span>';
 
     const asistenciasHtml = [];
-    if (asistencias.policia) asistenciasHtml.push('👮 Policía');
-    if (asistencias.ambulancia) asistenciasHtml.push('🚑 Ambulancia');
-    if (asistencias.bomberos) asistenciasHtml.push('🚒 Bomberos');
+    if (asistencias.policia) asistenciasHtml.push('<i class="bi bi-shield"></i> Policía');
+    if (asistencias.ambulancia) asistenciasHtml.push('<i class="bi bi-heart-pulse"></i> Ambulancia');
+    if (asistencias.bomberos) asistenciasHtml.push('<i class="bi bi-fire"></i> Bomberos');
 
     container.innerHTML = `
       <div class="sigi-ml-header">

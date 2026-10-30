@@ -74,22 +74,23 @@
       }
     }
 
-    function mostrarToast({ titulo, subtitulo, icon = '🚨', color = '#ef4444' }) {
+    function mostrarToast({ titulo, subtitulo, icon = '<i class="bi bi-broadcast"></i>', color = '#ef4444' }) {
       reproducirTonoNotificacion();
 
       const toast = document.createElement('div');
       toast.style.cssText = `
         background: rgba(15, 23, 42, 0.95);
         color: #f8fafc;
-        padding: 14px 18px;
-        border-radius: 10px;
-        box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+        padding: 12px 16px;
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.45);
         backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         display: flex;
         align-items: flex-start;
-        gap: 12px;
+        gap: 10px;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        font-size: 0.85rem;
+        font-size: 0.83rem;
         pointer-events: auto;
         transform: translateX(120%);
         transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s;
@@ -97,12 +98,12 @@
       `;
 
       toast.innerHTML = `
-        <div style="font-size: 1.4rem; line-height: 1; flex-shrink: 0;">${icon}</div>
+        <div style="font-size: 1.1rem; line-height: 1; flex-shrink: 0; color: ${color}; margin-top: 1px;">${icon}</div>
         <div style="flex: 1; min-width: 0;">
-          <div style="font-weight: 700; color: #fff; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${titulo}</div>
-          <div style="font-size: 0.78rem; color: #94a3b8; line-height: 1.35; max-height: 2.8em; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; word-break: break-word;">${subtitulo}</div>
+          <div style="font-weight: 600; color: #fff; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${titulo}</div>
+          <div style="font-size: 0.77rem; color: #94a3b8; line-height: 1.35; max-height: 2.8em; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; word-break: break-word;">${subtitulo}</div>
         </div>
-        <button style="background: none; border: none; color: #64748b; font-size: 1.1rem; cursor: pointer; padding: 0 0 0 8px; flex-shrink: 0;">&times;</button>
+        <button type="button" aria-label="Cerrar notificación" style="all: unset; background: transparent; border: none; color: #94a3b8; font-size: 0.8rem; cursor: pointer; padding: 2px 4px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; transition: color 0.15s ease;"><i class="bi bi-x-lg"></i></button>
       `;
 
       const btnCerrar = toast.querySelector('button');
@@ -156,8 +157,8 @@
       mostrarToast({
         titulo: `Nuevo Reporte: ${incidente.codigoincidente || 'Incidente'}`,
         subtitulo: subtituloTexto,
-        icon: '🚨',
-        color: '#ef4444'
+        icon: '<i class="bi bi-broadcast"></i>',
+        color: '#f87171'
       });
     });
 
@@ -166,8 +167,8 @@
       mostrarToast({
         titulo: `Incidente Actualizado`,
         subtitulo: `El incidente #${data.idincidente} cambió a: "${data.estadoNombre || 'Revisado'}"`,
-        icon: '🔄',
-        color: '#3b82f6'
+        icon: '<i class="bi bi-arrow-repeat"></i>',
+        color: '#60a5fa'
       });
 
       window.dispatchEvent(new CustomEvent('sigi:incidente_actualizado', { detail: data }));

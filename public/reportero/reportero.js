@@ -642,7 +642,7 @@ async function enviarReporte(e) {
                 foto_base64: fotoBase64
             };
             window.SIGI_PWA.guardarEnColaOffline(offlinePayload);
-            showAlert("📡 Modo sin conexión: Reporte guardado localmente en tu equipo. Se sincronizará automáticamente al detectar internet.", "warning", 4500);
+            showAlert("Modo sin conexión: Reporte guardado localmente en tu equipo. Se sincronizará automáticamente al detectar internet.", "warning", 4500);
             limpiarFormularioReporte();
             cargarMisReportes();
             document.getElementById("tabMisReportes")?.click();
@@ -726,7 +726,7 @@ async function enviarReporte(e) {
                 foto_base64: fotoBase64
             };
             window.SIGI_PWA.guardarEnColaOffline(offlinePayload);
-            showAlert("📡 Conexión perdida: Reporte guardado en cola local. Se subirá automáticamente cuando vuelva el internet.", "warning", 4500);
+            showAlert("Conexión perdida: Reporte guardado en cola local. Se subirá automáticamente cuando vuelva el internet.", "warning", 4500);
             limpiarFormularioReporte();
             cargarMisReportes();
             document.getElementById("tabMisReportes")?.click();
@@ -801,7 +801,7 @@ async function cargarMisReportes() {
     if (!navigator.onLine) {
         const notice = document.createElement("div");
         notice.className = "offline-list-notice";
-        notice.innerHTML = `<span>📡 <b>Modo sin conexión:</b> Mostrando ${colaOffline.length} reporte(s) en espera de sincronización y ${reportesServidor.length} en caché local.</span>`;
+        notice.innerHTML = `<span><i class="bi bi-wifi-off"></i> <b>Modo sin conexión:</b> Mostrando ${colaOffline.length} reporte(s) en espera de sincronización y ${reportesServidor.length} en caché local.</span>`;
         list.appendChild(notice);
     }
 
@@ -827,12 +827,11 @@ async function cargarMisReportes() {
 
         const card = document.createElement("div");
         card.className = "report-card";
-        card.style.borderLeft = "4px solid #f59e0b";
         card.innerHTML = `
             <div class="report-card-head">
-                <span class="report-code" style="color: #f59e0b;">${codigo}</span>
-                <span class="badge-status" style="background-color: #d97706; color: #fff;">
-                    ⏳ En cola (Offline)
+                <span class="report-code">${codigo}</span>
+                <span class="badge-status" style="background-color: #64748b; color: #fff;">
+                    <i class="bi bi-clock-history"></i> En cola (Offline)
                 </span>
             </div>
             <div class="report-type">${tipoNombre}</div>
@@ -842,7 +841,7 @@ async function cargarMisReportes() {
                 <span>${fechaFmt} ${horaFmt}</span>
                 <span>${r.barrio || 'Coordenadas fijadas'}</span>
             </div>
-            <div class="report-actions-locked" style="color: #f59e0b; font-size: 0.74rem; font-weight: 600;">
+            <div class="report-actions-locked" style="color: var(--text-soft); font-size: 0.74rem;">
                 Guardado en este equipo. Se sincronizará automáticamente al detectar internet.
             </div>
         `;
@@ -935,7 +934,7 @@ function mostrarToastReportero(mensaje, tipo = "info", duracion = 3200) {
     showAlert(mensaje, tipo, duracion);
 }
 
-function showAlert(mensaje, tipo = "success", duracion = 3200) {
+function showAlert(mensaje, tipo = "success", duracion = 3400) {
     const cont = document.getElementById("alertContainer");
     if (!cont) return;
 
@@ -944,10 +943,21 @@ function showAlert(mensaje, tipo = "success", duracion = 3200) {
         timerAlerta = null;
     }
 
+    let iconoHtml = '<i class="bi bi-info-circle-fill"></i>';
+    if (tipo === 'success') iconoHtml = '<i class="bi bi-check-circle-fill"></i>';
+    else if (tipo === 'error') iconoHtml = '<i class="bi bi-x-circle-fill"></i>';
+    else if (tipo === 'warning') iconoHtml = '<i class="bi bi-exclamation-triangle-fill"></i>';
+
+    // Eliminar cualquier emoji accidental y limpiar espacios
+    const mensajeLimpio = String(mensaje || '').replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+
     cont.innerHTML = `
         <div class="alert-box alert-${tipo}">
-            <span class="alert-texto">${mensaje}</span>
-            <button type="button" class="btn-cerrar-alert" title="Cerrar aviso" aria-label="Cerrar">&times;</button>
+            <span class="alert-icono">${iconoHtml}</span>
+            <span class="alert-texto">${mensajeLimpio}</span>
+            <button type="button" class="btn-cerrar-alert" title="Cerrar aviso" aria-label="Cerrar">
+                <i class="bi bi-x-lg"></i>
+            </button>
         </div>
     `;
 
@@ -965,10 +975,10 @@ function showAlert(mensaje, tipo = "success", duracion = 3200) {
         if (box) {
             box.style.opacity = "0";
             box.style.transform = "translateY(-6px)";
-            box.style.transition = "opacity 0.22s ease, transform 0.22s ease";
+            box.style.transition = "opacity 0.2s ease, transform 0.2s ease";
             setTimeout(() => {
                 cont.innerHTML = "";
-            }, 220);
+            }, 200);
         } else {
             cont.innerHTML = "";
         }
