@@ -168,6 +168,10 @@ function cambiarVista(vistaId) {
     const btnToggleCuadrantes = document.getElementById("btnToggleCuadrantes");
     const menuCapasPoligonos = document.getElementById("menuCapasPoligonos");
     if (menuCapasPoligonos) menuCapasPoligonos.style.display = "none";
+    if (btnToggleCuadrantes) {
+        btnToggleCuadrantes.setAttribute("aria-expanded", "false");
+        btnToggleCuadrantes.classList.remove("activo");
+    }
     const quickDbscanDock = document.getElementById("mapDbscanQuickDock");
 
     if (actionsGroup) {
@@ -186,7 +190,12 @@ function cambiarVista(vistaId) {
             if (btnMiUbicacion) btnMiUbicacion.style.display = "none";
             if (btnToggleHeatmap) btnToggleHeatmap.style.display = "none";
             if (btnToggleDBSCAN) btnToggleDBSCAN.style.display = "none";
-            if (btnToggleCuadrantes) btnToggleCuadrantes.style.display = "none";
+            if (btnToggleCuadrantes) {
+                btnToggleCuadrantes.style.setProperty("display", "none", "important");
+                btnToggleCuadrantes.setAttribute("aria-expanded", "false");
+                btnToggleCuadrantes.classList.remove("activo");
+            }
+            if (menuCapasPoligonos) menuCapasPoligonos.style.display = "none";
             if (quickDbscanDock) quickDbscanDock.style.display = "none";
         } else if (vistaId === "estadisticas" && contenedorAnalitica) {
             contenedorAnalitica.appendChild(actionsGroup);
@@ -195,7 +204,12 @@ function cambiarVista(vistaId) {
             if (btnMiUbicacion) btnMiUbicacion.style.display = "none";
             if (btnToggleHeatmap) btnToggleHeatmap.style.display = "none";
             if (btnToggleDBSCAN) btnToggleDBSCAN.style.display = "none";
-            if (btnToggleCuadrantes) btnToggleCuadrantes.style.display = "none";
+            if (btnToggleCuadrantes) {
+                btnToggleCuadrantes.style.setProperty("display", "none", "important");
+                btnToggleCuadrantes.setAttribute("aria-expanded", "false");
+                btnToggleCuadrantes.classList.remove("activo");
+            }
+            if (menuCapasPoligonos) menuCapasPoligonos.style.display = "none";
             if (quickDbscanDock) quickDbscanDock.style.display = "none";
         } else {
             if (mapEl) {
@@ -207,11 +221,22 @@ function cambiarVista(vistaId) {
             }
             actionsGroup.classList.remove("en-tabla");
             actionsGroup.classList.remove("en-analitica");
-            if (btnMiUbicacion) btnMiUbicacion.style.display = "";
-            if (btnToggleHeatmap) btnToggleHeatmap.style.display = "";
-            if (btnToggleDBSCAN) btnToggleDBSCAN.style.display = (vistaId === "mapa" || vistaId === "mapa-completo") ? "" : "none";
-            if (btnToggleCuadrantes) btnToggleCuadrantes.style.display = (vistaId === "mapa" || vistaId === "mapa-completo") ? "" : "none";
-            if (quickDbscanDock && vistaId !== "mapa" && vistaId !== "mapa-completo") quickDbscanDock.style.display = "none";
+            const esVistaMapa = (vistaId === "mapa" || vistaId === "mapa-completo");
+            if (btnMiUbicacion) btnMiUbicacion.style.display = esVistaMapa ? "" : "none";
+            if (btnToggleHeatmap) btnToggleHeatmap.style.display = esVistaMapa ? "" : "none";
+            if (btnToggleDBSCAN) btnToggleDBSCAN.style.display = esVistaMapa ? "" : "none";
+            if (btnToggleCuadrantes) {
+                if (esVistaMapa) {
+                    btnToggleCuadrantes.style.removeProperty("display");
+                    btnToggleCuadrantes.style.display = "";
+                } else {
+                    btnToggleCuadrantes.style.setProperty("display", "none", "important");
+                    btnToggleCuadrantes.setAttribute("aria-expanded", "false");
+                    btnToggleCuadrantes.classList.remove("activo");
+                }
+            }
+            if (menuCapasPoligonos && !esVistaMapa) menuCapasPoligonos.style.display = "none";
+            if (quickDbscanDock && !esVistaMapa) quickDbscanDock.style.display = "none";
         }
     }
 

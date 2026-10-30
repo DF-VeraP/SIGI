@@ -2272,21 +2272,45 @@ body.tema-claro .sidebar-logo-img {
 .map-actions-group.en-tabla #btnMiUbicacion,
 .map-actions-group.en-tabla #btnToggleHeatmap,
 .map-actions-group.en-tabla #btnToggleDBSCAN,
+.map-actions-group.en-tabla #btnToggleCuadrantes,
+.map-actions-group.en-tabla .fab-poligonos,
+.map-actions-group.en-tabla #menuCapasPoligonos,
 .map-actions-group.en-analitica #btnMiUbicacion,
 .map-actions-group.en-analitica #btnToggleHeatmap,
 .map-actions-group.en-analitica #btnToggleDBSCAN,
+.map-actions-group.en-analitica #btnToggleCuadrantes,
+.map-actions-group.en-analitica .fab-poligonos,
+.map-actions-group.en-analitica #menuCapasPoligonos,
 .tabla-acciones .map-actions-group #btnMiUbicacion,
 .tabla-acciones .map-actions-group #btnToggleHeatmap,
 .tabla-acciones .map-actions-group #btnToggleDBSCAN,
+.tabla-acciones .map-actions-group #btnToggleCuadrantes,
+.tabla-acciones .map-actions-group .fab-poligonos,
+.tabla-acciones .map-actions-group #menuCapasPoligonos,
 .analitica-acciones .map-actions-group #btnMiUbicacion,
 .analitica-acciones .map-actions-group #btnToggleHeatmap,
 .analitica-acciones .map-actions-group #btnToggleDBSCAN,
+.analitica-acciones .map-actions-group #btnToggleCuadrantes,
+.analitica-acciones .map-actions-group .fab-poligonos,
+.analitica-acciones .map-actions-group #menuCapasPoligonos,
 #contenedorAccionesTabla .map-actions-group #btnMiUbicacion,
 #contenedorAccionesTabla .map-actions-group #btnToggleHeatmap,
 #contenedorAccionesTabla .map-actions-group #btnToggleDBSCAN,
+#contenedorAccionesTabla .map-actions-group #btnToggleCuadrantes,
+#contenedorAccionesTabla .map-actions-group .fab-poligonos,
+#contenedorAccionesTabla .map-actions-group #menuCapasPoligonos,
 #contenedorAccionesAnalitica .map-actions-group #btnMiUbicacion,
 #contenedorAccionesAnalitica .map-actions-group #btnToggleHeatmap,
-#contenedorAccionesAnalitica .map-actions-group #btnToggleDBSCAN {
+#contenedorAccionesAnalitica .map-actions-group #btnToggleDBSCAN,
+#contenedorAccionesAnalitica .map-actions-group #btnToggleCuadrantes,
+#contenedorAccionesAnalitica .map-actions-group .fab-poligonos,
+#contenedorAccionesAnalitica .map-actions-group #menuCapasPoligonos,
+#contenedorAccionesIncidentesMobile .map-actions-group #btnMiUbicacion,
+#contenedorAccionesIncidentesMobile .map-actions-group #btnToggleHeatmap,
+#contenedorAccionesIncidentesMobile .map-actions-group #btnToggleDBSCAN,
+#contenedorAccionesIncidentesMobile .map-actions-group #btnToggleCuadrantes,
+#contenedorAccionesIncidentesMobile .map-actions-group .fab-poligonos,
+#contenedorAccionesIncidentesMobile .map-actions-group #menuCapasPoligonos {
     display: none !important;
 }
 
@@ -2607,9 +2631,15 @@ body.tema-claro .sidebar-logo-img {
     .tabla-acciones .map-actions-group #btnMiUbicacion,
     .tabla-acciones .map-actions-group #btnToggleHeatmap,
     .tabla-acciones .map-actions-group #btnToggleDBSCAN,
+    .tabla-acciones .map-actions-group #btnToggleCuadrantes,
+    .tabla-acciones .map-actions-group .fab-poligonos,
+    .tabla-acciones .map-actions-group #menuCapasPoligonos,
     .map-actions-group.en-tabla #btnMiUbicacion,
     .map-actions-group.en-tabla #btnToggleHeatmap,
-    .map-actions-group.en-tabla #btnToggleDBSCAN {
+    .map-actions-group.en-tabla #btnToggleDBSCAN,
+    .map-actions-group.en-tabla #btnToggleCuadrantes,
+    .map-actions-group.en-tabla .fab-poligonos,
+    .map-actions-group.en-tabla #menuCapasPoligonos {
         display: none !important;
     }
     

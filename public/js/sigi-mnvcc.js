@@ -47,6 +47,9 @@ function inicializarModuloMNVCC() {
     btnPoligonos.dataset.mnvccWired = '1';
     btnPoligonos.addEventListener('click', (e) => {
       if (e) e.stopPropagation();
+      const panelMapEl = document.getElementById('panelMap');
+      const vistaMapaActiva = panelMapEl && panelMapEl.classList.contains('vista-activa');
+      if (!vistaMapaActiva) return;
       if (!menuPoligonos) {
         alternarCapaCuadrantesMapa();
         return;

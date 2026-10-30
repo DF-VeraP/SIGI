@@ -768,254 +768,259 @@
     </mxGraphModel>
   </diagram>
   <diagram id="tab-reportero" name="Flujo-Reportero">
-    <mxGraphModel dx="1600" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="2600" math="0" shadow="0">
+    <mxGraphModel dx="1146" dy="748" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="2600" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="mod_rep_box" value="MÓDULO: Captura Móvil GPS y Asistencia Inteligente con IA (NLP)" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalFlip=0;verticalFlip=0;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=13;collapsible=0;" vertex="1" parent="1">
-          <mxGeometry x="50" y="40" width="620" height="1530" as="geometry" />
+        <mxCell id="mod_rep_box" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalFlip=0;verticalFlip=0;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=13;collapsible=0;" value="MÓDULO: Captura Móvil GPS y Asistencia Inteligente con IA (NLP)" vertex="1">
+          <mxGeometry height="1530" width="620" x="50" y="40" as="geometry" />
         </mxCell>
-        <mxCell id="rep_start" value="Inicio: Acceso a /reportero/index.html" style="rounded=1;arcSize=50;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=12;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="240" y="90" width="240" height="50" as="geometry" />
+        <mxCell id="rep_start" parent="1" style="rounded=1;arcSize=50;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=12;fontStyle=1;" value="Inicio: Acceso a /reportero/index.html" vertex="1">
+          <mxGeometry height="50" width="240" x="240" y="90" as="geometry" />
         </mxCell>
-        <mxCell id="rep_dec_pwa" value="¿PWA instalada en dispositivo?" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="260" y="180" width="200" height="90" as="geometry" />
+        <mxCell id="rep_dec_pwa" parent="1" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="¿PWA instalada en dispositivo?" vertex="1">
+          <mxGeometry height="90" width="200" x="260" y="180" as="geometry" />
         </mxCell>
-        <mxCell id="rep_pwa_banner" value="Service Worker cachea recursos shell&#xa;Muestra banner &quot;Instalar App en inicio&quot;" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="70" y="195" width="170" height="60" as="geometry" />
+        <mxCell id="rep_pwa_banner" parent="1" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="Service Worker cachea recursos shell&#xa;Muestra banner &quot;Instalar App en inicio&quot;" vertex="1">
+          <mxGeometry height="60" width="170" x="70" y="195" as="geometry" />
         </mxCell>
-        <mxCell id="rep_btn_new" value="Clic en &quot;Nuevo Reporte de Incidente&quot;" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="240" y="310" width="240" height="45" as="geometry" />
+        <mxCell id="rep_btn_new" parent="1" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="Clic en &quot;Nuevo Reporte de Incidente&quot;" vertex="1">
+          <mxGeometry height="45" width="240" x="240" y="310" as="geometry" />
         </mxCell>
-        <mxCell id="rep_btn_gps" value="Clic en &quot;Obtener Mi Ubicación (GPS)&quot;" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="240" y="395" width="240" height="45" as="geometry" />
+        <mxCell id="rep_btn_gps" parent="1" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="Clic en &quot;Obtener Mi Ubicación (GPS)&quot;" vertex="1">
+          <mxGeometry height="45" width="240" x="240" y="395" as="geometry" />
         </mxCell>
-        <mxCell id="rep_dec_gps" value="¿Permiso GPS concedido?" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="260" y="480" width="200" height="90" as="geometry" />
+        <mxCell id="rep_dec_gps" parent="1" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="¿Permiso GPS concedido?" vertex="1">
+          <mxGeometry height="90" width="200" x="260" y="480" as="geometry" />
         </mxCell>
-        <mxCell id="rep_err_gps" value="Alerta: &quot;Permiso GPS denegado&quot;&#xa;Solicita habilitar en configuración" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="70" y="495" width="170" height="60" as="geometry" />
+        <mxCell id="rep_err_gps" parent="1" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="Alerta: &quot;Permiso GPS denegado&quot;&#xa;Solicita habilitar en configuración" vertex="1">
+          <mxGeometry height="60" width="170" x="70" y="495" as="geometry" />
         </mxCell>
-        <mxCell id="rep_proc_gps" value="HTML5 Geolocation (enableHighAccuracy)&#xa;Captura latitud, longitud y precisión métrica" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="240" y="610" width="240" height="55" as="geometry" />
+        <mxCell id="rep_proc_gps" parent="1" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="HTML5 Geolocation (enableHighAccuracy)&#xa;Captura latitud, longitud y precisión métrica" vertex="1">
+          <mxGeometry height="55" width="240" x="240" y="610" as="geometry" />
         </mxCell>
-        <mxCell id="rep_proc_drag" value="Fija marcador en mini-mapa interactivo&#xa;Reportero puede arrastrarlo para afinar punto" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="240" y="705" width="240" height="55" as="geometry" />
+        <mxCell id="rep_proc_drag" parent="1" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="Fija marcador en mini-mapa interactivo&#xa;Reportero puede arrastrarlo para afinar punto" vertex="1">
+          <mxGeometry height="55" width="240" x="240" y="705" as="geometry" />
         </mxCell>
-        <mxCell id="rep_proc_topol" value="Consulta topológica PostGIS (ST_Contains):&#xa;Identifica automáticamente Barrio o Vereda" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="240" y="800" width="240" height="55" as="geometry" />
+        <mxCell id="rep_proc_topol" parent="1" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="Consulta topológica PostGIS (ST_Contains):&#xa;Identifica automáticamente Barrio o Vereda" vertex="1">
+          <mxGeometry height="55" width="240" x="240" y="800" as="geometry" />
         </mxCell>
-        <mxCell id="rep_in_desc" value="Reportero redacta relato de los hechos en campo" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="240" y="895" width="240" height="50" as="geometry" />
+        <mxCell id="rep_in_desc" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="Reportero redacta relato de los hechos en campo" vertex="1">
+          <mxGeometry height="50" width="240" x="240" y="895" as="geometry" />
         </mxCell>
-        <mxCell id="rep_proc_nlp" value="Motor NLP Naive Bayes analiza el texto en segundo plano" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="240" y="985" width="240" height="50" as="geometry" />
+        <mxCell id="rep_proc_nlp" parent="1" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="Motor NLP Naive Bayes analiza el texto en segundo plano" vertex="1">
+          <mxGeometry height="50" width="240" x="240" y="985" as="geometry" />
         </mxCell>
-        <mxCell id="rep_dec_sug" value="¿Modelo detecta tipología con alta probabilidad?" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="260" y="1075" width="200" height="90" as="geometry" />
+        <mxCell id="rep_dec_sug" parent="1" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="¿Modelo detecta tipología con alta probabilidad?" vertex="1">
+          <mxGeometry height="90" width="200" x="260" y="1075" as="geometry" />
         </mxCell>
-        <mxCell id="rep_sug_chip" value="Muestra chip predictivo:&#xa;&quot;Tipo sugerido: [Tipo] (Confianza: X%)&quot;&#xa;Reportero acepta sugerencia con un clic" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="475" y="1085" width="180" height="70" as="geometry" />
+        <mxCell id="rep_sug_chip" parent="1" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="Muestra chip predictivo:&#xa;&quot;Tipo sugerido: [Tipo] (Confianza: X%)&quot;&#xa;Reportero acepta sugerencia con un clic" vertex="1">
+          <mxGeometry height="70" width="180" x="475" y="1085" as="geometry" />
         </mxCell>
-        <mxCell id="rep_dec_emerg" value="¿Texto contiene palabras de emergencia?&#xa;(&quot;herido&quot;, &quot;fuego&quot;, &quot;disparos&quot;, &quot;sangre&quot;)" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="260" y="1205" width="200" height="90" as="geometry" />
+        <mxCell id="rep_dec_emerg" parent="1" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="¿Texto contiene palabras de emergencia?&#xa;(&quot;herido&quot;, &quot;fuego&quot;, &quot;disparos&quot;, &quot;sangre&quot;)" vertex="1">
+          <mxGeometry height="90" width="200" x="260" y="1205" as="geometry" />
         </mxCell>
-        <mxCell id="rep_emerg_act" value="Activa automáticamente casillas de auxilio:&#xa;Ambulancia / Policía / Bomberos" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="475" y="1215" width="180" height="70" as="geometry" />
+        <mxCell id="rep_emerg_act" parent="1" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="Activa automáticamente casillas de auxilio:&#xa;Ambulancia / Policía / Bomberos" vertex="1">
+          <mxGeometry height="70" width="180" x="475" y="1215" as="geometry" />
         </mxCell>
-        <mxCell id="rep_in_photo" value="Captura de fotografía con cámara o galería móvil" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="240" y="1335" width="240" height="50" as="geometry" />
+        <mxCell id="rep_in_photo" parent="1" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="Captura de fotografía con cámara o galería móvil" vertex="1">
+          <mxGeometry height="50" width="240" x="240" y="1335" as="geometry" />
         </mxCell>
-        <mxCell id="rep_end_m1" value="Fin: Formulario listo para radicación" style="rounded=1;arcSize=50;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=12;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="240" y="1425" width="240" height="45" as="geometry" />
+        <mxCell id="rep_end_m1" parent="1" style="rounded=1;arcSize=50;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=12;fontStyle=1;" value="Fin: Formulario listo para radicación" vertex="1">
+          <mxGeometry height="45" width="240" x="240" y="1425" as="geometry" />
         </mxCell>
-        <mxCell id="er1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_start" target="rep_dec_pwa">
+        <mxCell id="er1" edge="1" parent="1" source="rep_start" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_dec_pwa" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="er2" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_dec_pwa" target="rep_pwa_banner">
+        <mxCell id="er2" edge="1" parent="1" source="rep_dec_pwa" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_pwa_banner" value="No">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="er3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_pwa_banner" target="rep_btn_new">
+        <mxCell id="er3" edge="1" parent="1" source="rep_pwa_banner" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_btn_new" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="er4" value="Sí" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_dec_pwa" target="rep_btn_new">
+        <mxCell id="er4" edge="1" parent="1" source="rep_dec_pwa" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_btn_new" value="Sí">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="er5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_btn_new" target="rep_btn_gps">
+        <mxCell id="er5" edge="1" parent="1" source="rep_btn_new" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_btn_gps" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="er6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_btn_gps" target="rep_dec_gps">
+        <mxCell id="er6" edge="1" parent="1" source="rep_btn_gps" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_dec_gps" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="er7" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_dec_gps" target="rep_err_gps">
+        <mxCell id="er7" edge="1" parent="1" source="rep_dec_gps" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_err_gps" value="No">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="er8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_err_gps" target="rep_btn_gps">
-          <mxGeometry relative="1" as="geometry" exitX="0.5" exitY="0" entryX="0" entryY="0.5" />
+        <mxCell id="er8" edge="1" parent="1" source="rep_err_gps" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_btn_gps" value="">
+          <mxGeometry entryX="0" entryY="0.5" exitX="0.5" exitY="0" relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="er9" value="Sí" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_dec_gps" target="rep_proc_gps">
+        <mxCell id="er9" edge="1" parent="1" source="rep_dec_gps" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_proc_gps" value="Sí">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="er10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_proc_gps" target="rep_proc_drag">
+        <mxCell id="er10" edge="1" parent="1" source="rep_proc_gps" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_proc_drag" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="er11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_proc_drag" target="rep_proc_topol">
+        <mxCell id="er11" edge="1" parent="1" source="rep_proc_drag" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_proc_topol" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="er12" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_proc_topol" target="rep_in_desc">
+        <mxCell id="er12" edge="1" parent="1" source="rep_proc_topol" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_in_desc" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="er13" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_in_desc" target="rep_proc_nlp">
+        <mxCell id="er13" edge="1" parent="1" source="rep_in_desc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_proc_nlp" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="er14" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_proc_nlp" target="rep_dec_sug">
+        <mxCell id="er14" edge="1" parent="1" source="rep_proc_nlp" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_dec_sug" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="er15" value="Sí" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_dec_sug" target="rep_sug_chip">
+        <mxCell id="er15" edge="1" parent="1" source="rep_dec_sug" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_sug_chip" value="Sí">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="er16" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_sug_chip" target="rep_dec_emerg">
+        <mxCell id="er16" edge="1" parent="1" source="rep_sug_chip" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_dec_emerg" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="er17" value="No / Manual" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_dec_sug" target="rep_dec_emerg">
+        <mxCell id="er17" edge="1" parent="1" source="rep_dec_sug" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_dec_emerg" value="No / Manual">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="er18" value="Sí" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_dec_emerg" target="rep_emerg_act">
+        <mxCell id="er18" edge="1" parent="1" source="rep_dec_emerg" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_emerg_act" value="Sí">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="er19" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_emerg_act" target="rep_in_photo">
+        <mxCell id="er19" edge="1" parent="1" source="rep_emerg_act" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_in_photo" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="er20" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_dec_emerg" target="rep_in_photo">
+        <mxCell id="er20" edge="1" parent="1" source="rep_dec_emerg" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_in_photo" value="No">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="er21" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_in_photo" target="rep_end_m1">
+        <mxCell id="er21" edge="1" parent="1" source="rep_in_photo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_end_m1" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="mod_rep_rad_box" value="MÓDULO: Gestión de Conectividad (Online vs PWA Offline) &amp; Radicación" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalFlip=0;verticalFlip=0;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=13;collapsible=0;" vertex="1" parent="1">
-          <mxGeometry x="700" y="40" width="580" height="1020" as="geometry" />
+        <mxCell id="mod_rep_rad_box" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalFlip=0;verticalFlip=0;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=13;collapsible=0;" value="MÓDULO: Gestión de Conectividad (Online vs PWA Offline) &amp; Radicación" vertex="1">
+          <mxGeometry height="1020" width="580" x="700" y="40" as="geometry" />
         </mxCell>
-        <mxCell id="rep_rad_start" value="Inicio: Reportero pulsa &quot;Radicar Incidente&quot;" style="rounded=1;arcSize=50;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=12;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="870" y="90" width="240" height="50" as="geometry" />
+        <mxCell id="rep_rad_start" parent="1" style="rounded=1;arcSize=50;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=12;fontStyle=1;" value="Inicio: Reportero pulsa &quot;Radicar Incidente&quot;" vertex="1">
+          <mxGeometry height="50" width="240" x="870" y="90" as="geometry" />
         </mxCell>
-        <mxCell id="rep_dec_online" value="¿Dispositivo tiene conexión a Internet?&#xa;(navigator.onLine == true)" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="890" y="180" width="200" height="90" as="geometry" />
+        <mxCell id="rep_dec_online" parent="1" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="¿Dispositivo tiene conexión a Internet?&#xa;(navigator.onLine == true)" vertex="1">
+          <mxGeometry height="90" width="200" x="890" y="180" as="geometry" />
         </mxCell>
-        <mxCell id="rep_off_save" value="Modo Offline Activo:&#xa;Serializa payload y almacena en cola local&#xa;localStorage: sigi_cola_incidentes_offline" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="720" y="310" width="180" height="75" as="geometry" />
+        <mxCell id="rep_off_save" parent="1" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="Modo Offline Activo:&#xa;Serializa payload y almacena en cola local&#xa;localStorage: sigi_cola_incidentes_offline" vertex="1">
+          <mxGeometry height="75" width="180" x="720" y="310" as="geometry" />
         </mxCell>
-        <mxCell id="rep_off_banner" value="Despliega franja ámbar informativa:&#xa;&quot;Reporte guardado localmente en el móvil&quot;" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="720" y="425" width="180" height="60" as="geometry" />
+        <mxCell id="rep_off_banner" parent="1" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="Despliega franja ámbar informativa:&#xa;&quot;Reporte guardado localmente en el móvil&quot;" vertex="1">
+          <mxGeometry height="60" width="180" x="720" y="425" as="geometry" />
         </mxCell>
-        <mxCell id="rep_off_listen" value="Service Worker escucha evento:&#xa;window.ononline" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="720" y="525" width="180" height="50" as="geometry" />
+        <mxCell id="rep_off_listen" parent="1" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="Service Worker escucha evento:&#xa;window.ononline" vertex="1">
+          <mxGeometry height="50" width="180" x="720" y="525" as="geometry" />
         </mxCell>
-        <mxCell id="rep_off_sync" value="Al restablecer señal:&#xa;Lee cola secuencialmente (FIFO) y transmite" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="720" y="615" width="180" height="65" as="geometry" />
+        <mxCell id="rep_off_sync" parent="1" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="Al restablecer señal:&#xa;Lee cola secuencialmente (FIFO) y transmite" vertex="1">
+          <mxGeometry height="65" width="180" x="720" y="615" as="geometry" />
         </mxCell>
-        <mxCell id="rep_on_cloud" value="Transmisión de imagen a Cloudinary CDN&#xa;Genera URL HTTPS segura y optimizada" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="950" y="310" width="240" height="60" as="geometry" />
+        <mxCell id="rep_on_cloud" parent="1" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="Transmisión de imagen a Cloudinary CDN&#xa;Genera URL HTTPS segura y optimizada" vertex="1">
+          <mxGeometry height="60" width="240" x="950" y="310" as="geometry" />
         </mxCell>
-        <mxCell id="rep_on_post" value="Envío de payload al servidor:&#xa;POST /api/incidentes con coordenadas y foto" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="950" y="410" width="240" height="60" as="geometry" />
+        <mxCell id="rep_on_post" parent="1" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="Envío de payload al servidor:&#xa;POST /api/incidentes con coordenadas y foto" vertex="1">
+          <mxGeometry height="60" width="240" x="950" y="410" as="geometry" />
         </mxCell>
-        <mxCell id="rep_on_db" value="Backend inserta incidente en PostgreSQL:&#xa;Asigna id_estado = 1 (&quot;Reportado&quot;)&#xa;Genera código radicado INC-YYYY-XXXX" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="950" y="510" width="240" height="70" as="geometry" />
+        <mxCell id="rep_on_db" parent="1" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="Backend inserta incidente en PostgreSQL:&#xa;Asigna id_estado = 1 (&quot;Reportado&quot;)&#xa;Genera código radicado INC-YYYY-XXXX" vertex="1">
+          <mxGeometry height="70" width="240" x="950" y="510" as="geometry" />
         </mxCell>
-        <mxCell id="rep_on_ws" value="Servidor emite evento WebSocket &quot;nuevo_incidente&quot;&#xa;a la sala institucional de &quot;administradores&quot;" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="950" y="620" width="240" height="60" as="geometry" />
+        <mxCell id="rep_on_ws" parent="1" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="Servidor emite evento WebSocket &quot;nuevo_incidente&quot;&#xa;a la sala institucional de &quot;administradores&quot;" vertex="1">
+          <mxGeometry height="60" width="240" x="950" y="620" as="geometry" />
         </mxCell>
-        <mxCell id="rep_on_res" value="Retorna respuesta exitosa HTTP 201 Created" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="950" y="720" width="240" height="50" as="geometry" />
+        <mxCell id="rep_on_res" parent="1" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="Retorna respuesta exitosa HTTP 201 Created" vertex="1">
+          <mxGeometry height="50" width="240" x="950" y="720" as="geometry" />
         </mxCell>
-        <mxCell id="rep_on_modal" value="Despliega modal de confirmación con radicado oficial&#xa;Limpia formulario para nueva captura" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="950" y="810" width="240" height="60" as="geometry" />
+        <mxCell id="rep_on_modal" parent="1" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="Despliega modal de confirmación con radicado oficial&#xa;Limpia formulario para nueva captura" vertex="1">
+          <mxGeometry height="60" width="240" x="950" y="810" as="geometry" />
         </mxCell>
-        <mxCell id="rep_rad_end" value="Fin: Incidente radicado exitosamente" style="rounded=1;arcSize=50;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=12;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="950" y="910" width="240" height="45" as="geometry" />
+        <mxCell id="rep_rad_end" parent="1" style="rounded=1;arcSize=50;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=12;fontStyle=1;" value="Fin: Incidente radicado exitosamente" vertex="1">
+          <mxGeometry height="45" width="240" x="950" y="910" as="geometry" />
         </mxCell>
-        <mxCell id="err1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_rad_start" target="rep_dec_online">
+        <mxCell id="err1" edge="1" parent="1" source="rep_rad_start" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_dec_online" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="err2" value="No (Offline)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_dec_online" target="rep_off_save">
+        <mxCell id="err2" edge="1" parent="1" source="rep_dec_online" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_off_save" value="No (Offline)">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="err3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_off_save" target="rep_off_banner">
+        <mxCell id="err3" edge="1" parent="1" source="rep_off_save" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_off_banner" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="err4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_off_banner" target="rep_off_listen">
+        <mxCell id="err4" edge="1" parent="1" source="rep_off_banner" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_off_listen" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="err5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_off_listen" target="rep_off_sync">
+        <mxCell id="err5" edge="1" parent="1" source="rep_off_listen" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_off_sync" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="err6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_off_sync" target="rep_on_cloud">
+        <mxCell id="err6" edge="1" parent="1" source="rep_off_sync" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_on_cloud" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="930" y="647.5" />
+              <mxPoint x="930" y="340" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="err7" edge="1" parent="1" source="rep_dec_online" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_on_cloud" value="Sí (Online)">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="err7" value="Sí (Online)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_dec_online" target="rep_on_cloud">
+        <mxCell id="err8" edge="1" parent="1" source="rep_on_cloud" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_on_post" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="err8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_on_cloud" target="rep_on_post">
+        <mxCell id="err9" edge="1" parent="1" source="rep_on_post" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_on_db" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="err9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_on_post" target="rep_on_db">
+        <mxCell id="err10" edge="1" parent="1" source="rep_on_db" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_on_ws" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="err10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_on_db" target="rep_on_ws">
+        <mxCell id="err11" edge="1" parent="1" source="rep_on_ws" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_on_res" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="err11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_on_ws" target="rep_on_res">
+        <mxCell id="err12" edge="1" parent="1" source="rep_on_res" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_on_modal" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="err12" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_on_res" target="rep_on_modal">
+        <mxCell id="err13" edge="1" parent="1" source="rep_on_modal" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_rad_end" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="err13" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_on_modal" target="rep_rad_end">
+        <mxCell id="mod_rep_list_box" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalFlip=0;verticalFlip=0;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=13;collapsible=0;" value="MÓDULO: Consulta y Trazabilidad en &quot;Mis Reportes&quot;" vertex="1">
+          <mxGeometry height="720" width="460" x="1310" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="rep_rep_start" parent="1" style="rounded=1;arcSize=50;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=12;fontStyle=1;" value="Inicio: Acceso a pestaña &quot;Mis Reportes&quot;" vertex="1">
+          <mxGeometry height="50" width="240" x="1420" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="rep_rep_req" parent="1" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="Solicitud: GET /api/incidentes/mis-reportes" vertex="1">
+          <mxGeometry height="50" width="240" x="1420" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="rep_rep_render" parent="1" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="Renderiza listado cronológico con badges:&#xa;- Reportado (Amarillo)&#xa;- En Evaluación (Azul)&#xa;- Aprobado (Verde)&#xa;- Desestimado (Rojo)" vertex="1">
+          <mxGeometry height="80" width="240" x="1420" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="rep_rep_dec" parent="1" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="¿Incidente fue desestimado?" vertex="1">
+          <mxGeometry height="90" width="200" x="1440" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="rep_rep_motivo" parent="1" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="Clic abre modal con justificación técnica&#xa;y motivo emitido por el analista validador" vertex="1">
+          <mxGeometry height="65" width="180" x="1330" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="rep_rep_det" parent="1" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" value="Muestra detalle de radicado y fecha oficial de publicación" vertex="1">
+          <mxGeometry height="65" width="180" x="1550" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="rep_rep_end" parent="1" style="rounded=1;arcSize=50;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=12;fontStyle=1;" value="Fin: Estado de reportes verificado" vertex="1">
+          <mxGeometry height="45" width="240" x="1420" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="erl1" edge="1" parent="1" source="rep_rep_start" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_rep_req" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="mod_rep_list_box" value="MÓDULO: Consulta y Trazabilidad en &quot;Mis Reportes&quot;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalFlip=0;verticalFlip=0;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=13;collapsible=0;" vertex="1" parent="1">
-          <mxGeometry x="1310" y="40" width="460" height="720" as="geometry" />
-        </mxCell>
-        <mxCell id="rep_rep_start" value="Inicio: Acceso a pestaña &quot;Mis Reportes&quot;" style="rounded=1;arcSize=50;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=12;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="1420" y="90" width="240" height="50" as="geometry" />
-        </mxCell>
-        <mxCell id="rep_rep_req" value="Solicitud: GET /api/incidentes/mis-reportes" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="1420" y="180" width="240" height="50" as="geometry" />
-        </mxCell>
-        <mxCell id="rep_rep_render" value="Renderiza listado cronológico con badges:&#xa;- Reportado (Amarillo)&#xa;- En Evaluación (Azul)&#xa;- Aprobado (Verde)&#xa;- Desestimado (Rojo)" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="1420" y="270" width="240" height="80" as="geometry" />
-        </mxCell>
-        <mxCell id="rep_rep_dec" value="¿Incidente fue desestimado?" style="rhombus;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="1440" y="390" width="200" height="90" as="geometry" />
-        </mxCell>
-        <mxCell id="rep_rep_motivo" value="Clic abre modal con justificación técnica&#xa;y motivo emitido por el analista validador" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="1330" y="520" width="180" height="65" as="geometry" />
-        </mxCell>
-        <mxCell id="rep_rep_det" value="Muestra detalle de radicado y fecha oficial de publicación" style="whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="1550" y="520" width="180" height="65" as="geometry" />
-        </mxCell>
-        <mxCell id="rep_rep_end" value="Fin: Estado de reportes verificado" style="rounded=1;arcSize=50;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica;fontSize=12;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="1420" y="630" width="240" height="45" as="geometry" />
-        </mxCell>
-        <mxCell id="erl1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_rep_start" target="rep_rep_req">
+        <mxCell id="erl2" edge="1" parent="1" source="rep_rep_req" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_rep_render" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="erl2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_rep_req" target="rep_rep_render">
+        <mxCell id="erl3" edge="1" parent="1" source="rep_rep_render" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_rep_dec" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="erl3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_rep_render" target="rep_rep_dec">
+        <mxCell id="erl4" edge="1" parent="1" source="rep_rep_dec" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_rep_motivo" value="Sí">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="erl4" value="Sí" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_rep_dec" target="rep_rep_motivo">
+        <mxCell id="erl5" edge="1" parent="1" source="rep_rep_dec" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_rep_det" value="No">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="erl5" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_rep_dec" target="rep_rep_det">
+        <mxCell id="erl6" edge="1" parent="1" source="rep_rep_motivo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_rep_end" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="erl6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_rep_motivo" target="rep_rep_end">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="erl7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" edge="1" parent="1" source="rep_rep_det" target="rep_rep_end">
+        <mxCell id="erl7" edge="1" parent="1" source="rep_rep_det" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1;endArrow=classic;fontColor=#000000;fontFamily=Helvetica;fontSize=10;" target="rep_rep_end" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>
