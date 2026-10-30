@@ -24,12 +24,15 @@ async function subirImagenCloudinary(fileBuffer, codigoIncidente, originalName =
   const apiKey = process.env.CLOUDINARY_API_KEY;
   const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
-  const tieneCredenciales = !!(cloudName && apiKey && apiSecret && cloudName !== 'tu_cloud_name');
+  const tieneCredenciales = !!(cloudName && cloudName !== 'tu_cloud_name');
 
   if (tieneCredenciales) {
-    cloudinary.config({
-      cloud_name: cloudName
-    });
+    const configObj = { cloud_name: cloudName };
+    if (apiKey && apiSecret) {
+      configObj.api_key = apiKey;
+      configObj.api_secret = apiSecret;
+    }
+    cloudinary.config(configObj);
 
     const preset = process.env.CLOUDINARY_UPLOAD_PRESET || 'sigi_preset';
     const ext = (path.extname(originalName) || '.jpg').toLowerCase();
