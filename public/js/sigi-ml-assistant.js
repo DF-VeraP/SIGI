@@ -60,108 +60,109 @@ class SigiMLAssistant {
     style.id = 'sigi-ml-styles';
     style.textContent = `
       .sigi-ml-card {
-        margin-top: 10px;
-        padding: 12px 14px;
-        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.95));
+        margin-top: 6px;
+        padding: 8px 12px;
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.98));
         border: 1px solid rgba(56, 189, 248, 0.35);
-        border-radius: 10px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), 0 0 15px rgba(56, 189, 248, 0.15);
+        border-radius: 8px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25), 0 0 12px rgba(56, 189, 248, 0.12);
         color: #f1f5f9;
         font-family: inherit;
-        font-size: 0.82rem;
-        transition: all 0.3s ease;
+        font-size: 0.8rem;
+        transition: all 0.25s ease;
         backdrop-filter: blur(8px);
       }
       .sigi-ml-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 8px;
+        margin-bottom: 5px;
       }
       .sigi-ml-badge-ai {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        padding: 3px 8px;
+        gap: 5px;
+        padding: 2px 7px;
         background: rgba(37, 99, 235, 0.15);
         border: 1px solid rgba(59, 130, 246, 0.4);
         border-radius: 20px;
-        color: #3b82f6;
+        color: #38bdf8;
         font-weight: 600;
-        font-size: 0.76rem;
+        font-size: 0.72rem;
       }
       .sigi-ml-body {
         display: grid;
         grid-template-columns: 1fr;
-        gap: 8px;
+        gap: 5px;
       }
       .sigi-ml-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 10px;
+        gap: 8px;
         flex-wrap: wrap;
       }
       .sigi-ml-tipo-title {
         font-weight: 700;
         color: #ffffff;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
       }
       .sigi-ml-confianza-bar-wrap {
         width: 100%;
         background: rgba(255, 255, 255, 0.1);
-        height: 6px;
-        border-radius: 3px;
+        height: 4px;
+        border-radius: 2px;
         overflow: hidden;
-        margin-top: 4px;
+        margin-top: 3px;
       }
       .sigi-ml-confianza-bar {
         height: 100%;
-        background: linear-gradient(90deg, #3b82f6, #6366f1);
-        border-radius: 3px;
-        transition: width 0.4s ease;
+        background: linear-gradient(90deg, #38bdf8, #6366f1);
+        border-radius: 2px;
+        transition: width 0.35s ease;
       }
       .sigi-ml-tags {
         display: flex;
         flex-wrap: wrap;
-        gap: 5px;
-        margin-top: 4px;
+        gap: 4px;
+        margin-top: 2px;
       }
       .sigi-ml-tag {
         background: rgba(255, 255, 255, 0.08);
         border: 1px solid rgba(255, 255, 255, 0.15);
-        padding: 2px 7px;
-        border-radius: 12px;
-        font-size: 0.72rem;
+        padding: 1px 6px;
+        border-radius: 10px;
+        font-size: 0.7rem;
         color: #cbd5e1;
       }
       .sigi-ml-tag-gravedad {
         font-weight: 600;
-        padding: 2px 8px;
-        border-radius: 12px;
+        padding: 2px 7px;
+        border-radius: 10px;
+        font-size: 0.72rem;
       }
       .sigi-ml-btn-aplicar {
         background: linear-gradient(135deg, #0284c7, #2563eb);
         color: #ffffff;
         border: none;
-        padding: 7px 12px;
+        padding: 5px 10px;
         border-radius: 6px;
         font-weight: 600;
-        font-size: 0.78rem;
+        font-size: 0.74rem;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: 5px;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
       }
       .sigi-ml-btn-aplicar:hover {
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        box-shadow: 0 3px 10px rgba(37, 99, 235, 0.4);
       }
       .sigi-ml-aplicado {
-        color: #10b981;
+        color: #34d399;
         font-weight: 600;
-        font-size: 0.75rem;
+        font-size: 0.73rem;
         display: inline-flex;
         align-items: center;
         gap: 4px;

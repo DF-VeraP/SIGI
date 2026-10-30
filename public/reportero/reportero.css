@@ -254,8 +254,22 @@ body.tema-claro {
     min-height: 0;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    gap: 6px;
+    justify-content: flex-start;
+    gap: 8px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-thumb) transparent;
+    padding-right: 4px;
+  }
+
+  .card-body-formulario::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  .card-body-formulario::-webkit-scrollbar-thumb {
+    background: var(--border-thumb);
+    border-radius: 999px;
   }
 
   /* Mis Reportes en escritorio */
@@ -968,16 +982,24 @@ body.tema-claro .pill-check:has(input[type="checkbox"]:checked) {
   grid-template-columns: 1fr 1.35fr;
   gap: 10px;
   align-items: center;
-  height: 36px;
+  min-height: 36px;
+  flex-shrink: 0;
+  margin-top: auto;
+  padding-top: 6px;
 }
 
 .box-foto-adjunta {
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   height: 36px;
+  min-width: 0;
 }
 
 .btn-foto-upload {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   height: 36px;
   padding: 0 10px;
   background: var(--bg-input);
@@ -994,6 +1016,8 @@ body.tema-claro .pill-check:has(input[type="checkbox"]:checked) {
   transition: var(--transition);
   text-align: center;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .btn-foto-upload:hover {
@@ -1003,41 +1027,60 @@ body.tema-claro .pill-check:has(input[type="checkbox"]:checked) {
 }
 
 .preview-container {
-  position: absolute;
-  bottom: 42px;
-  left: 0;
-  z-index: 10;
+  position: relative;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
   background: var(--bg-card);
-  padding: 4px;
-  border-radius: 8px;
+  padding: 2px;
+  border-radius: 6px;
   border: 1px solid var(--border);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
 }
 
 #imgPreview {
-  max-width: 140px;
-  max-height: 80px;
-  border-radius: 6px;
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
   object-fit: cover;
   display: block;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+#imgPreview:hover {
+  opacity: 0.85;
 }
 
 #btnQuitarFoto {
   position: absolute;
-  top: 2px;
-  right: 2px;
-  background: rgba(220, 38, 38, 0.9);
+  top: -4px;
+  right: -4px;
+  background: #ef4444;
   color: white;
-  border: none;
+  border: 1.5px solid var(--bg-card);
   border-radius: 50%;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   cursor: pointer;
   font-weight: bold;
-  font-size: 0.75rem;
+  font-size: 11px;
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 2;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  padding: 0;
+  line-height: 1;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+#btnQuitarFoto:hover {
+  background: #dc2626;
+  transform: scale(1.15);
 }
 
 /* Botón Registrar Incidente */
@@ -1131,22 +1174,6 @@ body.tema-claro .pill-check:has(input[type="checkbox"]:checked) {
   border-color: var(--border-focus);
 }
 
-.report-card.report-card-clickable {
-  cursor: pointer;
-  position: relative;
-}
-
-.report-card.report-card-clickable:hover {
-  border-color: rgba(255, 255, 255, 0.35);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-  transform: translateY(-1px);
-}
-
-body.tema-claro .report-card.report-card-clickable:hover {
-  border-color: #94a3b8;
-  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
-}
-
 .report-foto-thumb-wrap {
   width: 100%;
   max-height: 140px;
@@ -1156,6 +1183,12 @@ body.tema-claro .report-card.report-card-clickable:hover {
   border: 1px solid var(--border);
   position: relative;
   cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.report-foto-thumb-wrap:hover {
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.2);
 }
 
 .report-foto-thumb {
@@ -1166,8 +1199,8 @@ body.tema-claro .report-card.report-card-clickable:hover {
   transition: transform 0.25s ease, opacity 0.25s ease;
 }
 
-.report-card.report-card-clickable:hover .report-foto-thumb {
-  transform: scale(1.02);
+.report-foto-thumb-wrap:hover .report-foto-thumb {
+  transform: scale(1.03);
 }
 
 .report-card-head {
@@ -1505,6 +1538,31 @@ body.tema-claro .modal-reporte-overlay {
 .modal-btn-save:hover {
   background: var(--btn-primary-hover);
   border-color: var(--btn-primary-hover);
+}
+
+.modal-btn-danger {
+  flex: 1.6;
+  padding: 8px 14px;
+  background: #dc2626;
+  border: 1px solid #dc2626;
+  border-radius: var(--radius-sm);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+
+.modal-btn-danger:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
+  transform: translateY(-1px);
 }
 
 /* ══════════════════════════════════════════

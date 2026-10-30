@@ -154,66 +154,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             editFechaRep.max = hoyStr;
         }
     }
-
-    function validarFechaHora(fechaVal, horaVal) {
-        if (!fechaVal) {
-            return { invalido: true, mensaje: "Debe ingresar una fecha válida para el incidente." };
-        }
-
-        const regexFecha = /^(\d{4})-(\d{2})-(\d{2})$/;
-        const match = String(fechaVal).trim().match(regexFecha);
-        if (!match) {
-            return { invalido: true, mensaje: "Formato de fecha inválido. Debe ser AAAA-MM-DD." };
-        }
-
-        const anio = parseInt(match[1], 10);
-        const mes = parseInt(match[2], 10);
-        const dia = parseInt(match[3], 10);
-
-        const anioMinimo = 2000;
-        const ahora = new Date();
-        const anioActual = ahora.getFullYear();
-
-        if (anio < anioMinimo || anio > anioActual) {
-            return { invalido: true, mensaje: `El año (${anio}) no es válido. Debe estar entre ${anioMinimo} y ${anioActual}.` };
-        }
-
-        if (mes < 1 || mes > 12) {
-            return { invalido: true, mensaje: `El mes (${mes}) es inválido (debe ser entre 01 y 12).` };
-        }
-
-        const diasEnMes = new Date(anio, mes, 0).getDate();
-        if (dia < 1 || dia > diasEnMes) {
-            return { invalido: true, mensaje: `El día (${dia}) no es válido para el mes ${mes} (máximo ${diasEnMes} días).` };
-        }
-
-        const mesActualStr = String(ahora.getMonth() + 1).padStart(2, "0");
-        const diaActualStr = String(ahora.getDate()).padStart(2, "0");
-        const hoyStr = `${anioActual}-${mesActualStr}-${diaActualStr}`;
-
-        if (fechaVal.trim() > hoyStr) {
-            return { invalido: true, mensaje: "La fecha del incidente no puede ser futura." };
-        }
-
-        if (horaVal) {
-            const regexHora = /^([01]\d|2[0-3]):([0-5]\d)(:([0-5]\d))?$/;
-            if (!regexHora.test(horaVal.trim())) {
-                return { invalido: true, mensaje: "Formato de hora inválido. Ingrese HH:MM (00:00 a 23:59)." };
-            }
-
-            if (fechaVal.trim() === hoyStr) {
-                const [horas, minutos] = horaVal.split(":").map(Number);
-                const horaActual = ahora.getHours();
-                const minActual = ahora.getMinutes();
-
-                if (horas > horaActual || (horas === horaActual && minutos > minActual)) {
-                    return { invalido: true, mensaje: "Si la fecha es hoy, la hora no puede ser mayor a la hora actual." };
-                }
-            }
-        }
-
-        return { invalido: false };
-    }
     fijarFechaHoraActual();
 
     let ultimoToastAhora = 0;
@@ -256,17 +196,25 @@ document.addEventListener("DOMContentLoaded", async () => {
                     const reader = new FileReader();
                     reader.onload = function(evt) {
                         imgPreview.src = evt.target.result;
-                        previewContainer.style.display = "block";
+                        previewContainer.style.display = "flex";
                     };
                     reader.readAsDataURL(fotoComprimida);
                 } catch (optErr) {
                     console.warn("No se pudo comprimir la foto, usando original:", optErr);
                     fotoComprimida = file;
                     imgPreview.src = URL.createObjectURL(file);
-                    previewContainer.style.display = "block";
+                    previewContainer.style.display = "flex";
                 } finally {
                     if (spanBtn) spanBtn.innerText = "Cambiar Foto Adjunta";
                 }
+            }
+        });
+    }
+
+    if (imgPreview) {
+        imgPreview.addEventListener("click", () => {
+            if (imgPreview.src) {
+                abrirVisorFoto(imgPreview.src, "Previsualización", "Foto adjunta para este reporte");
             }
         });
     }
@@ -278,7 +226,22 @@ document.addEventListener("DOMContentLoaded", async () => {
             imgPreview.src = "";
             previewContainer.style.display = "none";
             const spanBtn = btnTomarFoto?.querySelector("span");
-            if (spanBtn) spanBtn.innerText = "Adjuntar / Tomar Foto de Terreno";
+            if (spanBtn) spanBtn.innerText = "Adjuntar Foto de Evidencia";
+        });
+    }
+
+    // Modal de confirmación de eliminación
+    const btnCerrarEliminar = document.getElementById("btnCerrarModalEliminar");
+    const btnCancelarEliminar = document.getElementById("btnCancelarEliminar");
+    const btnConfirmarEliminar = document.getElementById("btnConfirmarEliminar");
+    const modalEliminar = document.getElementById("modalConfirmarEliminar");
+
+    if (btnCerrarEliminar) btnCerrarEliminar.addEventListener("click", cerrarModalEliminarReporte);
+    if (btnCancelarEliminar) btnCancelarEliminar.addEventListener("click", cerrarModalEliminarReporte);
+    if (btnConfirmarEliminar) btnConfirmarEliminar.addEventListener("click", ejecutarEliminacionReporte);
+    if (modalEliminar) {
+        modalEliminar.addEventListener("click", (e) => {
+            if (e.target === modalEliminar) cerrarModalEliminarReporte();
         });
     }
 
@@ -501,6 +464,66 @@ function setupTabs() {
     }
 }
 
+function validarFechaHora(fechaVal, horaVal) {
+    if (!fechaVal) {
+        return { invalido: true, mensaje: "Debe ingresar una fecha válida para el incidente." };
+    }
+
+    const regexFecha = /^(\d{4})-(\d{2})-(\d{2})$/;
+    const match = String(fechaVal).trim().match(regexFecha);
+    if (!match) {
+        return { invalido: true, mensaje: "Formato de fecha inválido. Debe ser AAAA-MM-DD." };
+    }
+
+    const anio = parseInt(match[1], 10);
+    const mes = parseInt(match[2], 10);
+    const dia = parseInt(match[3], 10);
+
+    const anioMinimo = 2000;
+    const ahora = new Date();
+    const anioActual = ahora.getFullYear();
+
+    if (anio < anioMinimo || anio > anioActual) {
+        return { invalido: true, mensaje: `El año (${anio}) no es válido. Debe estar entre ${anioMinimo} y ${anioActual}.` };
+    }
+
+    if (mes < 1 || mes > 12) {
+        return { invalido: true, mensaje: `El mes (${mes}) es inválido (debe ser entre 01 y 12).` };
+    }
+
+    const diasEnMes = new Date(anio, mes, 0).getDate();
+    if (dia < 1 || dia > diasEnMes) {
+        return { invalido: true, mensaje: `El día (${dia}) no es válido para el mes ${mes} (máximo ${diasEnMes} días).` };
+    }
+
+    const mesActualStr = String(ahora.getMonth() + 1).padStart(2, "0");
+    const diaActualStr = String(ahora.getDate()).padStart(2, "0");
+    const hoyStr = `${anioActual}-${mesActualStr}-${diaActualStr}`;
+
+    if (fechaVal.trim() > hoyStr) {
+        return { invalido: true, mensaje: "La fecha del incidente no puede ser futura." };
+    }
+
+    if (horaVal) {
+        const regexHora = /^([01]\d|2[0-3]):([0-5]\d)(:([0-5]\d))?$/;
+        if (!regexHora.test(horaVal.trim())) {
+            return { invalido: true, mensaje: "Formato de hora inválido. Ingrese HH:MM (00:00 a 23:59)." };
+        }
+
+        if (fechaVal.trim() === hoyStr) {
+            const [horas, minutos] = horaVal.split(":").map(Number);
+            const horaActual = ahora.getHours();
+            const minActual = ahora.getMinutes();
+
+            if (horas > horaActual || (horas === horaActual && minutos > minActual)) {
+                return { invalido: true, mensaje: "Si la fecha es hoy, la hora no puede ser mayor a la hora actual." };
+            }
+        }
+    }
+
+    return { invalido: false };
+}
+
 async function enviarReporte(e) {
     e.preventDefault();
 
@@ -563,6 +586,10 @@ async function enviarReporte(e) {
             if (document.getElementById("previewContainer")) {
                 document.getElementById("previewContainer").style.display = "none";
             }
+            const mlContOffline = document.getElementById("mlAssistantContainer");
+            if (mlContOffline) mlContOffline.style.display = "none";
+            const mlCont = document.getElementById("mlAssistantContainer");
+            if (mlCont) mlCont.style.display = "none";
             const spanBtn = document.getElementById("btnTomarFoto")?.querySelector("span");
             if (spanBtn) spanBtn.innerText = "Adjuntar Foto de Evidencia";
 
@@ -602,6 +629,8 @@ async function enviarReporte(e) {
             if (document.getElementById("previewContainer")) {
                 document.getElementById("previewContainer").style.display = "none";
             }
+            const mlContOffline = document.getElementById("mlAssistantContainer");
+            if (mlContOffline) mlContOffline.style.display = "none";
             return;
         }
         showAlert("Error de conexión al registrar el incidente", "error");
@@ -674,10 +703,7 @@ async function cargarMisReportes() {
                 : `<div class="report-actions-locked">En revisión — no editable</div>`;
 
             const card = document.createElement("div");
-            card.className = `report-card ${tieneFoto ? 'report-card-clickable' : ''}`;
-            if (tieneFoto) {
-                card.setAttribute("title", "Haz clic para ver la imagen completa en una ventana emergente");
-            }
+            card.className = "report-card";
             card.innerHTML = `
                 <div class="report-card-head">
                     <span class="report-code">${codigo}</span>
@@ -696,12 +722,13 @@ async function cargarMisReportes() {
             `;
 
             if (tieneFoto) {
-                card.addEventListener("click", (e) => {
-                    if (e.target.closest("button, .btn-report-edit, .btn-report-delete, .report-actions, .report-actions-locked")) {
-                        return;
-                    }
-                    abrirVisorFoto(urlFoto, codigo, tipoNombre, r.descripcionincidente || '');
-                });
+                const thumbWrap = card.querySelector(".report-foto-thumb-wrap");
+                if (thumbWrap) {
+                    thumbWrap.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        abrirVisorFoto(urlFoto, codigo, tipoNombre, r.descripcionincidente || '');
+                    });
+                }
             }
 
             list.appendChild(card);
@@ -863,17 +890,39 @@ async function guardarEdicionReporte() {
     }
 }
 
-async function confirmarEliminarReporte(id, codigo) {
-    const confirmar = window.confirm(
-        `¿Eliminar el reporte ${codigo}?\n\nEsta acción es permanente y no se puede deshacer.`
-    );
-    if (!confirmar) return;
+let idReporteAEliminar = null;
+
+function confirmarEliminarReporte(id, codigo) {
+    idReporteAEliminar = id;
+    const modal = document.getElementById("modalConfirmarEliminar");
+    const codSpan = document.getElementById("codigoReporteEliminar");
+    if (codSpan) codSpan.innerText = codigo || `INC-${id}`;
+    if (modal) modal.style.display = "flex";
+}
+
+function cerrarModalEliminarReporte() {
+    idReporteAEliminar = null;
+    const modal = document.getElementById("modalConfirmarEliminar");
+    if (modal) modal.style.display = "none";
+}
+
+async function ejecutarEliminacionReporte() {
+    if (!idReporteAEliminar) return;
+    const btn = document.getElementById("btnConfirmarEliminar");
+    if (btn) {
+        btn.disabled = true;
+        btn.innerText = "Eliminando...";
+    }
 
     try {
-        const res = await fetch(`/api/incidentes/${id}`, { method: 'DELETE' });
-        const data = await res.json();
+        const res = await fetch(`/api/incidentes/${idReporteAEliminar}`, { method: 'DELETE' });
+        let data = {};
+        try {
+            data = await res.json();
+        } catch (_) {}
 
         if (res.ok) {
+            cerrarModalEliminarReporte();
             showAlert('Reporte eliminado correctamente', 'success');
             cargarMisReportes();
         } else {
@@ -882,6 +931,12 @@ async function confirmarEliminarReporte(id, codigo) {
     } catch (err) {
         console.error('Error eliminando reporte:', err);
         showAlert('Error de conexión', 'error');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-trash3"></i> Eliminar Reporte';
+        }
+        cerrarModalEliminarReporte();
     }
 }
 
@@ -957,10 +1012,11 @@ function abrirVisorFoto(url, codigo = '', tipo = '', descripcion = '') {
     if (!modal || !img) return;
 
     const safeUrl = normalizarUrlImagen(url);
+    if (!safeUrl) return;
+
     img.onerror = () => {
         img.onerror = null;
-        img.src = '';
-        mostrarToastReportero('La fotografía de evidencia no se encuentra disponible en el almacenamiento.', 'info');
+        img.src = '/uploads/incidentes/placeholder.svg';
     };
     img.src = safeUrl;
     if (titulo) titulo.innerText = codigo ? `Evidencia: ${codigo}` : "Evidencia Fotográfica";

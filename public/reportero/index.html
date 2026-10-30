@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="reportero.css?v=7">
+    <link rel="stylesheet" href="reportero.css?v=8">
     <script>
         (function () {
             const tema = localStorage.getItem("tema_sigi_reportero") || localStorage.getItem("tema_sigi_admin") || localStorage.getItem("tema_sigi_dashboard");
@@ -329,7 +329,7 @@
     <script src="../js/sigi-realtime.js"></script>
     <script src="../js/pwa-offline.js"></script>
     <script src="../js/sigi-ml-assistant.js"></script>
-    <script src="reportero.js?v=7"></script>
+    <script src="reportero.js?v=8"></script>
 
     <!-- MODAL VISOR DE FOTO DE EVIDENCIA EN TAMAÑO COMPLETO -->
     <div id="modalVisorFoto" class="modal-foto-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="tituloVisorFoto">
@@ -417,6 +417,32 @@
             <div class="modal-reporte-actions">
                 <button type="button" id="btnCancelarEditar" class="modal-btn-cancel">Cancelar</button>
                 <button type="button" id="btnGuardarEditar" class="modal-btn-save">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRMAR ELIMINACIÓN DE REPORTE -->
+    <div id="modalConfirmarEliminar" class="modal-reporte-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="tituloModalEliminar">
+        <div class="modal-reporte-card" style="max-width: 420px;">
+            <div class="modal-reporte-header">
+                <h3 id="tituloModalEliminar" style="color: var(--danger); display: flex; align-items: center; gap: 8px;">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Confirmar Eliminación
+                </h3>
+                <button type="button" id="btnCerrarModalEliminar" class="modal-reporte-close" aria-label="Cerrar">&times;</button>
+            </div>
+            <div class="modal-reporte-body" style="padding: 16px 18px; text-align: center;">
+                <p style="font-size: 0.9rem; color: var(--text); margin-bottom: 8px;">
+                    ¿Estás seguro de que deseas eliminar el reporte <strong id="codigoReporteEliminar" style="color: var(--accent);">--</strong>?
+                </p>
+                <p style="font-size: 0.78rem; color: var(--text-soft); margin: 0; line-height: 1.4;">
+                    Esta acción es irreversible y eliminará el incidente y sus evidencias registradas de la base de datos institucional.
+                </p>
+            </div>
+            <div class="modal-reporte-actions">
+                <button type="button" id="btnCancelarEliminar" class="modal-btn-cancel">Cancelar</button>
+                <button type="button" id="btnConfirmarEliminar" class="modal-btn-danger">
+                    <i class="bi bi-trash3"></i> Eliminar Reporte
+                </button>
             </div>
         </div>
     </div>
