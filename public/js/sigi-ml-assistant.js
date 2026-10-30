@@ -172,6 +172,10 @@ class SigiMLAssistant {
   }
 
   async analizarTexto(texto) {
+    if (!navigator.onLine) {
+      return; // El servicio de predicción de IA requiere conexión a internet
+    }
+
     const container = document.getElementById(this.containerId);
     if (!container) return;
 
@@ -193,7 +197,9 @@ class SigiMLAssistant {
         this.renderPrediccion(payload.data);
       }
     } catch (err) {
-      console.warn('Error conectando al servicio de ML:', err);
+      if (navigator.onLine) {
+        console.warn('Servicio de sugerencia ML temporalmente no disponible:', err.message);
+      }
     }
   }
 

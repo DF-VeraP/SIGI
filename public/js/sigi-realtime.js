@@ -15,7 +15,20 @@
   function iniciarSocketIO() {
     if (typeof io === 'undefined') return;
 
-    const socket = io();
+    const socket = io({
+      autoConnect: navigator.onLine,
+      reconnection: true,
+      reconnectionAttempts: 15,
+      reconnectionDelay: 3000
+    });
+
+    window.addEventListener('offline', () => {
+      try { socket.disconnect(); } catch (_) {}
+    });
+
+    window.addEventListener('online', () => {
+      try { socket.connect(); } catch (_) {}
+    });
 
     // Contenedor flotante de Toasts
     let toastContainer = document.getElementById('sigi-toast-container');

@@ -262,28 +262,69 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 async function cargarSesion() {
     try {
+        if (!navigator.onLine) {
+            const cachedSesion = localStorage.getItem("sigi_cache_usuario");
+            if (cachedSesion) {
+                usuarioSesion = JSON.parse(cachedSesion);
+                const badge = document.getElementById("userBadge");
+                if (badge) {
+                    badge.innerHTML = `<span>${usuarioSesion.usuario}</span> <small style="opacity:0.75; font-size:0.75rem; font-weight:500;">(${usuarioSesion.dependencia || usuarioSesion.rol}) [Offline]</small>`;
+                }
+                return;
+            }
+        }
+
         const res = await fetch("/usuario");
-        if (!res.ok) {
+        if (res.status === 401) {
+            localStorage.removeItem("sigi_cache_usuario");
             window.location.href = "/login/index.html";
             return;
         }
+        if (!res.ok) throw new Error("Error obteniendo usuario");
         const data = await res.json();
         usuarioSesion = data;
+        try { localStorage.setItem("sigi_cache_usuario", JSON.stringify(data)); } catch (_) {}
         const badge = document.getElementById("userBadge");
         if (badge) {
             badge.innerHTML = `<span>${data.usuario}</span> <small style="opacity:0.75; font-size:0.75rem; font-weight:500;">(${data.dependencia || data.rol})</small>`;
         }
     } catch (e) {
+        const cachedSesion = localStorage.getItem("sigi_cache_usuario");
+        if (cachedSesion) {
+            usuarioSesion = JSON.parse(cachedSesion);
+            const badge = document.getElementById("userBadge");
+            if (badge) {
+                badge.innerHTML = `<span>${usuarioSesion.usuario}</span> <small style="opacity:0.75; font-size:0.75rem; font-weight:500;">(${usuarioSesion.dependencia || usuarioSesion.rol}) [Offline]</small>`;
+            }
+            return;
+        }
         console.error("Error verificando sesión:", e);
-        window.location.href = "/login/index.html";
+        if (navigator.onLine) {
+            window.location.href = "/login/index.html";
+        }
     }
 }
 
 async function cargarCatalogos() {
+    let data = null;
     try {
-        const res = await fetch("/api/catalogos");
-        const data = await res.json();
+        if (navigator.onLine) {
+            const res = await fetch("/api/catalogos");
+            if (res.ok) {
+                data = await res.json();
+                try { localStorage.setItem("sigi_cache_catalogos", JSON.stringify(data)); } catch (_) {}
+            }
+        }
+    } catch (_) {}
 
+    if (!data) {
+        try {
+            const cached = localStorage.getItem("sigi_cache_catalogos");
+            if (cached) data = JSON.parse(cached);
+        } catch (_) {}
+    }
+
+    if (data && data.tipos && data.modalidades) {
         // Llenar select de tipos de incidente
         const selectTipo = document.getElementById("tipoIncidente");
         selectTipo.innerHTML = '<option value="">Seleccione el Tipo de Incidente *</option>';
@@ -297,9 +338,8 @@ async function cargarCatalogos() {
         data.modalidades.forEach(m => {
             selectMod.innerHTML += `<option value="${m.id_modalidad}">${m.nombre}</option>`;
         });
-
-    } catch (e) {
-        console.error("Error cargando catálogos:", e);
+    } else if (navigator.onLine) {
+        console.warn("No se pudieron cargar catálogos del servidor");
         showAlert("Error cargando categorías del sistema", "error");
     }
 }
@@ -353,6 +393,12 @@ function initMiniMapa() {
 async function consultarBarrioPorCoordenada(lat, lng) {
     const elBarrio = document.getElementById("barrio");
     if (!elBarrio) return;
+
+    if (!navigator.onLine) {
+        elBarrio.value = "Coordenadas fijadas (Modo offline)";
+        return;
+    }
+
     elBarrio.value = "Detectando zona por polígono...";
     try {
         const res = await fetch(`/buscarBarrioPorCoordenada?lat=${lat}&lng=${lng}`);
@@ -368,7 +414,6 @@ async function consultarBarrioPorCoordenada(lat, lng) {
         }
         elBarrio.value = texto;
     } catch (err) {
-        console.warn("No se pudo detectar el barrio por coordenadas:", err);
         elBarrio.value = "Coordenadas fijadas";
     }
 }
@@ -524,6 +569,38 @@ function validarFechaHora(fechaVal, horaVal) {
     return { invalido: false };
 }
 
+async function blobABase64(blob) {
+    if (!blob) return null;
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(blob);
+    });
+}
+
+function limpiarFormularioReporte() {
+    const form = document.getElementById("formReporte");
+    if (form) form.reset();
+    fotoComprimida = null;
+    const prevCont = document.getElementById("previewContainer");
+    if (prevCont) prevCont.style.display = "none";
+    const imgPrev = document.getElementById("imgPreview");
+    if (imgPrev) imgPrev.src = "";
+    const mlCard = document.getElementById("mlAssistantContainer");
+    if (mlCard) mlCard.style.display = "none";
+    const spanBtn = document.getElementById("btnTomarFoto")?.querySelector("span");
+    if (spanBtn) spanBtn.innerText = "Adjuntar Foto de Evidencia";
+
+    const ahora = new Date();
+    const hoyStr = ahora.toISOString().split('T')[0];
+    const horaStr = ahora.toTimeString().split(' ')[0].slice(0, 5);
+    const elFecha = document.getElementById("fecha");
+    const elHora = document.getElementById("hora");
+    if (elFecha) elFecha.value = hoyStr;
+    if (elHora) elHora.value = horaStr;
+}
+
 async function enviarReporte(e) {
     e.preventDefault();
 
@@ -536,12 +613,49 @@ async function enviarReporte(e) {
         return;
     }
 
+    const tipoSelect = document.getElementById("tipoIncidente");
+    const tipoVal = tipoSelect?.value || "";
+    const tipoNombre = tipoSelect?.options[tipoSelect.selectedIndex]?.text?.split('(')[0]?.trim() || "Incidente";
+
+    // ── FLUJO DIRECTO SIN CONEXIÓN (OFFLINE) ──
+    if (!navigator.onLine) {
+        if (window.SIGI_PWA) {
+            let fotoBase64 = null;
+            if (fotoComprimida) {
+                try { fotoBase64 = await blobABase64(fotoComprimida); } catch (_) {}
+            }
+            const offlinePayload = {
+                tipo: tipoVal,
+                tipo_nombre: tipoNombre,
+                fecha: fechaVal,
+                hora: horaVal,
+                lat: document.getElementById("lat").value,
+                lng: document.getElementById("lng").value,
+                id_gravedad: document.getElementById("gravedad").value,
+                id_modalidad: document.getElementById("modalidad")?.value || "",
+                direccion: document.getElementById("direccion").value,
+                descripcion: document.getElementById("descripcion").value,
+                barrio: document.getElementById("barrio")?.value || "",
+                requiere_policia: document.getElementById("chkPolicia")?.checked ?? false,
+                requiere_ambulancia: document.getElementById("chkAmbulancia")?.checked ?? false,
+                requiere_bomberos: document.getElementById("chkBomberos")?.checked ?? false,
+                foto_base64: fotoBase64
+            };
+            window.SIGI_PWA.guardarEnColaOffline(offlinePayload);
+            showAlert("📡 Modo sin conexión: Reporte guardado localmente en tu equipo. Se sincronizará automáticamente al detectar internet.", "warning", 4500);
+            limpiarFormularioReporte();
+            cargarMisReportes();
+            document.getElementById("tabMisReportes")?.click();
+            return;
+        }
+    }
+
     const btnSubmit = document.getElementById("btnSubmit");
     btnSubmit.disabled = true;
     btnSubmit.innerHTML = `Registrando reporte...`;
 
     const formData = new FormData();
-    formData.append("tipo", document.getElementById("tipoIncidente").value);
+    formData.append("tipo", tipoVal);
     formData.append("fecha", fechaVal);
     formData.append("hora", horaVal);
     formData.append("lat", document.getElementById("lat").value);
@@ -581,56 +695,41 @@ async function enviarReporte(e) {
 
         if (res.ok) {
             showAlert(`${data.mensaje} (Código: ${data.incidente.codigoincidente})`, "success");
-            document.getElementById("formReporte").reset();
-            fotoComprimida = null;
-            if (document.getElementById("previewContainer")) {
-                document.getElementById("previewContainer").style.display = "none";
-            }
-            const mlContOffline = document.getElementById("mlAssistantContainer");
-            if (mlContOffline) mlContOffline.style.display = "none";
-            const mlCont = document.getElementById("mlAssistantContainer");
-            if (mlCont) mlCont.style.display = "none";
-            const spanBtn = document.getElementById("btnTomarFoto")?.querySelector("span");
-            if (spanBtn) spanBtn.innerText = "Adjuntar Foto de Evidencia";
-
-            // Restablecer fecha y hora
-            const hoy = new Date();
-            document.getElementById("fecha").value = hoy.toISOString().split('T')[0];
-            document.getElementById("hora").value = hoy.toTimeString().split(' ')[0].slice(0, 5);
-
-            // Cambiar a la pestaña de mis reportes
-            document.getElementById("tabMisReportes").click();
+            limpiarFormularioReporte();
+            cargarMisReportes();
+            document.getElementById("tabMisReportes")?.click();
         } else {
             showAlert(`${data.mensaje || "Error registrando reporte"}`, "error");
         }
 
     } catch (err) {
-        console.warn("Fallo de conexión al enviar reporte:", err);
         if (window.SIGI_PWA) {
+            let fotoBase64 = null;
+            if (fotoComprimida) {
+                try { fotoBase64 = await blobABase64(fotoComprimida); } catch (_) {}
+            }
             const offlinePayload = {
-                tipo: document.getElementById("tipoIncidente").value,
-                fecha: document.getElementById("fecha").value,
-                hora: document.getElementById("hora").value,
+                tipo: tipoVal,
+                tipo_nombre: tipoNombre,
+                fecha: fechaVal,
+                hora: horaVal,
                 lat: document.getElementById("lat").value,
                 lng: document.getElementById("lng").value,
                 id_gravedad: document.getElementById("gravedad").value,
-                id_modalidad: document.getElementById("modalidad").value,
+                id_modalidad: document.getElementById("modalidad")?.value || "",
                 direccion: document.getElementById("direccion").value,
                 descripcion: document.getElementById("descripcion").value,
                 barrio: document.getElementById("barrio")?.value || "",
                 requiere_policia: document.getElementById("chkPolicia")?.checked ?? false,
                 requiere_ambulancia: document.getElementById("chkAmbulancia")?.checked ?? false,
-                requiere_bomberos: document.getElementById("chkBomberos")?.checked ?? false
+                requiere_bomberos: document.getElementById("chkBomberos")?.checked ?? false,
+                foto_base64: fotoBase64
             };
             window.SIGI_PWA.guardarEnColaOffline(offlinePayload);
-            showAlert("Modo Offline: Tu reporte ha sido guardado localmente y se enviará automáticamente al recuperar conexión.", "warning");
-            document.getElementById("formReporte").reset();
-            fotoComprimida = null;
-            if (document.getElementById("previewContainer")) {
-                document.getElementById("previewContainer").style.display = "none";
-            }
-            const mlContOffline = document.getElementById("mlAssistantContainer");
-            if (mlContOffline) mlContOffline.style.display = "none";
+            showAlert("📡 Conexión perdida: Reporte guardado en cola local. Se subirá automáticamente cuando vuelva el internet.", "warning", 4500);
+            limpiarFormularioReporte();
+            cargarMisReportes();
+            document.getElementById("tabMisReportes")?.click();
             return;
         }
         showAlert("Error de conexión al registrar el incidente", "error");
@@ -644,7 +743,7 @@ function normalizarUrlImagen(url) {
     if (!url || typeof url !== 'string') return '';
     const trimmed = url.trim();
     if (!trimmed) return '';
-    if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('/')) {
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('/') || trimmed.startsWith('data:image')) {
         return trimmed;
     }
     return `/uploads/incidentes/${trimmed}`;
@@ -652,101 +751,191 @@ function normalizarUrlImagen(url) {
 
 async function cargarMisReportes() {
     const list = document.getElementById("reportsList");
+    if (!list) return;
+
     list.innerHTML = '<div class="loading-spinner">Cargando mis reportes...</div>';
 
-    try {
-        const res = await fetch("/api/incidentes/mis-reportes");
-        if (!res.ok) throw new Error("Error en servidor");
-        const reportes = await res.json();
+    // 1. Obtener reportes en cola offline local
+    const colaOffline = window.SIGI_PWA ? window.SIGI_PWA.obtenerColaOffline() : [];
+    let reportesServidor = [];
 
-        document.getElementById("countReportes").innerText = reportes.length;
+    // 2. Obtener reportes del servidor si hay conexión
+    if (navigator.onLine) {
+        try {
+            const res = await fetch("/api/incidentes/mis-reportes");
+            if (res.ok) {
+                reportesServidor = await res.json();
+                try {
+                    localStorage.setItem("sigi_cache_mis_reportes", JSON.stringify(reportesServidor));
+                } catch (_) {}
+            } else {
+                throw new Error("Respuesta no exitosa del servidor");
+            }
+        } catch (err) {
+            // Fallback a caché si falló la red
+            try {
+                const cached = localStorage.getItem("sigi_cache_mis_reportes");
+                if (cached) reportesServidor = JSON.parse(cached);
+            } catch (_) {}
+        }
+    } else {
+        // Sin conexión: cargar directamente de caché
+        try {
+            const cached = localStorage.getItem("sigi_cache_mis_reportes");
+            if (cached) reportesServidor = JSON.parse(cached);
+        } catch (_) {}
+    }
 
-        if (reportes.length === 0) {
-            list.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 24px;">No has registrado ningún reporte aún.</div>';
-            return;
+    const totalReportes = colaOffline.length + reportesServidor.length;
+    const countEl = document.getElementById("countReportes");
+    if (countEl) countEl.innerText = totalReportes;
+
+    if (totalReportes === 0) {
+        list.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 24px;">No has registrado ningún reporte aún.</div>';
+        return;
+    }
+
+    list.innerHTML = "";
+
+    // Si estamos sin conexión, mostrar banner informativo superior
+    if (!navigator.onLine) {
+        const notice = document.createElement("div");
+        notice.className = "offline-list-notice";
+        notice.innerHTML = `<span>📡 <b>Modo sin conexión:</b> Mostrando ${colaOffline.length} reporte(s) en espera de sincronización y ${reportesServidor.length} en caché local.</span>`;
+        list.appendChild(notice);
+    }
+
+    // ── RENDERIZAR PRIMERO LOS REPORTES EN COLA OFFLINE ──
+    colaOffline.forEach(r => {
+        const fechaFmt = r.fecha || new Date(r._fecha_captura).toLocaleDateString('es-ES');
+        const horaFmt = r.hora ? r.hora.slice(0, 5) : '';
+        const codigo = r._id_local || 'OFF-PENDIENTE';
+        const tipoNombre = r.tipo_nombre || `Tipo #${r.tipo}`;
+        const tieneFoto = Boolean(r.foto_base64);
+        const urlFoto = r.foto_base64 || '';
+        const safeDesc = (r.descripcion || '').replace(/'/g, "\\'").replace(/\r?\n/g, ' ');
+
+        const htmlFoto = tieneFoto
+            ? `<div class="report-foto-thumb-wrap" style="margin-top: 8px;">
+                   <img src="${urlFoto}"
+                        class="report-foto-thumb"
+                        alt="Evidencia en cola"
+                        title="Haz clic para ver la imagen completa"
+                        loading="lazy">
+               </div>`
+            : '';
+
+        const card = document.createElement("div");
+        card.className = "report-card";
+        card.style.borderLeft = "4px solid #f59e0b";
+        card.innerHTML = `
+            <div class="report-card-head">
+                <span class="report-code" style="color: #f59e0b;">${codigo}</span>
+                <span class="badge-status" style="background-color: #d97706; color: #fff;">
+                    ⏳ En cola (Offline)
+                </span>
+            </div>
+            <div class="report-type">${tipoNombre}</div>
+            <div class="report-desc">${r.descripcion || '<em style="opacity:0.5">Sin descripción</em>'}</div>
+            ${htmlFoto}
+            <div class="report-meta" style="margin-top: 8px;">
+                <span>${fechaFmt} ${horaFmt}</span>
+                <span>${r.barrio || 'Coordenadas fijadas'}</span>
+            </div>
+            <div class="report-actions-locked" style="color: #f59e0b; font-size: 0.74rem; font-weight: 600;">
+                Guardado en este equipo. Se sincronizará automáticamente al detectar internet.
+            </div>
+        `;
+
+        if (tieneFoto) {
+            const thumbWrap = card.querySelector(".report-foto-thumb-wrap");
+            if (thumbWrap) {
+                thumbWrap.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    abrirVisorFoto(urlFoto, codigo, tipoNombre, r.descripcion || '');
+                });
+            }
         }
 
-        list.innerHTML = "";
-        reportes.forEach(r => {
-            const fechaFmt = new Date(r.fechaincidente).toLocaleDateString('es-ES');
-            const colorEstado = r.estado_color || '#6c757d';
-            const urlFoto = normalizarUrlImagen(r.imagen_url);
-            const tieneFoto = Boolean(urlFoto);
-            const codigo = r.codigoincidente || ('INC-' + r.idincidente);
-            const tipoNombre = r.tipo_nombre || 'Incidente general';
-            const safeImg = urlFoto.replace(/'/g, "\\'");
-            const safeCodigo = codigo.replace(/'/g, "\\'");
-            const safeDesc = (r.descripcionincidente || '').replace(/'/g, "\\'").replace(/\r?\n/g, ' ');
+        list.appendChild(card);
+    });
 
-            const htmlFoto = tieneFoto
-                ? `<div class="report-foto-thumb-wrap" style="margin-top: 8px;">
-                       <img src="${urlFoto}"
-                            class="report-foto-thumb"
-                            alt="Evidencia de ${codigo}"
-                            title="Haz clic para ver la imagen completa"
-                            loading="lazy"
-                            onerror="this.onerror=null; this.closest('.report-foto-thumb-wrap').style.display='none';">
-                   </div>`
-                : '';
+    // ── RENDERIZAR REPORTES DEL SERVIDOR / CACHÉ ──
+    reportesServidor.forEach(r => {
+        const fechaFmt = new Date(r.fechaincidente).toLocaleDateString('es-ES');
+        const colorEstado = r.estado_color || '#6c757d';
+        const urlFoto = normalizarUrlImagen(r.imagen_url);
+        const tieneFoto = Boolean(urlFoto);
+        const codigo = r.codigoincidente || ('INC-' + r.idincidente);
+        const tipoNombre = r.tipo_nombre || 'Incidente general';
+        const safeImg = urlFoto.replace(/'/g, "\\'");
+        const safeCodigo = codigo.replace(/'/g, "\\'");
+        const safeDesc = (r.descripcionincidente || '').replace(/'/g, "\\'").replace(/\r?\n/g, ' ');
 
-            // Botones de acción: solo si el reporte está en estado "Reportado" (id_estado = 1)
-            const esPendiente = r.id_estado === 1;
-            const htmlAcciones = esPendiente
-                ? `<div class="report-actions">
-                       <button type="button" class="btn-report-edit" onclick="event.stopPropagation(); abrirModalEditarReporte(${r.idincidente}, '${r.fechaincidente?.split('T')[0]}', '${r.horaincidente?.slice(0,5)}', ${r.id_gravedad || 3}, '${(r.direccion||'').replace(/'/g,"\\'")}', '${safeDesc}', '${safeImg}')">
-                           Editar
-                       </button>
-                       <button type="button" class="btn-report-delete" onclick="event.stopPropagation(); confirmarEliminarReporte(${r.idincidente}, '${safeCodigo}')">
-                           Eliminar
-                       </button>
-                   </div>`
-                : `<div class="report-actions-locked">En revisión — no editable</div>`;
+        const htmlFoto = tieneFoto
+            ? `<div class="report-foto-thumb-wrap" style="margin-top: 8px;">
+                   <img src="${urlFoto}"
+                        class="report-foto-thumb"
+                        alt="Evidencia de ${codigo}"
+                        title="Haz clic para ver la imagen completa"
+                        loading="lazy"
+                        onerror="this.onerror=null; this.closest('.report-foto-thumb-wrap').style.display='none';">
+               </div>`
+            : '';
 
-            const card = document.createElement("div");
-            card.className = "report-card";
-            card.innerHTML = `
-                <div class="report-card-head">
-                    <span class="report-code">${codigo}</span>
-                    <span class="badge-status" style="background-color: ${colorEstado}">
-                        ${r.estado_nombre || 'Reportado'}
-                    </span>
-                </div>
-                <div class="report-type">${tipoNombre}</div>
-                <div class="report-desc">${r.descripcionincidente || '<em style="opacity:0.5">Sin descripción</em>'}</div>
-                ${htmlFoto}
-                <div class="report-meta" style="margin-top: 8px;">
-                    <span>${fechaFmt} ${(r.horaincidente || '').slice(0, 5)}</span>
-                    <span>${r.barrio_nombre || r.vereda_nombre || 'Sin Zona'}</span>
-                </div>
-                ${htmlAcciones}
-            `;
+        // Botones de acción: solo si el reporte está en estado "Reportado" (id_estado = 1) y hay red
+        const esPendiente = r.id_estado === 1;
+        const htmlAcciones = esPendiente
+            ? `<div class="report-actions">
+                   <button type="button" class="btn-report-edit" onclick="event.stopPropagation(); abrirModalEditarReporte(${r.idincidente}, '${r.fechaincidente?.split('T')[0]}', '${r.horaincidente?.slice(0,5)}', ${r.id_gravedad || 3}, '${(r.direccion||'').replace(/'/g,"\\'")}', '${safeDesc}', '${safeImg}')">
+                       Editar
+                   </button>
+                   <button type="button" class="btn-report-delete" onclick="event.stopPropagation(); confirmarEliminarReporte(${r.idincidente}, '${safeCodigo}')">
+                       Eliminar
+                   </button>
+               </div>`
+            : `<div class="report-actions-locked">En revisión — no editable</div>`;
 
-            if (tieneFoto) {
-                const thumbWrap = card.querySelector(".report-foto-thumb-wrap");
-                if (thumbWrap) {
-                    thumbWrap.addEventListener("click", (e) => {
-                        e.stopPropagation();
-                        abrirVisorFoto(urlFoto, codigo, tipoNombre, r.descripcionincidente || '');
-                    });
-                }
+        const card = document.createElement("div");
+        card.className = "report-card";
+        card.innerHTML = `
+            <div class="report-card-head">
+                <span class="report-code">${codigo}</span>
+                <span class="badge-status" style="background-color: ${colorEstado}">
+                    ${r.estado_nombre || 'Reportado'}
+                </span>
+            </div>
+            <div class="report-type">${tipoNombre}</div>
+            <div class="report-desc">${r.descripcionincidente || '<em style="opacity:0.5">Sin descripción</em>'}</div>
+            ${htmlFoto}
+            <div class="report-meta" style="margin-top: 8px;">
+                <span>${fechaFmt} ${(r.horaincidente || '').slice(0, 5)}</span>
+                <span>${r.barrio_nombre || r.vereda_nombre || 'Sin Zona'}</span>
+            </div>
+            ${htmlAcciones}
+        `;
+
+        if (tieneFoto) {
+            const thumbWrap = card.querySelector(".report-foto-thumb-wrap");
+            if (thumbWrap) {
+                thumbWrap.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    abrirVisorFoto(urlFoto, codigo, tipoNombre, r.descripcionincidente || '');
+                });
             }
+        }
 
-            list.appendChild(card);
-        });
-
-    } catch (err) {
-        console.error("Error cargando mis reportes:", err);
-        list.innerHTML = '<div style="text-align: center; color: var(--danger); padding: 15px;">Error al cargar mis reportes.</div>';
-    }
+        list.appendChild(card);
+    });
 }
 
 let timerAlerta = null;
 
-function mostrarToastReportero(mensaje, tipo = "info", duracion = 2200) {
+function mostrarToastReportero(mensaje, tipo = "info", duracion = 3200) {
     showAlert(mensaje, tipo, duracion);
 }
 
-function showAlert(mensaje, tipo = "success", duracion = 2400) {
+function showAlert(mensaje, tipo = "success", duracion = 3200) {
     const cont = document.getElementById("alertContainer");
     if (!cont) return;
 
@@ -757,9 +946,19 @@ function showAlert(mensaje, tipo = "success", duracion = 2400) {
 
     cont.innerHTML = `
         <div class="alert-box alert-${tipo}">
-            ${mensaje}
+            <span class="alert-texto">${mensaje}</span>
+            <button type="button" class="btn-cerrar-alert" title="Cerrar aviso" aria-label="Cerrar">&times;</button>
         </div>
     `;
+
+    const btnCerrar = cont.querySelector(".btn-cerrar-alert");
+    if (btnCerrar) {
+        btnCerrar.onclick = () => {
+            if (timerAlerta) clearTimeout(timerAlerta);
+            timerAlerta = null;
+            cont.innerHTML = "";
+        };
+    }
 
     timerAlerta = setTimeout(() => {
         const box = cont.querySelector(".alert-box");

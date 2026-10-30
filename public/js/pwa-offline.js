@@ -114,12 +114,21 @@
 
   window.addEventListener('online', () => {
     actualizarIndicadorRed();
-    mostrarNotificacionPWA("🟢 Conexión restablecida", "Sincronizando reportes pendientes...", "#10b981");
+    if (typeof window.mostrarToastReportero === 'function') {
+      window.mostrarToastReportero("🟢 Conexión restablecida. Sincronizando reportes pendientes...", "success", 4000);
+    } else {
+      mostrarNotificacionPWA("🟢 Conexión restablecida", "Sincronizando reportes pendientes con el servidor...", "#10b981");
+    }
+    sincronizarColaOffline();
   });
 
   window.addEventListener('offline', () => {
     actualizarIndicadorRed();
-    mostrarNotificacionPWA("📡 Sin conexión a Internet", "Modo offline activo. Puedes seguir reportando normalmente.", "#f59e0b");
+    if (typeof window.mostrarToastReportero === 'function') {
+      window.mostrarToastReportero("📡 Sin conexión a internet. Los reportes se guardarán en tu dispositivo.", "warning", 4500);
+    } else {
+      mostrarNotificacionPWA("📡 Sin conexión a Internet", "Modo offline activo. Puedes seguir reportando y se guardarán en tu dispositivo.", "#f59e0b");
+    }
   });
 
   // 3. Gestión de la Cola Local (localStorage)
@@ -134,10 +143,14 @@
 
   function guardarEnColaOffline(reporte) {
     const cola = obtenerColaOffline();
-    reporte._id_local = `OFF-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    reporte._id_local = `OFF-${Date.now().toString().slice(-6)}`;
     reporte._fecha_captura = new Date().toISOString();
     cola.push(reporte);
-    localStorage.setItem(CLAVE_COLA_OFFLINE, JSON.stringify(cola));
+    try {
+      localStorage.setItem(CLAVE_COLA_OFFLINE, JSON.stringify(cola));
+    } catch (storageErr) {
+      console.warn("Aviso al guardar reporte offline:", storageErr);
+    }
     actualizarIndicadorRed();
     return reporte;
   }
@@ -149,21 +162,51 @@
     actualizarIndicadorRed();
   }
 
+  function base64ToBlob(dataURI) {
+    if (!dataURI || typeof dataURI !== 'string' || !dataURI.includes(',')) return null;
+    try {
+      const parts = dataURI.split(',');
+      const mimeMatch = parts[0].match(/:(.*?);/);
+      const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+      const byteString = atob(parts[1]);
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+      return new Blob([ab], { type: mime });
+    } catch (e) {
+      console.warn("No se pudo decodificar la imagen offline a Blob:", e);
+      return null;
+    }
+  }
+
   // 4. Sincronización Automática con el Servidor
+  let sincronizando = false;
+
   async function sincronizarColaOffline() {
+    if (sincronizando) return;
     const cola = obtenerColaOffline();
     if (cola.length === 0) return;
 
+    sincronizando = true;
     let sincronizados = 0;
 
     for (const item of cola) {
       try {
         const formData = new FormData();
         Object.keys(item).forEach((key) => {
-          if (!key.startsWith('_')) {
+          if (!key.startsWith('_') && key !== 'foto_base64' && key !== 'tipo_nombre') {
             formData.append(key, item[key]);
           }
         });
+
+        if (item.foto_base64) {
+          const blob = base64ToBlob(item.foto_base64);
+          if (blob) {
+            formData.append('foto', blob, 'evidencia_offline.jpg');
+          }
+        }
 
         const res = await fetch('/api/incidentes', {
           method: 'POST',
@@ -180,12 +223,15 @@
       }
     }
 
+    sincronizando = false;
+
     if (sincronizados > 0) {
-      mostrarNotificacionPWA(
-        "✅ Sincronización Exitosa",
-        `Se enviaron al servidor ${sincronizados} reporte(s) guardado(s) en campo.`,
-        "#10b981"
-      );
+      const mensaje = `Se sincronizaron con éxito ${sincronizados} reporte(s) guardados en campo.`;
+      if (typeof window.mostrarToastReportero === 'function') {
+        window.mostrarToastReportero(`✅ ${mensaje}`, "success", 4500);
+      } else {
+        mostrarNotificacionPWA("✅ Sincronización Exitosa", mensaje, "#10b981");
+      }
       // Recargar lista si existe en la página
       if (typeof window.cargarMisReportes === 'function') {
         window.cargarMisReportes();
@@ -202,21 +248,53 @@
       z-index: 999999;
       background: #0f172a;
       border: 1px solid rgba(255, 255, 255, 0.12);
+      border-left: 4px solid ${color};
       color: #f8fafc;
-      padding: 12px 18px;
+      padding: 12px 14px 12px 16px;
       border-radius: 8px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       font-size: 0.85rem;
-      max-width: 320px;
+      max-width: min(340px, calc(100vw - 32px));
+      box-sizing: border-box;
       animation: sigiFadeIn 0.3s ease;
     `;
     notif.innerHTML = `
-      <div style="font-weight: 700; color: #fff; margin-bottom: 2px;">${titulo}</div>
-      <div style="font-size: 0.78rem; color: #cbd5e1;">${mensaje}</div>
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-weight: 700; color: #fff; margin-bottom: 2px;">${titulo}</div>
+          <div style="font-size: 0.78rem; color: #cbd5e1; line-height: 1.35;">${mensaje}</div>
+        </div>
+        <button type="button" aria-label="Cerrar notificación" style="
+          background: rgba(255, 255, 255, 0.15);
+          border: none;
+          color: #ffffff;
+          width: 20px;
+          height: 20px;
+          min-width: 20px;
+          border-radius: 50%;
+          cursor: pointer;
+          font-size: 13px;
+          font-weight: bold;
+          line-height: 1;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0;
+          transition: background 0.15s ease;
+        ">&times;</button>
+      </div>
     `;
+
+    const btnCerrar = notif.querySelector('button');
+    if (btnCerrar) {
+      btnCerrar.onclick = () => notif.remove();
+    }
+
     document.body.appendChild(notif);
-    setTimeout(() => notif.remove(), 5000);
+    setTimeout(() => {
+      if (notif.parentNode) notif.remove();
+    }, 6000);
   }
 
   // 5. Exponer API globalmente en window.SIGI_PWA
