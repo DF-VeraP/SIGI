@@ -490,6 +490,15 @@ function setupTabs() {
     tabMis?.addEventListener("click", () => activarTab(tabMis, secMis));
     tabPerfil?.addEventListener("click", () => activarTab(tabPerfil, secPerfil));
     userBadge?.addEventListener("click", () => activarTab(tabPerfil, secPerfil));
+
+    // Permitir desplazamiento suave de reportes si se gira la rueda del mouse sobre el header
+    const secMisHeader = document.querySelector("#secMisReportes .section-header");
+    const reportsListEl = document.getElementById("reportsList");
+    if (secMisHeader && reportsListEl) {
+        secMisHeader.addEventListener("wheel", (e) => {
+            reportsListEl.scrollTop += e.deltaY;
+        }, { passive: true });
+    }
 }
 
 async function enviarReporte(e) {

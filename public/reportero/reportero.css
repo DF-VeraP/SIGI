@@ -122,12 +122,12 @@ body.tema-claro {
    SISTEMA DE PESTAÑAS (1 CONTENEDOR POR BOTÓN)
    Garantiza que sólo el contenedor activo sea visible (0 superposición)
    ══════════════════════════════════════════ */
-.tab-content {
+.tab-content:not(.active) {
   display: none !important;
 }
 
 .tab-content.active {
-  display: block !important;
+  display: block;
 }
 
 /* ══════════════════════════════════════════
@@ -185,7 +185,7 @@ body.tema-claro {
   }
 
   .tab-content.active {
-    display: flex;
+    display: flex !important;
     flex-direction: column;
   }
 
@@ -265,17 +265,40 @@ body.tema-claro {
     min-height: 0;
     display: none;
     flex-direction: column;
+    overflow: hidden;
   }
 
   #secMisReportes.active {
-    display: flex;
+    display: flex !important;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
   }
 
+  #secMisReportes .section-header {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    height: 36px;
+  }
+
+  #secMisReportes .reports-list,
   .reports-list {
-    flex: 1;
+    flex: 1 1 auto;
     min-height: 0;
-    overflow-y: auto;
-    padding-right: 6px;
+    height: 100%;
+    max-height: 100%;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    padding-right: 8px;
+    padding-bottom: 24px;
+    align-content: start;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
   }
 
   /* Mi Perfil en escritorio */
@@ -285,12 +308,20 @@ body.tema-claro {
     min-height: 0;
     display: none;
     flex-direction: column;
-    overflow-y: auto;
-    padding-right: 6px;
   }
 
   #secPerfil.active {
-    display: flex;
+    display: flex !important;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    padding-right: 6px;
+    padding-bottom: 24px;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
   }
 }
 
@@ -1082,6 +1113,7 @@ body.tema-claro .pill-check:has(input[type="checkbox"]:checked) {
   grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
   gap: 12px;
   width: 100%;
+  align-content: start;
 }
 
 .report-card {
@@ -1574,7 +1606,7 @@ body.tema-claro .modal-reporte-overlay {
   }
 
   /* 1 CONTENEDOR POR BOTÓN: GARANTIZA AISLAMIENTO TOTAL ENTRE NUEVO REPORTE Y MIS REPORTES */
-  .tab-content {
+  .tab-content:not(.active) {
     display: none !important;
   }
 
