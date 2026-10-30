@@ -1,11 +1,13 @@
-const CACHE_NAME = 'sigi-pwa-v1';
+const CACHE_NAME = 'sigi-pwa-v2';
 const STATIC_ASSETS = [
   '/reportero/index.html',
   '/reportero/reportero.css',
   '/reportero/reportero.js',
   '/js/pwa-offline.js',
   '/js/session-timer.js',
-  '/manifest.json'
+  '/manifest.json',
+  '/assets/img/logo_sigi.png',
+  '/assets/img/logo.png'
 ];
 
 // Instalación del Service Worker: cachear shell de la aplicación
@@ -33,20 +35,32 @@ self.addEventListener('activate', (event) => {
 
 // Estrategia de Fetch: Network-First con fallback a Caché para estáticos
 self.addEventListener('fetch', (event) => {
+  // El Cache Storage API SOLO soporta solicitudes GET. Ignorar POST, PUT, DELETE, etc.
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
   const url = new URL(event.request.url);
 
-  // No interceptar peticiones de la API para permitir que la app gestione la cola offline
+  // No interceptar peticiones de la API o WebSockets
   if (url.pathname.startsWith('/api') || url.pathname.startsWith('/socket.io')) {
+    return;
+  }
+
+  // Tampoco cachear esquemas no soportados (ej. chrome-extension://)
+  if (!url.protocol.startsWith('http')) {
     return;
   }
 
   event.respondWith(
     fetch(event.request)
       .then((networkResponse) => {
-        // Guardar copia fresca en caché
-        if (networkResponse && networkResponse.status === 200) {
+        // Guardar copia fresca en caché solo para respuestas exitosas GET
+        if (networkResponse && networkResponse.status === 200 && (networkResponse.type === 'basic' || networkResponse.type === 'cors')) {
           const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseClone).catch(() => {});
+          });
         }
         return networkResponse;
       })

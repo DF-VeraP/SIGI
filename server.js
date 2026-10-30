@@ -21,6 +21,27 @@ app.use(helmet({
 }));
 
 app.use(express.static("public"));
+
+// Fallback elegante para imágenes de incidentes que no existan en disco (evita 404 en consola y UI rota)
+app.get('/uploads/incidentes/:archivo', (req, res) => {
+  const nombreLimpio = path.basename(req.params.archivo);
+  const filePath = path.join(__dirname, 'public', 'uploads', 'incidentes', nombreLimpio);
+  if (fs.existsSync(filePath)) {
+    return res.sendFile(filePath);
+  }
+  res.setHeader('Content-Type', 'image/svg+xml');
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  res.send(`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250" fill="none">
+    <rect width="400" height="250" fill="#18191f"/>
+    <rect x="1" y="1" width="398" height="248" rx="8" stroke="#2d3039" stroke-width="2"/>
+    <circle cx="200" cy="105" r="32" fill="#262833"/>
+    <path d="M188 117L196 107L204 115L212 103L220 117H188Z" fill="#71717a"/>
+    <circle cx="212" cy="95" r="4" fill="#a1a1aa"/>
+    <text x="200" y="155" text-anchor="middle" fill="#a1a1aa" font-family="system-ui, sans-serif" font-size="13" font-weight="600">Evidencia no disponible</text>
+    <text x="200" y="175" text-anchor="middle" fill="#71717a" font-family="system-ui, sans-serif" font-size="11">Archivo físico no encontrado en almacenamiento</text>
+  </svg>`.trim());
+});
+
 app.use(express.json());
 
 // Configuración de persistencia de sesiones en PostgreSQL (connect-pg-simple)
@@ -157,6 +178,20 @@ async function asegurarEsquemaBaseDatos() {
     console.log('✅ Esquema y compatibilidad de tipos de incidente verificados con éxito.');
   } catch (err) {
     console.warn('Aviso al verificar esquema de tipos de incidente:', err.message);
+  }
+
+  // Normalizar rutas relativas de imágenes en la base de datos
+  try {
+    await pool.query(`
+      UPDATE public.incidente 
+      SET imagen_url = '/uploads/incidentes/' || imagen_url 
+      WHERE imagen_url IS NOT NULL 
+        AND imagen_url != ''
+        AND imagen_url NOT LIKE 'http%' 
+        AND imagen_url NOT LIKE '/%';
+    `);
+  } catch (err) {
+    console.warn('Aviso al normalizar URLs de imágenes:', err.message);
   }
 
   // Auto-migración y verificación territorial de MNVCC (Cuadrantes, Polígonos y TAMIR)

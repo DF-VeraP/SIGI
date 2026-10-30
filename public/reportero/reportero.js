@@ -611,6 +611,16 @@ async function enviarReporte(e) {
     }
 }
 
+function normalizarUrlImagen(url) {
+    if (!url || typeof url !== 'string') return '';
+    const trimmed = url.trim();
+    if (!trimmed) return '';
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('/')) {
+        return trimmed;
+    }
+    return `/uploads/incidentes/${trimmed}`;
+}
+
 async function cargarMisReportes() {
     const list = document.getElementById("reportsList");
     list.innerHTML = '<div class="loading-spinner">Cargando mis reportes...</div>';
@@ -631,16 +641,22 @@ async function cargarMisReportes() {
         reportes.forEach(r => {
             const fechaFmt = new Date(r.fechaincidente).toLocaleDateString('es-ES');
             const colorEstado = r.estado_color || '#6c757d';
-            const tieneFoto = Boolean(r.imagen_url && r.imagen_url.trim() !== '');
+            const urlFoto = normalizarUrlImagen(r.imagen_url);
+            const tieneFoto = Boolean(urlFoto);
             const codigo = r.codigoincidente || ('INC-' + r.idincidente);
             const tipoNombre = r.tipo_nombre || 'Incidente general';
-            const safeImg = (r.imagen_url || '').replace(/'/g, "\\'");
+            const safeImg = urlFoto.replace(/'/g, "\\'");
             const safeCodigo = codigo.replace(/'/g, "\\'");
-            const safeDesc = (r.descripcionincidente || '').replace(/'/g, "\\'").replace(/\r?\n/g, " ");
+            const safeDesc = (r.descripcionincidente || '').replace(/'/g, "\\'").replace(/\r?\n/g, ' ');
 
             const htmlFoto = tieneFoto
                 ? `<div class="report-foto-thumb-wrap" style="margin-top: 8px;">
-                       <img src="${r.imagen_url}" class="report-foto-thumb" alt="Evidencia de ${codigo}" title="Haz clic para ver la imagen completa">
+                       <img src="${urlFoto}"
+                            class="report-foto-thumb"
+                            alt="Evidencia de ${codigo}"
+                            title="Haz clic para ver la imagen completa"
+                            loading="lazy"
+                            onerror="this.onerror=null; this.closest('.report-foto-thumb-wrap').style.display='none';">
                    </div>`
                 : '';
 
@@ -684,7 +700,7 @@ async function cargarMisReportes() {
                     if (e.target.closest("button, .btn-report-edit, .btn-report-delete, .report-actions, .report-actions-locked")) {
                         return;
                     }
-                    abrirVisorFoto(r.imagen_url, codigo, tipoNombre, r.descripcionincidente || '');
+                    abrirVisorFoto(urlFoto, codigo, tipoNombre, r.descripcionincidente || '');
                 });
             }
 
@@ -757,7 +773,12 @@ function abrirModalEditarReporte(id, fecha, hora, gravedad, direccion, descripci
     const containerActual = document.getElementById("editFotoActualContainer");
     const imgActual = document.getElementById("editImgActual");
     if (imagenUrl && imagenUrl.trim() !== '') {
-        imgActual.src = imagenUrl;
+        const safeEditUrl = normalizarUrlImagen(imagenUrl);
+        imgActual.onerror = () => {
+            imgActual.onerror = null;
+            containerActual.style.display = "none";
+        };
+        imgActual.src = safeEditUrl;
         containerActual.style.display = "block";
     } else {
         containerActual.style.display = "none";
@@ -935,7 +956,13 @@ function abrirVisorFoto(url, codigo = '', tipo = '', descripcion = '') {
 
     if (!modal || !img) return;
 
-    img.src = url;
+    const safeUrl = normalizarUrlImagen(url);
+    img.onerror = () => {
+        img.onerror = null;
+        img.src = '';
+        mostrarToastReportero('La fotografía de evidencia no se encuentra disponible en el almacenamiento.', 'info');
+    };
+    img.src = safeUrl;
     if (titulo) titulo.innerText = codigo ? `Evidencia: ${codigo}` : "Evidencia Fotográfica";
     if (subtitulo) subtitulo.innerText = tipo ? `Tipo: ${tipo}` : "";
     if (desc) {
