@@ -254,6 +254,17 @@ class SigiMLAssistant {
 
     container.style.display = 'block';
 
+    // Disparador Semántico de Emergencias (Flujo-Reportero: rep_dec_emerg -> rep_emerg_act):
+    // Si el texto contiene palabras críticas de emergencia, marcar automáticamente las casillas de auxilio
+    if (gravedad && Array.isArray(gravedad.factores_detectados) && gravedad.factores_detectados.length > 0 && asistencias) {
+      const chkPol = document.getElementById(this.chkPoliciaId);
+      const chkAmb = document.getElementById(this.chkAmbulanciaId);
+      const chkBom = document.getElementById(this.chkBomberosId);
+      if (chkPol && asistencias.policia !== undefined) chkPol.checked = asistencias.policia;
+      if (chkAmb && asistencias.ambulancia !== undefined) chkAmb.checked = asistencias.ambulancia;
+      if (chkBom && asistencias.bomberos !== undefined) chkBom.checked = asistencias.bomberos;
+    }
+
     const btnAplicar = document.getElementById('btnAplicarSugerenciaML');
     if (btnAplicar) {
       btnAplicar.addEventListener('click', () => {

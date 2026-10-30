@@ -99,6 +99,7 @@ app.use('/', require('./routes/filtros.routes'));
 app.use('/', require('./routes/reportes.routes'));
 app.use('/', require('./routes/ml.routes'));
 app.use('/', require('./routes/seguridad.routes'));
+app.use('/', require('./routes/mnvcc.routes'));
 
 app.use(errorHandler);
 

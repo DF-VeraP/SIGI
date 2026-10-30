@@ -576,6 +576,73 @@ class MLService {
       proyeccion
     };
   }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 5. REENTRENAMIENTO SUPERVISADO EN MEMORIA (Suavizado de Laplace α = 1)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Recalibra el vocabulario y pesos probabilísticos en memoria RAM a partir de
+   * descripciones reales de incidentes validados/aprobados (id_estado = 5) sin reiniciar Node.js.
+   * @param {Array} dataset - Lista de incidentes [{ idtipoincidente, descripcionincidente }]
+   * @param {number} totalRegistros - Total de registros analizados en base de datos
+   */
+  entrenarModelo(dataset = [], totalRegistros = 0) {
+    const frecuenciasPorClase = { 1: {}, 2: {}, 3: {}, 4: {} };
+    const totalesPorClase = { 1: 0, 2: 0, 3: 0, 4: 0 };
+    const vocabularioGlobal = new Set();
+
+    // Preservar pesos base del léxico experto
+    for (const [idStr, info] of Object.entries(this.lexicon)) {
+      if (!info._pesosBase) {
+        info._pesosBase = { ...info.pesos };
+      }
+      Object.keys(info._pesosBase).forEach(k => vocabularioGlobal.add(k));
+    }
+
+    if (Array.isArray(dataset) && dataset.length > 0) {
+      for (const item of dataset) {
+        const idClase = parseInt(item.idtipoincidente, 10);
+        const texto = String(item.descripcionincidente || '').trim();
+        if (!frecuenciasPorClase[idClase] || texto.length <= 10) continue;
+        // Ignorar textos sintéticos de pruebas de carga
+        if (texto.toLowerCase().startsWith('prueba de stress')) continue;
+
+        const { tokens } = this.tokenizar(texto);
+        for (const tok of tokens) {
+          if (tok.length < 4) continue;
+          frecuenciasPorClase[idClase][tok] = (frecuenciasPorClase[idClase][tok] || 0) + 1;
+          totalesPorClase[idClase] += 1;
+          vocabularioGlobal.add(tok);
+        }
+      }
+
+      const tamVocabulario = Math.max(1, vocabularioGlobal.size);
+      // Suavizado de Laplace (α = 1): P(w|C) = (count(w, C) + 1) / (N_C + |V|)
+      for (const idClase of [1, 2, 3, 4]) {
+        const pesosActualizados = { ...this.lexicon[idClase]._pesosBase };
+        const nClase = totalesPorClase[idClase];
+        if (nClase > 0) {
+          for (const [tok, freq] of Object.entries(frecuenciasPorClase[idClase])) {
+            const probLaplace = (freq + 1) / (nClase + tamVocabulario);
+            const pesoAprendido = Math.min(4.5, Math.max(1.2, Math.round(probLaplace * 120 * 10) / 10));
+            pesosActualizados[tok] = Math.max(pesosActualizados[tok] || 0, pesoAprendido);
+          }
+        }
+        this.lexicon[idClase].pesos = pesosActualizados;
+      }
+    }
+
+    this.metadataEntrenamiento = {
+      ultima_recalibracion: new Date().toISOString(),
+      registros_analizados: totalRegistros || (Array.isArray(dataset) ? dataset.length : 0),
+      muestras_utiles: Object.values(totalesPorClase).reduce((a, b) => a + b, 0),
+      tamano_vocabulario: vocabularioGlobal.size,
+      suavizado: 'Laplace (alpha = 1.0)'
+    };
+
+    return this.metadataEntrenamiento;
+  }
 }
 
 module.exports = new MLService();

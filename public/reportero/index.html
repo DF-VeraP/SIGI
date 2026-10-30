@@ -35,18 +35,21 @@
         <!-- PESTAÑAS CENTRADAS EN EL HEADER (EVITA CONTENEDOR EXTRA) -->
         <nav class="header-tab-nav" aria-label="Navegación de reportero">
             <div class="tab-segmented-group">
-                <button id="tabCrear" class="tab-btn active">
+                <button id="tabCrear" class="tab-btn active" title="Registrar un nuevo incidente">
                     <span>Nuevo Reporte</span>
                 </button>
-                <button id="tabMisReportes" class="tab-btn">
+                <button id="tabMisReportes" class="tab-btn" title="Ver mi historial de reportes">
                     <span>Mis Reportes</span>
                     <span id="countReportes" class="badge-count">0</span>
+                </button>
+                <button id="tabPerfil" class="tab-btn" title="Mi Perfil / Configuración de cuenta">
+                    <span>Perfil</span>
                 </button>
             </div>
         </nav>
 
         <div class="header-user">
-            <span id="userBadge" class="user-badge">...</span>
+            <span id="userBadge" class="user-badge" title="Haz clic para ver y editar tu Perfil" style="cursor: pointer;">...</span>
             <!-- Toggle Modo Claro / Oscuro Tipo iPhone (Idéntico a Admin y Dashboard) -->
             <button id="btnTemaReportero" class="toggle-iphone-header" title="Cambiar modo Claro / Oscuro para comodidad visual" aria-label="Cambiar tema claro u oscuro">
                 <span class="icono-sol" aria-hidden="true"><i class="bi bi-sun-fill" aria-hidden="true"></i></span>
@@ -108,7 +111,6 @@
                     <div class="card-header-compacta">
                         <div>
                             <h2 class="card-titulo">Detalles del Incidente</h2>
-                            <span class="card-sub-badge">Formulario de terreno</span>
                         </div>
                     </div>
 
@@ -213,6 +215,112 @@
                 <div class="loading-spinner">Cargando mis reportes...</div>
             </div>
         </section>
+
+        <!-- SECCIÓN 3: GESTIÓN DE PERFIL PERSONAL (REPORTERO) -->
+        <section id="secPerfil" class="tab-content sec-perfil">
+            <div class="panel-verificacion-card">
+                <div class="panel-header-toolbar">
+                    <div class="panel-header-info">
+                        <div class="panel-titulo-fila">
+                            <h2 class="panel-titulo-principal">Mi Perfil</h2>
+                            <span class="badge-kpi-total" id="badgeRolPerfil" title="Rol actual en el sistema">
+                                <span class="label-kpi">Rol</span>
+                                <span class="numero-kpi" id="perfilRolTexto" style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">REPORTERO</span>
+                            </span>
+                        </div>
+                        <p class="panel-subtitulo-info">Gestión de credenciales, seguridad y datos de contacto de tu cuenta institucional.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Marco Principal del Perfil -->
+            <div class="perfil-card-marco">
+                <!-- Columna Izquierda: Ficha Resumen de Cuenta -->
+                <div class="perfil-col-resumen">
+                    <div class="perfil-avatar-wrap">
+                        <div class="perfil-avatar-circulo" id="perfilAvatarLetra">R</div>
+                        <h3 class="perfil-usuario-nombre" id="perfilResumenNombre">Usuario</h3>
+                        <span class="perfil-usuario-email" id="perfilResumenEmail">correo@ejemplo.com</span>
+                    </div>
+
+                    <div class="perfil-datos-lista">
+                        <div class="perfil-dato-item">
+                            <span class="perfil-dato-label">Nivel de Permisos</span>
+                            <span class="perfil-dato-valor" id="perfilResumenRol">Reportero</span>
+                        </div>
+                        <div class="perfil-dato-item">
+                            <span class="perfil-dato-label">Estado de la Cuenta</span>
+                            <span class="perfil-dato-valor" id="perfilResumenEstado">ACTIVO</span>
+                        </div>
+                        <div class="perfil-dato-item">
+                            <span class="perfil-dato-label">Fecha de Registro</span>
+                            <span class="perfil-dato-valor" id="perfilResumenFechaReg">--</span>
+                        </div>
+                        <div class="perfil-dato-item">
+                            <span class="perfil-dato-label">Último Acceso</span>
+                            <span class="perfil-dato-valor" id="perfilResumenUltimoAcceso">Sesión activa</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha: Formulario de Actualización y Seguridad -->
+                <div class="perfil-col-formulario">
+                    <form id="formPerfilUsuario" class="form-perfil-estilo">
+                        <!-- Sección 1: Datos de Contacto -->
+                        <div class="perfil-bloque-seccion">
+                            <h4 class="perfil-bloque-titulo">Información Personal y Contacto</h4>
+                            
+                            <div class="perfil-campo-grupo">
+                                <label for="perfilInputEmail" class="perfil-label">Correo electrónico institucional</label>
+                                <input type="email" id="perfilInputEmail" name="email" required autocomplete="email" class="filtro-input-control" placeholder="tu_correo@ejemplo.com">
+                            </div>
+
+                            <div class="perfil-fila-dos-campos">
+                                <div class="perfil-campo-grupo">
+                                    <label for="perfilInputTelefono" class="perfil-label">Teléfono de contacto</label>
+                                    <input type="tel" id="perfilInputTelefono" name="telefono" autocomplete="tel" class="filtro-input-control" placeholder="Ej: 3001234567">
+                                </div>
+                                <div class="perfil-campo-grupo">
+                                    <label for="perfilInputDependencia" class="perfil-label">Dependencia / Entidad</label>
+                                    <input type="text" id="perfilInputDependencia" name="dependencia" class="filtro-input-control" placeholder="Ej: Terreno / Seguridad">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sección 2: Seguridad y Cambio de Contraseña -->
+                        <div class="perfil-bloque-seccion">
+                            <h4 class="perfil-bloque-titulo">Seguridad y Cambio de Contraseña</h4>
+                            <p class="perfil-bloque-ayuda">Diligencia estos campos únicamente si deseas modificar tu contraseña de acceso.</p>
+
+                            <div class="perfil-campo-grupo">
+                                <label for="perfilPasswordActual" class="perfil-label">Contraseña actual</label>
+                                <input type="password" id="perfilPasswordActual" name="password_actual" autocomplete="current-password" class="filtro-input-control" placeholder="Ingresa tu contraseña actual">
+                            </div>
+
+                            <div class="perfil-fila-dos-campos">
+                                <div class="perfil-campo-grupo">
+                                    <label for="perfilPasswordNuevo" class="perfil-label">Nueva contraseña</label>
+                                    <input type="password" id="perfilPasswordNuevo" name="password_nuevo" autocomplete="new-password" class="filtro-input-control" placeholder="Mínimo 8 caracteres">
+                                </div>
+                                <div class="perfil-campo-grupo">
+                                    <label for="perfilPasswordConfirmar" class="perfil-label">Confirmar nueva contraseña</label>
+                                    <input type="password" id="perfilPasswordConfirmar" name="password_confirmar" autocomplete="new-password" class="filtro-input-control" placeholder="Repite la nueva contraseña">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Alerta de Respuesta del Perfil -->
+                        <div id="perfilAlertaBox" class="modal-alerta-box" style="display: none; margin-top: 8px;"></div>
+
+                        <!-- Acciones del Formulario -->
+                        <div class="perfil-acciones-fila">
+                            <button type="button" id="btnRestablecerFormPerfil" class="btn-modal-cancelar">Restablecer</button>
+                            <button type="submit" id="btnGuardarPerfilSubmit" class="btn-modal-guardar">Guardar cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
     </main>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -222,6 +330,25 @@
     <script src="../js/pwa-offline.js"></script>
     <script src="../js/sigi-ml-assistant.js"></script>
     <script src="reportero.js?v=7"></script>
+
+    <!-- MODAL VISOR DE FOTO DE EVIDENCIA EN TAMAÑO COMPLETO -->
+    <div id="modalVisorFoto" class="modal-foto-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="tituloVisorFoto">
+        <div class="modal-foto-card">
+            <div class="modal-foto-header">
+                <div>
+                    <h3 id="tituloVisorFoto" class="modal-foto-titulo">Evidencia Fotográfica</h3>
+                    <span id="subtituloVisorFoto" class="modal-foto-sub"></span>
+                </div>
+                <button type="button" id="btnCerrarVisorFoto" class="modal-foto-close" aria-label="Cerrar visor de fotografía">&times;</button>
+            </div>
+            <div class="modal-foto-body">
+                <img id="imgVisorFoto" src="" alt="Evidencia fotográfica en tamaño completo">
+            </div>
+            <div class="modal-foto-footer" id="footerVisorFoto" style="display:none;">
+                <p id="descVisorFoto" class="modal-foto-desc"></p>
+            </div>
+        </div>
+    </div>
 
     <!-- MODAL EDITAR REPORTE (0 ICONOS) -->
     <div id="modalEditarReporte" class="modal-reporte-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="tituloModalEditar">

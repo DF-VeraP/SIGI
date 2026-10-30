@@ -497,3 +497,47 @@ window.abrirAILabDesdeMapa = function() {
 // Exponer globalmente
 window.inicializarAILab = inicializarAILab;
 window.cargarRankingDBSCAN = cargarRankingDBSCAN;
+
+/**
+ * 6. REENTRENAMIENTO SUPERVISADO EN MEMORIA (POST /api/ml/reentrenar)
+ * Conecta con el flujo mod_sup_ml_box del Diagrama de Superadmin
+ */
+window.reentrenarModeloML = async function() {
+  const btn = document.getElementById('btnReentrenarML');
+  const statusSpan = document.getElementById('aiHeaderStatusText');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Recalibrando...';
+  }
+  try {
+    const res = await fetch('/api/ml/reentrenar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await res.json();
+    if (res.ok && data.status === 'success') {
+      const n = data.registros_analizados || 0;
+      if (statusSpan) {
+        statusSpan.textContent = `Recalibrado (${n} muestras)`;
+      }
+      if (btn) {
+        btn.textContent = '¡Modelo Recalibrado!';
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.textContent = 'Reentrenar Modelo ML';
+        }, 2500);
+      }
+    } else {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Reentrenar Modelo ML';
+      }
+    }
+  } catch (err) {
+    console.warn('Error al reentrenar modelo ML:', err);
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Reentrenar Modelo ML';
+    }
+  }
+};

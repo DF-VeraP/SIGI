@@ -337,9 +337,35 @@
                         <span class="btn-label">Hotspots ML</span>
                     </button>
 
+                    <button id="btnToggleCuadrantes" type="button" class="fab fab-poligonos" aria-label="Seleccionar capas de polígonos (Barrios, Veredas, Cuadrantes)" aria-expanded="false" title="Seleccionar polígonos visibles (Barrios, Veredas, Cuadrantes)">
+                        <span class="btn-label">Polígonos</span>
+                    </button>
+
                     <button class="restablecer fab" type="button" aria-label="Restablecer filtros" title="Restablecer mapa">
                         <span class="btn-label">Restablecer</span>
                     </button>
+                </div>
+
+                <!-- Contenedor flotante para seleccionar capas de Polígonos (Barrios, Veredas, Cuadrantes) -->
+                <div id="menuCapasPoligonos" class="menu-capas-poligonos" style="display: none;" role="region" aria-label="Seleccionar capas de polígonos">
+                    <div class="menu-capas-header">
+                        <span>Capas de Polígonos</span>
+                    </div>
+                    <label class="menu-capa-item" for="chkCapaBarrios">
+                        <input type="checkbox" id="chkCapaBarrios" checked>
+                        <span class="menu-capa-swatch swatch-barrios"></span>
+                        <span class="menu-capa-texto">Barrios</span>
+                    </label>
+                    <label class="menu-capa-item" for="chkCapaVeredas">
+                        <input type="checkbox" id="chkCapaVeredas" checked>
+                        <span class="menu-capa-swatch swatch-veredas"></span>
+                        <span class="menu-capa-texto">Veredas</span>
+                    </label>
+                    <label class="menu-capa-item" for="chkCapaCuadrantes">
+                        <input type="checkbox" id="chkCapaCuadrantes">
+                        <span class="menu-capa-swatch swatch-cuadrantes"></span>
+                        <span class="menu-capa-texto">Cuadrantes</span>
+                    </label>
                 </div>
 
                 <!-- Botón flotante para reabrir métricas cuando se hayan ocultado -->
@@ -545,9 +571,14 @@
                     <p>Modelos supervisados (NLP), agrupamiento espacial no supervisado (DBSCAN) y pronóstico temporal.</p>
                 </div>
             </div>
-            <div class="ai-header-badge">
-                <span class="ai-dot-online"></span>
-                <span>Motores ML Activos (v2.0)</span>
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                <div class="ai-header-badge">
+                    <span class="ai-dot-online"></span>
+                    <span id="aiHeaderStatusText">Motores ML Activos (v2.0)</span>
+                </div>
+                <button type="button" id="btnReentrenarML" class="btn-open-ailab" onclick="reentrenarModeloML()" title="Recalibrar vocabulario y probabilidades Naive Bayes con incidentes aprobados">
+                    Reentrenar Modelo ML
+                </button>
             </div>
         </div>
 
@@ -561,6 +592,9 @@
             </button>
             <button type="button" class="ai-tab-btn" data-tab="tabForecast">
                 3. Pronóstico Temporal (Forecasting)
+            </button>
+            <button type="button" class="ai-tab-btn" data-tab="tabMNVCC">
+                4. CIEPS & MNVCC (Hoja de Servicio / TAMIR)
             </button>
         </div>
 
@@ -751,6 +785,150 @@
                 </div>
             </div>
         </div>
+
+        <!-- TAB 4: CIEPS & MNVCC (TOMO 2.2 CAPÍTULO 5 Y 6 - HOJA DE SERVICIO, 5 PORQUÉS Y TAMIR) -->
+        <div id="tabMNVCC" class="ai-tab-content" style="display:none;">
+            <div class="ai-card" style="margin-bottom:20px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; margin-bottom:14px;">
+                    <div>
+                        <div class="ai-card-title" style="margin-bottom:4px;">
+                            Hoja de Servicio (HS) y Planeación Operacional CIEPS — Tomo 2.2 MNVCC
+                        </div>
+                        <p style="font-size:0.78rem; color:var(--texto-suave); margin:0;">
+                            Diagnóstico espacio-temporal por cuadrante (Polígonos Urbanos IGAC <code>1800101</code> y Rurales DECAQ Florencia).
+                        </p>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                        <select id="mnvccFiltroTipoCuadrante" style="background:var(--bg-card); color:var(--texto); border:1px solid var(--borde); padding:7px 12px; border-radius:8px; font-weight:600; font-size:0.8rem;">
+                            <option value="">Todos (Urbano + Rural)</option>
+                            <option value="urbano">Solo Cuadrantes Urbanos (IGAC)</option>
+                            <option value="rural">Solo Cuadrantes Rurales</option>
+                        </select>
+                        <select id="mnvccSelectCuadrante" style="background:var(--bg-card); color:var(--texto); border:1px solid var(--borde); padding:7px 12px; border-radius:8px; font-weight:700; font-size:0.82rem; min-width:290px;">
+                        </select>
+                    </div>
+                </div>
+
+                <div class="ai-forecast-kpis" style="margin-bottom:8px;">
+                    <div class="ai-forecast-kpi-card">
+                        <span class="ai-forecast-kpi-label">Código Único SIVICC / SIGPONAL</span>
+                        <div id="hsCodigoCuadrante" class="ai-forecast-kpi-val" style="font-size:1rem; color:var(--acento);">DECAQ-MNVCC-D1-E1-0003</div>
+                    </div>
+                    <div class="ai-forecast-kpi-card">
+                        <span class="ai-forecast-kpi-label">Unidad Básica Policial</span>
+                        <div id="hsUnidadBase" class="ai-forecast-kpi-val" style="font-size:0.95rem; color:var(--texto);">Estación Florencia</div>
+                    </div>
+                    <div class="ai-forecast-kpi-card">
+                        <span class="ai-forecast-kpi-label">Línea Directa Patrulla Cuadrante</span>
+                        <div id="hsTelefonoCuadrante" class="ai-forecast-kpi-val" style="font-size:1.05rem; color:#10b981;">317 254 1033</div>
+                    </div>
+                </div>
+                <div style="font-size:0.76rem; color:var(--texto-suave); padding:6px 4px 0 4px;">
+                    <strong>Jurisdicción (<span id="hsNombreCuadrante">Cuadrante</span>):</strong>
+                    <span id="hsSectoresBarrios">--</span>
+                </div>
+            </div>
+
+            <div class="ai-card" style="margin-bottom:20px;">
+                <div class="ai-card-title">
+                    1. Estadística Delincuencial por Semanas y % de Aporte a la Estación (Cap. 5.1.1 / 5.2.3)
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="ai-clusters-table">
+                        <thead>
+                            <tr>
+                                <th>Delito / Motivo de Policía</th>
+                                <th style="text-align:center;">Sem 1</th>
+                                <th style="text-align:center;">Sem 2</th>
+                                <th style="text-align:center;">Sem 3</th>
+                                <th style="text-align:center;">Sem 4</th>
+                                <th style="text-align:center;">Total Cuadrante</th>
+                                <th style="text-align:center;">Total Estación</th>
+                                <th style="text-align:center;">% Aporte Estación</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hsTablaAporteBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(420px, 1fr)); gap:20px; margin-bottom:20px;">
+                <div class="ai-card">
+                    <div class="ai-card-title">
+                        2. Comportamiento Delincuencial por Días de la Semana
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table class="ai-clusters-table">
+                            <thead>
+                                <tr>
+                                    <th>Delito</th>
+                                    <th style="text-align:center;">Lun</th>
+                                    <th style="text-align:center;">Mar</th>
+                                    <th style="text-align:center;">Mié</th>
+                                    <th style="text-align:center;">Jue</th>
+                                    <th style="text-align:center;">Vie</th>
+                                    <th style="text-align:center;">Sáb</th>
+                                    <th style="text-align:center;">Dom</th>
+                                    <th style="text-align:center;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="hsTablaDiasBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="ai-card">
+                    <div class="ai-card-title">
+                        3. Comportamiento por Franjas Horarias de Turno (Cada 4 Horas)
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table class="ai-clusters-table">
+                            <thead>
+                                <tr>
+                                    <th>Delito</th>
+                                    <th style="text-align:center;">00-03:59</th>
+                                    <th style="text-align:center;">04-07:59</th>
+                                    <th style="text-align:center;">08-11:59</th>
+                                    <th style="text-align:center;">12-15:59</th>
+                                    <th style="text-align:center;">16-19:59</th>
+                                    <th style="text-align:center;">20-23:59</th>
+                                    <th style="text-align:center;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="hsTablaFranjasBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ai-card" style="margin-bottom:20px;">
+                <div class="ai-card-title">
+                    4. Focalización de Puntos Críticos y Análisis Causal CIEPS (5 Porqués e Ishikawa)
+                </div>
+                <div id="hsPuntosCriticosList"></div>
+            </div>
+
+            <div class="ai-card">
+                <div class="ai-card-title">
+                    5. TAMIR — Tabla de Acciones Mínimas Requeridas (Consignas Preventivas por Patrulla)
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="ai-clusters-table">
+                        <thead>
+                            <tr>
+                                <th>Cuadrante / Días</th>
+                                <th>Franja Horaria</th>
+                                <th>Lugar Específico</th>
+                                <th>Problemática Priorizada</th>
+                                <th>Actividad Preventiva / Disuasiva</th>
+                                <th style="text-align:center;">Cumplimiento</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hsTablaTamirBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </section>
 
     </div> <!-- Cierra content-wrapper -->
@@ -917,6 +1095,7 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="../js/sigi-realtime.js"></script>
     <script src="../js/sigi-ai-dashboard.js?v=2.1"></script>
+    <script src="../js/sigi-mnvcc.js?v=1.0"></script>
     <script src="dashboard.js"></script>
 </body>
 

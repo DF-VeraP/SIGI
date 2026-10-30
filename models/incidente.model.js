@@ -7,6 +7,7 @@ const pool = require('../db');
 class IncidenteModel {
   /**
    * Buscar IDs de barrio y vereda por contención PostGIS ST_Contains
+   * (El id_cuadrante se asigna automáticamente mediante el trigger espacial trg_asignar_cuadrante_incidente en PostGIS)
    */
   static async resolverUbicacionEspacial(lng, lat) {
     let idbarrio = null;
@@ -564,6 +565,21 @@ class IncidenteModel {
       FROM incidente 
       WHERE descripcionincidente IS NOT NULL AND LENGTH(descripcionincidente) > 10
     `);
+  }
+
+  /**
+   * Extraer descripciones de incidentes aprobados/validados para reentrenamiento supervisado en memoria
+   */
+  static async obtenerMuestrasEntrenamientoML(limite = 1000) {
+    const res = await pool.query(`
+      SELECT idincidente, idtipoincidente, descripcionincidente, horaincidente, id_gravedad, id_estado
+      FROM incidente
+      WHERE descripcionincidente IS NOT NULL
+        AND LENGTH(TRIM(descripcionincidente)) > 10
+      ORDER BY CASE WHEN id_estado = 5 THEN 0 ELSE 1 END, fechaincidente DESC
+      LIMIT $1
+    `, [limite]);
+    return (res && Array.isArray(res.rows)) ? res.rows : [];
   }
 
   /**

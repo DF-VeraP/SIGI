@@ -165,6 +165,9 @@ function cambiarVista(vistaId) {
     const btnMiUbicacion = document.getElementById("btnMiUbicacion");
     const btnToggleHeatmap = document.getElementById("btnToggleHeatmap");
     const btnToggleDBSCAN = document.getElementById("btnToggleDBSCAN");
+    const btnToggleCuadrantes = document.getElementById("btnToggleCuadrantes");
+    const menuCapasPoligonos = document.getElementById("menuCapasPoligonos");
+    if (menuCapasPoligonos) menuCapasPoligonos.style.display = "none";
     const quickDbscanDock = document.getElementById("mapDbscanQuickDock");
 
     if (actionsGroup) {
@@ -183,6 +186,7 @@ function cambiarVista(vistaId) {
             if (btnMiUbicacion) btnMiUbicacion.style.display = "none";
             if (btnToggleHeatmap) btnToggleHeatmap.style.display = "none";
             if (btnToggleDBSCAN) btnToggleDBSCAN.style.display = "none";
+            if (btnToggleCuadrantes) btnToggleCuadrantes.style.display = "none";
             if (quickDbscanDock) quickDbscanDock.style.display = "none";
         } else if (vistaId === "estadisticas" && contenedorAnalitica) {
             contenedorAnalitica.appendChild(actionsGroup);
@@ -191,6 +195,7 @@ function cambiarVista(vistaId) {
             if (btnMiUbicacion) btnMiUbicacion.style.display = "none";
             if (btnToggleHeatmap) btnToggleHeatmap.style.display = "none";
             if (btnToggleDBSCAN) btnToggleDBSCAN.style.display = "none";
+            if (btnToggleCuadrantes) btnToggleCuadrantes.style.display = "none";
             if (quickDbscanDock) quickDbscanDock.style.display = "none";
         } else {
             if (mapEl) {
@@ -205,6 +210,7 @@ function cambiarVista(vistaId) {
             if (btnMiUbicacion) btnMiUbicacion.style.display = "";
             if (btnToggleHeatmap) btnToggleHeatmap.style.display = "";
             if (btnToggleDBSCAN) btnToggleDBSCAN.style.display = (vistaId === "mapa" || vistaId === "mapa-completo") ? "" : "none";
+            if (btnToggleCuadrantes) btnToggleCuadrantes.style.display = (vistaId === "mapa" || vistaId === "mapa-completo") ? "" : "none";
             if (quickDbscanDock && vistaId !== "mapa" && vistaId !== "mapa-completo") quickDbscanDock.style.display = "none";
         }
     }
@@ -249,6 +255,9 @@ function cambiarVista(vistaId) {
             vistaIA.classList.add("vista-activa");
             if (typeof inicializarAILab === 'function') {
                 inicializarAILab();
+            }
+            if (typeof inicializarModuloMNVCC === 'function') {
+                inicializarModuloMNVCC();
             }
         }
     }
@@ -2447,6 +2456,12 @@ function actualizarAnalisisRapido(data) {
 
 function cargarBarrio() {
     capaBarrio.clearLayers();
+    const chkBarrios = document.getElementById("chkCapaBarrios");
+    if (chkBarrios && !chkBarrios.checked) {
+        if (map && map.hasLayer(capaBarrio)) map.removeLayer(capaBarrio);
+        return;
+    }
+    if (map && !map.hasLayer(capaBarrio)) map.addLayer(capaBarrio);
     const nombre = (typeof lugarSeleccionado !== 'undefined' && lugarSeleccionado.tipo === 'Barrio') ? lugarSeleccionado.nombre : (inpBuscarLugar.value || '');
     let url = "/poligonoBarrio";
     if (nombre) {
@@ -2494,6 +2509,12 @@ function cargarBarrio() {
 
 function cargarVeredas() {
     capaVereda.clearLayers();
+    const chkVeredas = document.getElementById("chkCapaVeredas");
+    if (chkVeredas && !chkVeredas.checked) {
+        if (map && map.hasLayer(capaVereda)) map.removeLayer(capaVereda);
+        return;
+    }
+    if (map && !map.hasLayer(capaVereda)) map.addLayer(capaVereda);
     const nombre = (typeof lugarSeleccionado !== 'undefined' && lugarSeleccionado.tipo === 'Vereda') ? lugarSeleccionado.nombre : (inpBuscarLugar.value || '');
     let url = "/poligonoVereda";
     if (nombre) {
@@ -2606,6 +2627,17 @@ document.querySelector(".restablecer").addEventListener("click", function (e) {
     const btn3Meses = Array.from(document.querySelectorAll(".btn-rapido-modal")).find(b => b.dataset.rango === "3meses");
     if (btn3Meses) btn3Meses.classList.add("activo");
 
+    const chkBarriosReset = document.getElementById("chkCapaBarrios");
+    const chkVeredasReset = document.getElementById("chkCapaVeredas");
+    const chkCuadrantesReset = document.getElementById("chkCapaCuadrantes");
+    const menuCapasReset = document.getElementById("menuCapasPoligonos");
+    if (chkBarriosReset) chkBarriosReset.checked = true;
+    if (chkVeredasReset) chkVeredasReset.checked = true;
+    if (chkCuadrantesReset) chkCuadrantesReset.checked = false;
+    if (menuCapasReset) menuCapasReset.style.display = "none";
+    if (typeof establecerVisibilidadCuadrantesMapa === "function") {
+        establecerVisibilidadCuadrantesMapa(false);
+    }
     cargarBarrio();
     cargarVeredas();
     cargarIncidentes();
@@ -2868,6 +2900,7 @@ map.on("click", function (e) {
     if (target) {
         if (
             target.closest('.map-actions-group') ||
+            target.closest('#menuCapasPoligonos') ||
             target.closest('#panelFiltros') ||
             target.closest('#filtrosOverlay') ||
             target.closest('.modal-tiempo') ||

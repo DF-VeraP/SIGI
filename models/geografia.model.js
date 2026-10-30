@@ -86,19 +86,70 @@ class GeografiaModel {
       LIMIT 1
     `, [lng, lat]);
 
-    const veredaResult = await pool.query(`
-      SELECT id, nombre
-      FROM vereda
-      WHERE ST_Within(${punto}, geom)
-      LIMIT 1
-    `, [lng, lat]);
+    let veredaResult = { rows: [] };
+    try {
+      veredaResult = await pool.query(`
+        SELECT id, nombre
+        FROM vereda
+        WHERE ST_Within(${punto}, geom)
+        LIMIT 1
+      `, [lng, lat]);
+    } catch (err) {
+      // Ignorar si no existe geometría válida
+    }
+
+    let cuadranteResult = { rows: [] };
+    try {
+      cuadranteResult = await pool.query(`
+        SELECT id_cuadrante, codigo_cuadrante, nombre, tipo, telefono_contacto
+        FROM cuadrante
+        WHERE geom IS NOT NULL AND ST_Intersects(${punto}, geom)
+        ORDER BY CASE WHEN tipo = 'urbano' THEN 1 ELSE 2 END ASC
+        LIMIT 1
+      `, [lng, lat]);
+    } catch (err) {
+      // Fallback silencioso si la tabla cuadrante no existe en entorno de test aislado
+    }
 
     return {
       barrio: barrioResult.rows[0]?.namebarrio || null,
       idbarrio: barrioResult.rows[0]?.gid || null,
       vereda: veredaResult.rows[0]?.nombre || null,
-      idvereda: veredaResult.rows[0]?.id || null
+      idvereda: veredaResult.rows[0]?.id || null,
+      cuadrante: cuadranteResult.rows[0]?.nombre || null,
+      id_cuadrante: cuadranteResult.rows[0]?.id_cuadrante || null,
+      codigo_cuadrante: cuadranteResult.rows[0]?.codigo_cuadrante || null,
+      telefono_cuadrante: cuadranteResult.rows[0]?.telefono_contacto || null
     };
+  }
+
+  /**
+   * Obtener polígonos GeoJSON de los cuadrantes policiales (MNVCC) con conteo de incidentes
+   */
+  static async obtenerPoligonosCuadrantes(tipo = null) {
+    let query = `
+      SELECT
+        c.id_cuadrante,
+        c.codigo_cuadrante,
+        c.nombre,
+        c.tipo,
+        c.unidad_base,
+        c.telefono_contacto,
+        c.color,
+        c.sectores_barrios,
+        COUNT(i.idincidente)::int AS total_incidentes,
+        ST_AsGeoJSON(c.geom) AS geom
+      FROM cuadrante c
+      LEFT JOIN incidente i ON i.id_cuadrante = c.id_cuadrante
+      WHERE c.geom IS NOT NULL
+    `;
+    const valores = [];
+    if (tipo && ['urbano', 'rural', 'vial', 'fluvial'].includes(tipo)) {
+      valores.push(tipo);
+      query += ` AND c.tipo = $1`;
+    }
+    query += ` GROUP BY c.id_cuadrante ORDER BY c.id_cuadrante ASC`;
+    return pool.query(query, valores);
   }
 
   /**

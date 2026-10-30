@@ -449,29 +449,47 @@ function obtenerGpsActual() {
 function setupTabs() {
     const tabCrear = document.getElementById("tabCrear");
     const tabMis = document.getElementById("tabMisReportes");
+    const tabPerfil = document.getElementById("tabPerfil");
     const secCrear = document.getElementById("secNuevoReporte");
     const secMis = document.getElementById("secMisReportes");
+    const secPerfil = document.getElementById("secPerfil");
     const appContainer = document.querySelector(".app-container");
+    const userBadge = document.getElementById("userBadge");
 
-    tabCrear.addEventListener("click", () => {
-        tabCrear.classList.add("active");
-        tabMis.classList.remove("active");
-        secCrear.classList.add("active");
-        secMis.classList.remove("active");
-        if (appContainer) appContainer.classList.remove("view-mis-reportes");
-        setTimeout(() => {
-            if (mapMini) mapMini.invalidateSize();
-        }, 200);
-    });
+    function activarTab(tabActivo, secActiva) {
+        [tabCrear, tabMis, tabPerfil].forEach(t => t?.classList.remove("active"));
+        [secCrear, secMis, secPerfil].forEach(s => s?.classList.remove("active"));
 
-    tabMis.addEventListener("click", () => {
-        tabMis.classList.add("active");
-        tabCrear.classList.remove("active");
-        secMis.classList.add("active");
-        secCrear.classList.remove("active");
-        if (appContainer) appContainer.classList.add("view-mis-reportes");
-        cargarMisReportes();
-    });
+        tabActivo?.classList.add("active");
+        secActiva?.classList.add("active");
+
+        if (tabActivo === tabCrear) {
+            if (appContainer) {
+                appContainer.classList.remove("view-mis-reportes");
+                appContainer.classList.remove("view-perfil");
+            }
+            setTimeout(() => {
+                if (mapMini) mapMini.invalidateSize();
+            }, 200);
+        } else if (tabActivo === tabMis) {
+            if (appContainer) {
+                appContainer.classList.add("view-mis-reportes");
+                appContainer.classList.remove("view-perfil");
+            }
+            cargarMisReportes();
+        } else if (tabActivo === tabPerfil) {
+            if (appContainer) {
+                appContainer.classList.add("view-perfil");
+                appContainer.classList.remove("view-mis-reportes");
+            }
+            cargarDatosPerfil();
+        }
+    }
+
+    tabCrear?.addEventListener("click", () => activarTab(tabCrear, secCrear));
+    tabMis?.addEventListener("click", () => activarTab(tabMis, secMis));
+    tabPerfil?.addEventListener("click", () => activarTab(tabPerfil, secPerfil));
+    userBadge?.addEventListener("click", () => activarTab(tabPerfil, secPerfil));
 }
 
 async function enviarReporte(e) {
@@ -604,39 +622,64 @@ async function cargarMisReportes() {
         reportes.forEach(r => {
             const fechaFmt = new Date(r.fechaincidente).toLocaleDateString('es-ES');
             const colorEstado = r.estado_color || '#6c757d';
-            const htmlFoto = r.imagen_url ? `<div style="margin-top: 8px;"><img src="${r.imagen_url}" style="width: 100%; max-height: 140px; object-fit: cover; border-radius: 6px;" alt="Evidencia"></div>` : '';
+            const tieneFoto = Boolean(r.imagen_url && r.imagen_url.trim() !== '');
+            const codigo = r.codigoincidente || ('INC-' + r.idincidente);
+            const tipoNombre = r.tipo_nombre || 'Incidente general';
+            const safeImg = (r.imagen_url || '').replace(/'/g, "\\'");
+            const safeCodigo = codigo.replace(/'/g, "\\'");
+            const safeDesc = (r.descripcionincidente || '').replace(/'/g, "\\'").replace(/\r?\n/g, " ");
+
+            const htmlFoto = tieneFoto
+                ? `<div class="report-foto-thumb-wrap" style="margin-top: 8px;">
+                       <img src="${r.imagen_url}" class="report-foto-thumb" alt="Evidencia de ${codigo}" title="Haz clic para ver la imagen completa">
+                   </div>`
+                : '';
 
             // Botones de acción: solo si el reporte está en estado "Reportado" (id_estado = 1)
             const esPendiente = r.id_estado === 1;
             const htmlAcciones = esPendiente
                 ? `<div class="report-actions">
-                       <button class="btn-report-edit" onclick="abrirModalEditarReporte(${r.idincidente}, '${r.fechaincidente?.split('T')[0]}', '${r.horaincidente?.slice(0,5)}', ${r.id_gravedad || 3}, '${(r.direccion||'').replace(/'/g,"\\'")}', '${(r.descripcionincidente||'').replace(/'/g,"\\'")}', '${(r.imagen_url||'').replace(/'/g,"\\'")}')">
+                       <button type="button" class="btn-report-edit" onclick="event.stopPropagation(); abrirModalEditarReporte(${r.idincidente}, '${r.fechaincidente?.split('T')[0]}', '${r.horaincidente?.slice(0,5)}', ${r.id_gravedad || 3}, '${(r.direccion||'').replace(/'/g,"\\'")}', '${safeDesc}', '${safeImg}')">
                            Editar
                        </button>
-                       <button class="btn-report-delete" onclick="confirmarEliminarReporte(${r.idincidente}, '${r.codigoincidente || 'INC-'+r.idincidente}')">
+                       <button type="button" class="btn-report-delete" onclick="event.stopPropagation(); confirmarEliminarReporte(${r.idincidente}, '${safeCodigo}')">
                            Eliminar
                        </button>
                    </div>`
                 : `<div class="report-actions-locked">En revisión — no editable</div>`;
 
-            list.innerHTML += `
-                <div class="report-card">
-                    <div class="report-card-head">
-                        <span class="report-code">${r.codigoincidente || 'INC-' + r.idincidente}</span>
-                        <span class="badge-status" style="background-color: ${colorEstado}">
-                            ${r.estado_nombre || 'Reportado'}
-                        </span>
-                    </div>
-                    <div class="report-type">${r.tipo_nombre || 'Incidente general'}</div>
-                    <div class="report-desc">${r.descripcionincidente || '<em style="opacity:0.5">Sin descripción</em>'}</div>
-                    ${htmlFoto}
-                    <div class="report-meta" style="margin-top: 8px;">
-                        <span>${fechaFmt} ${r.horaincidente.slice(0, 5)}</span>
-                        <span>${r.barrio_nombre || r.vereda_nombre || 'Sin Zona'}</span>
-                    </div>
-                    ${htmlAcciones}
+            const card = document.createElement("div");
+            card.className = `report-card ${tieneFoto ? 'report-card-clickable' : ''}`;
+            if (tieneFoto) {
+                card.setAttribute("title", "Haz clic para ver la imagen completa en una ventana emergente");
+            }
+            card.innerHTML = `
+                <div class="report-card-head">
+                    <span class="report-code">${codigo}</span>
+                    <span class="badge-status" style="background-color: ${colorEstado}">
+                        ${r.estado_nombre || 'Reportado'}
+                    </span>
                 </div>
+                <div class="report-type">${tipoNombre}</div>
+                <div class="report-desc">${r.descripcionincidente || '<em style="opacity:0.5">Sin descripción</em>'}</div>
+                ${htmlFoto}
+                <div class="report-meta" style="margin-top: 8px;">
+                    <span>${fechaFmt} ${(r.horaincidente || '').slice(0, 5)}</span>
+                    <span>${r.barrio_nombre || r.vereda_nombre || 'Sin Zona'}</span>
+                </div>
+                ${htmlAcciones}
             `;
+
+            if (tieneFoto) {
+                card.addEventListener("click", (e) => {
+                    if (e.target.closest("button, .btn-report-edit, .btn-report-delete, .report-actions, .report-actions-locked")) {
+                        return;
+                    }
+                    abrirVisorFoto(r.imagen_url, codigo, tipoNombre, r.descripcionincidente || '');
+                });
+            }
+
+            list.appendChild(card);
         });
 
     } catch (err) {
@@ -866,6 +909,277 @@ document.addEventListener('DOMContentLoaded', () => {
             editFotoComprimida = null;
             editImgNuevaPreview.src = '';
             editFotoNuevaContainer.style.display = 'none';
+        });
+    }
+});
+
+/* ═══════════════════════════════════════════
+   MODAL VISOR DE FOTOGRAFÍA COMPLETA
+   ═══════════════════════════════════════════ */
+function abrirVisorFoto(url, codigo = '', tipo = '', descripcion = '') {
+    const modal = document.getElementById("modalVisorFoto");
+    const img = document.getElementById("imgVisorFoto");
+    const titulo = document.getElementById("tituloVisorFoto");
+    const subtitulo = document.getElementById("subtituloVisorFoto");
+    const footer = document.getElementById("footerVisorFoto");
+    const desc = document.getElementById("descVisorFoto");
+
+    if (!modal || !img) return;
+
+    img.src = url;
+    if (titulo) titulo.innerText = codigo ? `Evidencia: ${codigo}` : "Evidencia Fotográfica";
+    if (subtitulo) subtitulo.innerText = tipo ? `Tipo: ${tipo}` : "";
+    if (desc) {
+        if (descripcion && descripcion.trim() !== '') {
+            desc.innerText = descripcion;
+            if (footer) footer.style.display = "block";
+        } else {
+            if (footer) footer.style.display = "none";
+        }
+    }
+
+    modal.style.display = "flex";
+}
+
+function cerrarVisorFoto() {
+    const modal = document.getElementById("modalVisorFoto");
+    const img = document.getElementById("imgVisorFoto");
+    if (modal) modal.style.display = "none";
+    if (img) img.src = "";
+}
+
+/* ═══════════════════════════════════════════
+   GESTIÓN DE PERFIL DEL REPORTERO
+   ═══════════════════════════════════════════ */
+let perfilReporteroActual = null;
+
+function formatearFechaHora(fechaStr) {
+    if (!fechaStr) return 'Nunca';
+    try {
+        const f = new Date(fechaStr);
+        if (isNaN(f.getTime())) return 'Nunca';
+        return f.toLocaleString('es-CO', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } catch {
+        return fechaStr;
+    }
+}
+
+async function cargarDatosPerfil() {
+    const alertaBox = document.getElementById("perfilAlertaBox");
+    if (alertaBox) alertaBox.style.display = "none";
+
+    try {
+        const res = await fetch("/api/perfil");
+        if (res.status === 401) {
+            window.location.href = "/login/index.html";
+            return;
+        }
+        if (!res.ok) throw new Error("Error al obtener información de tu perfil");
+
+        const data = await res.json();
+        perfilReporteroActual = data;
+
+        // Ficha Resumen
+        const resumenNombre = document.getElementById("perfilResumenNombre");
+        const resumenEmail = document.getElementById("perfilResumenEmail");
+        const resumenRol = document.getElementById("perfilResumenRol");
+        const resumenEstado = document.getElementById("perfilResumenEstado");
+        const resumenFechaReg = document.getElementById("perfilResumenFechaReg");
+        const resumenUltimoAcceso = document.getElementById("perfilResumenUltimoAcceso");
+        const avatarLetra = document.getElementById("perfilAvatarLetra");
+        const rolTexto = document.getElementById("perfilRolTexto");
+
+        const nombre = data.nombreusuario || "Reportero";
+        if (resumenNombre) resumenNombre.innerText = nombre;
+        if (avatarLetra) avatarLetra.innerText = nombre.charAt(0).toUpperCase();
+        if (resumenEmail) resumenEmail.innerText = data.email || "No registrado";
+        if (resumenRol) resumenRol.innerText = data.rol ? data.rol.charAt(0).toUpperCase() + data.rol.slice(1) : 'Reportero';
+        if (rolTexto) rolTexto.innerText = (data.rol || 'REPORTERO').toUpperCase();
+        if (resumenEstado) resumenEstado.innerText = (data.estado || 'activo').toUpperCase();
+        if (resumenFechaReg) resumenFechaReg.innerText = data.fecha_registro ? formatearFechaHora(data.fecha_registro) : '--';
+        if (resumenUltimoAcceso) resumenUltimoAcceso.innerText = data.ultimo_acceso ? formatearFechaHora(data.ultimo_acceso) : 'Sesión activa';
+
+        // Llenar Formulario
+        const inputEmail = document.getElementById("perfilInputEmail");
+        const inputTelefono = document.getElementById("perfilInputTelefono");
+        const inputDependencia = document.getElementById("perfilInputDependencia");
+        const passActual = document.getElementById("perfilPasswordActual");
+        const passNuevo = document.getElementById("perfilPasswordNuevo");
+        const passConfirmar = document.getElementById("perfilPasswordConfirmar");
+
+        if (inputEmail) inputEmail.value = data.email || "";
+        if (inputTelefono) inputTelefono.value = data.telefono || "";
+        if (inputDependencia) inputDependencia.value = data.dependencia || "";
+        if (passActual) passActual.value = "";
+        if (passNuevo) passNuevo.value = "";
+        if (passConfirmar) passConfirmar.value = "";
+    } catch (err) {
+        console.error("Error al cargar perfil:", err);
+        showAlert("No se pudo cargar la información del perfil", "error");
+    }
+}
+
+// Inicialización de eventos para Perfil y Visor de Foto
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Visor de Foto
+    const btnCerrarVisor = document.getElementById("btnCerrarVisorFoto");
+    const overlayVisor = document.getElementById("modalVisorFoto");
+
+    if (btnCerrarVisor) btnCerrarVisor.addEventListener("click", cerrarVisorFoto);
+    if (overlayVisor) {
+        overlayVisor.addEventListener("click", (e) => {
+            if (e.target === overlayVisor) cerrarVisorFoto();
+        });
+    }
+
+    // Cerrar con Escape
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+            cerrarVisorFoto();
+            cerrarModalEditarReporte();
+        }
+    });
+
+    // 2. Formulario Perfil
+    const formPerfil = document.getElementById("formPerfilUsuario");
+    const btnResetPerfil = document.getElementById("btnRestablecerFormPerfil");
+
+    if (btnResetPerfil) {
+        btnResetPerfil.addEventListener("click", () => {
+            if (perfilReporteroActual) {
+                const inputEmail = document.getElementById("perfilInputEmail");
+                const inputTelefono = document.getElementById("perfilInputTelefono");
+                const inputDependencia = document.getElementById("perfilInputDependencia");
+                const passActual = document.getElementById("perfilPasswordActual");
+                const passNuevo = document.getElementById("perfilPasswordNuevo");
+                const passConfirmar = document.getElementById("perfilPasswordConfirmar");
+                const alertaBox = document.getElementById("perfilAlertaBox");
+
+                if (inputEmail) inputEmail.value = perfilReporteroActual.email || "";
+                if (inputTelefono) inputTelefono.value = perfilReporteroActual.telefono || "";
+                if (inputDependencia) inputDependencia.value = perfilReporteroActual.dependencia || "";
+                if (passActual) passActual.value = "";
+                if (passNuevo) passNuevo.value = "";
+                if (passConfirmar) passConfirmar.value = "";
+                if (alertaBox) alertaBox.style.display = "none";
+            }
+        });
+    }
+
+    if (formPerfil) {
+        formPerfil.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const alertaBox = document.getElementById("perfilAlertaBox");
+            const email = document.getElementById("perfilInputEmail")?.value.trim();
+            const telefono = document.getElementById("perfilInputTelefono")?.value.trim();
+            const dependencia = document.getElementById("perfilInputDependencia")?.value.trim();
+            const password_actual = document.getElementById("perfilPasswordActual")?.value;
+            const password_nuevo = document.getElementById("perfilPasswordNuevo")?.value;
+            const password_confirmar = document.getElementById("perfilPasswordConfirmar")?.value;
+
+            if (alertaBox) {
+                alertaBox.style.display = "none";
+                alertaBox.className = "modal-alerta-box";
+            }
+
+            if (password_nuevo || password_confirmar) {
+                if (!password_actual) {
+                    if (alertaBox) {
+                        alertaBox.className = "modal-alerta-box alerta-error";
+                        alertaBox.innerText = "Debes ingresar tu contraseña actual para autorizar el cambio de clave.";
+                        alertaBox.style.display = "block";
+                    }
+                    return;
+                }
+                if (password_nuevo !== password_confirmar) {
+                    if (alertaBox) {
+                        alertaBox.className = "modal-alerta-box alerta-error";
+                        alertaBox.innerText = "La nueva contraseña y su confirmación no coinciden.";
+                        alertaBox.style.display = "block";
+                    }
+                    return;
+                }
+                if (password_nuevo.length < 8) {
+                    if (alertaBox) {
+                        alertaBox.className = "modal-alerta-box alerta-error";
+                        alertaBox.innerText = "La nueva contraseña debe tener al menos 8 caracteres.";
+                        alertaBox.style.display = "block";
+                    }
+                    return;
+                }
+                if (!/[A-Z]/.test(password_nuevo) || !/[a-z]/.test(password_nuevo) || !/\d/.test(password_nuevo)) {
+                    if (alertaBox) {
+                        alertaBox.className = "modal-alerta-box alerta-error";
+                        alertaBox.innerText = "La nueva contraseña debe incluir al menos una mayúscula, una minúscula y un número.";
+                        alertaBox.style.display = "block";
+                    }
+                    return;
+                }
+            }
+
+            const payload = { email, telefono, dependencia };
+            if (password_nuevo) {
+                payload.password_actual = password_actual;
+                payload.password_nuevo = password_nuevo;
+            }
+
+            const btnSubmit = document.getElementById("btnGuardarPerfilSubmit");
+            const textoOriginal = btnSubmit ? btnSubmit.innerText : "Guardar cambios";
+            if (btnSubmit) {
+                btnSubmit.disabled = true;
+                btnSubmit.innerText = "Guardando...";
+            }
+
+            try {
+                const res = await fetch("/api/perfil", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.mensaje || "Error al actualizar el perfil");
+                }
+
+                showAlert(data.mensaje || "Perfil actualizado exitosamente", "success");
+                if (alertaBox) {
+                    alertaBox.className = "modal-alerta-box alerta-exito";
+                    alertaBox.innerText = data.mensaje || "Perfil actualizado exitosamente.";
+                    alertaBox.style.display = "block";
+                }
+
+                const passActualEl = document.getElementById("perfilPasswordActual");
+                const passNuevoEl = document.getElementById("perfilPasswordNuevo");
+                const passConfirmarEl = document.getElementById("perfilPasswordConfirmar");
+                if (passActualEl) passActualEl.value = "";
+                if (passNuevoEl) passNuevoEl.value = "";
+                if (passConfirmarEl) passConfirmarEl.value = "";
+
+                // Refrescar datos
+                await cargarDatosPerfil();
+                await cargarSesion();
+            } catch (err) {
+                console.error("Error al guardar perfil:", err);
+                if (alertaBox) {
+                    alertaBox.className = "modal-alerta-box alerta-error";
+                    alertaBox.innerText = err.message || "Error al procesar la actualización del perfil.";
+                    alertaBox.style.display = "block";
+                }
+                showAlert(err.message || "Error al actualizar perfil", "error");
+            } finally {
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerText = textoOriginal;
+                }
+            }
         });
     }
 });

@@ -5611,25 +5611,29 @@ body.tema-claro .mic-type-text[data-tipo*="accidente"] {
         left: 12px !important;
     }
 
-    /* Pestañas AI Lab en Móvil: Scroll horizontal suave tipo pills */
+    /* Pestañas AI Lab: Contenedor con ajuste y scroll vertical (overflow-y) */
     .ai-nav-tabs {
         display: flex !important;
+        flex-wrap: wrap !important;
         width: 100% !important;
         max-width: 100% !important;
-        overflow-x: auto !important;
+        max-height: 104px !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
         -webkit-overflow-scrolling: touch !important;
-        white-space: nowrap !important;
-        scrollbar-width: none !important;
+        white-space: normal !important;
+        scrollbar-width: thin !important;
         margin-bottom: 14px !important;
-        padding: 4px 6px !important;
+        padding: 6px !important;
         box-sizing: border-box !important;
+        gap: 6px !important;
     }
-    .ai-nav-tabs::-webkit-scrollbar { display: none !important; }
+    .ai-nav-tabs::-webkit-scrollbar { width: 5px !important; display: block !important; }
     .ai-tab-btn {
-        flex: 0 0 auto !important;
-        padding: 7px 14px !important;
+        flex: 1 1 auto !important;
+        padding: 7px 12px !important;
         font-size: 0.76rem !important;
-        white-space: nowrap !important;
+        white-space: normal !important;
     }
 
     .btn-cerrar-kpis {
@@ -7540,14 +7544,12 @@ body.tema-claro .modal-contenido::-webkit-scrollbar-thumb:hover {
 /* 4. Respetar contenedores que intencionalmente ocultan scrollbar */
 body.tema-claro .kpi-cards-scroll,
 body.tema-claro .map-actions-group,
-body.tema-claro .ai-nav-tabs,
 body.tema-claro .leyenda {
     scrollbar-width: none !important;
 }
 
 body.tema-claro .kpi-cards-scroll::-webkit-scrollbar,
 body.tema-claro .map-actions-group::-webkit-scrollbar,
-body.tema-claro .ai-nav-tabs::-webkit-scrollbar,
 body.tema-claro .leyenda::-webkit-scrollbar {
     display: none !important;
 }

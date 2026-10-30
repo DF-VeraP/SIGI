@@ -18,6 +18,7 @@
 
   // 2. Banner de Estado de Conexión en Interfaz
   let bannerConexion = null;
+  let bannerDescartadoOffline = sessionStorage.getItem('sigi_banner_offline_descartado') === '1';
 
   function asegurarBannerConexion() {
     if (bannerConexion) return bannerConexion;
@@ -30,16 +31,18 @@
       left: 50%;
       transform: translateX(-50%);
       z-index: 999999;
-      padding: 8px 18px;
+      padding: 6px 12px 6px 16px;
       border-radius: 20px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      font-size: 0.82rem;
+      font-size: 0.81rem;
       font-weight: 600;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.45);
       display: none;
       align-items: center;
-      gap: 8px;
-      transition: all 0.3s ease;
+      gap: 10px;
+      transition: all 0.25s ease;
+      max-width: 92vw;
+      box-sizing: border-box;
     `;
     document.body.appendChild(bannerConexion);
     return bannerConexion;
@@ -50,11 +53,52 @@
     const hayRed = navigator.onLine;
 
     if (!hayRed) {
+      if (bannerDescartadoOffline) {
+        badge.style.display = 'none';
+        return;
+      }
       badge.style.background = '#dc2626';
       badge.style.color = '#ffffff';
-      badge.innerHTML = `<span>📡</span> Modo sin conexión (Los reportes se guardarán en tu teléfono/PC)`;
+      badge.innerHTML = `
+        <span style="display:inline-flex; align-items:center; gap:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+          <span>📡</span> Modo sin conexión (Los reportes se guardarán en tu teléfono/PC)
+        </span>
+        <button type="button" id="btnCerrarBannerRed" title="Cerrar aviso de sin conexión" aria-label="Cerrar aviso de sin conexión" style="
+          background: rgba(255, 255, 255, 0.22);
+          border: none;
+          color: #ffffff;
+          width: 20px;
+          height: 20px;
+          min-width: 20px;
+          border-radius: 50%;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: bold;
+          line-height: 1;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          margin-left: 4px;
+          transition: background 0.18s ease;
+          padding: 0;
+        ">&times;</button>
+      `;
       badge.style.display = 'flex';
+
+      const btnCerrar = badge.querySelector('#btnCerrarBannerRed');
+      if (btnCerrar) {
+        btnCerrar.onclick = (e) => {
+          e.stopPropagation();
+          bannerDescartadoOffline = true;
+          sessionStorage.setItem('sigi_banner_offline_descartado', '1');
+          badge.style.display = 'none';
+        };
+        btnCerrar.onmouseenter = () => { btnCerrar.style.background = 'rgba(255, 255, 255, 0.45)'; };
+        btnCerrar.onmouseleave = () => { btnCerrar.style.background = 'rgba(255, 255, 255, 0.22)'; };
+      }
     } else {
+      bannerDescartadoOffline = false;
+      sessionStorage.removeItem('sigi_banner_offline_descartado');
       const pendientes = obtenerColaOffline();
       if (pendientes.length > 0) {
         badge.style.background = '#d97706';

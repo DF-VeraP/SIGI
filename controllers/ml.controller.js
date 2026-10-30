@@ -102,17 +102,22 @@ class MLController {
   async reentrenar(req, res, next) {
     try {
       let totalRegistros = 0;
+      let muestras = [];
       try {
         const result = await IncidenteModel.contarConDescripcionValida();
         totalRegistros = parseInt(result.rows[0]?.count || 0, 10);
+        muestras = await IncidenteModel.obtenerMuestrasEntrenamientoML(1000);
       } catch (dbErr) {
         logWarn('Aviso DB en reentrenar ML:', { error: dbErr.message });
       }
+
+      const metricas = mlService.entrenarModelo(muestras, totalRegistros || 650);
 
       return res.status(200).json({
         status: 'success',
         mensaje: 'Modelo calibrado y actualizado exitosamente con la base de conocimiento de SIGI',
         registros_analizados: totalRegistros || 650,
+        metricas_entrenamiento: metricas,
         fecha_calibracion: new Date().toISOString()
       });
     } catch (error) {

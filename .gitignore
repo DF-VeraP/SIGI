@@ -28,3 +28,12 @@ backup_sigi.sql
 .clean/
 skills-lock.json
 
+# Temporary scratchpad & test scripts
+scratch/
+documentacion/DocumentosFinales/backup_before_formatting/
+*.drawio.bkp
+.$*.drawio.bkp
+~$*
+*.tmp
+
+

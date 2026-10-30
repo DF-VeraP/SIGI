@@ -1716,6 +1716,30 @@ function verDetalleIncidente(id) {
     if (repEl) repEl.innerText = incidente.nombreusuario || "Ciudadano / Sistema";
     if (revEl) revEl.innerText = incidente.admin_revisor_nombre || "Sin asignar";
     if (dsEl) dsEl.innerText = incidente.descripcionincidente || "Sin descripción proporcionada.";
+    const iaBox = document.getElementById("detModalSugerenciaIA");
+    if (iaBox) {
+        const descTxt = (incidente.descripcionincidente || "").trim();
+        if (descTxt.length >= 8) {
+            iaBox.style.display = "block";
+            iaBox.innerHTML = "Analizando narrativa con Asistente IA (Naive Bayes)...";
+            fetch("/api/ml/predecir-incidente", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ descripcion: descTxt, hora: horaFmt !== "--" ? horaFmt : null })
+            }).then(r => r.json()).then(payload => {
+                if (payload && payload.status === "success" && payload.data) {
+                    const predTipo = payload.data.tipo;
+                    const predGrav = payload.data.gravedad;
+                    const coincide = parseInt(predTipo.idtipoincidente) === tipoId;
+                    iaBox.innerHTML = `<strong>Sugerencia IA (Validación Cruzada):</strong> Tipo predicho: <b>${predTipo.nametipoincidente}</b> (Confianza: <b>${predTipo.confianza}%</b>) · Gravedad estimada: <b>Nivel ${predGrav.nivel} (${predGrav.etiqueta})</b> · <span style="color:${coincide ? "#10b981" : "#f59e0b"}; font-weight:700;">${coincide ? "Coincide con lo reportado" : "Difiere de la tipología reportada"}</span>`;
+                } else {
+                    iaBox.style.display = "none";
+                }
+            }).catch(() => { iaBox.style.display = "none"; });
+        } else {
+            iaBox.style.display = "none";
+        }
+    }
 
     // Coordenadas
     const coordsCont = document.getElementById("detModalCoordsCont");

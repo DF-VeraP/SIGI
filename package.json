@@ -30,6 +30,8 @@
     "socket.io": "^4.8.4"
   },
   "devDependencies": {
+    "adm-zip": "^0.6.1",
+    "docx": "^9.15.0",
     "jest": "^30.4.2",
     "supertest": "^7.2.2"
   }
