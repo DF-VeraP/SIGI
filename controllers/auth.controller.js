@@ -5,6 +5,7 @@ const AuthModel = require('../models/auth.model');
 const logger = require('../utils/logger');
 const { registrarLogActividad } = logger;
 const { enviarEmailRecuperacion } = require('../utils/mailer');
+const gestorRecuperacion = require('../utils/gestorRecuperacion');
 
 // Validación de complejidad de contraseña (mínimo 8 caracteres, al menos 1 mayúscula, 1 minúscula y 1 número)
 const PASSWORD_COMPLEXITY_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
@@ -155,17 +156,58 @@ const recuperarPassword = async (req, res) => {
     return res.status(400).json({ mensaje: 'Debes proporcionar un correo electrónico válido.' });
   }
 
-  try {
-    const userResult = await AuthModel.buscarPorEmail(email);
+  const emailNormalizado = email.trim().toLowerCase();
 
-    // Por seguridad, damos la misma respuesta genérica aunque el correo no exista
+  // 1. Control de tiempos en memoria (Cooldown de 2 min y límite de 3 solicitudes / 15 min por correo)
+  const validacionLimite = gestorRecuperacion.verificarLimite(emailNormalizado);
+  if (!validacionLimite.permitido) {
+    if (validacionLimite.motivo === 'cooldown') {
+      return res.status(429).json({
+        mensaje: `Ya se ha enviado una solicitud a este correo recientemente. Por seguridad, debes esperar ${validacionLimite.segundosRestantes} segundos antes de solicitar un nuevo enlace.`,
+        segundosRestantes: validacionLimite.segundosRestantes,
+        cooldown: true
+      });
+    }
+    return res.status(429).json({
+      mensaje: `Has alcanzado el límite de 3 solicitudes de recuperación para este correo. Por favor espera ${validacionLimite.minutosRestantes} minutos antes de intentar de nuevo.`,
+      segundosRestantes: validacionLimite.segundosRestantes,
+      limiteExcedido: true
+    });
+  }
+
+  try {
+    const userResult = await AuthModel.buscarPorEmail(emailNormalizado);
+
+    // Por seguridad, damos la misma respuesta genérica aunque el correo no exista (Anti-Enumeration)
     if (userResult.rows.length === 0) {
+      // Registrar intento en el gestor para prevenir abusos con correos aleatorios
+      gestorRecuperacion.registrarEnvio(emailNormalizado);
       return res.json({
-        mensaje: 'Si el correo electrónico se encuentra registrado en el sistema, recibirás un enlace para restablecer tu contraseña en breve.'
+        mensaje: 'Si el correo electrónico se encuentra registrado en el sistema, recibirás un enlace para restablecer tu contraseña en breve.',
+        segundosCooldown: 120
       });
     }
 
     const user = userResult.rows[0];
+
+    // 2. Control de persistencia en base de datos: Verificar si ya se generó un token en los últimos 2 minutos
+    const ultimoTokenResult = await AuthModel.obtenerUltimoTokenReset(user.idusuario);
+    if (ultimoTokenResult && ultimoTokenResult.rows.length > 0) {
+      const fechaCreacionToken = new Date(ultimoTokenResult.rows[0].fecha_creacion).getTime();
+      const diffMs = Date.now() - fechaCreacionToken;
+      const cooldownMs = 2 * 60 * 1000;
+
+      if (diffMs < cooldownMs) {
+        const segsRestantes = Math.ceil((cooldownMs - diffMs) / 1000);
+        gestorRecuperacion.sincronizarUltimoEnvio(emailNormalizado, fechaCreacionToken);
+        return res.status(429).json({
+          mensaje: `Ya se ha enviado un enlace recientemente a este correo. Por seguridad, debes esperar ${segsRestantes} segundos antes de solicitar uno nuevo.`,
+          segundosRestantes: segsRestantes,
+          cooldown: true
+        });
+      }
+    }
+
     const token = crypto.randomBytes(32).toString('hex');
 
     // Expiración en 1 hora
@@ -189,8 +231,12 @@ const recuperarPassword = async (req, res) => {
       req
     );
 
+    // Registrar en el gestor de tiempos de recuperación
+    gestorRecuperacion.registrarEnvio(emailNormalizado);
+
     res.json({
-      mensaje: 'Si el correo electrónico se encuentra registrado en el sistema, recibirás un enlace para restablecer tu contraseña en breve.'
+      mensaje: 'Si el correo electrónico se encuentra registrado en el sistema, recibirás un enlace para restablecer tu contraseña en breve.',
+      segundosCooldown: 120
     });
 
   } catch (error) {

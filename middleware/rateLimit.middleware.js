@@ -42,14 +42,19 @@ const loginLimiter = rateLimit({
 
 gestorIps.setLoginLimiter(loginLimiter);
 
-// Limitador para recuperación de contraseñas: 3 solicitudes cada 15 minutos
+// Limitador para recuperación de contraseñas por IP: 3 solicitudes cada 15 minutos
 const recuperarPasswordLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: isTest ? 100 : 3,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { keyGeneratorIpFallback: false, xForwardedForHeader: false },
+  keyGenerator: (req) => {
+    const rawIp = req.ip || req.headers['x-forwarded-for'] || (req.socket && req.socket.remoteAddress) || '127.0.0.1';
+    return gestorIps.normalizarIp(rawIp);
+  },
   message: {
-    mensaje: "Has alcanzado el límite de solicitudes de recuperación de contraseña. Por favor espera 15 minutos antes de intentar de nuevo."
+    mensaje: "Has alcanzado el límite de solicitudes de recuperación de contraseña desde esta IP. Por favor espera 15 minutos antes de intentar de nuevo."
   }
 });
 

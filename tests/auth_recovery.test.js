@@ -17,12 +17,14 @@ jest.mock('../utils/mailer', () => ({
 
 const pool = require('../db');
 const mailer = require('../utils/mailer');
+const gestorRecuperacion = require('../utils/gestorRecuperacion');
 const app = require('../server');
 
 describe('Flujo de Recuperación de Contraseña y Control de Acceso', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    gestorRecuperacion.reset();
   });
 
   describe('POST /api/auth/recuperar-password', () => {
@@ -52,6 +54,7 @@ describe('Flujo de Recuperación de Contraseña y Control de Acceso', () => {
         .mockResolvedValueOnce({
           rows: [{ idusuario: 5, nombreusuario: 'carlos_reportero', email: 'carlos@sigi.gov.co' }]
         }) // SELECT usuario
+        .mockResolvedValueOnce({ rows: [] }) // SELECT ultimo token (cooldown)
         .mockResolvedValueOnce({ rows: [] }) // UPDATE token anteriores
         .mockResolvedValueOnce({ rows: [] }) // INSERT token
         .mockResolvedValueOnce({ rows: [] }); // log auditoria
@@ -62,7 +65,60 @@ describe('Flujo de Recuperación de Contraseña y Control de Acceso', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.mensaje).toContain('recibirás un enlace');
+      expect(res.body.segundosCooldown).toBe(120);
       expect(mailer.enviarEmailRecuperacion).toHaveBeenCalled();
+    });
+
+    it('debería rechazar con 429 si se solicita nuevamente antes del tiempo de cooldown', async () => {
+      // Simular que ya se envió una solicitud previa para este correo
+      gestorRecuperacion.registrarEnvio('carlos@sigi.gov.co');
+
+      const res = await request(app)
+        .post('/api/auth/recuperar-password')
+        .send({ email: 'carlos@sigi.gov.co' });
+
+      expect(res.status).toBe(429);
+      expect(res.body.cooldown).toBe(true);
+      expect(res.body.segundosRestantes).toBeGreaterThan(0);
+      expect(mailer.enviarEmailRecuperacion).not.toHaveBeenCalled();
+    });
+
+    it('debería rechazar con 429 si el último token en BD se generó hace menos de 2 minutos', async () => {
+      const fechaHaceUnMinuto = new Date(Date.now() - 60 * 1000);
+      pool.query
+        .mockResolvedValueOnce({
+          rows: [{ idusuario: 5, nombreusuario: 'carlos_reportero', email: 'carlos@sigi.gov.co' }]
+        }) // SELECT usuario
+        .mockResolvedValueOnce({
+          rows: [{ fecha_creacion: fechaHaceUnMinuto, expiracion: new Date(Date.now() + 3600000), usado: false }]
+        }); // SELECT ultimo token reciente
+
+      const res = await request(app)
+        .post('/api/auth/recuperar-password')
+        .send({ email: 'carlos@sigi.gov.co' });
+
+      expect(res.status).toBe(429);
+      expect(res.body.cooldown).toBe(true);
+      expect(mailer.enviarEmailRecuperacion).not.toHaveBeenCalled();
+    });
+
+    it('debería rechazar con 429 si se superan las 3 solicitudes en 15 minutos para el mismo correo', async () => {
+      const email = 'spam_test@sigi.gov.co';
+      const ahora = Date.now();
+      // Registrar 3 solicitudes previas (hace 10, 8 y 5 min)
+      gestorRecuperacion.solicitudesPorEmail.set(email, {
+        timestamps: [ahora - 10 * 60 * 1000, ahora - 8 * 60 * 1000, ahora - 5 * 60 * 1000],
+        ultimoEnvio: ahora - 3 * 60 * 1000 // Cooldown de 2 min ya pasó, pero límite de 3 solicitudes sigue activo
+      });
+
+      const res = await request(app)
+        .post('/api/auth/recuperar-password')
+        .send({ email });
+
+      expect(res.status).toBe(429);
+      expect(res.body.limiteExcedido).toBe(true);
+      expect(res.body.mensaje).toContain('límite de 3 solicitudes');
+      expect(mailer.enviarEmailRecuperacion).not.toHaveBeenCalled();
     });
   });
 

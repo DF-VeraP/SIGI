@@ -219,11 +219,70 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ── 5. Modal de Recuperación de Contraseña ──
+    // ── 5. Modal de Recuperación de Contraseña con Cooldown y Throttling ──
+    let cooldownRecuperarInterval = null;
+    let cooldownRecuperarFin = 0;
+
+    function iniciarContadorCooldownRecuperar(segundos) {
+        if (!btnSubmitRecuperar) return;
+
+        cooldownRecuperarFin = Date.now() + (segundos * 1000);
+        try {
+            sessionStorage.setItem("sigi_recuperar_cooldown_fin", String(cooldownRecuperarFin));
+        } catch (e) {}
+
+        if (cooldownRecuperarInterval) {
+            clearInterval(cooldownRecuperarInterval);
+            cooldownRecuperarInterval = null;
+        }
+
+        function refrescarBoton() {
+            const restanteMs = cooldownRecuperarFin - Date.now();
+            if (restanteMs <= 0) {
+                if (cooldownRecuperarInterval) {
+                    clearInterval(cooldownRecuperarInterval);
+                    cooldownRecuperarInterval = null;
+                }
+                try {
+                    sessionStorage.removeItem("sigi_recuperar_cooldown_fin");
+                } catch (e) {}
+                btnSubmitRecuperar.disabled = false;
+                btnSubmitRecuperar.innerHTML = `<span>Enviar Enlace</span>`;
+                return;
+            }
+
+            const segs = Math.ceil(restanteMs / 1000);
+            const minutos = Math.floor(segs / 60);
+            const segundosModulo = segs % 60;
+            const formatoTiempo = `${minutos}:${segundosModulo < 10 ? '0' : ''}${segundosModulo}`;
+
+            btnSubmitRecuperar.disabled = true;
+            btnSubmitRecuperar.innerHTML = `<i class="bi bi-clock-history" style="margin-right: 6px;"></i><span>Reenviar en ${formatoTiempo}</span>`;
+        }
+
+        refrescarBoton();
+        cooldownRecuperarInterval = setInterval(refrescarBoton, 1000);
+    }
+
     function abrirModalRecuperar() {
         if (modalRecuperarPass) {
             hideModalAlert(alertRecuperar);
-            if (formRecuperarPass) formRecuperarPass.reset();
+            let savedCooldown = null;
+            try {
+                savedCooldown = sessionStorage.getItem("sigi_recuperar_cooldown_fin");
+            } catch (e) {}
+
+            if (savedCooldown && Number(savedCooldown) > Date.now()) {
+                const segsRestantes = Math.ceil((Number(savedCooldown) - Date.now()) / 1000);
+                iniciarContadorCooldownRecuperar(segsRestantes);
+                showModalAlert(alertRecuperar, alertIconRecuperar, respRecuperar, "Ya se envió un enlace recientemente. Podrás solicitar uno nuevo cuando finalice el temporizador.", "warning");
+            } else {
+                if (formRecuperarPass) formRecuperarPass.reset();
+                if (btnSubmitRecuperar && !cooldownRecuperarInterval) {
+                    btnSubmitRecuperar.disabled = false;
+                    btnSubmitRecuperar.innerHTML = `<span>Enviar Enlace</span>`;
+                }
+            }
             modalRecuperarPass.classList.add("active");
             if (emailRecuperar) emailRecuperar.focus();
         }
@@ -250,6 +309,11 @@ document.addEventListener("DOMContentLoaded", () => {
             e.preventDefault();
             hideModalAlert(alertRecuperar);
 
+            if (cooldownRecuperarInterval) {
+                showModalAlert(alertRecuperar, alertIconRecuperar, respRecuperar, "Debes esperar a que termine el temporizador para solicitar un nuevo enlace.", "warning");
+                return;
+            }
+
             const email = emailRecuperar.value.trim();
             if (!email || !email.includes("@")) {
                 showModalAlert(alertRecuperar, alertIconRecuperar, respRecuperar, "Ingresa un correo institucional válido.", "warning");
@@ -267,16 +331,31 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
 
                 const data = await res.json();
-                showModalAlert(alertRecuperar, alertIconRecuperar, respRecuperar, data.mensaje || "Solicitud procesada.", "success");
 
-                setTimeout(() => {
-                    cerrarModalRecuperar();
-                }, 4000);
+                if (res.status === 429) {
+                    showModalAlert(alertRecuperar, alertIconRecuperar, respRecuperar, data.mensaje || "Has alcanzado el límite de solicitudes. Por favor espera.", "warning");
+                    if (data.segundosRestantes) {
+                        iniciarContadorCooldownRecuperar(data.segundosRestantes);
+                    } else {
+                        btnSubmitRecuperar.disabled = false;
+                        btnSubmitRecuperar.innerHTML = `<span>Enviar Enlace</span>`;
+                    }
+                    return;
+                }
+
+                if (!res.ok) {
+                    showModalAlert(alertRecuperar, alertIconRecuperar, respRecuperar, data.mensaje || "Error al procesar la solicitud.", "danger");
+                    btnSubmitRecuperar.disabled = false;
+                    btnSubmitRecuperar.innerHTML = `<span>Enviar Enlace</span>`;
+                    return;
+                }
+
+                showModalAlert(alertRecuperar, alertIconRecuperar, respRecuperar, data.mensaje || "Solicitud procesada correctamente.", "success");
+                iniciarContadorCooldownRecuperar(data.segundosCooldown || 120);
 
             } catch (err) {
                 console.error("Error al solicitar recuperación:", err);
                 showModalAlert(alertRecuperar, alertIconRecuperar, respRecuperar, "Ocurrió un error al enviar la solicitud. Intenta más tarde.", "danger");
-            } finally {
                 btnSubmitRecuperar.disabled = false;
                 btnSubmitRecuperar.innerHTML = `<span>Enviar Enlace</span>`;
             }

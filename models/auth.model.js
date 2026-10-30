@@ -36,6 +36,19 @@ class AuthModel {
   }
 
   /**
+   * Obtener el último token de recuperación generado para un usuario (para control de tiempos y cooldown)
+   */
+  static async obtenerUltimoTokenReset(idUsuario) {
+    return pool.query(`
+      SELECT fecha_creacion, expiracion, usado
+      FROM token
+      WHERE id_usuario = $1 AND tipo = 'reset_password'
+      ORDER BY id_token DESC
+      LIMIT 1
+    `, [idUsuario]);
+  }
+
+  /**
    * Invalidar tokens de recuperación anteriores no utilizados
    */
   static async invalidarTokensResetPrevios(idUsuario) {
