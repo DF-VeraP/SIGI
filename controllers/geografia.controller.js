@@ -60,10 +60,10 @@ const getPoligonoCuadrante = async (req, res) => {
   const tipo = req.query.tipo || null;
   try {
     const result = await GeografiaModel.obtenerPoligonosCuadrantes(tipo);
-    res.json(result.rows);
+    res.json(result.rows || []);
   } catch (error) {
     logger.error("Error en getPoligonoCuadrante:", error);
-    res.status(500).json({ error: "Error en el servidor" });
+    res.json([]);
   }
 };
 

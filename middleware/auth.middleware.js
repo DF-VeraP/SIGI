@@ -13,15 +13,16 @@ const verificarSesion = (req, res, next) => {
 
 // Verificar que el usuario tenga un rol autorizado (Superadmin, Admin, Reportero)
 const verificarRol = (...rolesPermitidos) => {
+  const roles = rolesPermitidos.flat().map(r => String(r).toLowerCase().trim());
   return (req, res, next) => {
     if (!req.session || !req.session.usuario) {
       return res.status(401).json({ mensaje: "No autenticado 🚫" });
     }
 
-    const rolUsuario = req.session.rol || 'reportero';
+    const rolUsuario = (req.session.rol || 'reportero').toLowerCase().trim();
 
     // El superadmin tiene acceso global por defecto
-    if (rolUsuario === 'superadmin' || rolesPermitidos.includes(rolUsuario)) {
+    if (rolUsuario === 'superadmin' || roles.includes(rolUsuario)) {
       return next();
     }
 

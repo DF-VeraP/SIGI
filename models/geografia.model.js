@@ -149,7 +149,15 @@ class GeografiaModel {
       query += ` AND c.tipo = $1`;
     }
     query += ` GROUP BY c.id_cuadrante ORDER BY c.id_cuadrante ASC`;
-    return pool.query(query, valores);
+    try {
+      return await pool.query(query, valores);
+    } catch (err) {
+      if (err.code === '42P01' || (err.message && err.message.includes('does not exist'))) {
+        console.warn('Aviso: Tabla cuadrante no disponible aún en base de datos:', err.message);
+        return { rows: [] };
+      }
+      throw err;
+    }
   }
 
   /**

@@ -59,7 +59,7 @@ const getUsuario = (req, res) => {
     res.json({
       usuario: req.session.usuario,
       idusuario: req.session.idusuario,
-      rol: req.session.rol || 'reportero',
+      rol: (req.session.rol || 'reportero').toLowerCase().trim(),
       estado: req.session.estado || 'activo',
       dependencia: req.session.dependencia || '',
       email: req.session.email || '',
@@ -99,7 +99,7 @@ const login = async (req, res) => {
     const setupSession = async () => {
       req.session.usuario = user.nombreusuario;
       req.session.idusuario = user.idusuario;
-      req.session.rol = user.rol || 'reportero';
+      req.session.rol = (user.rol || 'reportero').toLowerCase().trim();
       req.session.estado = user.estado || 'activo';
       req.session.dependencia = user.dependencia || user.entidadusuario || '';
       req.session.email = user.email || '';
@@ -111,11 +111,18 @@ const login = async (req, res) => {
       // Registrar en auditoría
       await registrarLogActividad(user.idusuario, 'LOGIN', 'usuario', user.idusuario, 'Inicio de sesión exitoso', req);
 
-      res.json({
-        mensaje: "Login correcto.",
-        rol: req.session.rol,
-        usuario: req.session.usuario,
-        debe_cambiar_password: req.session.debe_cambiar_password
+      // Guardar explícitamente en el store de PostgreSQL antes de responder para evitar condiciones de carrera
+      req.session.save((saveErr) => {
+        if (saveErr) {
+          logger.error('Error guardando sesión en PostgreSQL:', saveErr);
+          return res.status(500).json({ mensaje: "Error al guardar sesión de usuario" });
+        }
+        res.json({
+          mensaje: "Login correcto.",
+          rol: req.session.rol,
+          usuario: req.session.usuario,
+          debe_cambiar_password: req.session.debe_cambiar_password
+        });
       });
     };
 

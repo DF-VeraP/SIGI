@@ -15,12 +15,16 @@ class MnvccController {
       const cuadrantes = await MnvccModel.obtenerResumenCuadrantes(tipo || null);
       return res.status(200).json({
         status: 'success',
-        total: cuadrantes.length,
-        data: cuadrantes
+        total: (cuadrantes || []).length,
+        data: cuadrantes || []
       });
     } catch (error) {
       logger.error('Error en listarCuadrantes MNVCC:', error);
-      next(error);
+      return res.status(200).json({
+        status: 'success',
+        total: 0,
+        data: []
+      });
     }
   }
 

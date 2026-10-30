@@ -414,13 +414,17 @@ class MLService {
       let sumaLat = 0;
       let sumaLng = 0;
       let sumaGravedad = 0;
+      let puntosValidos = 0;
       const tiposConteo = {};
 
       miembros.forEach(m => {
         const lat = parseFloat(m.lat);
         const lng = parseFloat(m.lng);
-        sumaLat += lat;
-        sumaLng += lng;
+        if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
+          sumaLat += lat;
+          sumaLng += lng;
+          puntosValidos++;
+        }
         const grav = parseInt(m.gravedad || m.id_gravedad || 3, 10);
         sumaGravedad += grav;
 
@@ -428,15 +432,23 @@ class MLService {
         tiposConteo[tipo] = (tiposConteo[tipo] || 0) + 1;
       });
 
-      const centroideLat = sumaLat / miembros.length;
-      const centroideLng = sumaLng / miembros.length;
+      if (puntosValidos === 0) return null;
+
+      const centroideLat = sumaLat / puntosValidos;
+      const centroideLng = sumaLng / puntosValidos;
+      if (isNaN(centroideLat) || isNaN(centroideLng)) return null;
+
       const gravedadPromedio = Math.round((sumaGravedad / miembros.length) * 10) / 10;
 
       // Calcular radio del cluster (distancia al punto más lejano dentro del cluster)
       let radioMaxMetros = 0;
       miembros.forEach(m => {
-        const dist = calcularDistanciaMetros(centroideLat, centroideLng, parseFloat(m.lat), parseFloat(m.lng));
-        if (dist > radioMaxMetros) radioMaxMetros = dist;
+        const mLat = parseFloat(m.lat);
+        const mLng = parseFloat(m.lng);
+        if (!isNaN(mLat) && !isNaN(mLng)) {
+          const dist = calcularDistanciaMetros(centroideLat, centroideLng, mLat, mLng);
+          if (dist > radioMaxMetros) radioMaxMetros = dist;
+        }
       });
 
       // Determinar tipo de delito o incidente más frecuente en el cluster
@@ -479,7 +491,7 @@ class MLService {
         desglose_tipos: tiposConteo,
         incidentes_ids: miembros.map(m => m.id || m.idincidente)
       };
-    });
+    }).filter(Boolean);
 
     // Ordenar clusters por criticidad real (cantidad ponderada por gravedad)
     clustersFinales.sort((a, b) => (b.cantidad_incidentes * b.gravedad_promedio) - (a.cantidad_incidentes * a.gravedad_promedio));

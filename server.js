@@ -8,7 +8,11 @@ const { csrfProtection, getCsrfToken } = require('./middleware/csrf.middleware')
 
 const helmet = require("helmet");
 const path = require("path");
+const fs = require("fs");
 const app = express();
+
+// Habilitar confianza en proxy inverso (Nginx / HTTPS en producción)
+app.set('trust proxy', 1);
 
 // Protección de cabeceras HTTP (Anti-clickjacking, XSS, MIME Sniffing, ocultar X-Powered-By)
 app.use(helmet({
@@ -52,7 +56,7 @@ app.use(session({
     maxAge: 40 * 60 * 1000, // 40 minutos de inactividad
     httpOnly: true,
     sameSite: 'lax',
-    secure: isProd
+    secure: isProd ? 'auto' : false
   },
   rolling: true // Renueva automáticamente la sesión en cada petición
 }));
@@ -153,6 +157,32 @@ async function asegurarEsquemaBaseDatos() {
     console.log('✅ Esquema y compatibilidad de tipos de incidente verificados con éxito.');
   } catch (err) {
     console.warn('Aviso al verificar esquema de tipos de incidente:', err.message);
+  }
+
+  // Auto-migración y verificación territorial de MNVCC (Cuadrantes, Polígonos y TAMIR)
+  try {
+    const resTabla = await pool.query("SELECT to_regclass('public.cuadrante') AS tabla;");
+    const existeTabla = resTabla.rows[0] && resTabla.rows[0].tabla;
+    let necesitaMigracion = !existeTabla;
+
+    if (existeTabla) {
+      const resCount = await pool.query("SELECT COUNT(*) AS total FROM public.cuadrante WHERE geom IS NOT NULL;");
+      if (Number(resCount.rows[0].total) === 0) {
+        necesitaMigracion = true;
+      }
+    }
+
+    if (necesitaMigracion) {
+      console.log('🔄 Ejecutando migración y sembrado MNVCC (cuadrantes, polígonos, TAMIR)...');
+      const migrationFile = path.join(__dirname, 'sql', 'migration_mnvcc.sql');
+      if (fs.existsSync(migrationFile)) {
+        const sql = fs.readFileSync(migrationFile, 'utf8');
+        await pool.query(sql);
+        console.log('✅ Tablas y polígonos MNVCC inicializados exitosamente.');
+      }
+    }
+  } catch (err) {
+    console.warn('Aviso al verificar/migrar tablas MNVCC:', err.message);
   }
 }
 

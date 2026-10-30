@@ -510,9 +510,15 @@ window.reentrenarModeloML = async function() {
     btn.textContent = 'Recalibrando...';
   }
   try {
+    const xsrfCookie = document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN='));
+    const token = xsrfCookie ? xsrfCookie.split('=')[1] : '';
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['X-CSRF-Token'] = token;
+
     const res = await fetch('/api/ml/reentrenar', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
+      headers,
+      credentials: 'same-origin'
     });
     const data = await res.json();
     if (res.ok && data.status === 'success') {
@@ -529,8 +535,15 @@ window.reentrenarModeloML = async function() {
       }
     } else {
       if (btn) {
-        btn.disabled = false;
-        btn.textContent = 'Reentrenar Modelo ML';
+        if (res.status === 401 || res.status === 403) {
+          btn.textContent = 'Requiere Admin';
+        } else {
+          btn.textContent = 'Reentrenar Modelo ML';
+        }
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.textContent = 'Reentrenar Modelo ML';
+        }, 2500);
       }
     }
   } catch (err) {

@@ -43,8 +43,16 @@ class MnvccModel {
       ORDER BY c.id_cuadrante ASC
     `;
 
-    const res = await pool.query(query, params);
-    return res.rows;
+    try {
+      const res = await pool.query(query, params);
+      return res.rows;
+    } catch (err) {
+      if (err.code === '42P01' || (err.message && err.message.includes('does not exist'))) {
+        console.warn('Aviso: Tabla public.cuadrante no existe todavía:', err.message);
+        return [];
+      }
+      throw err;
+    }
   }
 
   /**

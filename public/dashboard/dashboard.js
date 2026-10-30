@@ -2123,9 +2123,13 @@ async function cargarYRenderizarHotspotsML(eps = 450, minPts = 3) {
         }
 
         data.clusters.forEach(cl => {
+            if (!cl || !cl.centroide || isNaN(Number(cl.centroide.lat)) || isNaN(Number(cl.centroide.lng))) return;
+            const cLat = Number(cl.centroide.lat);
+            const cLng = Number(cl.centroide.lng);
+            const rMetros = isNaN(Number(cl.radio_metros)) || Number(cl.radio_metros) <= 0 ? 100 : Number(cl.radio_metros);
             // Círculo de cobertura espacial del cluster
-            const circulo = L.circle([cl.centroide.lat, cl.centroide.lng], {
-                radius: cl.radio_metros,
+            const circulo = L.circle([cLat, cLng], {
+                radius: rMetros,
                 color: cl.color,
                 fillColor: cl.color,
                 fillOpacity: 0.22,
@@ -2141,7 +2145,7 @@ async function cargarYRenderizarHotspotsML(eps = 450, minPts = 3) {
                 iconAnchor: [15, 15]
             });
 
-            const marker = L.marker([cl.centroide.lat, cl.centroide.lng], { icon: customIcon }).addTo(dbscanLayer);
+            const marker = L.marker([cLat, cLng], { icon: customIcon }).addTo(dbscanLayer);
 
             const popupContent = `
                 <div class="dbscan-popup-card">

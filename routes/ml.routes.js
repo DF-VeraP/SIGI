@@ -12,7 +12,7 @@ router.get('/api/ml/forecast', mlController.obtenerForecast);
 router.post(
   '/api/ml/reentrenar',
   verificarSesion,
-  verificarRol(['superadmin', 'admin']),
+  verificarRol('superadmin', 'admin'),
   mlController.reentrenar
 );
 
